@@ -7,4 +7,6 @@ include("datastructures.jl")
 include("model.jl")
 include("user_interface.jl")
 
+export EnergyModel  
+
 end # module

@@ -8,7 +8,6 @@ function create_model(data, modeltype=OperationalModel())
     nodes = data[:nodes]  
     links = data[:links]
     products = data[:products]
-    modeltype = OperationalModel
 
     create_operational_variables(m, nodes, products, T, modeltype)
     create_network_variables(m, links, products, T, modeltype)
