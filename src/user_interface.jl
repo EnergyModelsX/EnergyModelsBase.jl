@@ -19,10 +19,10 @@ function read_data(fn)
     @debug "Read data"
     @info "Hard coded dummy model for now"
 
-    NG       = RessourceCarrier("NG", 0.2)
-    Coal     = RessourceCarrier("Coal", 0.35)
-    Power    = RessourceCarrier("Power", 0)
-    CO2      = RessourceEmit("CO2",1)
+    NG       = ResourceCarrier("NG", 0.2)
+    Coal     = ResourceCarrier("Coal", 0.35)
+    Power    = ResourceCarrier("Power", 0)
+    CO2      = ResourceEmit("CO2",1)
     products = [NG, Coal, Power, CO2]
     nodes = [
             Availability(1),

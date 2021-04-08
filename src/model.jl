@@ -51,7 +51,7 @@ of the system"
 function create_variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype)
     
     𝒩ⁿᵒᵗ = node_not_av(𝒩)    
-    𝒫ᵉᵐ  = res_sub(𝒫, RessourceEmit)
+    𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
 
     @variable(m, emissions_node[𝒩ⁿᵒᵗ, 𝒯, 𝒫ᵉᵐ]) 
     @variable(m, emissions_total[𝒯, 𝒫ᵉᵐ]) 
@@ -166,7 +166,7 @@ function create_constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype)
     # Constraints for calculation the total emissions per investment period and
     # limiting said emissions to a maximum value, currentkly hard coded
     𝒩ⁿᵒᵗ = node_not_av(𝒩)
-    𝒫ᵉᵐ  = res_sub(𝒫, RessourceEmit)
+    𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
@@ -212,7 +212,7 @@ function create_module(m, n::Source, 𝒯, 𝒫)
         m[:cap_usage][n, t] <= m[:cap_max][n, t])
     
     # Constraint for the emissions associated to energy sources, currently set to 0
-    𝒫ᵉᵐ = res_sub(𝒫, RessourceEmit)
+    𝒫ᵉᵐ = res_sub(𝒫, ResourceEmit)
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
         m[:emissions_node][n, t, p] == 0)
 
@@ -224,7 +224,7 @@ end
 
 function create_module(m, n::Network, 𝒯, 𝒫)
 
-    𝒫ᵉᵐ = res_sub(𝒫, RessourceEmit)
+    𝒫ᵉᵐ = res_sub(𝒫, ResourceEmit)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Constraint for the individual stream connections
@@ -263,9 +263,9 @@ end
 function create_module(m, n::Storage, 𝒯, 𝒫)
 
     # Declaration of the required subsets
-    𝒫ˢᵗᵒʳ = n.ressource
-    𝒫ᵃᵈᵈ  = 𝒫[findall(x -> x != n.ressource, 𝒫)]
-    𝒫ᵉᵐ   = res_sub(𝒫, RessourceEmit)
+    𝒫ˢᵗᵒʳ = n.resource
+    𝒫ᵃᵈᵈ  = 𝒫[findall(x -> x != n.resource, 𝒫)]
+    𝒫ᵉᵐ   = res_sub(𝒫, ResourceEmit)
     𝒯ᴵⁿᵛ  = strategic_periods(𝒯)
 
     # Constraint for additional required input
@@ -341,7 +341,7 @@ function create_module(m, n::Sink, 𝒯, 𝒫)
             m[:cap_max][n, t] + m[:surplus][n,t])
 
     # Constraint for the emissions
-    𝒫ᵉᵐ = res_sub(𝒫, RessourceEmit)
+    𝒫ᵉᵐ = res_sub(𝒫, ResourceEmit)
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
         m[:emissions_node][n, t, p] == 0)
 

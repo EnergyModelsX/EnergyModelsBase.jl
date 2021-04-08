@@ -1,11 +1,11 @@
 # Declaration of the resources
-abstract type Ressource end
-Base.show(io::IO, r::Ressource) = print(io, "$(r.id)")
-struct RessourceEmit    <: Ressource  # Emissions resources not transported  (e.g. CO2, CH4, NOX)
+abstract type Resource end
+Base.show(io::IO, r::Resource) = print(io, "$(r.id)")
+struct RessourceEmit    <: Resource  # Emissions resources not transported  (e.g. CO2, CH4, NOX)
     id
     CO2Int::Real
 end
-struct RessourceCarrier <: Ressource  # Ressources that can be transported    (e.g. power, NG, H2)
+struct RessourceCarrier <: Resource  # Ressources that can be transported    (e.g. power, NG, H2)
     id
     CO2Int::Real
 end
@@ -45,13 +45,13 @@ struct RefSource <: Source
 	id
     capacity::TimeProfile
     cost::TimeProfile
-    conversion::Dict{Ressource, Real}
+    conversion::Dict{Resource, Real}
 end
 struct RefGeneration <: Network
 	id
     capacity::TimeProfile
     cost::TimeProfile
-    conversion::Dict{Ressource, Real}
+    conversion::Dict{Resource, Real}
     CO2_capture::Real
 end
 struct Availability <: Network
@@ -61,14 +61,14 @@ struct RefStorage <: Storage
 	id
     capacity::TimeProfile
     cost::TimeProfile
-    ressource::Ressource
-    add_demand::Dict{Ressource, Real}
+    resource::Resource
+    add_demand::Dict{Resource, Real}
 end
 struct RefEndUse <: Sink
 	id
     capacity::TimeProfile
     penalty::Dict{Any, Real}            # Requires entries deficit and surplus
-    conversion::Dict{Ressource, Real}
+    conversion::Dict{Resource, Real}
 end
 
 abstract type Formulation end

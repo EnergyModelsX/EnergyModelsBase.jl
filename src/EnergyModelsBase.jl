@@ -16,9 +16,9 @@ export Network
 export Sink
 export Storage
 
-# Export the different link and ressource types
+# Export the different link and resource types
 export Link
-export RessourceEmit
-export RessourceCarrier
+export ResourceEmit
+export ResourceCarrier
 
 end # module
