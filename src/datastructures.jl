@@ -1,17 +1,17 @@
 # Declaration of the resources
 abstract type Resource end
 Base.show(io::IO, r::Resource) = print(io, "$(r.id)")
-struct RessourceEmit    <: Resource  # Emissions resources not transported  (e.g. CO2, CH4, NOX)
+struct ResourceEmit    <: Resource  # Emissions resources not transported  (e.g. CO2, CH4, NOX)
     id
     CO2Int::Real
 end
-struct RessourceCarrier <: Resource  # Ressources that can be transported    (e.g. power, NG, H2)
+struct ResourceCarrier <: Resource  # Ressources that can be transported    (e.g. power, NG, H2)
     id
     CO2Int::Real
 end
 
 # Function returning the emission resources
-function res_sub(𝒫, sub = RessourceEmit)
+function res_sub(𝒫, sub = ResourceEmit)
     return 𝒫[findall(x -> isa(x,sub), 𝒫)]
 end
 
@@ -22,12 +22,12 @@ abstract type Node end
 Base.show(io::IO, n::Node) = print(io, "n$(n.id)")
 
 # Function returning nodes with type corresponding the input "sub"
-function node_sub(𝒩, sub = Network)
+function node_sub(𝒩::Array{Node}, sub = Network)
     return 𝒩[findall(x -> isa(x,sub), 𝒩)]
 end
 
 # Function exluding availability nodes
-function node_not_av(𝒩)
+function node_not_av(𝒩::Array{Node})
     return 𝒩[findall(x -> ~isa(x,Availability), 𝒩)]
 end
 
@@ -64,7 +64,7 @@ struct RefStorage <: Storage
     resource::Resource
     add_demand::Dict{Resource, Real}
 end
-struct RefEndUse <: Sink
+struct RefSink <: Sink
 	id
     capacity::TimeProfile
     penalty::Dict{Any, Real}            # Requires entries deficit and surplus

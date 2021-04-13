@@ -31,7 +31,7 @@ function read_data(fn)
             RefGeneration(4, FixedProfile(25), FixedProfile(5.5), Dict(NG => -2, Coal => 0, Power => 1, CO2 => 0), 0.9),  
             RefGeneration(5, FixedProfile(25), FixedProfile(6), Dict(NG => 0, Coal => -2.5, Power => 1, CO2 => 0), 0),  
             RefStorage(6, FixedProfile(100), FixedProfile(9.1), CO2, Dict(NG => 0, Coal => 0, Power => -0.02)),
-            RefEndUse(7, DynamicProfile([20 20 20 20 25 30 35 35 40 40 40 40 40 35 35 30 25 30 35 30 25 20 20 20]),Dict(:surplus => 0, :deficit => 1e6),
+            RefSink(7, DynamicProfile([20 20 20 20 25 30 35 35 40 40 40 40 40 35 35 30 25 30 35 30 25 20 20 20]),Dict(:surplus => 0, :deficit => 1e6),
                     Dict(NG => 0, Coal => 0, Power => -1, CO2 => 0)),
             ]
     links = [
