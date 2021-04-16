@@ -1,7 +1,7 @@
 # Declaration of the resources
 abstract type Resource end
 Base.show(io::IO, r::Resource) = print(io, "$(r.id)")
-struct ResourceEmit    <: Resource  # Emissions resources not transported  (e.g. CO2, CH4, NOX)
+struct ResourceEmit    <: Resource  # Emissions resources                   (e.g. CO2, CH4, NOX)
     id
     CO2Int::Real
 end

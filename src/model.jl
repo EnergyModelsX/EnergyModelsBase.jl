@@ -28,6 +28,29 @@ function create_model(data, modeltype=OperationalModel())
     return m
 end
 
+"
+Create variables to track how much of installed capacity is used in each node
+in terms of either `flow_in` or `flow_out` (depending on node `n ∈ 𝒩`) for all 
+time periods `t ∈ 𝒯`.
+
+In general, it is prefered to have the capacity as a function of a variable given
+with a value of 1 in the field n.capacity
+"
+function create_variables_capacity(m, 𝒩, 𝒯, modeltype)
+    
+    𝒩ⁿᵒᵗ = node_not_av(𝒩)
+
+    @variable(m, cap_usage[𝒩ⁿᵒᵗ, 𝒯] >= 0)
+    @variable(m, cap_max[𝒩ⁿᵒᵗ, 𝒯] >= 0)
+
+    for n ∈ 𝒩ⁿᵒᵗ, t ∈ 𝒯
+        @constraint(m, cap_max[n, t] == n.capacity[t])
+    end
+    # TODO:
+    # - If operational model, make variables bounded to fixed capacity(?)
+    # - If investment model, add variables and constraints to control available capacity
+end
+
 " Declaration of the individual input and output flowrates for each
 technological node. This approach is also taken from eTransport.
 
@@ -96,29 +119,6 @@ function create_variables_surplus_deficit(m, 𝒩, 𝒯, 𝒫, modeltype)
     @variable(m,deficit[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
 end
 
-"
-Create variables to track how much of installed capacity is used in each node
-in terms of either `flow_in` or `flow_out` (depending on node `n ∈ 𝒩`) for all 
-time periods `t ∈ 𝒯`.
-
-In general, it is prefered to have the capacity as a function of a variable given
-with a value of 1 in the field n.capacity
-"
-function create_variables_capacity(m, 𝒩, 𝒯, modeltype)
-    
-    𝒩ⁿᵒᵗ = node_not_av(𝒩)
-
-    @variable(m, cap_usage[𝒩ⁿᵒᵗ, 𝒯] >= 0)
-    @variable(m, cap_max[𝒩ⁿᵒᵗ, 𝒯] >= 0)
-
-    for n ∈ 𝒩ⁿᵒᵗ, t ∈ 𝒯
-        @constraint(m, cap_max[n, t] == n.capacity[t])
-    end
-    # TODO:
-    # - If operational model, make variables bounded to fixed capacity(?)
-    # - If investment model, add variables and constraints to control available capacity
-end
-
 function create_variables_storage(m, 𝒩, 𝒯, modeltype)
     
     𝒩ˢᵗᵒʳ = node_sub(𝒩, Storage)
@@ -157,8 +157,8 @@ function create_constraints_module(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     𝒩ⁿᵒᵗ = node_not_av(𝒩)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ], m[:opex_fixed][n, t_inv] == 0)
-    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ], m[:capex][n, t_inv] == 0)
+    # @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ], m[:opex_fixed][n, t_inv] == 0)
+    # @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ], m[:capex][n, t_inv] == 0)
 end
 
 function create_constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype)
@@ -189,7 +189,7 @@ function create_constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     # These constraints are generalized and create the constraints between all coupled
     # nodes
     for l ∈ ℒ 
-        link(m, l.from,l.to, 𝒯, 𝒫, l, l.Formulation)
+        create_link(m, l.from,l.to, 𝒯, 𝒫, l, l.Formulation)
     end
 
 end
@@ -370,13 +370,13 @@ end
 "Declaration of the individual links used in the model.
 "
 
-function link(m, from::Node, to::Node, 𝒯, 𝒫, l, formulation)
+function create_link(m, from::Node, to::Node, 𝒯, 𝒫, l, formulation)
 	# Generic link in which each output corresponds to the input
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫],
         m[:link_out][l, t, p] == m[:link_in][l, t, p])
 end
 
-# function link(m, from::Node, to::Node, 𝒯, 𝒫, link::Transmission, formulation=Linear())
+# function create_link(m, from::Node, to::Node, 𝒯, 𝒫, link::Transmission, formulation=Linear())
 # 	"generic transmission"
 # end
 
