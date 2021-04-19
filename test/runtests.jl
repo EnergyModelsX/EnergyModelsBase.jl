@@ -13,7 +13,7 @@ println(objective_value(m))
 
 @testset "User interface" begin
     # Check for the objective value
-    @test objective_value(m) == 28600.398214070225
+    @test objective_value(m)  ≈ 28600.398
 
     # Check for the total number of variables
     @test size(all_variables(m))[1] == 3306
