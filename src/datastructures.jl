@@ -2,15 +2,12 @@
 abstract type Resource end
 Base.show(io::IO, r::Resource) = print(io, "$(r.id)")
 struct ResourceEmit{T<:Real}    <: Resource  # Emissions resources                   (e.g. CO2, CH4, NOX)
-		    id
-		    CO2Int::T
-		end
     id
-    CO2Int::Real
+    CO2Int::T
 end
-struct ResourceCarrier <: Resource  # Ressources that can be transported    (e.g. power, NG, H2)
+struct ResourceCarrier{T<:Real} <: Resource  # Ressources that can be transported    (e.g. power, NG, H2)
     id
-    CO2Int::Real
+    CO2Int::T
 end
 
 # Function returning the emission resources
