@@ -88,7 +88,10 @@ end
 #struct Transmission <: Link end # Example of extension
 
 
-# Function returning linkes which are for a given node  ::Array{Link}
+"""
+    link_sub(ℒ, n::Node)
+Return links for a given node  `::Array{Link}`.
+"""
 function link_sub(ℒ, n::Node)
     return [ℒ[findall(x -> x.from == n, ℒ)],
             ℒ[findall(x -> x.to   == n, ℒ)]]
