@@ -1,18 +1,74 @@
+# Declaration of the resources
+abstract type Resource end
+Base.show(io::IO, r::Resource) = print(io, "$(r.id)")
+struct ResourceEmit{T<:Real}    <: Resource  # Emissions resources                   (e.g. CO2, CH4, NOX)
+    id
+    CO2Int::T
+end
+struct ResourceCarrier{T<:Real} <: Resource  # Ressources that can be transported    (e.g. power, NG, H2)
+    id
+    CO2Int::T
+end
+
+# Function returning the emission resources
+function res_sub(𝒫, sub = ResourceEmit)
+    return 𝒫[findall(x -> isa(x,sub), 𝒫)]
+end
+
+# Declaration of the general type of node. This type has to be
+# utilised for all technologies so that we can utilize multiple
+# dispatch
 abstract type Node end
 Base.show(io::IO, n::Node) = print(io, "n$(n.id)")
 
-abstract type Storage <: Node end
-
-struct Battery <: Storage
-	id
-    capacity::TimeProfile
-    properties::Dict{Any, Any} # for prototyping, flexible, but inefficient
+# Function returning nodes with type corresponding the input "sub"
+function node_sub(𝒩::Array{Node}, sub = Network)
+    return 𝒩[findall(x -> isa(x,sub), 𝒩)]
 end
 
-struct GasTank <: Storage
+# Function exluding availability nodes
+function node_not_av(𝒩::Array{Node})
+    return 𝒩[findall(x -> ~isa(x,Availability), 𝒩)]
+end
+
+# Declaration of the individual technology node types representing
+# a structure where we differentiate between whether nodes have 
+# inputs, outputs, or both
+abstract type Source <: Node end
+abstract type Network <: Node end
+abstract type Sink <: Node end
+abstract type Storage <: Network end
+
+# Declaration of the parameters for generalized nodes
+# Conversion as dict for prototyping: flexible, but inefficient
+struct RefSource <: Source
 	id
     capacity::TimeProfile
-	properties::Dict{Any, Any}
+    cost::TimeProfile
+    conversion::Dict{Resource, Real}
+end
+struct RefGeneration <: Network
+	id
+    capacity::TimeProfile
+    cost::TimeProfile
+    conversion::Dict{Resource, Real}
+    CO2_capture::Real
+end
+struct Availability <: Network
+	id
+end
+struct RefStorage <: Storage
+	id
+    capacity::TimeProfile
+    cost::TimeProfile
+    resource::Resource
+    add_demand::Dict{Resource, Real}
+end
+struct RefSink <: Sink
+	id
+    capacity::TimeProfile
+    penalty::Dict{Any, Real}            # Requires entries deficit and surplus
+    conversion::Dict{Resource, Real}
 end
 
 abstract type Formulation end
@@ -20,8 +76,23 @@ struct Linear <: Formulation end
 #struct NonLinear <: Formulation end # Example of extension
 
 abstract type Link end
-struct Direct <: Link end
+Base.show(io::IO, l::Link) = print(io, "l$(l.from)-$(l.to)")
+struct Direct <: Link
+    from::Node
+    to::Node
+    Formulation::Formulation
+end
 #struct Transmission <: Link end # Example of extension
+
+
+"""
+    link_sub(ℒ, n::Node)
+Return links for a given node  `::Array{Link}`.
+"""
+function link_sub(ℒ, n::Node)
+    return [ℒ[findall(x -> x.from == n, ℒ)],
+            ℒ[findall(x -> x.to   == n, ℒ)]]
+end
 
 abstract type EnergyModel end
 struct OperationalModel <: EnergyModel end
