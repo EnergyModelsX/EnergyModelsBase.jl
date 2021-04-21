@@ -42,33 +42,39 @@ abstract type Storage <: Network end
 # Declaration of the parameters for generalized nodes
 # Conversion as dict for prototyping: flexible, but inefficient
 struct RefSource <: Source
-	id
+    id
     capacity::TimeProfile
-    cost::TimeProfile
-    conversion::Dict{Resource, Real}
+    var_opex::TimeProfile
+    output::Dict{Resource, Real}
+    emissions::Dict{ResourceEmit, Real}
 end
 struct RefGeneration <: Network
-	id
+    id
     capacity::TimeProfile
-    cost::TimeProfile
-    conversion::Dict{Resource, Real}
+    var_opex::TimeProfile
+    input::Dict{Resource, Real}
+    output::Dict{Resource, Real}
+    emissions::Dict{ResourceEmit, Real}
     CO2_capture::Real
 end
 struct Availability <: Network
-	id
+    id
+    input::Dict{Resource, Real}
+    output::Dict{Resource, Real}
 end
 struct RefStorage <: Storage
-	id
+    id
     capacity::TimeProfile
-    cost::TimeProfile
-    resource::Resource
-    add_demand::Dict{Resource, Real}
+    var_opex::TimeProfile
+    input::Dict{Resource, Real}
+    output::Dict{Resource, Real}
 end
 struct RefSink <: Sink
-	id
+    id
     capacity::TimeProfile
     penalty::Dict{Any, Real}            # Requires entries deficit and surplus
-    conversion::Dict{Resource, Real}
+    input::Dict{Resource, Real}
+    emissions::Dict{ResourceEmit, Real}
 end
 
 abstract type Formulation end
@@ -78,6 +84,7 @@ struct Linear <: Formulation end
 abstract type Link end
 Base.show(io::IO, l::Link) = print(io, "l$(l.from)-$(l.to)")
 struct Direct <: Link
+    id
     from::Node
     to::Node
     Formulation::Formulation
@@ -94,15 +101,21 @@ function link_sub(ℒ, n::Node)
             ℒ[findall(x -> x.to   == n, ℒ)]]
 end
 
-abstract type EnergyModel end
-struct OperationalModel <: EnergyModel end
-#struct InvestmentModel <: EnergyModel end # Example of extension
-
+"""
+    link_res(l::Link)
+Return resources for a given link l.
+"""
+function link_res(l::Link)
+    return intersect(keys(l.to.input), keys(l.from.output))
+end
 
 abstract type Case end
 struct OperationalCase <: Case
-    nodes
-    links
-    time_structure
-    products
+    CO2_limit::TimeProfile
 end
+
+abstract type EnergyModel end
+struct OperationalModel <: EnergyModel
+    case::Case
+end
+#struct InvestmentModel <: EnergyModel end # Example of extension

@@ -1,5 +1,5 @@
 # Construction of the model based on the provided data
-function create_model(data, modeltype=OperationalModel())
+function create_model(data, modeltype)
     @debug "Construct model"
     m = JuMP.Model()
 
@@ -10,20 +10,20 @@ function create_model(data, modeltype=OperationalModel())
     products = data[:products]
 
     # Declaration of variables for the problem
-    create_variables_flow(m, nodes, T, products, links, modeltype)
-    create_variables_emission(m, nodes, T, products, modeltype)
-    create_variables_opex(m, nodes, T, products, modeltype)
-    create_variables_capex(m, nodes, T, products, modeltype)
-    create_variables_capacity(m, nodes, T, modeltype)
-    create_variables_surplus_deficit(m, nodes, T, products, modeltype)
+    variables_flow(m, nodes, T, products, links, modeltype)
+    variables_emission(m, nodes, T, products, modeltype)
+    variables_opex(m, nodes, T, products, modeltype)
+    variables_capex(m, nodes, T, products, modeltype)
+    variables_capacity(m, nodes, T, modeltype)
+    variables_surplus_deficit(m, nodes, T, products, modeltype)
 
-    # Construction of create_constraints for the problem
-    create_constraints_module(m, nodes, T, products, links, modeltype)
-    create_constraints_emissions(m, nodes, T, products, modeltype)
-    create_constraints_links(m, nodes, T, products, links, modeltype)
+    # Construction of constraints for the problem
+    constraints_node(m, nodes, T, products, links, modeltype)
+    constraints_emissions(m, nodes, T, products, modeltype)
+    constraints_links(m, nodes, T, products, links, modeltype)
 
-    # Construction of th objective function
-    create_objective(m, nodes, T, modeltype)
+    # Construction of the objective function
+    objective(m, nodes, T, modeltype)
 
     return m
 end
@@ -36,7 +36,7 @@ time periods `t ∈ 𝒯`.
 In general, it is prefered to have the capacity as a function of a variable given
 with a value of 1 in the field n.capacity
 "
-function create_variables_capacity(m, 𝒩, 𝒯, modeltype)
+function variables_capacity(m, 𝒩, 𝒯, modeltype)
     
     𝒩ⁿᵒᵗ = node_not_av(𝒩)
 
@@ -56,28 +56,30 @@ technological node. This approach is also taken from eTransport.
 
 Note, that we also require link variables in order to couple multiple
 nodes to a single node."
-function create_variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
+function variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
 
     𝒩ᵒᵘᵗ = node_sub(𝒩, Union{Source, Network})
     𝒩ⁱⁿ  = node_sub(𝒩, Union{Network, Sink})
 
-    @variable(m, flow_in[𝒩ⁱⁿ, 𝒯, 𝒫] >= 0)
-    @variable(m, flow_out[𝒩ᵒᵘᵗ, 𝒯, 𝒫] >= 0)
+    @variable(m, flow_in[n_in ∈ 𝒩ⁱⁿ,    𝒯, keys(n_in.input)] >= 0)
+    @variable(m, flow_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯, keys(n_out.output)] >= 0)
 
-    @variable(m, link_in[ℒ, 𝒯, 𝒫] >= 0)
-    @variable(m, link_out[ℒ, 𝒯, 𝒫] >= 0)
+    @variable(m, link_in[l ∈ ℒ,  𝒯, link_res(l)] >= 0)
+    @variable(m, link_out[l ∈ ℒ, 𝒯, link_res(l)] >= 0)
 end
 
 " Declaration of emission variables per technical node and investment
 period. This approach is taken from eTransport for a modular description
 of the system"
-function create_variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype)
+function variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype)
     
     𝒩ⁿᵒᵗ = node_not_av(𝒩)    
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
+    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     @variable(m, emissions_node[𝒩ⁿᵒᵗ, 𝒯, 𝒫ᵉᵐ]) 
     @variable(m, emissions_total[𝒯, 𝒫ᵉᵐ]) 
+    @variable(m, emissions_strategic[t_inv ∈ 𝒯ᴵⁿᵛ, 𝒫ᵉᵐ] <= modeltype.case.CO2_limit[t_inv]) 
 end
 
 " Declaration of the variables used for calculating the costs of the problem
@@ -88,7 +90,7 @@ not modeled)
 These variables are independent whether the problem is an operational or
 investment model as they are depending on the investment periods for
 easier later analysis. "
-function create_variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype)
+function variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype)
     
     𝒩ⁿᵒᵗ = node_not_av(𝒩)    
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -97,7 +99,7 @@ function create_variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype)
     @variable(m, opex_fixed[𝒩ⁿᵒᵗ, 𝒯ᴵⁿᵛ] >= 0)
 end
 
-function create_variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype)
+function variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype)
     
     𝒩ⁿᵒᵗ = node_not_av(𝒩)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -111,7 +113,7 @@ too much or too little energy for satisfying the demand in EndUse.
 This approach can be extended to all sinks, but then again, we have to be 
 careful that the parameters are provided.
 "
-function create_variables_surplus_deficit(m, 𝒩, 𝒯, 𝒫, modeltype)
+function variables_surplus_deficit(m, 𝒩, 𝒯, 𝒫, modeltype)
 
     𝒩ˢⁱⁿᵏ = node_sub(𝒩, Sink)
 
@@ -119,38 +121,38 @@ function create_variables_surplus_deficit(m, 𝒩, 𝒯, 𝒫, modeltype)
     @variable(m,deficit[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
 end
 
-function create_variables_storage(m, 𝒩, 𝒯, modeltype)
+function variables_storage(m, 𝒩, 𝒯, modeltype)
     
     𝒩ˢᵗᵒʳ = node_sub(𝒩, Storage)
 
     @variable(m, bypass[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     # TODO:
-    # - Bypass variables not necessary if we decide to work with availability module
-    # - They can be incorporated if we decide to not use the availability module
+    # - Bypass variables not necessary if we decide to work with availability create_node
+    # - They can be incorporated if we decide to not use the availability create_node
 end
 
-" Declaration of the generalized module for constraint generation.
+" Declaration of the generalized create_node for constraint generation.
 The concept is that we only utilize this constraint when model building and the individual
 node type determines which constraints we need to load in the system.
 
-The generalized module may incorporate different model concstraints that are common for all
+The generalized node may incorporate different model concstraints that are common for all
 types like the sum over all input flows. "
 
-function create_constraints_module(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
+function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
 
     # Constraints for summing up all input flows to avoid issues with respect to multiple
-    # inlets and calling the corresponding module function
+    # inlets and calling the corresponding node function
     for n ∈ 𝒩
         ℒᶠʳᵒᵐ, ℒᵗᵒ = link_sub(ℒ, n)
         if isa(n,Union{Source, Network})
-            @constraint(m, [t ∈ 𝒯, p ∈ 𝒫], 
-                m[:flow_out][n, t, p] == sum(m[:link_in][l,t,p] for l in ℒᶠʳᵒᵐ))
+            @constraint(m, [t ∈ 𝒯, p ∈ keys(n.output)], 
+                m[:flow_out][n, t, p] == sum(m[:link_in][l,t,p] for l in ℒᶠʳᵒᵐ if p ∈ keys(l.to.input)))
         end
         if isa(n,Union{Network, Sink})
-            @constraint(m, [t ∈ 𝒯, p ∈ 𝒫], 
-                m[:flow_in][n, t, p] == sum(m[:link_out][l,t,p] for l in ℒᵗᵒ))
+            @constraint(m, [t ∈ 𝒯, p ∈ keys(n.input)], 
+                m[:flow_in][n, t, p] == sum(m[:link_out][l,t,p] for l in ℒᵗᵒ if p ∈ keys(l.from.output)))
         end
-        create_module(m, n, 𝒯, 𝒫)
+        create_node(m, n, 𝒯, 𝒫)
     end
 
     # Constraints for fixed OPEX and capital cost constraints
@@ -161,7 +163,7 @@ function create_constraints_module(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     # @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ], m[:capex][n, t_inv] == 0)
 end
 
-function create_constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype)
+function constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype)
     
     # Constraints for calculation the total emissions per investment period and
     # limiting said emissions to a maximum value, currentkly hard coded
@@ -172,10 +174,12 @@ function create_constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype)
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
         m[:emissions_total][t, p] == sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ⁿᵒᵗ))
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ],
-        sum(m[:emissions_total][t, p] for t ∈ t_inv) <= 450)
+        m[:emissions_strategic][t_inv, p] == sum(m[:emissions_total][t, p] for t ∈ t_inv))
+    # @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ],
+    #     m[:emissions_strategic][t_inv, p] <= modeltype.case.CO2_limit[t_inv])
 end
 
-function create_objective(m, 𝒩, 𝒯, modeltype)
+function objective(m, 𝒩, 𝒯, modeltype)
 
     # Calculation of the objective function
     𝒩ⁿᵒᵗ = node_not_av(𝒩)
@@ -184,12 +188,12 @@ function create_objective(m, 𝒩, 𝒯, modeltype)
     @objective(m, Min, sum(m[:opex_var][n, t] + m[:opex_fixed][n, t] + m[:capex][n, t] for t ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ))
 end
 
-function create_constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
+function constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     # Constraints for links between two nodes
     # These constraints are generalized and create the constraints between all coupled
     # nodes
     for l ∈ ℒ 
-        create_link(m, l.from,l.to, 𝒯, 𝒫, l, l.Formulation)
+        create_link(m, 𝒯, 𝒫, l, l.Formulation)
     end
 
 end
@@ -198,82 +202,91 @@ end
 the system.
 "
 
-function create_module(m, n::Source, 𝒯, 𝒫)
+function create_node(m, n::Source, 𝒯, 𝒫)
+
+    # Declaration of the required subsets
+    𝒫ᵒᵘᵗ = keys(n.output)
+    𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
+    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Constraint for the individual stream connections
-    for p ∈ 𝒫
-        if n.conversion[p] >= 0
-            @constraint(m, [t ∈ 𝒯], 
-                m[:flow_out][n, t, p] == m[:cap_usage][n, t]*n.conversion[p])
-        end
+    for p ∈ 𝒫ᵒᵘᵗ
+        @constraint(m, [t ∈ 𝒯], 
+            m[:flow_out][n, t, p] == m[:cap_usage][n, t]*n.output[p])
     end
     # Constraint for the maximum capacity
     @constraint(m, [t ∈ 𝒯],
         m[:cap_usage][n, t] <= m[:cap_max][n, t])
     
     # Constraint for the emissions associated to energy sources, currently set to 0
-    𝒫ᵉᵐ = res_sub(𝒫, ResourceEmit)
-    @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
-        m[:emissions_node][n, t, p] == 0)
+    @constraint(m, [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
+        m[:emissions_node][n, t, p_em] == m[:cap_usage][n, t]*n.emissions[p_em])
 
     # Constraint for the Opex contributions
-    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        m[:opex_var][n, t_inv] == sum(m[:cap_usage][n, t]*n.cost[t] for t ∈ t_inv))
+        m[:opex_var][n, t_inv] == sum(m[:cap_usage][n, t]*n.var_opex[t] for t ∈ t_inv))
 end
 
-function create_module(m, n::Network, 𝒯, 𝒫)
+function create_node(m, n::Network, 𝒯, 𝒫)
 
-    𝒫ᵉᵐ = res_sub(𝒫, ResourceEmit)
+    # Declaration of the required subsets
+    𝒫ⁱⁿ  = keys(n.input)
+    𝒫ᵒᵘᵗ = keys(n.output)
+    𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Constraint for the individual stream connections
-    for p ∈ 𝒫
-        if n.conversion[p] > 0
+    for p ∈ 𝒫ⁱⁿ
+        @constraint(m, [t ∈ 𝒯], 
+            m[:flow_in][n, t, p] == m[:cap_usage][n, t]*n.input[p])
+    end
+    for p ∈ 𝒫ᵒᵘᵗ
+        if p.id == "CO2"
             @constraint(m, [t ∈ 𝒯], 
-                m[:flow_in][n, t, p]  == 0)
-            @constraint(m, [t ∈ 𝒯], 
-                m[:flow_out][n, t, p] == m[:cap_usage][n, t]*n.conversion[p])
+                m[:flow_out][n, t, p]  == n.CO2_capture*sum(p_in.CO2Int*m[:flow_in][n, t, p_in] for p_in ∈ 𝒫ⁱⁿ))
         else
             @constraint(m, [t ∈ 𝒯], 
-                m[:flow_in][n, t, p] == -m[:cap_usage][n, t]*n.conversion[p])
-            if p ∈ 𝒫ᵉᵐ
-                @constraint(m, [t ∈ 𝒯], 
-                    m[:flow_out][n, t, p]  == n.CO2_capture*sum(p2.CO2Int*m[:flow_in][n, t, p2] for p2 ∈ 𝒫))
-            else
-                @constraint(m, [t ∈ 𝒯], 
-                    m[:flow_out][n, t, p]  == 0)
-            end
+                m[:flow_out][n, t, p] == m[:cap_usage][n, t]*n.output[p])
         end
     end
+
     # Constraint for the maximum capacity
     @constraint(m, [t ∈ 𝒯],
         m[:cap_usage][n, t] <= m[:cap_max][n, t])
     
     # Constraint for the emissions associated to energy sources based on CO2 capture rate
-    @constraint(m, [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
-        m[:emissions_node][n, t, p_em] == 
-            (1-n.CO2_capture)*sum(p.CO2Int*m[:flow_in][n, t, p] for p ∈ 𝒫))
-
+    # I am quite certain, that this could be represented better in JuMP, but then again I
+    # do not know JuMP at the moment sufficiently well to avoid logic statements here
+    for p_em ∈ 𝒫ᵉᵐ
+        if p_em.id == "CO2"
+            @constraint(m, [t ∈ 𝒯],
+                m[:emissions_node][n, t, p_em] == 
+                    (1-n.CO2_capture)*sum(p_in.CO2Int*m[:flow_in][n, t, p_in] for p_in ∈ 𝒫ⁱⁿ) + 
+                    m[:cap_usage][n, t]*n.emissions[p_em])
+        else
+            @constraint(m, [t ∈ 𝒯],
+                m[:emissions_node][n, t, p_em] == 
+                    m[:cap_usage][n, t]*n.emissions[p_em])
+        end
+    end
+            
     # Constraint for the Opex contributions
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        m[:opex_var][n, t_inv] == sum(m[:cap_usage][n, t]*n.cost[t] for t ∈ t_inv))
+        m[:opex_var][n, t_inv] == sum(m[:cap_usage][n, t]*n.var_opex[t] for t ∈ t_inv))
 end
 
-function create_module(m, n::Storage, 𝒯, 𝒫)
+function create_node(m, n::Storage, 𝒯, 𝒫)
 
     # Declaration of the required subsets
-    𝒫ˢᵗᵒʳ = n.resource
-    𝒫ᵃᵈᵈ  = 𝒫[findall(x -> x != n.resource, 𝒫)]
+    𝒫ˢᵗᵒʳ = [k for (k,v) ∈ n.input if v == 1][1]
+    𝒫ᵃᵈᵈ  = [k for (k,v) ∈ n.input if k != 𝒫ˢᵗᵒʳ]
     𝒫ᵉᵐ   = res_sub(𝒫, ResourceEmit)
     𝒯ᴵⁿᵛ  = strategic_periods(𝒯)
 
     # Constraint for additional required input
     for p ∈ 𝒫ᵃᵈᵈ
         @constraint(m, [t ∈ 𝒯], 
-            m[:flow_in][n, t, p] == -m[:flow_in][n, t, 𝒫ˢᵗᵒʳ]*n.add_demand[p])
-        @constraint(m, [t ∈ 𝒯], 
-            m[:flow_out][n, t, p] == 0)
+            m[:flow_in][n, t, p] == m[:flow_in][n, t, 𝒫ˢᵗᵒʳ]*n.input[p])
     end
 
     # Mass balance constraints
@@ -326,14 +339,19 @@ function create_module(m, n::Storage, 𝒯, 𝒫)
     # Constraint for the Opex contributions
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        m[:opex_var][n, t_inv] == sum((m[:flow_in][n, t , 𝒫ˢᵗᵒʳ]-m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ])*n.cost[t] for t ∈ t_inv))
+        m[:opex_var][n, t_inv] == sum((m[:flow_in][n, t , 𝒫ˢᵗᵒʳ]-m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ])*n.var_opex[t] for t ∈ t_inv))
 end
 
-function create_module(m, n::Sink, 𝒯, 𝒫)
+function create_node(m, n::Sink, 𝒯, 𝒫)
     
+    # Declaration of the required subsets
+    𝒫ⁱⁿ  = keys(n.input)
+    𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
+    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+
     # Constraint for the individual stream connections
-    @constraint(m, [t ∈ 𝒯, p ∈ 𝒫],
-        m[:flow_in][n, t, p] == -m[:cap_usage][n, t]*n.conversion[p])
+    @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ⁱⁿ],
+        m[:flow_in][n, t, p] == m[:cap_usage][n, t]*n.input[p])
 
     # Constraint for the mass balance allowing surplus and deficit
     @constraint(m, [t ∈ 𝒯],
@@ -341,18 +359,16 @@ function create_module(m, n::Sink, 𝒯, 𝒫)
             m[:cap_max][n, t] + m[:surplus][n,t])
 
     # Constraint for the emissions
-    𝒫ᵉᵐ = res_sub(𝒫, ResourceEmit)
-    @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
-        m[:emissions_node][n, t, p] == 0)
+    @constraint(m, [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
+        m[:emissions_node][n, t, p_em] == m[:cap_usage][n, t]*n.emissions[p_em])
 
     # Constraint for the Opex contributions
-    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         m[:opex_var][n, t_inv] == 
             sum(m[:surplus][n, t]*n.penalty[:surplus] + m[:deficit][n, t]*n.penalty[:deficit] for t ∈ t_inv))
 end
 
-function create_module(m, n::Availability, 𝒯, 𝒫)
+function create_node(m, n::Availability, 𝒯, 𝒫)
 
     # Mass balance constraints for an availability node
     # Note that it is not necessary to have availability nodes for
@@ -363,20 +379,20 @@ function create_module(m, n::Availability, 𝒯, 𝒫)
 end
 
 
-function create_module(m, n, 𝒯, 𝒫)
-    nothing
-end
+# function create_node(m, n, 𝒯, 𝒫)
+#     nothing
+# end
 
 "Declaration of the individual links used in the model.
 "
 
-function create_link(m, from::Node, to::Node, 𝒯, 𝒫, l, formulation)
+function create_link(m, 𝒯, 𝒫, l, formulation)
 	# Generic link in which each output corresponds to the input
-    @constraint(m, [t ∈ 𝒯, p ∈ 𝒫],
+    @constraint(m, [t ∈ 𝒯, p ∈ link_res(l)],
         m[:link_out][l, t, p] == m[:link_in][l, t, p])
 end
 
-# function create_link(m, from::Node, to::Node, 𝒯, 𝒫, link::Transmission, formulation=Linear())
+# function link(m, 𝒯, 𝒫, link::Transmission, formulation=Linear())
 # 	"generic transmission"
 # end
 
