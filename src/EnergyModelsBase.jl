@@ -7,7 +7,7 @@ include("datastructures.jl")
 include("model.jl")
 include("user_interface.jl")
 
-# Export the genegal class
+# Export the general class
 export EnergyModel
 
 # Export the different node types
