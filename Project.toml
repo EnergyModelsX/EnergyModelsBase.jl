@@ -10,4 +10,4 @@ TimeStructures = "260f4295-b40d-47c0-843b-64f3de373d90"
 [compat]
 julia = "^1.6"
 JuMP = "^0.21.6"
-TimeStructures = "^0.1"
+TimeStructures = "^0.1.5"
