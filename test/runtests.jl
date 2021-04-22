@@ -1,5 +1,6 @@
 using EnergyModelsBase
 using Test
+using TimeStructures
 using JuMP
 using GLPK
 
