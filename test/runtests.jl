@@ -15,7 +15,7 @@ m, data = EMB.run_model("",GLPK.Optimizer)
     # Check for the total number of variables
     @test size(all_variables(m))[1] == 6992
 
-    # Check for total emissions og both methane and CO2
+    # Check for total emissions of both methane and CO2
     CH4 = data[:products][1]
     CO2 = data[:products][4]
     𝒯ᴵⁿᵛ = strategic_periods(data[:T])
