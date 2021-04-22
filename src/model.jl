@@ -279,7 +279,7 @@ function create_node(m, n::Storage, 𝒯, 𝒫)
 
     # Declaration of the required subsets
     𝒫ˢᵗᵒʳ = [k for (k,v) ∈ n.input if v == 1][1]
-    𝒫ᵃᵈᵈ  = [k for (k,v) ∈ n.input if k != 𝒫ˢᵗᵒʳ]
+    𝒫ᵃᵈᵈ  = setdiff(keys(n.input), [𝒫ˢᵗᵒʳ])
     𝒫ᵉᵐ   = res_sub(𝒫, ResourceEmit)
     𝒯ᴵⁿᵛ  = strategic_periods(𝒯)
 
