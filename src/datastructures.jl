@@ -26,6 +26,10 @@ function node_sub(𝒩::Array{Node}, sub = Network)
     return 𝒩[findall(x -> isa(x,sub), 𝒩)]
 end
 
+function node_sub(𝒩::Array{Node}, subs...)
+    return 𝒩[findall(x -> sum(isa(x, sub) for sub in subs) >= 1, 𝒩)]
+end
+
 # Function exluding availability nodes
 function node_not_av(𝒩::Array{Node})
     return 𝒩[findall(x -> ~isa(x,Availability), 𝒩)]
@@ -38,6 +42,7 @@ abstract type Source <: Node end
 abstract type Network <: Node end
 abstract type Sink <: Node end
 abstract type Storage <: Network end
+abstract type StorSource <: Source end # E.g. hydropower
 
 # Declaration of the parameters for generalized nodes
 # Conversion as dict for prototyping: flexible, but inefficient

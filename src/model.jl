@@ -16,6 +16,7 @@ function create_model(data, modeltype)
     variables_capex(m, nodes, T, products, modeltype)
     variables_capacity(m, nodes, T, modeltype)
     variables_surplus_deficit(m, nodes, T, products, modeltype)
+    variables_storage(m, nodes, T, modeltype)
 
     # Construction of constraints for the problem
     constraints_node(m, nodes, T, products, links, modeltype)
@@ -122,10 +123,12 @@ function variables_surplus_deficit(m, 𝒩, 𝒯, 𝒫, modeltype)
 end
 
 function variables_storage(m, 𝒩, 𝒯, modeltype)
-    
-    𝒩ˢᵗᵒʳ = node_sub(𝒩, Storage)
+    𝒩ˢᵗᵒʳ = node_sub(𝒩, Storage, StorSource)
 
-    @variable(m, bypass[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
+    # @variable(m, bypass[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
+    @variable(m, stor_level[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
+    @variable(m, stor_max[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
+    
     # TODO:
     # - Bypass variables not necessary if we decide to work with availability create_node
     # - They can be incorporated if we decide to not use the availability create_node
