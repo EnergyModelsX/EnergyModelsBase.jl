@@ -372,19 +372,19 @@ function create_node(m, n::Storage, 𝒯, 𝒫)
 
     # Mass balance constraints
     @constraint(m, [t ∈ 𝒯],
-        m[:cap_usage][n, t] <= m[:cap_max][n, t])
+        m[:stor_level][n, t] <= m[:stor_max][n, t])
     for t_inv ∈ 𝒯ᴵⁿᵛ 
         for t ∈ t_inv
             if t == first_operational(t_inv)
                 if 𝒫ˢᵗᵒʳ ∈ 𝒫ᵉᵐ
                     @constraint(m,
-                        m[:cap_usage][n, t] ==  m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
+                        m[:stor_level][n, t] ==  m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
                                                 m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ]
                         )
                     @constraint(m, m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ] >= 0)
                 else
                     @constraint(m,
-                        m[:cap_usage][n, t] ==  m[:cap_usage][n, last_operational(t_inv)] + 
+                        m[:stor_level][n, t] ==  m[:stor_level][n, last_operational(t_inv)] + 
                                                 m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
                                                 m[:flow_out][n, t , 𝒫ˢᵗᵒʳ]
                         )
@@ -392,14 +392,14 @@ function create_node(m, n::Storage, 𝒯, 𝒫)
             else
                 if 𝒫ˢᵗᵒʳ ∈ 𝒫ᵉᵐ
                     @constraint(m,
-                        m[:cap_usage][n, t] ==  m[:cap_usage][n, previous(t)] + 
+                        m[:stor_level][n, t] ==  m[:stor_level][n, previous(t)] + 
                                                 m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
                                                 m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ]
                         )
                     @constraint(m, m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ] >= 0)
                 else
                     @constraint(m,
-                        m[:cap_usage][n, t] ==  m[:cap_usage][n, previous(t)] + 
+                        m[:stor_level][n, t] ==  m[:stor_level][n, previous(t)] + 
                                                 m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
                                                 m[:flow_out][n, t , 𝒫ˢᵗᵒʳ]
                         )
