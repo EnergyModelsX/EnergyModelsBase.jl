@@ -15,7 +15,6 @@ export Source
 export Network
 export Sink
 export Storage
-export StorSource
 
 # Export the different link and resource types
 export Link

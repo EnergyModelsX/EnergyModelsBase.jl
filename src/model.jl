@@ -59,8 +59,8 @@ Note, that we also require link variables in order to couple multiple
 nodes to a single node."
 function variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
 
-    𝒩ᵒᵘᵗ = node_sub(𝒩, Union{Source, StorSource, Network})
-    𝒩ⁱⁿ  = node_sub(𝒩, Union{Network, Sink, StorSource})
+    𝒩ᵒᵘᵗ = node_sub(𝒩, Union{Source, Network})
+    𝒩ⁱⁿ  = node_sub(𝒩, Union{Network, Sink})
 
     @variable(m, flow_in[n_in ∈ 𝒩ⁱⁿ,    𝒯, keys(n_in.input)] >= 0)
     @variable(m, flow_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯, keys(n_out.output)] >= 0)
@@ -123,7 +123,7 @@ function variables_surplus_deficit(m, 𝒩, 𝒯, 𝒫, modeltype)
 end
 
 function variables_storage(m, 𝒩, 𝒯, modeltype)
-    𝒩ˢᵗᵒʳ = node_sub(𝒩, Storage, StorSource)
+    𝒩ˢᵗᵒʳ = node_sub(𝒩, Storage)
 
     # @variable(m, bypass[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_level[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
@@ -222,83 +222,6 @@ function create_node(m, n::Source, 𝒯, 𝒫)
         m[:cap_usage][n, t] <= m[:cap_max][n, t])
     
     # Constraint for the emissions associated to energy sources, currently set to 0
-    @constraint(m, [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
-        m[:emissions_node][n, t, p_em] == m[:cap_usage][n, t]*n.emissions[p_em])
-
-    # Constraint for the Opex contributions
-    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        m[:opex_var][n, t_inv] == sum(m[:cap_usage][n, t]*n.var_opex[t] for t ∈ t_inv))
-end
-
-
-function prepare_node(m, n::StorSource, 𝒯, 𝒫)
-    # The resource that is in n.output is stored. The resources in n.input are
-    # either stored, or used by the storage.
-    p_stor = [k for (k, v) ∈ n.output if v == 1][1]
-    𝒫ᵉᵐ   = res_sub(𝒫, ResourceEmit)
-    𝒯ᴵⁿᵛ  = strategic_periods(𝒯)
-    
-    # Flow of resources
-    for p ∈ keys(n.input)
-        if p != p_stor
-            # The inflow of other resources that are required for operating the storage.
-            @constraint(m, [t ∈ 𝒯],
-                m[:flow_in][n, t, p] == n.input[p] * m[:flow_in][n, t, p_stor])
-        end
-    end
-    for p ∈ keys(n.output)
-        if p != p_stor
-            # The resources that is used, but not stored, can not flow out.
-            @constraint(m, [t ∈ 𝒯], m[:flow_out][n, t, p] == 0)
-        end
-    end
-
-    # TODO where should we multiply with n.input[p] for the loss of the stored resource?
-    # - loss of a ResourceEmit would mean an emission.
-    for t_inv ∈ 𝒯ᴵⁿᵛ
-        for t ∈ t_inv
-            if t == first_operational(t_inv)
-                if p_stor ∈ 𝒫ᵉᵐ
-                    @constraint(m, 
-                        m[:stor_level][n, t] >= m[:flow_in][n, t, p_stor]
-                                                - m[:emissions_node][n, t, p_stor])
-                    @constraint(m, m[:emissions_node][n, t, p_stor] >= 0)
-                else
-                    # TODO not last_operational(previous(t_inv))?
-                    @constraint(m, 
-                        m[:stor_level][n, t] >=  m[:stor_level][n, last_operational(t_inv)] + 
-                                    n.input[p_stor] * m[:flow_in][n, t , p_stor] -
-                                    m[:flow_out][n, t , p_stor])
-                end
-            else
-                if p_stor ∈ 𝒫ᵉᵐ
-                    @constraint(m, 
-                        m[:stor_level][n, t] >= m[:stor_level][n, previous(t)]
-                                                + m[:flow_in][n, t, p_stor]
-                                                - m[:emissions_node][n, t, p_stor])
-                    @constraint(m, m[:emissions_node][n, t, p_stor] >= 0)
-                else
-                    @constraint(m, 
-                        m[:stor_level][n, t] >=  m[:stor_level][n, previous(t)]
-                                    + n.input[p_stor] * m[:flow_in][n, t , p_stor]
-                                    - m[:flow_out][n, t , p_stor])
-                end
-            end
-        end
-    end
-
-    # Constraints identical to other Source nodes.
-    𝒫ᵒᵘᵗ = keys(n.output)
-    𝒫ᵉᵐ = res_sub(𝒫, ResourceEmit)
-    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-
-    # Constraint for the individual stream connections.
-    for p ∈ 𝒫ᵒᵘᵗ
-        @constraint(m, [t ∈ 𝒯], 
-            m[:flow_out][n, t, p] == m[:cap_usage][n, t] * n.output[p])
-    end
-
-    # Constraint for the emissions associated to energy sources from construction.
     @constraint(m, [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
         m[:emissions_node][n, t, p_em] == m[:cap_usage][n, t]*n.emissions[p_em])
 

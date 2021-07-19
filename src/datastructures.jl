@@ -42,7 +42,6 @@ abstract type Source <: Node end
 abstract type Network <: Node end
 abstract type Sink <: Node end
 abstract type Storage <: Network end
-abstract type StorSource <: Source end # E.g. hydropower
 
 # Declaration of the parameters for generalized nodes
 # Conversion as dict for prototyping: flexible, but inefficient
