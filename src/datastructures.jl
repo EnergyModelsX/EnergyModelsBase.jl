@@ -69,6 +69,7 @@ end
 struct RefStorage <: Storage
     id
     capacity::TimeProfile
+    cap_storage::Real
     var_opex::TimeProfile
     input::Dict{Resource, Real}
     output::Dict{Resource, Real}
