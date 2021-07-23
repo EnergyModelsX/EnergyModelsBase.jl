@@ -5,6 +5,7 @@ using TimeStructures
 
 include("datastructures.jl")
 include("model.jl")
+include("checks.jl")
 include("user_interface.jl")
 
 # Export the general class
@@ -20,5 +21,7 @@ export Storage
 export Link
 export ResourceEmit
 export ResourceCarrier
+
+export @assert_or_log
 
 end # module

@@ -9,6 +9,9 @@ function create_model(data, modeltype)
     links = data[:links]
     products = data[:products]
 
+    # Check if the data is consistent before the model is created.
+    check_data(data)
+
     # Declaration of variables for the problem
     variables_flow(m, nodes, T, products, links, modeltype)
     variables_emission(m, nodes, T, products, modeltype)
