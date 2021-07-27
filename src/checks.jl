@@ -41,6 +41,7 @@ function check_data(data)
         # Empty the logs list before each check.
         global logs = []
         check_node(n, data[:T])
+        check_time_structure(n, data[:T])
         # Put all log messages that emerged during the check, in a dictionary with the node as key.
         log_by_element[n] = logs
     end
@@ -81,6 +82,32 @@ function compile_logs(data, log_by_element)
         # If there was at least one error in the checks, an exception is thrown.
         throw(AssertionError("Inconsistent data."))
     end
+end
+
+
+" Check that all fields of a node that is a TimeProfile corresponds to the time structure 𝒯."
+function check_time_structure(n::Node, 𝒯)
+    for fieldname ∈ fieldnames(typeof(n))
+        if isa(getfield(n, fieldname), TimeProfile)
+            check_profile_field(fieldname, getfield(n, fieldname), 𝒯)
+        end
+    end
+end
+
+function check_profile_field(fieldname, value::FixedProfile, 𝒯)
+end
+
+function check_profile_field(fieldname, value::StrategicFixedProfile, 𝒯)
+    @assert_or_log length(value.vals) == 𝒯.len "Field '" * string(fieldname) * "' does not match the time structure."
+end
+
+function check_profile_field(fieldname, value::OperationalFixedProfile, 𝒯)
+    @assert_or_log length(value.vals) == 𝒯.operational.len "Field '" * string(fieldname) * "' does not match the time structure."
+end
+
+function check_profile_field(fieldname, value::DynamicProfile, 𝒯)
+    @assert_or_log size(value.vals) == (𝒯.len, 𝒯.operational.len) "Field '" * string(fieldname) * "' does not match the time structure."
+
 end
 
 
