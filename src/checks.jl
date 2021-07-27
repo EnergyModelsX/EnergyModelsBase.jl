@@ -48,35 +48,39 @@ function check_data(data)
     # TODO 
     #  * check that the timeprofile data[:T] is consistent with the ones used in the nodes.
 
-    compile_logs(data, log_by_element)
+    if ASSERTS_AS_LOG
+        compile_logs(data, log_by_element)
+    end
 end
 
 
 " Simple methods for showing all log messags. "
 function compile_logs(data, log_by_element)
-    some_error = sum(length(v) > 0 for (k, v) in log_by_element) > 0
-    if ! some_error
-        return
-    end    
-    
-    if ASSERTS_AS_LOG
-        println("\nLOGS")
-        println("==========")
-    end
-
-    println("Nodes\n----------")
+    log_message = "\n# LOGS\n\n"
+    log_message *= "## Nodes\n"
     for n in data[:nodes]
         if length(log_by_element[n]) > 0
-            println("\n", n, "\n----------")
+            log_message *= string("\n### ", n, "\n")
             for l in log_by_element[n]
-                println(l)
+                log_message *= string(" * ", l, "\n")
             end
         end
     end
-    println()
-   
-    # If there was at least one error in the checks, an exception is thrown.
-    throw(AssertionError("Inconsistent data."))
+    log_message *= "\n"
+    
+    some_error = sum(length(v) > 0 for (k, v) in log_by_element) > 0
+    if some_error
+        # Write the messages to file only if there was an error.
+        io = open("consistency_log.md", "w")
+        println(io, log_message)
+        close(io)
+    
+        # Print the log to the console.
+        println(log_message)
+
+        # If there was at least one error in the checks, an exception is thrown.
+        throw(AssertionError("Inconsistent data."))
+    end
 end
 
 
