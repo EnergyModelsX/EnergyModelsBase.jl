@@ -20,6 +20,7 @@ function create_model(data, modeltype)
     variables_capacity(m, nodes, T, modeltype)
     variables_surplus_deficit(m, nodes, T, products, modeltype)
     variables_storage(m, nodes, T, modeltype)
+    variables_node(m, nodes, T, modeltype)
 
     # Construction of constraints for the problem
     constraints_node(m, nodes, T, products, links, modeltype)
@@ -138,6 +139,23 @@ function variables_storage(m, 𝒩, 𝒯, modeltype)
     # - Bypass variables not necessary if we decide to work with availability create_node
     # - They can be incorporated if we decide to not use the availability create_node
 end
+
+
+" Call a method for creating e.g. other variables specific to the different 
+node types. The method is only called once for each node type. "
+function variables_node(m, 𝒩, 𝒯, modeltype)
+    nodetypes = []
+    for node in 𝒩
+        if ! (typeof(node) in nodetypes)
+            variables_node(m, 𝒩, 𝒯, node, modeltype)
+            push!(nodetypes, typeof(node))
+        end
+    end
+end
+
+" Default fallback method. "
+variables_node(m, 𝒩, 𝒯, node, modeltype) = nothing
+
 
 " Declaration of the generalized create_node for constraint generation.
 The concept is that we only utilize this constraint when model building and the individual
