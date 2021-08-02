@@ -2,7 +2,7 @@ function run_model(fn, optimizer=nothing)
    @debug "Run model" fn optimizer
 
     data = read_data(fn)
-    case = OperationalCase(StrategicFixedProfile([450, 400, 350, 300]))    # 
+    case = OperationalCase(StrategicFixedProfile([450, 400, 350, 300]))
     model = OperationalModel(case)
     m = create_model(data, model)
 

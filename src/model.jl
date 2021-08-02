@@ -160,7 +160,7 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
             @constraint(m, [t ∈ 𝒯, p ∈ keys(n.input)], 
                 m[:flow_in][n, t, p] == sum(m[:link_out][l,t,p] for l in ℒᵗᵒ if p ∈ keys(l.from.output)))
         end
-        create_node(m, n, 𝒯, 𝒫)
+        create_node(m, n, 𝒯, 𝒫, modeltype)
     end
 
     # Constraints for fixed OPEX and capital cost constraints
@@ -210,7 +210,7 @@ end
 the system.
 "
 
-function create_node(m, n::Source, 𝒯, 𝒫)
+function create_node(m, n::Source, 𝒯, 𝒫, modeltype)
 
     # Declaration of the required subsets
     𝒫ᵒᵘᵗ = keys(n.output)
@@ -236,7 +236,7 @@ function create_node(m, n::Source, 𝒯, 𝒫)
 end
 
 
-function create_node(m, n::Network, 𝒯, 𝒫)
+function create_node(m, n::Network, 𝒯, 𝒫, modeltype)
 
     # Declaration of the required subsets
     𝒫ⁱⁿ  = keys(n.input)
@@ -284,7 +284,7 @@ function create_node(m, n::Network, 𝒯, 𝒫)
         m[:opex_var][n, t_inv] == sum(m[:cap_usage][n, t]*n.var_opex[t] for t ∈ t_inv))
 end
 
-function create_node(m, n::Storage, 𝒯, 𝒫)
+function create_node(m, n::Storage, 𝒯, 𝒫, modeltype)
 
     # Declaration of the required subsets
     𝒫ˢᵗᵒʳ = [k for (k,v) ∈ n.input if v == 1][1]
@@ -356,7 +356,7 @@ function create_node(m, n::Storage, 𝒯, 𝒫)
         m[:opex_var][n, t_inv] == sum((m[:flow_in][n, t , 𝒫ˢᵗᵒʳ]-m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ])*n.var_opex[t] for t ∈ t_inv))
 end
 
-function create_node(m, n::Sink, 𝒯, 𝒫)
+function create_node(m, n::Sink, 𝒯, 𝒫, modeltype)
     
     # Declaration of the required subsets
     𝒫ⁱⁿ  = keys(n.input)
@@ -382,7 +382,7 @@ function create_node(m, n::Sink, 𝒯, 𝒫)
             sum(m[:surplus][n, t]*n.penalty[:surplus] + m[:deficit][n, t]*n.penalty[:deficit] for t ∈ t_inv))
 end
 
-function create_node(m, n::Availability, 𝒯, 𝒫)
+function create_node(m, n::Availability, 𝒯, 𝒫, modeltype)
 
     # Mass balance constraints for an availability node
     # Note that it is not necessary to have availability nodes for
@@ -390,6 +390,12 @@ function create_node(m, n::Availability, 𝒯, 𝒫)
     # of the different energy carriers
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫],
         m[:flow_in][n, t, p] == m[:flow_out][n, t, p])
+end
+
+function create_node(m, n::Availability, 𝒯, 𝒫, modeltype::GeographyModel)
+
+    # The constratint for balance in an availability node is replaced
+    # by an alternative formulation in the geography package 
 end
 
 
