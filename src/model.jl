@@ -392,7 +392,7 @@ function create_node(m, n::Availability, 𝒯, 𝒫, modeltype)
         m[:flow_in][n, t, p] == m[:flow_out][n, t, p])
 end
 
-function create_node(m, n::Availability, 𝒯, 𝒫, modeltype::GeographyModel)
+function create_node(m, n::GeoAvailability, 𝒯, 𝒫, modeltype)
 
     # The constratint for balance in an availability node is replaced
     # by an alternative formulation in the geography package 
