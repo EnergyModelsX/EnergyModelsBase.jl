@@ -160,7 +160,7 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
             @constraint(m, [t ∈ 𝒯, p ∈ keys(n.input)], 
                 m[:flow_in][n, t, p] == sum(m[:link_out][l,t,p] for l in ℒᵗᵒ if p ∈ keys(l.from.output)))
         end
-        create_node(m, n, 𝒯, 𝒫, modeltype)
+        create_node(m, n, 𝒯, 𝒫)
     end
 
     # Constraints for fixed OPEX and capital cost constraints
@@ -391,13 +391,6 @@ function create_node(m, n::Availability, 𝒯, 𝒫)
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫],
         m[:flow_in][n, t, p] == m[:flow_out][n, t, p])
 end
-
-function create_node(m, n::GeoAvailability, 𝒯, 𝒫)
-
-    # The constratint for balance in an availability node is replaced
-    # by an alternative formulation in the geography package 
-end
-
 
 # function create_node(m, n, 𝒯, 𝒫)
 #     nothing

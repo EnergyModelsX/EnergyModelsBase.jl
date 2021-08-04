@@ -67,11 +67,6 @@ struct GenAvailability <: Availability
     input::Dict{Resource, Real}
     output::Dict{Resource, Real}
 end
-struct GeoAvailability <: Availability
-    id
-    input::Dict{Resource, Real}
-    output::Dict{Resource, Real}
-end
 struct RefStorage <: Storage
     id
     capacity::TimeProfile
