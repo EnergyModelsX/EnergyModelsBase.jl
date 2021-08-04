@@ -42,6 +42,7 @@ abstract type Source <: Node end
 abstract type Network <: Node end
 abstract type Sink <: Node end
 abstract type Storage <: Network end
+abstract type Availability <: Network end
 
 # Declaration of the parameters for generalized nodes
 # Conversion as dict for prototyping: flexible, but inefficient
@@ -61,7 +62,7 @@ struct RefGeneration <: Network
     emissions::Dict{ResourceEmit, Real}
     CO2_capture::Real
 end
-struct Availability <: Network
+struct GenAvailability <: Availability
     id
     input::Dict{Resource, Real}
     output::Dict{Resource, Real}

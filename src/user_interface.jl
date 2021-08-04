@@ -2,7 +2,7 @@ function run_model(fn, optimizer=nothing)
    @debug "Run model" fn optimizer
 
     data = read_data(fn)
-    case = OperationalCase(StrategicFixedProfile([450, 400, 350, 300]))    # 
+    case = OperationalCase(StrategicFixedProfile([450, 400, 350, 300]))
     model = OperationalModel(case)
     m = create_model(data, model)
 
@@ -32,7 +32,7 @@ function read_data(fn)
     𝒫ᵉᵐ₀ = Dict(k  => 0. for k ∈ products if typeof(k) == ResourceEmit{Float64})
     𝒫ᵉᵐ₀[CO2] = 0.0
     nodes = [
-            Availability(1, 𝒫₀, 𝒫₀),
+            GenAvailability(1, 𝒫₀, 𝒫₀),
             RefSource(2, FixedProfile(1e12), FixedProfile(30), Dict(NG => 1), 𝒫ᵉᵐ₀),  
             RefSource(3, FixedProfile(1e12), FixedProfile(9), Dict(Coal => 1), 𝒫ᵉᵐ₀),  
             RefGeneration(4, FixedProfile(25), FixedProfile(5.5), Dict(NG => 2), Dict(Power => 1, CO2 => 1), 𝒫ᵉᵐ₀, 0.9),  
