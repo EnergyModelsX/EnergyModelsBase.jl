@@ -123,8 +123,4 @@ abstract type EnergyModel end
 struct OperationalModel <: EnergyModel
     case::Case
 end
-
-struct GeographyModel <: EnergyModel
-    case::Case
-end
 #struct InvestmentModel <: EnergyModel end # Example of extension

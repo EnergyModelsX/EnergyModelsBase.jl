@@ -210,7 +210,7 @@ end
 the system.
 "
 
-function create_node(m, n::Source, 𝒯, 𝒫, modeltype)
+function create_node(m, n::Source, 𝒯, 𝒫)
 
     # Declaration of the required subsets
     𝒫ᵒᵘᵗ = keys(n.output)
@@ -236,7 +236,7 @@ function create_node(m, n::Source, 𝒯, 𝒫, modeltype)
 end
 
 
-function create_node(m, n::Network, 𝒯, 𝒫, modeltype)
+function create_node(m, n::Network, 𝒯, 𝒫)
 
     # Declaration of the required subsets
     𝒫ⁱⁿ  = keys(n.input)
@@ -284,7 +284,7 @@ function create_node(m, n::Network, 𝒯, 𝒫, modeltype)
         m[:opex_var][n, t_inv] == sum(m[:cap_usage][n, t]*n.var_opex[t] for t ∈ t_inv))
 end
 
-function create_node(m, n::Storage, 𝒯, 𝒫, modeltype)
+function create_node(m, n::Storage, 𝒯, 𝒫)
 
     # Declaration of the required subsets
     𝒫ˢᵗᵒʳ = [k for (k,v) ∈ n.input if v == 1][1]
@@ -356,7 +356,7 @@ function create_node(m, n::Storage, 𝒯, 𝒫, modeltype)
         m[:opex_var][n, t_inv] == sum((m[:flow_in][n, t , 𝒫ˢᵗᵒʳ]-m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ])*n.var_opex[t] for t ∈ t_inv))
 end
 
-function create_node(m, n::Sink, 𝒯, 𝒫, modeltype)
+function create_node(m, n::Sink, 𝒯, 𝒫)
     
     # Declaration of the required subsets
     𝒫ⁱⁿ  = keys(n.input)
@@ -382,7 +382,7 @@ function create_node(m, n::Sink, 𝒯, 𝒫, modeltype)
             sum(m[:surplus][n, t]*n.penalty[:surplus] + m[:deficit][n, t]*n.penalty[:deficit] for t ∈ t_inv))
 end
 
-function create_node(m, n::Availability, 𝒯, 𝒫, modeltype)
+function create_node(m, n::Availability, 𝒯, 𝒫)
 
     # Mass balance constraints for an availability node
     # Note that it is not necessary to have availability nodes for
@@ -391,13 +391,6 @@ function create_node(m, n::Availability, 𝒯, 𝒫, modeltype)
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫],
         m[:flow_in][n, t, p] == m[:flow_out][n, t, p])
 end
-
-function create_node(m, n::Availability, 𝒯, 𝒫, modeltype::GeographyModel)
-
-    # The constratint for balance in an availability node is replaced
-    # by an alternative formulation in the geography package 
-end
-
 
 # function create_node(m, n, 𝒯, 𝒫)
 #     nothing
