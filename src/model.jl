@@ -156,10 +156,10 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     end
 
     # Constraints for fixed OPEX and capital cost constraints
-    𝒩ⁿᵒᵗ = node_not_av(𝒩)
+    𝒩ⁿᵒᵗ = node_not_sink(node_not_av(𝒩))
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    # @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ], m[:opex_fixed][n, t_inv] == 0)
+    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ], m[:opex_fixed][n, t_inv] == n.fixed_opex[t_inv])
     # @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ], m[:capex][n, t_inv] == 0)
 end
 
