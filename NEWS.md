@@ -1,8 +1,14 @@
 # EnergyModelsBase changelog
 
+Version 0.2.2 (2021-07-22)
+--------------------------
+### Changes in naming
+* Introduce the optimization variables stor_level and stor_max for storages, and
+  use these instead of cap_usage and cap_max for the constraints on Storage.
+* Use the new variable cap_storage in Storage nodes for the installed storage capacity.
+
 Version 0.2.1 (2021-04-22)
 --------------------------
-
 ### Feature updates
 * Reduction in variables through introduction of input/output (#2)
 dictionaries for all nodes that only include necessary components

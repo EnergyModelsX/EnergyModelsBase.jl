@@ -13,7 +13,7 @@ m, data = EMB.run_model("",GLPK.Optimizer)
     @test objective_value(m) ≈ 129056.305
 
     # Check for the total number of variables
-    @test size(all_variables(m))[1] == 6992
+    @test size(all_variables(m))[1] == 7184
 
     # Check for total emissions of both methane and CO2
     CH4 = data[:products][1]

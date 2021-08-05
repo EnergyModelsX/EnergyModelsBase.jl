@@ -26,6 +26,10 @@ function node_sub(𝒩::Array{Node}, sub = Network)
     return 𝒩[findall(x -> isa(x,sub), 𝒩)]
 end
 
+function node_sub(𝒩::Array{Node}, subs...)
+    return 𝒩[findall(x -> sum(isa(x, sub) for sub in subs) >= 1, 𝒩)]
+end
+
 # Function exluding availability nodes
 function node_not_av(𝒩::Array{Node})
     return 𝒩[findall(x -> ~isa(x,Availability), 𝒩)]
@@ -42,6 +46,7 @@ abstract type Source <: Node end
 abstract type Network <: Node end
 abstract type Sink <: Node end
 abstract type Storage <: Network end
+abstract type Availability <: Network end
 
 # abstarct type used to define concrete struct containing the package specific elements 
 # to add to the concrete struct defined in this package.
@@ -69,7 +74,7 @@ struct RefGeneration <: Network
     CO2_capture::Real
     data::Dict{String,Data}
 end
-struct Availability <: Network
+struct GenAvailability <: Availability
     id
     input::Dict{Resource, Real}
     output::Dict{Resource, Real}
@@ -77,6 +82,7 @@ end
 struct RefStorage <: Storage
     id
     capacity::TimeProfile
+    cap_storage::Real
     var_opex::TimeProfile
     fixed_opex::TimeProfile
     input::Dict{Resource, Real}

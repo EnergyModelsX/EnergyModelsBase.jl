@@ -9,6 +9,9 @@ function create_model(data, modeltype)
     links = data[:links]
     products = data[:products]
 
+    # Check if the data is consistent before the model is created.
+    check_data(data)
+
     # Declaration of variables for the problem
     variables_flow(m, nodes, T, products, links, modeltype)
     variables_emission(m, nodes, T, products, modeltype)
@@ -16,6 +19,8 @@ function create_model(data, modeltype)
     variables_capex(m, nodes, T, products, modeltype)
     variables_capacity(m, nodes, T, modeltype)
     variables_surplus_deficit(m, nodes, T, products, modeltype)
+    variables_storage(m, nodes, T, modeltype)
+    variables_node(m, nodes, T, modeltype)
 
     # Construction of constraints for the problem
     constraints_node(m, nodes, T, products, links, modeltype)
@@ -122,14 +127,35 @@ function variables_surplus_deficit(m, 𝒩, 𝒯, 𝒫, modeltype)
 end
 
 function variables_storage(m, 𝒩, 𝒯, modeltype)
-    
     𝒩ˢᵗᵒʳ = node_sub(𝒩, Storage)
 
-    @variable(m, bypass[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
+    # @variable(m, bypass[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
+    @variable(m, stor_level[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
+    @variable(m, stor_max[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
+
+    @constraint(m, [n ∈ 𝒩ˢᵗᵒʳ, t ∈ 𝒯], m[:stor_max][n, t] == n.cap_storage)
+    
     # TODO:
     # - Bypass variables not necessary if we decide to work with availability create_node
     # - They can be incorporated if we decide to not use the availability create_node
 end
+
+
+" Call a method for creating e.g. other variables specific to the different 
+node types. The method is only called once for each node type. "
+function variables_node(m, 𝒩, 𝒯, modeltype)
+    nodetypes = []
+    for node in 𝒩
+        if ! (typeof(node) in nodetypes)
+            variables_node(m, 𝒩, 𝒯, node, modeltype)
+            push!(nodetypes, typeof(node))
+        end
+    end
+end
+
+" Default fallback method. "
+variables_node(m, 𝒩, 𝒯, node, modeltype) = nothing
+
 
 " Declaration of the generalized create_node for constraint generation.
 The concept is that we only utilize this constraint when model building and the individual
@@ -227,6 +253,7 @@ function create_node(m, n::Source, 𝒯, 𝒫)
         m[:opex_var][n, t_inv] == sum(m[:cap_usage][n, t]*n.var_opex[t] for t ∈ t_inv))
 end
 
+
 function create_node(m, n::Network, 𝒯, 𝒫)
 
     # Declaration of the required subsets
@@ -289,21 +316,26 @@ function create_node(m, n::Storage, 𝒯, 𝒫)
             m[:flow_in][n, t, p] == m[:flow_in][n, t, 𝒫ˢᵗᵒʳ]*n.input[p])
     end
 
+    # Convention for cap_usage when it is used with a Storage.
+    @constraint(m, [t ∈ 𝒯], m[:cap_usage][n, t] == m[:flow_in][n, t, 𝒫ˢᵗᵒʳ])
+
+    @constraint(m, [t ∈ 𝒯], m[:cap_usage][n, t] <= m[:cap_max][n, t])
+
     # Mass balance constraints
     @constraint(m, [t ∈ 𝒯],
-        m[:cap_usage][n, t] <= m[:cap_max][n, t])
+        m[:stor_level][n, t] <= m[:stor_max][n, t])
     for t_inv ∈ 𝒯ᴵⁿᵛ 
         for t ∈ t_inv
             if t == first_operational(t_inv)
                 if 𝒫ˢᵗᵒʳ ∈ 𝒫ᵉᵐ
                     @constraint(m,
-                        m[:cap_usage][n, t] ==  m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
+                        m[:stor_level][n, t] ==  m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
                                                 m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ]
                         )
                     @constraint(m, m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ] >= 0)
                 else
                     @constraint(m,
-                        m[:cap_usage][n, t] ==  m[:cap_usage][n, last_operational(t_inv)] + 
+                        m[:stor_level][n, t] ==  m[:stor_level][n, last_operational(t_inv)] + 
                                                 m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
                                                 m[:flow_out][n, t , 𝒫ˢᵗᵒʳ]
                         )
@@ -311,14 +343,14 @@ function create_node(m, n::Storage, 𝒯, 𝒫)
             else
                 if 𝒫ˢᵗᵒʳ ∈ 𝒫ᵉᵐ
                     @constraint(m,
-                        m[:cap_usage][n, t] ==  m[:cap_usage][n, previous(t)] + 
+                        m[:stor_level][n, t] ==  m[:stor_level][n, previous(t)] + 
                                                 m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
                                                 m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ]
                         )
                     @constraint(m, m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ] >= 0)
                 else
                     @constraint(m,
-                        m[:cap_usage][n, t] ==  m[:cap_usage][n, previous(t)] + 
+                        m[:stor_level][n, t] ==  m[:stor_level][n, previous(t)] + 
                                                 m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
                                                 m[:flow_out][n, t , 𝒫ˢᵗᵒʳ]
                         )
@@ -377,7 +409,6 @@ function create_node(m, n::Availability, 𝒯, 𝒫)
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫],
         m[:flow_in][n, t, p] == m[:flow_out][n, t, p])
 end
-
 
 # function create_node(m, n, 𝒯, 𝒫)
 #     nothing
