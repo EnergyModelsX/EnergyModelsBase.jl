@@ -28,7 +28,7 @@ end
 
 
 " Check if the data is consistent. Use the @assert_or_log macro when testing."
-function check_data(data)
+function check_data(data, modeltype)
     # TODO would it be useful to create an actual type for data, instead of using a Dict with 
     # naming conventions? Could be implemented as a mutable in energymodelsbase.jl maybe?
    
@@ -40,7 +40,7 @@ function check_data(data)
     for n ∈ data[:nodes]
         # Empty the logs list before each check.
         global logs = []
-        check_node(n, data[:T])
+        check_node(n, data[:T], modeltype)
         check_time_structure(n, data[:T])
         # Put all log messages that emerged during the check, in a dictionary with the node as key.
         log_by_element[n] = logs
@@ -111,11 +111,11 @@ function check_profile_field(fieldname, value::DynamicProfile, 𝒯)
 end
 
 
-function check_node(n::Node, 𝒯)
+function check_node(n::Node, 𝒯, modeltype::OperationalModel)
     # Default fallback method.
 end
 
 
-function check_node(n::Source, 𝒯)
+function check_node(n::Source, 𝒯, modeltype::OperationalModel)
     @assert_or_log sum(n.capacity[t] >= 0 for t ∈ 𝒯) == length(𝒯) "The capacity must be non-negative."
 end
