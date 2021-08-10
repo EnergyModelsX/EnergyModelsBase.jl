@@ -51,6 +51,7 @@ abstract type Availability <: Network end
 # abstarct type used to define concrete struct containing the package specific elements 
 # to add to the concrete struct defined in this package.
 abstract type Data end
+struct EmptyData <: Data end
 
 # Declaration of the parameters for generalized nodes
 # Conversion as dict for prototyping: flexible, but inefficient
