@@ -28,7 +28,7 @@ function create_model(data, modeltype)
     constraints_links(m, nodes, T, products, links, modeltype)
 
     # Construction of the objective function
-    objective(m, nodes, T, modeltype)
+    objective(m, nodes, T, products, modeltype)
 
     return m
 end
@@ -82,8 +82,8 @@ function variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype)
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    @variable(m, emissions_node[𝒩ⁿᵒᵗ, 𝒯, 𝒫ᵉᵐ]) 
-    @variable(m, emissions_total[𝒯, 𝒫ᵉᵐ]) 
+    @variable(m, emissions_node[𝒩ⁿᵒᵗ, 𝒯, 𝒫ᵉᵐ] >= 0) 
+    @variable(m, emissions_total[𝒯, 𝒫ᵉᵐ] >= 0) 
     @variable(m, emissions_strategic[t_inv ∈ 𝒯ᴵⁿᵛ, 𝒫ᵉᵐ] <= modeltype.case.CO2_limit[t_inv]) 
 end
 
@@ -205,7 +205,7 @@ function constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype)
     #     m[:emissions_strategic][t_inv, p] <= modeltype.case.CO2_limit[t_inv])
 end
 
-function objective(m, 𝒩, 𝒯, modeltype)
+function objective(m, 𝒩, 𝒯, 𝒫, modeltype)
 
     # Calculation of the objective function
     𝒩ⁿᵒᵗ = node_not_av(𝒩)
