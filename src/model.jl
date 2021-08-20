@@ -107,9 +107,12 @@ end
 function variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype)
     
     𝒩ⁿᵒᵗ = node_not_av(𝒩)
+    𝒩ˢᵗᵒʳ = node_sub(𝒩, Storage)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     @variable(m,capex[𝒩ⁿᵒᵗ, 𝒯ᴵⁿᵛ] >= 0)
+    @variable(m,capex_capacity[𝒩ˢᵗᵒʳ, 𝒯ᴵⁿᵛ] >= 0)
+
 end
 
 " Declaration of both surplus and deficit variables to quantify when there is
@@ -133,7 +136,7 @@ function variables_storage(m, 𝒩, 𝒯, modeltype)
     @variable(m, stor_level[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_max[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
 
-    @constraint(m, [n ∈ 𝒩ˢᵗᵒʳ, t ∈ 𝒯], m[:stor_max][n, t] == n.cap_storage)
+    @constraint(m, [n ∈ 𝒩ˢᵗᵒʳ, t ∈ 𝒯], m[:stor_max][n, t] == n.cap_storage[t])
     
     # TODO:
     # - Bypass variables not necessary if we decide to work with availability create_node
