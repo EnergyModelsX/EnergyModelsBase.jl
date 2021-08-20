@@ -1,7 +1,16 @@
 # EnergyModelsBase changelog
 
-Version 0.2.2 (2021-07-22)
+Version 0.2.2 (2021-08-20)
 --------------------------
+### Feature updates
+* Change of Availability to abstract type and introduction of GenAvailability
+  as composite type to be able to use multiple dispatch on the availability nodes
+* Inclusion of the entry fixed OPEX to the node composite types
+* Inclusion of the entry data to the node composite types to provide input
+  required for certain additional packages like investments
+* New function for checks of node data so that we have an a priori check of all
+  model data
+
 ### Changes in naming
 * Introduce the optimization variables stor_level and stor_max for storages, and
   use these instead of cap_usage and cap_max for the constraints on Storage.
@@ -14,6 +23,7 @@ Version 0.2.1 (2021-04-22)
 dictionaries for all nodes that only include necessary components
 * Improvement related to emissions to avoid wrong accounting when other emission carriers than CO2 are present (#2)
 * Link resources generated automatically from input (#2)
+
 ### Changes in naming
 * Removal of prefix "create" before "constraints" and "variables"
 * "create_module" switched to "create_node"
