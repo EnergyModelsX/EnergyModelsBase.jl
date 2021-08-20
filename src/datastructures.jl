@@ -26,9 +26,17 @@ function node_sub(𝒩::Array{Node}, sub = Network)
     return 𝒩[findall(x -> isa(x,sub), 𝒩)]
 end
 
+function node_sub(𝒩::Array{Node}, subs...)
+    return 𝒩[findall(x -> sum(isa(x, sub) for sub in subs) >= 1, 𝒩)]
+end
+
 # Function exluding availability nodes
 function node_not_av(𝒩::Array{Node})
     return 𝒩[findall(x -> ~isa(x,Availability), 𝒩)]
+end
+
+function node_not_sink(𝒩::Array{Node})
+    return 𝒩[findall(x -> ~isa(x,Sink), 𝒩)]
 end
 
 # Declaration of the individual technology node types representing
@@ -38,6 +46,12 @@ abstract type Source <: Node end
 abstract type Network <: Node end
 abstract type Sink <: Node end
 abstract type Storage <: Network end
+abstract type Availability <: Network end
+
+# abstarct type used to define concrete struct containing the package specific elements 
+# to add to the concrete struct defined in this package.
+abstract type Data end
+struct EmptyData <: Data end
 
 # Declaration of the parameters for generalized nodes
 # Conversion as dict for prototyping: flexible, but inefficient
@@ -45,19 +59,23 @@ struct RefSource <: Source
     id
     capacity::TimeProfile
     var_opex::TimeProfile
+    fixed_opex::TimeProfile
     output::Dict{Resource, Real}
     emissions::Dict{ResourceEmit, Real}
+    data::Dict{String,Data}#Should it be a string?
 end
 struct RefGeneration <: Network
     id
     capacity::TimeProfile
     var_opex::TimeProfile
+    fixed_opex::TimeProfile
     input::Dict{Resource, Real}
     output::Dict{Resource, Real}
     emissions::Dict{ResourceEmit, Real}
     CO2_capture::Real
+    data::Dict{String,Data}
 end
-struct Availability <: Network
+struct GenAvailability <: Availability
     id
     input::Dict{Resource, Real}
     output::Dict{Resource, Real}
@@ -65,9 +83,12 @@ end
 struct RefStorage <: Storage
     id
     capacity::TimeProfile
+    cap_storage::TimeProfile
     var_opex::TimeProfile
+    fixed_opex::TimeProfile
     input::Dict{Resource, Real}
     output::Dict{Resource, Real}
+    data::Dict{String,Data}
 end
 struct RefSink <: Sink
     id

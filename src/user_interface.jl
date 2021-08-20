@@ -2,7 +2,7 @@ function run_model(fn, optimizer=nothing)
    @debug "Run model" fn optimizer
 
     data = read_data(fn)
-    case = OperationalCase(StrategicFixedProfile([450, 400, 350, 300]))    # 
+    case = OperationalCase(StrategicFixedProfile([450, 400, 350, 300]))
     model = OperationalModel(case)
     m = create_model(data, model)
 
@@ -16,6 +16,8 @@ function run_model(fn, optimizer=nothing)
     end
     return m, data
 end
+
+struct data_test <: Data end
 
 function read_data(fn)
     @debug "Read data"
@@ -32,17 +34,30 @@ function read_data(fn)
     𝒫ᵉᵐ₀ = Dict(k  => 0. for k ∈ products if typeof(k) == ResourceEmit{Float64})
     𝒫ᵉᵐ₀[CO2] = 0.0
     nodes = [
-            Availability(1, 𝒫₀, 𝒫₀),
-            RefSource(2, FixedProfile(1e12), FixedProfile(30), Dict(NG => 1), 𝒫ᵉᵐ₀),  
-            RefSource(3, FixedProfile(1e12), FixedProfile(9), Dict(Coal => 1), 𝒫ᵉᵐ₀),  
-            RefGeneration(4, FixedProfile(25), FixedProfile(5.5), Dict(NG => 2), Dict(Power => 1, CO2 => 1), 𝒫ᵉᵐ₀, 0.9),  
-            RefGeneration(5, FixedProfile(25), FixedProfile(6),  Dict(Coal => 2.5), Dict(Power => 1, CO2 => 1), 𝒫ᵉᵐ₀, 0),  
-            RefStorage(6, FixedProfile(600), FixedProfile(9.1),  Dict(CO2 => 1, Power => 0.02), Dict(CO2 => 1)),
-            RefSink(7, DynamicProfile([20 20 20 20 25 30 35 35 40 40 40 40 40 35 35 30 25 30 35 30 25 20 20 20;
+            GenAvailability(1, 𝒫₀, 𝒫₀),
+            RefSource(2,        FixedProfile(1e12), FixedProfile(30),
+                                FixedProfile(0), Dict(NG => 1), 𝒫ᵉᵐ₀,
+                                Dict("InvestmentModels" => data_test())),  
+            RefSource(3,        FixedProfile(1e12), FixedProfile(9),
+                                FixedProfile(0), Dict(Coal => 1), 𝒫ᵉᵐ₀,
+                                Dict("InvestmentModels" => data_test())),  
+            RefGeneration(4,    FixedProfile(25),   FixedProfile(5.5),
+                                FixedProfile(0), Dict(NG => 2),
+                                Dict(Power => 1, CO2 => 1), 𝒫ᵉᵐ₀, 0.9,
+                                Dict("InvestmentModels" => data_test())),  
+            RefGeneration(5,    FixedProfile(25),   FixedProfile(6),
+                                FixedProfile(0),  Dict(Coal => 2.5),
+                                Dict(Power => 1, CO2 => 1), 𝒫ᵉᵐ₀, 0,
+                                Dict("InvestmentModels" => data_test())),  
+            RefStorage(6,       FixedProfile(60),   FixedProfile(600), FixedProfile(9.1),
+                                FixedProfile(0),  Dict(CO2 => 1, Power => 0.02), Dict(CO2 => 1),
+                                Dict("InvestmentModels" => data_test())),
+            RefSink(7,          DynamicProfile([20 20 20 20 25 30 35 35 40 40 40 40 40 35 35 30 25 30 35 30 25 20 20 20;
                                        20 20 20 20 25 30 35 35 40 40 40 40 40 35 35 30 25 30 35 30 25 20 20 20;
                                        20 20 20 20 25 30 35 35 40 40 40 40 40 35 35 30 25 30 35 30 25 20 20 20;
                                        20 20 20 20 25 30 35 35 40 40 40 40 40 35 35 30 25 30 35 30 25 20 20 20]),
-                    Dict(:surplus => 0, :deficit => 1e6), Dict(Power => 1), 𝒫ᵉᵐ₀),
+                                Dict(:surplus => 0, :deficit => 1e6),
+                                Dict(Power => 1), 𝒫ᵉᵐ₀),
             ]
     links = [
             Direct(14,nodes[1],nodes[4],Linear())
