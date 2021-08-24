@@ -111,7 +111,7 @@ function variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     @variable(m,capex[𝒩ⁿᵒᵗ, 𝒯ᴵⁿᵛ] >= 0)
-    @variable(m,capex_capacity[𝒩ˢᵗᵒʳ, 𝒯ᴵⁿᵛ] >= 0)
+    @variable(m,capex_stor[𝒩ˢᵗᵒʳ, 𝒯ᴵⁿᵛ] >= 0)
 
 end
 
