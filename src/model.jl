@@ -253,7 +253,7 @@ function create_node(m, n::Source, 𝒯, 𝒫)
 
     # Constraint for the Opex contributions
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        m[:opex_var][n, t_inv] == sum(m[:cap_usage][n, t]*n.var_opex[t] for t ∈ t_inv))
+        m[:opex_var][n, t_inv] == sum(m[:cap_usage][n, t] * n.var_opex[t] * t.duration for t ∈ t_inv))
 end
 
 
@@ -302,7 +302,7 @@ function create_node(m, n::Network, 𝒯, 𝒫)
             
     # Constraint for the Opex contributions
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        m[:opex_var][n, t_inv] == sum(m[:cap_usage][n, t]*n.var_opex[t] for t ∈ t_inv))
+        m[:opex_var][n, t_inv] == sum(m[:cap_usage][n, t] * n.var_opex[t] * t.duration for t ∈ t_inv))
 end
 
 function create_node(m, n::Storage, 𝒯, 𝒫)
@@ -400,7 +400,9 @@ function create_node(m, n::Sink, 𝒯, 𝒫)
     # Constraint for the Opex contributions
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         m[:opex_var][n, t_inv] == 
-            sum(m[:surplus][n, t]*n.penalty[:surplus] + m[:deficit][n, t]*n.penalty[:deficit] for t ∈ t_inv))
+            sum((m[:surplus][n, t] * n.penalty[:surplus] 
+                + m[:deficit][n, t] * n.penalty[:deficit])
+                * t.duration for t ∈ t_inv))
 end
 
 function create_node(m, n::Availability, 𝒯, 𝒫)
