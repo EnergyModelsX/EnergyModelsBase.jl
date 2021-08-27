@@ -83,7 +83,7 @@ end
 struct RefStorage <: Storage
     id
     capacity::TimeProfile
-    cap_storage::TimeProfile
+    cap_stor::TimeProfile
     var_opex::TimeProfile
     fixed_opex::TimeProfile
     input::Dict{Resource, Real}

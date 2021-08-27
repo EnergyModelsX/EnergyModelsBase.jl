@@ -136,7 +136,7 @@ function variables_storage(m, 𝒩, 𝒯, modeltype)
     @variable(m, stor_level[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_max[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
 
-    @constraint(m, [n ∈ 𝒩ˢᵗᵒʳ, t ∈ 𝒯], m[:stor_max][n, t] == n.cap_storage[t])
+    @constraint(m, [n ∈ 𝒩ˢᵗᵒʳ, t ∈ 𝒯], m[:stor_max][n, t] == n.cap_stor[t])
     
     # TODO:
     # - Bypass variables not necessary if we decide to work with availability create_node
