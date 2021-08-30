@@ -46,10 +46,10 @@ function variables_capacity(m, 𝒩, 𝒯, modeltype)
     𝒩ⁿᵒᵗ = node_not_av(𝒩)
 
     @variable(m, cap_usage[𝒩ⁿᵒᵗ, 𝒯] >= 0)
-    @variable(m, cap_max[𝒩ⁿᵒᵗ, 𝒯] >= 0)
+    @variable(m, inst_cap[𝒩ⁿᵒᵗ, 𝒯] >= 0)
 
     for n ∈ 𝒩ⁿᵒᵗ, t ∈ 𝒯
-        @constraint(m, cap_max[n, t] == n.capacity[t])
+        @constraint(m, inst_cap[n, t] == n.capacity[t])
     end
     # TODO:
     # - If operational model, make variables bounded to fixed capacity(?)
@@ -188,7 +188,7 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     𝒩ⁿᵒᵗ = node_not_sink(node_not_av(𝒩))
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ], m[:opex_fixed][n, t_inv] == n.fixed_opex[t_inv])
+    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ], m[:opex_fixed][n, t_inv] == n.fixed_opex[t_inv] * t_inv.duration)
     # @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ], m[:capex][n, t_inv] == 0)
 end
 
@@ -245,7 +245,7 @@ function create_node(m, n::Source, 𝒯, 𝒫)
     end
     # Constraint for the maximum capacity
     @constraint(m, [t ∈ 𝒯],
-        m[:cap_usage][n, t] <= m[:cap_max][n, t])
+        m[:cap_usage][n, t] <= m[:inst_cap][n, t])
     
     # Constraint for the emissions associated to energy sources, currently set to 0
     @constraint(m, [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
@@ -282,7 +282,7 @@ function create_node(m, n::Network, 𝒯, 𝒫)
 
     # Constraint for the maximum capacity
     @constraint(m, [t ∈ 𝒯],
-        m[:cap_usage][n, t] <= m[:cap_max][n, t])
+        m[:cap_usage][n, t] <= m[:inst_cap][n, t])
     
     # Constraint for the emissions associated to energy sources based on CO2 capture rate
     # I am quite certain, that this could be represented better in JuMP, but then again I
@@ -322,7 +322,7 @@ function create_node(m, n::Storage, 𝒯, 𝒫)
     # Convention for cap_usage when it is used with a Storage.
     @constraint(m, [t ∈ 𝒯], m[:cap_usage][n, t] == m[:flow_in][n, t, 𝒫ˢᵗᵒʳ])
 
-    @constraint(m, [t ∈ 𝒯], m[:cap_usage][n, t] <= m[:cap_max][n, t])
+    @constraint(m, [t ∈ 𝒯], m[:cap_usage][n, t] <= m[:inst_cap][n, t])
 
     # Mass balance constraints
     @constraint(m, [t ∈ 𝒯],
@@ -391,7 +391,7 @@ function create_node(m, n::Sink, 𝒯, 𝒫)
     # Constraint for the mass balance allowing surplus and deficit
     @constraint(m, [t ∈ 𝒯],
         m[:cap_usage][n, t] + m[:deficit][n,t] == 
-            m[:cap_max][n, t] + m[:surplus][n,t])
+            m[:inst_cap][n, t] + m[:surplus][n,t])
 
     # Constraint for the emissions
     @constraint(m, [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
