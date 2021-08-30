@@ -134,9 +134,9 @@ function variables_storage(m, 𝒩, 𝒯, modeltype)
 
     # @variable(m, bypass[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_level[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
-    @variable(m, stor_max[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
+    @variable(m, inst_stor[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
 
-    @constraint(m, [n ∈ 𝒩ˢᵗᵒʳ, t ∈ 𝒯], m[:stor_max][n, t] == n.cap_stor[t])
+    @constraint(m, [n ∈ 𝒩ˢᵗᵒʳ, t ∈ 𝒯], m[:inst_stor][n, t] == n.cap_stor[t])
     
     # TODO:
     # - Bypass variables not necessary if we decide to work with availability create_node
@@ -326,7 +326,7 @@ function create_node(m, n::Storage, 𝒯, 𝒫)
 
     # Mass balance constraints
     @constraint(m, [t ∈ 𝒯],
-        m[:stor_level][n, t] <= m[:stor_max][n, t])
+        m[:stor_level][n, t] <= m[:inst_stor][n, t])
     for t_inv ∈ 𝒯ᴵⁿᵛ 
         for t ∈ t_inv
             if t == first_operational(t_inv)
