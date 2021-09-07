@@ -39,17 +39,17 @@ in terms of either `flow_in` or `flow_out` (depending on node `n ∈ 𝒩`) for 
 time periods `t ∈ 𝒯`.
 
 In general, it is prefered to have the capacity as a function of a variable given
-with a value of 1 in the field n.capacity
+with a value of 1 in the field n.Cap
 "
 function variables_capacity(m, 𝒩, 𝒯, modeltype)
     
     𝒩ⁿᵒᵗ = node_not_av(𝒩)
 
-    @variable(m, cap_usage[𝒩ⁿᵒᵗ, 𝒯] >= 0)
-    @variable(m, inst_cap[𝒩ⁿᵒᵗ, 𝒯] >= 0)
+    @variable(m, cap_use[𝒩ⁿᵒᵗ, 𝒯] >= 0)
+    @variable(m, cap_inst[𝒩ⁿᵒᵗ, 𝒯] >= 0)
 
     for n ∈ 𝒩ⁿᵒᵗ, t ∈ 𝒯
-        @constraint(m, inst_cap[n, t] == n.capacity[t])
+        @constraint(m, cap_inst[n, t] == n.Cap[t])
     end
     # TODO:
     # - If operational model, make variables bounded to fixed capacity(?)
@@ -66,8 +66,8 @@ function variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     𝒩ᵒᵘᵗ = node_sub(𝒩, Union{Source, Network})
     𝒩ⁱⁿ  = node_sub(𝒩, Union{Network, Sink})
 
-    @variable(m, flow_in[n_in ∈ 𝒩ⁱⁿ,    𝒯, keys(n_in.input)] >= 0)
-    @variable(m, flow_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯, keys(n_out.output)] >= 0)
+    @variable(m, flow_in[n_in ∈ 𝒩ⁱⁿ,    𝒯, keys(n_in.Input)] >= 0)
+    @variable(m, flow_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯, keys(n_out.Output)] >= 0)
 
     @variable(m, link_in[l ∈ ℒ,  𝒯, link_res(l)] >= 0)
     @variable(m, link_out[l ∈ ℒ, 𝒯, link_res(l)] >= 0)
@@ -94,7 +94,8 @@ not modeled)
 
 These variables are independent whether the problem is an operational or
 investment model as they are depending on the investment periods for
-easier later analysis. "
+easier later analysis. The package InvestmentModels can override These
+values via modeltype."
 function variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype)
     
     𝒩ⁿᵒᵗ = node_not_av(𝒩)    
@@ -105,13 +106,6 @@ function variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype)
 end
 
 function variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype)
-    
-    𝒩ⁿᵒᵗ = node_not_av(𝒩)
-    𝒩ˢᵗᵒʳ = node_sub(𝒩, Storage)
-    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-
-    @variable(m,capex[𝒩ⁿᵒᵗ, 𝒯ᴵⁿᵛ] >= 0)
-    @variable(m,capex_stor[𝒩ˢᵗᵒʳ, 𝒯ᴵⁿᵛ] >= 0)
 
 end
 
@@ -125,18 +119,17 @@ function variables_surplus_deficit(m, 𝒩, 𝒯, 𝒫, modeltype)
 
     𝒩ˢⁱⁿᵏ = node_sub(𝒩, Sink)
 
-    @variable(m,surplus[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
-    @variable(m,deficit[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
+    @variable(m,sink_surplus[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
+    @variable(m,sink_deficit[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
 end
 
 function variables_storage(m, 𝒩, 𝒯, modeltype)
     𝒩ˢᵗᵒʳ = node_sub(𝒩, Storage)
 
-    # @variable(m, bypass[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_level[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
-    @variable(m, inst_stor[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
+    @variable(m, stor_cap_inst[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
 
-    @constraint(m, [n ∈ 𝒩ˢᵗᵒʳ, t ∈ 𝒯], m[:inst_stor][n, t] == n.cap_stor[t])
+    @constraint(m, [n ∈ 𝒩ˢᵗᵒʳ, t ∈ 𝒯], m[:stor_cap_inst][n, t] == n.Stor_cap[t])
     
     # TODO:
     # - Bypass variables not necessary if we decide to work with availability create_node
@@ -174,12 +167,12 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     for n ∈ 𝒩
         ℒᶠʳᵒᵐ, ℒᵗᵒ = link_sub(ℒ, n)
         if isa(n,Union{Source, Network})
-            @constraint(m, [t ∈ 𝒯, p ∈ keys(n.output)], 
-                m[:flow_out][n, t, p] == sum(m[:link_in][l,t,p] for l in ℒᶠʳᵒᵐ if p ∈ keys(l.to.input)))
+            @constraint(m, [t ∈ 𝒯, p ∈ keys(n.Output)], 
+                m[:flow_out][n, t, p] == sum(m[:link_in][l,t,p] for l in ℒᶠʳᵒᵐ if p ∈ keys(l.to.Input)))
         end
         if isa(n,Union{Network, Sink})
-            @constraint(m, [t ∈ 𝒯, p ∈ keys(n.input)], 
-                m[:flow_in][n, t, p] == sum(m[:link_out][l,t,p] for l in ℒᵗᵒ if p ∈ keys(l.from.output)))
+            @constraint(m, [t ∈ 𝒯, p ∈ keys(n.Input)], 
+                m[:flow_in][n, t, p] == sum(m[:link_out][l,t,p] for l in ℒᵗᵒ if p ∈ keys(l.from.Output)))
         end
         create_node(m, n, 𝒯, 𝒫)
     end
@@ -188,8 +181,7 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     𝒩ⁿᵒᵗ = node_not_sink(node_not_av(𝒩))
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ], m[:opex_fixed][n, t_inv] == n.fixed_opex[t_inv] * t_inv.duration)
-    # @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ], m[:capex][n, t_inv] == 0)
+    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ], m[:opex_fixed][n, t_inv] == n.Opex_fixed[t_inv] * t_inv.duration)
 end
 
 function constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype)
@@ -214,7 +206,7 @@ function objective(m, 𝒩, 𝒯, 𝒫, modeltype)
     𝒩ⁿᵒᵗ = node_not_av(𝒩)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    @objective(m, Min, sum(m[:opex_var][n, t] + m[:opex_fixed][n, t] + m[:capex][n, t] for t ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ))
+    @objective(m, Min, sum(m[:opex_var][n, t] + m[:opex_fixed][n, t] for t ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ))
 end
 
 function constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
@@ -234,41 +226,41 @@ the system.
 function create_node(m, n::Source, 𝒯, 𝒫)
 
     # Declaration of the required subsets
-    𝒫ᵒᵘᵗ = keys(n.output)
+    𝒫ᵒᵘᵗ = keys(n.Output)
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Constraint for the individual stream connections
     for p ∈ 𝒫ᵒᵘᵗ
         @constraint(m, [t ∈ 𝒯], 
-            m[:flow_out][n, t, p] == m[:cap_usage][n, t]*n.output[p])
+            m[:flow_out][n, t, p] == m[:cap_use][n, t]*n.Output[p])
     end
     # Constraint for the maximum capacity
     @constraint(m, [t ∈ 𝒯],
-        m[:cap_usage][n, t] <= m[:inst_cap][n, t])
+        m[:cap_use][n, t] <= m[:cap_inst][n, t])
     
     # Constraint for the emissions associated to energy sources, currently set to 0
     @constraint(m, [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
-        m[:emissions_node][n, t, p_em] == m[:cap_usage][n, t]*n.emissions[p_em])
+        m[:emissions_node][n, t, p_em] == m[:cap_use][n, t]*n.Emissions[p_em])
 
     # Constraint for the Opex contributions
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        m[:opex_var][n, t_inv] == sum(m[:cap_usage][n, t] * n.var_opex[t] * t.duration for t ∈ t_inv))
+        m[:opex_var][n, t_inv] == sum(m[:cap_use][n, t] * n.Opex_var[t] * t.duration for t ∈ t_inv))
 end
 
 
 function create_node(m, n::Network, 𝒯, 𝒫)
 
     # Declaration of the required subsets
-    𝒫ⁱⁿ  = keys(n.input)
-    𝒫ᵒᵘᵗ = keys(n.output)
+    𝒫ⁱⁿ  = keys(n.Input)
+    𝒫ᵒᵘᵗ = keys(n.Output)
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Constraint for the individual stream connections
     for p ∈ 𝒫ⁱⁿ
         @constraint(m, [t ∈ 𝒯], 
-            m[:flow_in][n, t, p] == m[:cap_usage][n, t]*n.input[p])
+            m[:flow_in][n, t, p] == m[:cap_use][n, t]*n.Input[p])
     end
     for p ∈ 𝒫ᵒᵘᵗ
         if p.id == "CO2"
@@ -276,13 +268,13 @@ function create_node(m, n::Network, 𝒯, 𝒫)
                 m[:flow_out][n, t, p]  == n.CO2_capture*sum(p_in.CO2Int*m[:flow_in][n, t, p_in] for p_in ∈ 𝒫ⁱⁿ))
         else
             @constraint(m, [t ∈ 𝒯], 
-                m[:flow_out][n, t, p] == m[:cap_usage][n, t]*n.output[p])
+                m[:flow_out][n, t, p] == m[:cap_use][n, t]*n.Output[p])
         end
     end
 
     # Constraint for the maximum capacity
     @constraint(m, [t ∈ 𝒯],
-        m[:cap_usage][n, t] <= m[:inst_cap][n, t])
+        m[:cap_use][n, t] <= m[:cap_inst][n, t])
     
     # Constraint for the emissions associated to energy sources based on CO2 capture rate
     # I am quite certain, that this could be represented better in JuMP, but then again I
@@ -292,72 +284,70 @@ function create_node(m, n::Network, 𝒯, 𝒫)
             @constraint(m, [t ∈ 𝒯],
                 m[:emissions_node][n, t, p_em] == 
                     (1-n.CO2_capture)*sum(p_in.CO2Int*m[:flow_in][n, t, p_in] for p_in ∈ 𝒫ⁱⁿ) + 
-                    m[:cap_usage][n, t]*n.emissions[p_em])
+                    m[:cap_use][n, t]*n.Emissions[p_em])
         else
             @constraint(m, [t ∈ 𝒯],
                 m[:emissions_node][n, t, p_em] == 
-                    m[:cap_usage][n, t]*n.emissions[p_em])
+                    m[:cap_use][n, t]*n.Emissions[p_em])
         end
     end
             
     # Constraint for the Opex contributions
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        m[:opex_var][n, t_inv] == sum(m[:cap_usage][n, t] * n.var_opex[t] * t.duration for t ∈ t_inv))
+        m[:opex_var][n, t_inv] == sum(m[:cap_use][n, t] * n.Opex_var[t] * t.duration for t ∈ t_inv))
 end
 
 function create_node(m, n::Storage, 𝒯, 𝒫)
 
     # Declaration of the required subsets
-    𝒫ˢᵗᵒʳ = [k for (k,v) ∈ n.input if v == 1][1]
-    𝒫ᵃᵈᵈ  = setdiff(keys(n.input), [𝒫ˢᵗᵒʳ])
+    𝒫ˢᵗᵒʳ = [k for (k,v) ∈ n.Input if v == 1][1]
+    𝒫ᵃᵈᵈ  = setdiff(keys(n.Input), [𝒫ˢᵗᵒʳ])
     𝒫ᵉᵐ   = res_sub(𝒫, ResourceEmit)
     𝒯ᴵⁿᵛ  = strategic_periods(𝒯)
 
     # Constraint for additional required input
     for p ∈ 𝒫ᵃᵈᵈ
         @constraint(m, [t ∈ 𝒯], 
-            m[:flow_in][n, t, p] == m[:flow_in][n, t, 𝒫ˢᵗᵒʳ]*n.input[p])
+            m[:flow_in][n, t, p] == m[:flow_in][n, t, 𝒫ˢᵗᵒʳ]*n.Input[p])
     end
 
-    # Convention for cap_usage when it is used with a Storage.
-    @constraint(m, [t ∈ 𝒯], m[:cap_usage][n, t] == m[:flow_in][n, t, 𝒫ˢᵗᵒʳ])
+    # Convention for cap_use when it is used with a Storage.
+    @constraint(m, [t ∈ 𝒯], m[:cap_use][n, t] == m[:flow_in][n, t, 𝒫ˢᵗᵒʳ])
 
-    @constraint(m, [t ∈ 𝒯], m[:cap_usage][n, t] <= m[:inst_cap][n, t])
+    @constraint(m, [t ∈ 𝒯], m[:cap_use][n, t] <= m[:cap_inst][n, t])
 
     # Mass balance constraints
     @constraint(m, [t ∈ 𝒯],
-        m[:stor_level][n, t] <= m[:inst_stor][n, t])
-    for t_inv ∈ 𝒯ᴵⁿᵛ 
-        for t ∈ t_inv
-            if t == first_operational(t_inv)
-                if 𝒫ˢᵗᵒʳ ∈ 𝒫ᵉᵐ
-                    @constraint(m,
-                        m[:stor_level][n, t] ==  m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
-                                                m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ]
-                        )
-                    @constraint(m, m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ] >= 0)
-                else
-                    @constraint(m,
-                        m[:stor_level][n, t] ==  m[:stor_level][n, last_operational(t_inv)] + 
-                                                m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
-                                                m[:flow_out][n, t , 𝒫ˢᵗᵒʳ]
-                        )
-                end
+        m[:stor_level][n, t] <= m[:stor_cap_inst][n, t])
+    for t_inv ∈ 𝒯ᴵⁿᵛ, t ∈ t_inv
+        if t == first_operational(t_inv)
+            if 𝒫ˢᵗᵒʳ ∈ 𝒫ᵉᵐ
+                @constraint(m,
+                    m[:stor_level][n, t] ==  m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
+                                            m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ]
+                    )
+                @constraint(m, m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ] >= 0)
             else
-                if 𝒫ˢᵗᵒʳ ∈ 𝒫ᵉᵐ
-                    @constraint(m,
-                        m[:stor_level][n, t] ==  m[:stor_level][n, previous(t)] + 
-                                                m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
-                                                m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ]
-                        )
-                    @constraint(m, m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ] >= 0)
-                else
-                    @constraint(m,
-                        m[:stor_level][n, t] ==  m[:stor_level][n, previous(t)] + 
-                                                m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
-                                                m[:flow_out][n, t , 𝒫ˢᵗᵒʳ]
-                        )
-                end
+                @constraint(m,
+                    m[:stor_level][n, t] ==  m[:stor_level][n, last_operational(t_inv)] + 
+                                            m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
+                                            m[:flow_out][n, t , 𝒫ˢᵗᵒʳ]
+                    )
+            end
+        else
+            if 𝒫ˢᵗᵒʳ ∈ 𝒫ᵉᵐ
+                @constraint(m,
+                    m[:stor_level][n, t] ==  m[:stor_level][n, previous(t)] + 
+                                            m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
+                                            m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ]
+                    )
+                @constraint(m, m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ] >= 0)
+            else
+                @constraint(m,
+                    m[:stor_level][n, t] ==  m[:stor_level][n, previous(t)] + 
+                                            m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
+                                            m[:flow_out][n, t , 𝒫ˢᵗᵒʳ]
+                    )
             end
         end
     end
@@ -374,34 +364,34 @@ function create_node(m, n::Storage, 𝒯, 𝒫)
     # Constraint for the Opex contributions
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        m[:opex_var][n, t_inv] == sum((m[:flow_in][n, t , 𝒫ˢᵗᵒʳ]-m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ])*n.var_opex[t] for t ∈ t_inv))
+        m[:opex_var][n, t_inv] == sum((m[:flow_in][n, t , 𝒫ˢᵗᵒʳ]-m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ])*n.Opex_var[t] for t ∈ t_inv))
 end
 
 function create_node(m, n::Sink, 𝒯, 𝒫)
     
     # Declaration of the required subsets
-    𝒫ⁱⁿ  = keys(n.input)
+    𝒫ⁱⁿ  = keys(n.Input)
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Constraint for the individual stream connections
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ⁱⁿ],
-        m[:flow_in][n, t, p] == m[:cap_usage][n, t]*n.input[p])
+        m[:flow_in][n, t, p] == m[:cap_use][n, t]*n.Input[p])
 
     # Constraint for the mass balance allowing surplus and deficit
     @constraint(m, [t ∈ 𝒯],
-        m[:cap_usage][n, t] + m[:deficit][n,t] == 
-            m[:inst_cap][n, t] + m[:surplus][n,t])
+        m[:cap_use][n, t] + m[:sink_deficit][n,t] == 
+            m[:cap_inst][n, t] + m[:sink_surplus][n,t])
 
     # Constraint for the emissions
     @constraint(m, [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
-        m[:emissions_node][n, t, p_em] == m[:cap_usage][n, t]*n.emissions[p_em])
+        m[:emissions_node][n, t, p_em] == m[:cap_use][n, t]*n.Emissions[p_em])
 
     # Constraint for the Opex contributions
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         m[:opex_var][n, t_inv] == 
-            sum((m[:surplus][n, t] * n.penalty[:surplus] 
-                + m[:deficit][n, t] * n.penalty[:deficit])
+            sum((m[:sink_surplus][n, t] * n.Penalty[:Surplus] 
+                + m[:sink_deficit][n, t] * n.Penalty[:Deficit])
                 * t.duration for t ∈ t_inv))
 end
 

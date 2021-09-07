@@ -117,5 +117,5 @@ end
 
 
 function check_node(n::Source, 𝒯, modeltype::OperationalModel)
-    @assert_or_log sum(n.capacity[t] >= 0 for t ∈ 𝒯) == length(𝒯) "The capacity must be non-negative."
+    @assert_or_log sum(n.Cap[t] >= 0 for t ∈ 𝒯) == length(𝒯) "The capacity must be non-negative."
 end

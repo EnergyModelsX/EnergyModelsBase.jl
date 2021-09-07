@@ -1,5 +1,10 @@
 # EnergyModelsBase changelog
 
+Version 0.2.3 (2021-09-07)
+--------------------------
+### Changes in naming
+* Major changes in both variable and parameter naming, check the commit message for an overview
+
 Version 0.2.2 (2021-08-20)
 --------------------------
 ### Feature updates

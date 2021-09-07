@@ -57,45 +57,45 @@ struct EmptyData <: Data end
 # Conversion as dict for prototyping: flexible, but inefficient
 struct RefSource <: Source
     id
-    capacity::TimeProfile
-    var_opex::TimeProfile
-    fixed_opex::TimeProfile
-    output::Dict{Resource, Real}
-    emissions::Dict{ResourceEmit, Real}
-    data::Dict{String,Data}#Should it be a string?
+    Cap::TimeProfile
+    Opex_var::TimeProfile
+    Opex_fixed::TimeProfile
+    Output::Dict{Resource, Real}
+    Emissions::Dict{ResourceEmit, Real}
+    Data::Dict{String,Data}#Should it be a string?
 end
 struct RefGeneration <: Network
     id
-    capacity::TimeProfile
-    var_opex::TimeProfile
-    fixed_opex::TimeProfile
-    input::Dict{Resource, Real}
-    output::Dict{Resource, Real}
-    emissions::Dict{ResourceEmit, Real}
+    Cap::TimeProfile
+    Opex_var::TimeProfile
+    Opex_fixed::TimeProfile
+    Input::Dict{Resource, Real}
+    Output::Dict{Resource, Real}
+    Emissions::Dict{ResourceEmit, Real}
     CO2_capture::Real
-    data::Dict{String,Data}
+    Data::Dict{String,Data}
 end
 struct GenAvailability <: Availability
     id
-    input::Dict{Resource, Real}
-    output::Dict{Resource, Real}
+    Input::Dict{Resource, Real}
+    Output::Dict{Resource, Real}
 end
 struct RefStorage <: Storage
     id
-    capacity::TimeProfile
-    cap_stor::TimeProfile
-    var_opex::TimeProfile
-    fixed_opex::TimeProfile
-    input::Dict{Resource, Real}
-    output::Dict{Resource, Real}
-    data::Dict{String,Data}
+    Cap::TimeProfile
+    Stor_cap::TimeProfile
+    Opex_var::TimeProfile
+    Opex_fixed::TimeProfile
+    Input::Dict{Resource, Real}
+    Output::Dict{Resource, Real}
+    Data::Dict{String,Data}
 end
 struct RefSink <: Sink
     id
-    capacity::TimeProfile
-    penalty::Dict{Any, Real}            # Requires entries deficit and surplus
-    input::Dict{Resource, Real}
-    emissions::Dict{ResourceEmit, Real}
+    Cap::TimeProfile
+    Penalty::Dict{Any, Real}            # Requires entries deficit and surplus
+    Input::Dict{Resource, Real}
+    Emissions::Dict{ResourceEmit, Real}
 end
 
 abstract type Formulation end
@@ -127,7 +127,7 @@ end
 Return resources for a given link l.
 """
 function link_res(l::Link)
-    return intersect(keys(l.to.input), keys(l.from.output))
+    return intersect(keys(l.to.Input), keys(l.from.Output))
 end
 
 abstract type Case end
