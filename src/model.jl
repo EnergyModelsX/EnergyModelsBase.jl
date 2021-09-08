@@ -43,7 +43,7 @@ with a value of 1 in the field n.Cap
 "
 function variables_capacity(m, 𝒩, 𝒯, modeltype)
     
-    𝒩ⁿᵒᵗ = node_not_av(𝒩)
+    𝒩ⁿᵒᵗ = node_not_sub(𝒩,Union{Storage,Availability})
 
     @variable(m, cap_use[𝒩ⁿᵒᵗ, 𝒯] >= 0)
     @variable(m, cap_inst[𝒩ⁿᵒᵗ, 𝒯] >= 0)
@@ -127,9 +127,12 @@ function variables_storage(m, 𝒩, 𝒯, modeltype)
     𝒩ˢᵗᵒʳ = node_sub(𝒩, Storage)
 
     @variable(m, stor_level[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
+    @variable(m, stor_pow_use[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_cap_inst[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
+    @variable(m, stor_pow_inst[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
 
     @constraint(m, [n ∈ 𝒩ˢᵗᵒʳ, t ∈ 𝒯], m[:stor_cap_inst][n, t] == n.Stor_cap[t])
+    @constraint(m, [n ∈ 𝒩ˢᵗᵒʳ, t ∈ 𝒯], m[:stor_pow_inst][n, t] == n.Cap[t])
     
     # TODO:
     # - Bypass variables not necessary if we decide to work with availability create_node
@@ -312,9 +315,9 @@ function create_node(m, n::Storage, 𝒯, 𝒫)
     end
 
     # Convention for cap_use when it is used with a Storage.
-    @constraint(m, [t ∈ 𝒯], m[:cap_use][n, t] == m[:flow_in][n, t, 𝒫ˢᵗᵒʳ])
+    @constraint(m, [t ∈ 𝒯], m[:stor_pow_use][n, t] == m[:flow_in][n, t, 𝒫ˢᵗᵒʳ])
 
-    @constraint(m, [t ∈ 𝒯], m[:cap_use][n, t] <= m[:cap_inst][n, t])
+    @constraint(m, [t ∈ 𝒯], m[:stor_pow_use][n, t] <= m[:stor_pow_inst][n, t])
 
     # Mass balance constraints
     @constraint(m, [t ∈ 𝒯],

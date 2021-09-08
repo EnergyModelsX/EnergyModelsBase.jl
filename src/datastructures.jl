@@ -10,7 +10,10 @@ struct ResourceCarrier{T<:Real} <: Resource  # Ressources that can be transporte
     CO2Int::T
 end
 
-# Function returning the emission resources
+"""
+    res_sub(𝒩::Array{Node}, sub)
+Return resources that are of type sub for a given Array `::Array{Node}`.
+"""
 function res_sub(𝒫, sub = ResourceEmit)
     return 𝒫[findall(x -> isa(x,sub), 𝒫)]
 end
@@ -21,20 +24,38 @@ end
 abstract type Node end
 Base.show(io::IO, n::Node) = print(io, "n$(n.id)")
 
-# Function returning nodes with type corresponding the input "sub"
+"""
+    node_sub(𝒩::Array{Node}, sub/subs)
+Return nodes that are of type sub/subs for a given Array `::Array{Node}`.
+"""
 function node_sub(𝒩::Array{Node}, sub = Network)
     return 𝒩[findall(x -> isa(x,sub), 𝒩)]
 end
 
-function node_sub(𝒩::Array{Node}, subs...)
-    return 𝒩[findall(x -> sum(isa(x, sub) for sub in subs) >= 1, 𝒩)]
+# function node_sub(𝒩::Array{Node}, subs...)
+#     return 𝒩[findall(x -> sum(isa(x, sub) for sub in subs) >= 1, 𝒩)]
+# end
+
+"""
+    node_not_sub(𝒩::Array{Node}, sub)
+Return nodes that are not of type sub for a given Array `::Array{Node}`.
+"""
+function node_not_sub(𝒩::Array{Node}, sub = Network)
+    return 𝒩[findall(x -> ~isa(x,sub), 𝒩)]
 end
 
-# Function exluding availability nodes
+"""
+    node_not_av(𝒩::Array{Node})
+Return nodes that are not availability nodes for a given Array `::Array{Node}`.
+"""
 function node_not_av(𝒩::Array{Node})
     return 𝒩[findall(x -> ~isa(x,Availability), 𝒩)]
 end
 
+"""
+    node_not_sink(𝒩::Array{Node})
+Return nodes that are not Sink nodes for a given Array `::Array{Node}`.
+"""
 function node_not_sink(𝒩::Array{Node})
     return 𝒩[findall(x -> ~isa(x,Sink), 𝒩)]
 end
