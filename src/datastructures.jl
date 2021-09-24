@@ -103,7 +103,7 @@ struct GenAvailability <: Availability
 end
 struct RefStorage <: Storage
     id
-    Cap::TimeProfile
+    Rate_cap::TimeProfile
     Stor_cap::TimeProfile
     Opex_var::TimeProfile
     Opex_fixed::TimeProfile

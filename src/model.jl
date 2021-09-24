@@ -127,12 +127,12 @@ function variables_storage(m, 𝒩, 𝒯, modeltype)
     𝒩ˢᵗᵒʳ = node_sub(𝒩, Storage)
 
     @variable(m, stor_level[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
-    @variable(m, stor_pow_use[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
+    @variable(m, stor_rate_use[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_cap_inst[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
-    @variable(m, stor_pow_inst[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
+    @variable(m, stor_rate_inst[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
 
     @constraint(m, [n ∈ 𝒩ˢᵗᵒʳ, t ∈ 𝒯], m[:stor_cap_inst][n, t] == n.Stor_cap[t])
-    @constraint(m, [n ∈ 𝒩ˢᵗᵒʳ, t ∈ 𝒯], m[:stor_pow_inst][n, t] == n.Cap[t])
+    @constraint(m, [n ∈ 𝒩ˢᵗᵒʳ, t ∈ 𝒯], m[:stor_rate_inst][n, t] == n.Rate_cap[t])
     
     # TODO:
     # - Bypass variables not necessary if we decide to work with availability create_node
@@ -314,10 +314,9 @@ function create_node(m, n::Storage, 𝒯, 𝒫)
             m[:flow_in][n, t, p] == m[:flow_in][n, t, 𝒫ˢᵗᵒʳ]*n.Input[p])
     end
 
-    # Convention for cap_use when it is used with a Storage.
-    @constraint(m, [t ∈ 𝒯], m[:stor_pow_use][n, t] == m[:flow_in][n, t, 𝒫ˢᵗᵒʳ])
-
-    @constraint(m, [t ∈ 𝒯], m[:stor_pow_use][n, t] <= m[:stor_pow_inst][n, t])
+    # Constraint for rate use
+    @constraint(m, [t ∈ 𝒯], m[:stor_rate_use][n, t] == m[:flow_in][n, t, 𝒫ˢᵗᵒʳ])
+    @constraint(m, [t ∈ 𝒯], m[:stor_rate_use][n, t] <= m[:stor_rate_inst][n, t])
 
     # Mass balance constraints
     @constraint(m, [t ∈ 𝒯],
