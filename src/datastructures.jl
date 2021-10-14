@@ -10,7 +10,10 @@ struct ResourceCarrier{T<:Real} <: Resource  # Ressources that can be transporte
     CO2Int::T
 end
 
-# Function returning the emission resources
+"""
+    res_sub(𝒩::Array{Node}, sub)
+Return resources that are of type sub for a given Array `::Array{Node}`.
+"""
 function res_sub(𝒫, sub = ResourceEmit)
     return 𝒫[findall(x -> isa(x,sub), 𝒫)]
 end
@@ -21,20 +24,38 @@ end
 abstract type Node end
 Base.show(io::IO, n::Node) = print(io, "n$(n.id)")
 
-# Function returning nodes with type corresponding the input "sub"
+"""
+    node_sub(𝒩::Array{Node}, sub/subs)
+Return nodes that are of type sub/subs for a given Array `::Array{Node}`.
+"""
 function node_sub(𝒩::Array{Node}, sub = Network)
     return 𝒩[findall(x -> isa(x,sub), 𝒩)]
 end
 
-function node_sub(𝒩::Array{Node}, subs...)
-    return 𝒩[findall(x -> sum(isa(x, sub) for sub in subs) >= 1, 𝒩)]
+# function node_sub(𝒩::Array{Node}, subs...)
+#     return 𝒩[findall(x -> sum(isa(x, sub) for sub in subs) >= 1, 𝒩)]
+# end
+
+"""
+    node_not_sub(𝒩::Array{Node}, sub)
+Return nodes that are not of type sub for a given Array `::Array{Node}`.
+"""
+function node_not_sub(𝒩::Array{Node}, sub = Network)
+    return 𝒩[findall(x -> ~isa(x,sub), 𝒩)]
 end
 
-# Function exluding availability nodes
+"""
+    node_not_av(𝒩::Array{Node})
+Return nodes that are not availability nodes for a given Array `::Array{Node}`.
+"""
 function node_not_av(𝒩::Array{Node})
     return 𝒩[findall(x -> ~isa(x,Availability), 𝒩)]
 end
 
+"""
+    node_not_sink(𝒩::Array{Node})
+Return nodes that are not Sink nodes for a given Array `::Array{Node}`.
+"""
 function node_not_sink(𝒩::Array{Node})
     return 𝒩[findall(x -> ~isa(x,Sink), 𝒩)]
 end
@@ -57,45 +78,45 @@ struct EmptyData <: Data end
 # Conversion as dict for prototyping: flexible, but inefficient
 struct RefSource <: Source
     id
-    capacity::TimeProfile
-    var_opex::TimeProfile
-    fixed_opex::TimeProfile
-    output::Dict{Resource, Real}
-    emissions::Dict{ResourceEmit, Real}
-    data::Dict{String,Data}#Should it be a string?
+    Cap::TimeProfile
+    Opex_var::TimeProfile
+    Opex_fixed::TimeProfile
+    Output::Dict{Resource, Real}
+    Emissions::Dict{ResourceEmit, Real}
+    Data::Dict{String,Data}#Should it be a string?
 end
 struct RefGeneration <: Network
     id
-    capacity::TimeProfile
-    var_opex::TimeProfile
-    fixed_opex::TimeProfile
-    input::Dict{Resource, Real}
-    output::Dict{Resource, Real}
-    emissions::Dict{ResourceEmit, Real}
+    Cap::TimeProfile
+    Opex_var::TimeProfile
+    Opex_fixed::TimeProfile
+    Input::Dict{Resource, Real}
+    Output::Dict{Resource, Real}
+    Emissions::Dict{ResourceEmit, Real}
     CO2_capture::Real
-    data::Dict{String,Data}
+    Data::Dict{String,Data}
 end
 struct GenAvailability <: Availability
     id
-    input::Dict{Resource, Real}
-    output::Dict{Resource, Real}
+    Input::Dict{Resource, Real}
+    Output::Dict{Resource, Real}
 end
 struct RefStorage <: Storage
     id
-    capacity::TimeProfile
-    cap_storage::TimeProfile
-    var_opex::TimeProfile
-    fixed_opex::TimeProfile
-    input::Dict{Resource, Real}
-    output::Dict{Resource, Real}
-    data::Dict{String,Data}
+    Rate_cap::TimeProfile
+    Stor_cap::TimeProfile
+    Opex_var::TimeProfile
+    Opex_fixed::TimeProfile
+    Input::Dict{Resource, Real}
+    Output::Dict{Resource, Real}
+    Data::Dict{String,Data}
 end
 struct RefSink <: Sink
     id
-    capacity::TimeProfile
-    penalty::Dict{Any, Real}            # Requires entries deficit and surplus
-    input::Dict{Resource, Real}
-    emissions::Dict{ResourceEmit, Real}
+    Cap::TimeProfile
+    Penalty::Dict{Any, Real}            # Requires entries deficit and surplus
+    Input::Dict{Resource, Real}
+    Emissions::Dict{ResourceEmit, Real}
 end
 
 abstract type Formulation end
@@ -127,7 +148,7 @@ end
 Return resources for a given link l.
 """
 function link_res(l::Link)
-    return intersect(keys(l.to.input), keys(l.from.output))
+    return intersect(keys(l.to.Input), keys(l.from.Output))
 end
 
 abstract type Case end
