@@ -153,11 +153,10 @@ end
 
 abstract type Case end
 struct OperationalCase <: Case
-    CO2_limit::TimeProfile
+    Emission_limit::Dict{ResourceEmit, TimeProfile}
 end
 
 abstract type EnergyModel end
 struct OperationalModel <: EnergyModel
-    case::Case
 end
 #struct InvestmentModel <: EnergyModel end # Example of extension

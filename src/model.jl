@@ -8,13 +8,14 @@ function create_model(data, modeltype)
     nodes = data[:nodes]  
     links = data[:links]
     products = data[:products]
+    case = data[:case]
 
     # Check if the data is consistent before the model is created.
     check_data(data, modeltype)
 
     # Declaration of variables for the problem
     variables_flow(m, nodes, T, products, links, modeltype)
-    variables_emission(m, nodes, T, products, modeltype)
+    variables_emission(m, nodes, T, products, case, modeltype)
     variables_opex(m, nodes, T, products, modeltype)
     variables_capex(m, nodes, T, products, modeltype)
     variables_capacity(m, nodes, T, modeltype)
@@ -28,7 +29,7 @@ function create_model(data, modeltype)
     constraints_links(m, nodes, T, products, links, modeltype)
 
     # Construction of the objective function
-    objective(m, nodes, T, products, modeltype)
+    objective(m, nodes, T, products, case, modeltype)
 
     return m
 end
@@ -76,7 +77,7 @@ end
 " Declaration of emission variables per technical node and investment
 period. This approach is taken from eTransport for a modular description
 of the system"
-function variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype)
+function variables_emission(m, 𝒩, 𝒯, 𝒫, case, modeltype)
     
     𝒩ⁿᵒᵗ = node_not_av(𝒩)    
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
@@ -84,7 +85,7 @@ function variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype)
 
     @variable(m, emissions_node[𝒩ⁿᵒᵗ, 𝒯, 𝒫ᵉᵐ] >= 0) 
     @variable(m, emissions_total[𝒯, 𝒫ᵉᵐ] >= 0) 
-    @variable(m, emissions_strategic[t_inv ∈ 𝒯ᴵⁿᵛ, 𝒫ᵉᵐ] <= modeltype.case.CO2_limit[t_inv]) 
+    @variable(m, emissions_strategic[t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ] <= case.Emission_limit[p][t_inv]) 
 end
 
 " Declaration of the variables used for calculating the costs of the problem
@@ -199,11 +200,9 @@ function constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype)
         m[:emissions_total][t, p] == sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ⁿᵒᵗ))
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ],
         m[:emissions_strategic][t_inv, p] == sum(m[:emissions_total][t, p] for t ∈ t_inv))
-    # @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ],
-    #     m[:emissions_strategic][t_inv, p] <= modeltype.case.CO2_limit[t_inv])
 end
 
-function objective(m, 𝒩, 𝒯, 𝒫, modeltype)
+function objective(m, 𝒩, 𝒯, 𝒫, case, modeltype)
 
     # Calculation of the objective function
     𝒩ⁿᵒᵗ = node_not_av(𝒩)

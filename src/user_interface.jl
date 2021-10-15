@@ -2,8 +2,7 @@ function run_model(fn, optimizer=nothing)
    @debug "Run model" fn optimizer
 
     data = read_data(fn)
-    case = OperationalCase(StrategicFixedProfile([450, 400, 350, 300]))
-    model = OperationalModel(case)
+    model = OperationalModel()
     m = create_model(data, model)
 
     if !isnothing(optimizer)
@@ -71,6 +70,10 @@ function read_data(fn)
             Direct(61,nodes[6],nodes[1],Linear())
             ]
 
+    case = OperationalCase(Dict(CO2 => StrategicFixedProfile([450, 400, 350, 300]),
+                                NG  => FixedProfile(1e6)
+                            ))
+
     T = UniformTwoLevel(1, 4, 1, UniformTimes(1, 24, 1))
     # WIP data structure
     data = Dict(
@@ -78,6 +81,7 @@ function read_data(fn)
                 :links => links,
                 :products => products,
                 :T => T,
+                :case => case,
                 )
     return data
 end
