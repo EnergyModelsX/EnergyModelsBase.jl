@@ -27,9 +27,9 @@ macro assert_or_log(ex, msg)
 end
 
 
-" Check if the data is consistent. Use the @assert_or_log macro when testing."
-function check_data(data, modeltype)
-    # TODO would it be useful to create an actual type for data, instead of using a Dict with 
+" Check if the case data is consistent. Use the @assert_or_log macro when testing."
+function check_data(case, modeltype)
+    # TODO would it be useful to create an actual type for case, instead of using a Dict with 
     # naming conventions? Could be implemented as a mutable in energymodelsbase.jl maybe?
    
     # TODO this usage of the global vector 'logs' doesn't seem optimal. Should consider using 
@@ -37,29 +37,29 @@ function check_data(data, modeltype)
     global logs = []
     log_by_element = Dict()
 
-    for n ∈ data[:nodes]
+    for n ∈ case[:nodes]
         # Empty the logs list before each check.
         global logs = []
-        check_node(n, data[:T], modeltype)
-        check_time_structure(n, data[:T])
+        check_node(n, case[:T], modeltype)
+        check_time_structure(n, case[:T])
         # Put all log messages that emerged during the check, in a dictionary with the node as key.
         log_by_element[n] = logs
     end
 
     # TODO 
-    #  * check that the timeprofile data[:T] is consistent with the ones used in the nodes.
+    #  * check that the timeprofile case[:T] is consistent with the ones used in the nodes.
 
     if ASSERTS_AS_LOG
-        compile_logs(data, log_by_element)
+        compile_logs(case, log_by_element)
     end
 end
 
 
 " Simple methods for showing all log messags. "
-function compile_logs(data, log_by_element)
+function compile_logs(case, log_by_element)
     log_message = "\n# LOGS\n\n"
     log_message *= "## Nodes\n"
-    for n in data[:nodes]
+    for n in case[:nodes]
         if length(log_by_element[n]) > 0
             log_message *= string("\n### ", n, "\n")
             for l in log_by_element[n]
@@ -80,7 +80,7 @@ function compile_logs(data, log_by_element)
         println(log_message)
 
         # If there was at least one error in the checks, an exception is thrown.
-        throw(AssertionError("Inconsistent data."))
+        throw(AssertionError("Inconsistent case data."))
     end
 end
 

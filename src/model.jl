@@ -1,23 +1,23 @@
-# Construction of the model based on the provided data
-function create_model(data, modeltype)
+# Construction of the model based on the provided case data
+function create_model(case, modeltype)
     @debug "Construct model"
     m = JuMP.Model()
 
     # WIP Data structure
-    T = data[:T]          
-    nodes = data[:nodes]  
-    links = data[:links]
-    products = data[:products]
-    case = data[:case]
+    T           = case[:T]          
+    nodes       = case[:nodes]  
+    links       = case[:links]
+    products    = case[:products]
+    global_data = case[:global_data]
 
-    # Check if the data is consistent before the model is created.
-    check_data(data, modeltype)
+    # Check if the case data is consistent before the model is created.
+    check_data(case, modeltype)
 
     # Declaration of variables for the problem
     variables_flow(m, nodes, T, products, links, modeltype)
-    variables_emission(m, nodes, T, products, case, modeltype)
-    variables_opex(m, nodes, T, products, modeltype)
-    variables_capex(m, nodes, T, products, modeltype)
+    variables_emission(m, nodes, T, products, global_data, modeltype)
+    variables_opex(m, nodes, T, products, global_data, modeltype)
+    variables_capex(m, nodes, T, products, global_data, modeltype)
     variables_capacity(m, nodes, T, modeltype)
     variables_surplus_deficit(m, nodes, T, products, modeltype)
     variables_storage(m, nodes, T, modeltype)
@@ -25,11 +25,11 @@ function create_model(data, modeltype)
 
     # Construction of constraints for the problem
     constraints_node(m, nodes, T, products, links, modeltype)
-    constraints_emissions(m, nodes, T, products, modeltype)
+    constraints_emissions(m, nodes, T, products, global_data, modeltype)
     constraints_links(m, nodes, T, products, links, modeltype)
 
     # Construction of the objective function
-    objective(m, nodes, T, products, case, modeltype)
+    objective(m, nodes, T, products, global_data, modeltype)
 
     return m
 end
@@ -77,7 +77,7 @@ end
 " Declaration of emission variables per technical node and investment
 period. This approach is taken from eTransport for a modular description
 of the system"
-function variables_emission(m, 𝒩, 𝒯, 𝒫, case, modeltype)
+function variables_emission(m, 𝒩, 𝒯, 𝒫, global_data, modeltype)
     
     𝒩ⁿᵒᵗ = node_not_av(𝒩)    
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
@@ -85,7 +85,7 @@ function variables_emission(m, 𝒩, 𝒯, 𝒫, case, modeltype)
 
     @variable(m, emissions_node[𝒩ⁿᵒᵗ, 𝒯, 𝒫ᵉᵐ] >= 0) 
     @variable(m, emissions_total[𝒯, 𝒫ᵉᵐ] >= 0) 
-    @variable(m, emissions_strategic[t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ] <= case.Emission_limit[p][t_inv]) 
+    @variable(m, emissions_strategic[t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ] <= global_data.Emission_limit[p][t_inv]) 
 end
 
 " Declaration of the variables used for calculating the costs of the problem
@@ -97,7 +97,7 @@ These variables are independent whether the problem is an operational or
 investment model as they are depending on the investment periods for
 easier later analysis. The package InvestmentModels can override These
 values via modeltype."
-function variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype)
+function variables_opex(m, 𝒩, 𝒯, 𝒫, global_data, modeltype)
     
     𝒩ⁿᵒᵗ = node_not_av(𝒩)    
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -106,7 +106,7 @@ function variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype)
     @variable(m, opex_fixed[𝒩ⁿᵒᵗ, 𝒯ᴵⁿᵛ] >= 0)
 end
 
-function variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype)
+function variables_capex(m, 𝒩, 𝒯, 𝒫, global_data, modeltype)
 
 end
 
@@ -188,7 +188,7 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ], m[:opex_fixed][n, t_inv] == n.Opex_fixed[t_inv] * t_inv.duration)
 end
 
-function constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype)
+function constraints_emissions(m, 𝒩, 𝒯, 𝒫, global_data, modeltype)
     
     # Constraints for calculation the total emissions per investment period and
     # limiting said emissions to a maximum value, currentkly hard coded
@@ -202,7 +202,7 @@ function constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype)
         m[:emissions_strategic][t_inv, p] == sum(m[:emissions_total][t, p] for t ∈ t_inv))
 end
 
-function objective(m, 𝒩, 𝒯, 𝒫, case, modeltype)
+function objective(m, 𝒩, 𝒯, 𝒫, global_data, modeltype)
 
     # Calculation of the objective function
     𝒩ⁿᵒᵗ = node_not_av(𝒩)
@@ -429,7 +429,7 @@ end
   the input. Within storage, this may however not be true.
   As an alternative, we could utilize also a different approach with an updated dictionary in
   which the variables are later changed (mutable structure)
-- Shall we keep the not availability case for exluding certain nodes for certain variables?
+- Shall we keep the not availability global_data for exluding certain nodes for certain variables?
   This is mostly related to avoiding emission and cost parameters for the availability nodes
 - It may be necessary to obtain also the first and last value in a strategic period. This has
   to be adjusted in TimeStructures package

@@ -151,8 +151,8 @@ function link_res(l::Link)
     return intersect(keys(l.to.Input), keys(l.from.Output))
 end
 
-abstract type Case end
-struct OperationalCase <: Case
+abstract type Global_data end
+struct EMB_global_data <: Global_data
     Emission_limit::Dict{ResourceEmit, TimeProfile}
 end
 
