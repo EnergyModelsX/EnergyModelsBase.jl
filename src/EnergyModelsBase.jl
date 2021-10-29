@@ -10,7 +10,7 @@ include("user_interface.jl")
 
 # Export the general classes
 export EnergyModel
-export Global_data
+export AbstractGlobalData
 export Data
 
 # Export the different node types

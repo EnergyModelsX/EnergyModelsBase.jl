@@ -73,8 +73,8 @@ function read_data(fn)
 
     # Creation of the time structure and global data
     T = UniformTwoLevel(1, 4, 1, UniformTimes(1, 24, 1))
-    global_data = EMB_global_data(Dict(CO2 => StrategicFixedProfile([450, 400, 350, 300]),
-                                       NG  => FixedProfile(1e6))
+    global_data = GlobalData(Dict(CO2 => StrategicFixedProfile([450, 400, 350, 300]),
+                                  NG  => FixedProfile(1e6))
                                   )
 
     # WIP data structure
