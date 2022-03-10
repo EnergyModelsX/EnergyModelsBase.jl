@@ -182,10 +182,14 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     end
 
     # Constraints for fixed OPEX and capital cost constraints
-    𝒩ⁿᵒᵗ = node_not_sink(node_not_av(𝒩))
-    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+    𝒩ⁿᵒᵗ    = node_not_sub(𝒩,Union{Storage,Availability,Sink})
+    𝒩ˢᵗᵒʳ   = node_sub(𝒩, Storage)
+    𝒯ᴵⁿᵛ    = strategic_periods(𝒯)
 
-    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ], m[:opex_fixed][n, t_inv] == n.Opex_fixed[t_inv] * t_inv.duration)
+    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ], m[:opex_fixed][n, t_inv] == n.Opex_fixed[t_inv] * 
+                                             m[:cap_inst][n, first(t_inv)])
+    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ˢᵗᵒʳ], m[:opex_fixed][n, t_inv] == n.Opex_fixed[t_inv] * 
+                                              m[:stor_cap_inst][n, first(t_inv)])
 end
 
 function constraints_emissions(m, 𝒩, 𝒯, 𝒫, global_data, modeltype)
@@ -208,7 +212,7 @@ function objective(m, 𝒩, 𝒯, 𝒫, global_data, modeltype)
     𝒩ⁿᵒᵗ = node_not_av(𝒩)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    @objective(m, Min, sum(m[:opex_var][n, t] + m[:opex_fixed][n, t] for t ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ))
+    @objective(m, Min, sum((m[:opex_var][n, t] + m[:opex_fixed][n, t]) * t.duration for t ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ))
 end
 
 function constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
