@@ -18,9 +18,9 @@ function create_model(case, modeltype)
     variables_emission(m, nodes, T, products, global_data, modeltype)
     variables_opex(m, nodes, T, products, global_data, modeltype)
     variables_capex(m, nodes, T, products, global_data, modeltype)
-    variables_capacity(m, nodes, T, modeltype)
+    variables_capacity(m, nodes, T, global_data, modeltype)
     variables_surplus_deficit(m, nodes, T, products, modeltype)
-    variables_storage(m, nodes, T, modeltype)
+    variables_storage(m, nodes, T, global_data, modeltype)
     variables_node(m, nodes, T, modeltype)
 
     # Construction of constraints for the problem
@@ -42,7 +42,7 @@ time periods `t ∈ 𝒯`.
 In general, it is prefered to have the capacity as a function of a variable given
 with a value of 1 in the field n.Cap
 "
-function variables_capacity(m, 𝒩, 𝒯, modeltype)
+function variables_capacity(m, 𝒩, 𝒯, global_data, modeltype)
     
     𝒩ⁿᵒᵗ = node_not_sub(𝒩,Union{Storage,Availability})
 
@@ -124,7 +124,7 @@ function variables_surplus_deficit(m, 𝒩, 𝒯, 𝒫, modeltype)
     @variable(m,sink_deficit[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
 end
 
-function variables_storage(m, 𝒩, 𝒯, modeltype)
+function variables_storage(m, 𝒩, 𝒯, global_data ,modeltype)
     𝒩ˢᵗᵒʳ = node_sub(𝒩, Storage)
 
     @variable(m, stor_level[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
