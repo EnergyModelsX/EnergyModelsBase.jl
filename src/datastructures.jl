@@ -151,13 +151,12 @@ function link_res(l::Link)
     return intersect(keys(l.to.Input), keys(l.from.Output))
 end
 
-abstract type Case end
-struct OperationalCase <: Case
-    CO2_limit::TimeProfile
+abstract type AbstractGlobalData end
+struct GlobalData <: AbstractGlobalData
+    Emission_limit::Dict{ResourceEmit, TimeProfile}
 end
 
 abstract type EnergyModel end
 struct OperationalModel <: EnergyModel
-    case::Case
 end
 #struct InvestmentModel <: EnergyModel end # Example of extension

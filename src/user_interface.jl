@@ -1,10 +1,9 @@
 function run_model(fn, optimizer=nothing)
    @debug "Run model" fn optimizer
 
-    data = read_data(fn)
-    case = OperationalCase(StrategicFixedProfile([450, 400, 350, 300]))
-    model = OperationalModel(case)
-    m = create_model(data, model)
+    case = read_data(fn)
+    model = OperationalModel()
+    m = create_model(case, model)
 
     if !isnothing(optimizer)
         set_optimizer(m, optimizer)
@@ -14,15 +13,16 @@ function run_model(fn, optimizer=nothing)
     else
         @info "No optimizer given"
     end
-    return m, data
+    return m, case
 end
 
 struct data_test <: Data end
 
 function read_data(fn)
-    @debug "Read data"
+    @debug "Read case data"
     @info "Hard coded dummy model for now"
 
+    # Define the different resources
     NG       = ResourceEmit("NG", 0.2)
     Coal     = ResourceCarrier("Coal", 0.35)
     Power    = ResourceCarrier("Power", 0.)
@@ -53,9 +53,9 @@ function read_data(fn)
                                 FixedProfile(0),  Dict(CO2 => 1, Power => 0.02), Dict(CO2 => 1),
                                 Dict("InvestmentModels" => data_test())),
             RefSink(7,          DynamicProfile([20 20 20 20 25 30 35 35 40 40 40 40 40 35 35 30 25 30 35 30 25 20 20 20;
-                                       20 20 20 20 25 30 35 35 40 40 40 40 40 35 35 30 25 30 35 30 25 20 20 20;
-                                       20 20 20 20 25 30 35 35 40 40 40 40 40 35 35 30 25 30 35 30 25 20 20 20;
-                                       20 20 20 20 25 30 35 35 40 40 40 40 40 35 35 30 25 30 35 30 25 20 20 20]),
+                                                20 20 20 20 25 30 35 35 40 40 40 40 40 35 35 30 25 30 35 30 25 20 20 20;
+                                                20 20 20 20 25 30 35 35 40 40 40 40 40 35 35 30 25 30 35 30 25 20 20 20;
+                                                20 20 20 20 25 30 35 35 40 40 40 40 40 35 35 30 25 30 35 30 25 20 20 20]),
                                 Dict(:Surplus => 0, :Deficit => 1e6),
                                 Dict(Power => 1), 𝒫ᵉᵐ₀),
             ]
@@ -71,13 +71,19 @@ function read_data(fn)
             Direct(61,nodes[6],nodes[1],Linear())
             ]
 
+    # Creation of the time structure and global data
     T = UniformTwoLevel(1, 4, 1, UniformTimes(1, 24, 1))
+    global_data = GlobalData(Dict(CO2 => StrategicFixedProfile([450, 400, 350, 300]),
+                                  NG  => FixedProfile(1e6))
+                                  )
+
     # WIP data structure
-    data = Dict(
-                :nodes => nodes,
-                :links => links,
-                :products => products,
-                :T => T,
+    case = Dict(
+                :nodes          => nodes,
+                :links          => links,
+                :products       => products,
+                :T              => T,
+                :global_data    => global_data,
                 )
-    return data
+    return case
 end
