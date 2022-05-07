@@ -395,8 +395,8 @@ function create_node(m, n::Sink, 𝒯, 𝒫)
     # Constraint for the Opex contributions
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         m[:opex_var][n, t_inv] == 
-            sum((m[:sink_surplus][n, t] * n.Penalty[:Surplus] 
-                + m[:sink_deficit][n, t] * n.Penalty[:Deficit])
+            sum((m[:sink_surplus][n, t] * n.Penalty[:Surplus][t] 
+                + m[:sink_deficit][n, t] * n.Penalty[:Deficit][t])
                 * t.duration for t ∈ t_inv))
 end
 

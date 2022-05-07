@@ -114,7 +114,7 @@ end
 struct RefSink <: Sink
     id
     Cap::TimeProfile
-    Penalty::Dict{Any, Real}            # Requires entries deficit and surplus
+    Penalty::Dict{Any, TimeProfile}            # Requires entries deficit and surplus
     Input::Dict{Resource, Real}
     Emissions::Dict{ResourceEmit, Real}
 end
