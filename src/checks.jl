@@ -111,11 +111,26 @@ function check_profile_field(fieldname, value::DynamicProfile, 𝒯)
 end
 
 
-function check_node(n::Node, 𝒯, modeltype::OperationalModel)
+function check_node(n::Node, 𝒯, modeltype)
     # Default fallback method.
 end
 
 
-function check_node(n::Source, 𝒯, modeltype::OperationalModel)
+function check_node(n::Source, 𝒯, modeltype)
     @assert_or_log sum(n.Cap[t] >= 0 for t ∈ 𝒯) == length(𝒯) "The capacity must be non-negative."
+end
+
+
+function check_node(n::Sink, 𝒯, modeltype)
+    @assert_or_log sum(n.Cap[t] >= 0 for t ∈ 𝒯) == length(𝒯) "The capacity must be non-negative."
+
+    @assert_or_log :Surplus ∈ keys(n.Penalty) &&
+                   :Deficit ∈ keys(n.Penalty) "The entries :Surplus and :Deficit are required in Sink.Penalty"
+
+    if :Surplus ∈ keys(n.Penalty) && :Deficit ∈ keys(n.Penalty)
+        # The if-condition was checked above.
+        @assert_or_log sum(n.Penalty[:Surplus][t] + n.Penalty[:Deficit][t] ≥ 0 for t ∈ 𝒯) ==
+                    length(𝒯) "An inconsistent combination of :Surplus and :Deficit lead to infeasible model."
+    end
+
 end

@@ -9,21 +9,19 @@ include("checks.jl")
 include("user_interface.jl")
 
 # Export the general classes
-export EnergyModel
-export AbstractGlobalData
-export Data
+export EnergyModel, OperationalModel
+export AbstractGlobalData, GlobalData
+export Data, EmptyData
+
+export ResourceCarrier, ResourceEmit
 
 # Export the different node types
-export Source
-export Network
-export Sink
-export Storage
+export Network, Sink, Source, Storage
+export GenAvailability, RefGeneration, RefGeneration, RefSink, RefSource, RefStorage
 
-# Export the different link and resource types
-export Link
-export ResourceEmit
-export ResourceCarrier
+export Linear, Link, Direct
 
 export @assert_or_log
+export create_model
 
 end # module
