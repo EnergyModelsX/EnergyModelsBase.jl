@@ -111,17 +111,17 @@ function check_profile_field(fieldname, value::DynamicProfile, 𝒯)
 end
 
 
-function check_node(n::Node, 𝒯, modeltype)
+function check_node(n::Node, 𝒯, modeltype::EnergyModel)
     # Default fallback method.
 end
 
 
-function check_node(n::Source, 𝒯, modeltype)
+function check_node(n::Source, 𝒯, modeltype::EnergyModel)
     @assert_or_log sum(n.Cap[t] >= 0 for t ∈ 𝒯) == length(𝒯) "The capacity must be non-negative."
 end
 
 
-function check_node(n::Sink, 𝒯, modeltype)
+function check_node(n::Sink, 𝒯, modeltype::EnergyModel)
     @assert_or_log sum(n.Cap[t] >= 0 for t ∈ 𝒯) == length(𝒯) "The capacity must be non-negative."
 
     @assert_or_log :Surplus ∈ keys(n.Penalty) &&
