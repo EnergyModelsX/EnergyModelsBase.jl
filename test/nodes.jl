@@ -18,7 +18,7 @@ function simple_graph(source::EMB.Source, sink::EMB.Sink)
     case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources,
         :global_data => GlobalData(Dict(CO2 => FixedProfile(100))))
 
-    return run_model(case)
+    return EMB.run_model("", case, GLPK.Optimizer)
 end
 
 
@@ -46,7 +46,7 @@ end
         sink = RefSink(2, FixedProfile(3),
             Dict(:Surplus => -1 * FixedProfile(4), :Deficit => 1 * FixedProfile(4)),
             Dict(Power => 1), Dict(CO2 => 0))
-        m = simple_graph(source, sink)
+        m, case = simple_graph(source, sink)
         @test termination_status(m) == MOI.OPTIMAL
         
     end

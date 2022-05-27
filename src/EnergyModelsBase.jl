@@ -13,10 +13,10 @@ export EnergyModel, OperationalModel
 export AbstractGlobalData, GlobalData
 export Data, EmptyData
 
-export ResourceCarrier, ResourceEmit
+export Resource, ResourceCarrier, ResourceEmit
 
 # Export the different node types
-export Network, Sink, Source, Storage
+export Source, Network, Sink, Storage, Availability
 export GenAvailability, RefGeneration, RefGeneration, RefSink, RefSource, RefStorage
 
 export Linear, Link, Direct

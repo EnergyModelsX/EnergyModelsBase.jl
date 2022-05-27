@@ -7,7 +7,7 @@ const EMB = EnergyModelsBase
 
 
 @testset "User interface" begin
-    m, case = EMB.run_model("", GLPK.Optimizer)
+    m, case = EMB.run_model("", nothing, GLPK.Optimizer)
 
     # Check for the objective value
     @test objective_value(m) ≈ 129056.305
