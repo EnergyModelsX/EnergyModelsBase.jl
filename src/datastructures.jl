@@ -1,11 +1,15 @@
 # Declaration of the resources
 abstract type Resource end
 Base.show(io::IO, r::Resource) = print(io, "$(r.id)")
-struct ResourceEmit{T<:Real}    <: Resource  # Emissions resources                   (e.g. CO2, CH4, NOX)
+
+"Emissions resources (e.g. CO2, CH4, NOX)"
+struct ResourceEmit{T<:Real} <: Resource
     id
     CO2Int::T
 end
-struct ResourceCarrier{T<:Real} <: Resource  # Ressources that can be transported    (e.g. power, NG, H2)
+
+"Ressources that can be transported (e.g. power, NG, H2)"
+struct ResourceCarrier{T<:Real} <: Resource
     id
     CO2Int::T
 end
@@ -15,12 +19,11 @@ end
 Return resources that are of type sub for a given Array `::Array{Node}`.
 """
 function res_sub(𝒫, sub = ResourceEmit)
-    return 𝒫[findall(x -> isa(x,sub), 𝒫)]
+    return 𝒫[findall(x -> isa(x, sub), 𝒫)]
 end
 
-# Declaration of the general type of node. This type has to be
-# utilised for all technologies so that we can utilize multiple
-# dispatch
+""" Declaration of the general type of node. This type has to be utilised for all 
+technologies so that we can utilize multiple dispatch. """
 abstract type Node end
 Base.show(io::IO, n::Node) = print(io, "n$(n.id)")
 
@@ -29,7 +32,7 @@ Base.show(io::IO, n::Node) = print(io, "n$(n.id)")
 Return nodes that are of type sub/subs for a given Array `::Array{Node}`.
 """
 function node_sub(𝒩::Array{Node}, sub = Network)
-    return 𝒩[findall(x -> isa(x,sub), 𝒩)]
+    return 𝒩[findall(x -> isa(x, sub), 𝒩)]
 end
 
 # function node_sub(𝒩::Array{Node}, subs...)
@@ -41,7 +44,7 @@ end
 Return nodes that are not of type sub for a given Array `::Array{Node}`.
 """
 function node_not_sub(𝒩::Array{Node}, sub = Network)
-    return 𝒩[findall(x -> ~isa(x,sub), 𝒩)]
+    return 𝒩[findall(x -> ~isa(x, sub), 𝒩)]
 end
 
 """
@@ -49,7 +52,7 @@ end
 Return nodes that are not availability nodes for a given Array `::Array{Node}`.
 """
 function node_not_av(𝒩::Array{Node})
-    return 𝒩[findall(x -> ~isa(x,Availability), 𝒩)]
+    return 𝒩[findall(x -> ~isa(x, Availability), 𝒩)]
 end
 
 """
@@ -57,7 +60,7 @@ end
 Return nodes that are not Sink nodes for a given Array `::Array{Node}`.
 """
 function node_not_sink(𝒩::Array{Node})
-    return 𝒩[findall(x -> ~isa(x,Sink), 𝒩)]
+    return 𝒩[findall(x -> ~isa(x, Sink), 𝒩)]
 end
 
 # Declaration of the individual technology node types representing
@@ -69,8 +72,8 @@ abstract type Sink <: Node end
 abstract type Storage <: Network end
 abstract type Availability <: Network end
 
-# abstarct type used to define concrete struct containing the package specific elements 
-# to add to the concrete struct defined in this package.
+""" Abstract type used to define concrete struct containing the package specific elements 
+to add to the concrete struct defined in this package."""
 abstract type Data end
 struct EmptyData <: Data end
 
@@ -83,8 +86,9 @@ struct RefSource <: Source
     Opex_fixed::TimeProfile
     Output::Dict{Resource, Real}
     Emissions::Dict{ResourceEmit, Real}
-    Data::Dict{String,Data}#Should it be a string?
+    Data::Dict{String, Data}#Should it be a string?
 end
+
 struct RefGeneration <: Network
     id
     Cap::TimeProfile
@@ -94,13 +98,15 @@ struct RefGeneration <: Network
     Output::Dict{Resource, Real}
     Emissions::Dict{ResourceEmit, Real}
     CO2_capture::Real
-    Data::Dict{String,Data}
+    Data::Dict{String, Data}
 end
+
 struct GenAvailability <: Availability
     id
     Input::Dict{Resource, Real}
     Output::Dict{Resource, Real}
 end
+
 struct RefStorage <: Storage
     id
     Rate_cap::TimeProfile
@@ -109,12 +115,14 @@ struct RefStorage <: Storage
     Opex_fixed::TimeProfile
     Input::Dict{Resource, Real}
     Output::Dict{Resource, Real}
-    Data::Dict{String,Data}
+    Data::Dict{String, Data}
 end
+
 struct RefSink <: Sink
     id
     Cap::TimeProfile
-    Penalty::Dict{Any, Real}            # Requires entries deficit and surplus
+    "Requires the two entries :Deficit and :Surplus"
+    Penalty::Dict{Any, TimeProfile}
     Input::Dict{Resource, Real}
     Emissions::Dict{ResourceEmit, Real}
 end
@@ -125,12 +133,15 @@ struct Linear <: Formulation end
 
 abstract type Link end
 Base.show(io::IO, l::Link) = print(io, "l$(l.from)-$(l.to)")
+
 struct Direct <: Link
     id
     from::Node
     to::Node
     Formulation::Formulation
 end
+Direct(id, from::Node, to::Node) = Direct(id, from, to, Linear())
+
 #struct Transmission <: Link end # Example of extension
 
 
@@ -159,4 +170,3 @@ end
 abstract type EnergyModel end
 struct OperationalModel <: EnergyModel
 end
-#struct InvestmentModel <: EnergyModel end # Example of extension

@@ -1,7 +1,10 @@
-function run_model(fn, optimizer=nothing)
+function run_model(fn, case = nothing, optimizer = nothing)
    @debug "Run model" fn optimizer
 
-    case = read_data(fn)
+   if isnothing(case)
+        case = read_data(fn)
+   end
+
     model = OperationalModel()
     m = create_model(case, model)
 
@@ -56,19 +59,19 @@ function read_data(fn)
                                                 20 20 20 20 25 30 35 35 40 40 40 40 40 35 35 30 25 30 35 30 25 20 20 20;
                                                 20 20 20 20 25 30 35 35 40 40 40 40 40 35 35 30 25 30 35 30 25 20 20 20;
                                                 20 20 20 20 25 30 35 35 40 40 40 40 40 35 35 30 25 30 35 30 25 20 20 20]),
-                                Dict(:Surplus => 0, :Deficit => 1e6),
+                                Dict(:Surplus => FixedProfile(0), :Deficit => FixedProfile(1e6)),
                                 Dict(Power => 1), 𝒫ᵉᵐ₀),
             ]
     links = [
-            Direct(14,nodes[1],nodes[4],Linear())
-            Direct(15,nodes[1],nodes[5],Linear())
-            Direct(16,nodes[1],nodes[6],Linear())
-            Direct(17,nodes[1],nodes[7],Linear())
-            Direct(21,nodes[2],nodes[1],Linear())
-            Direct(31,nodes[3],nodes[1],Linear())
-            Direct(41,nodes[4],nodes[1],Linear())
-            Direct(51,nodes[5],nodes[1],Linear())
-            Direct(61,nodes[6],nodes[1],Linear())
+            Direct(14, nodes[1], nodes[4], Linear())
+            Direct(15, nodes[1], nodes[5], Linear())
+            Direct(16, nodes[1], nodes[6], Linear())
+            Direct(17, nodes[1], nodes[7], Linear())
+            Direct(21, nodes[2], nodes[1], Linear())
+            Direct(31, nodes[3], nodes[1], Linear())
+            Direct(41, nodes[4], nodes[1], Linear())
+            Direct(51, nodes[5], nodes[1], Linear())
+            Direct(61, nodes[6], nodes[1], Linear())
             ]
 
     # Creation of the time structure and global data

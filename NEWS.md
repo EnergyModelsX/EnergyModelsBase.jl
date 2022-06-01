@@ -1,5 +1,14 @@
 # EnergyModelsBase changelog
 
+Version 0.2.4 (2022-09-07)
+--------------------------
+### Feature update and changes in export
+* Inclusion of time dependent profiles for surplus and deficit of sinks
+* Inclusion of parameter checks for surplus and deficit of sinks
+* Export of all reference nodes for easier identification of the nodes
+* Changes in the test structure with improved testing of variables
+* Changes in doc srings for individual functions/types
+
 Version 0.2.3 (2021-09-07)
 --------------------------
 ### Changes in naming
