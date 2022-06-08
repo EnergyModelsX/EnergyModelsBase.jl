@@ -260,7 +260,7 @@ function objective(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modelty
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Calculation of the objective function.
-    @objective(m, Min, sum((m[:opex_var][n, t] + m[:opex_fixed][n, t]) * t.duration for t ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ))
+    @objective(m, Max, -sum((m[:opex_var][n, t] + m[:opex_fixed][n, t]) * t.duration for t ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ))
 end
 
 """
