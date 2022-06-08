@@ -100,6 +100,7 @@ end
 
 """
     check_time_structure(n::Node, 𝒯)
+
 Check that all fields of a `Node` that are of type `TimeProfile` correspond to the time structure `𝒯`.
 """
 function check_time_structure(n::Node, 𝒯)
@@ -112,6 +113,7 @@ end
 
 """
     check_profile_field(fieldname, value::TimeProfile, 𝒯)
+
 Check that an individual `TimeProfile` corresponds to the time structure `𝒯`.
 """
 function check_profile_field(fieldname, value::FixedProfile, 𝒯)
@@ -133,10 +135,10 @@ end
 
 """
     check_node(n, 𝒯, modeltype::EnergyModel)
+
 Check that the fields of a `Node n` corresponds to required structure.
 """
 function check_node(n::Node, 𝒯, modeltype::EnergyModel)
-    # Default fallback method.
 end
 
 function check_node(n::Source, 𝒯, modeltype::EnergyModel)

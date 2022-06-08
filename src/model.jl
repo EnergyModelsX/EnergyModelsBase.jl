@@ -4,7 +4,7 @@
 Create the model and call all requried functions based on provided 'modeltype'
 and case data.
 """
-function create_model(case, modeltype)
+function create_model(case, modeltype::EnergyModel)
     @debug "Construct model"
     m = JuMP.Model()
 
@@ -40,7 +40,7 @@ function create_model(case, modeltype)
 end
 
 """
-    variables_capacity(m, 𝒩, 𝒯, global_data, modeltype)
+    variables_capacity(m, 𝒩, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
 
 Create variables `:cap_use` to track how much of installed capacity is used in each node
 in terms of either `:flow_in` or `:flow_out` (depending on node `n ∈ 𝒩`) for all 
@@ -51,7 +51,7 @@ value of 1 in the field `n.Cap`.
 Create variables `:cap_inst` corresponding to installed capacity and constrains the variable
 to the specified capacity `n.Cap`.
 """
-function variables_capacity(m, 𝒩, 𝒯, global_data, modeltype)
+function variables_capacity(m, 𝒩, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
     
     𝒩ⁿᵒᵗ = node_not_sub(𝒩, Union{Storage, Availability})
 
@@ -64,12 +64,12 @@ function variables_capacity(m, 𝒩, 𝒯, global_data, modeltype)
 end
 
 """
-    variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
+    variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 
 Declaration of the individual input (`:flow_in`) and output (`:flow_out`) flowrates for
 each technological node `n ∈ 𝒩` and link `l ∈ ℒ` (`:link_in` and `:link_out`).
 """
-function variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
+function variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 
     𝒩ᵒᵘᵗ = node_sub(𝒩, Union{Source, Network})
     𝒩ⁱⁿ  = node_sub(𝒩, Union{Network, Sink})
@@ -82,7 +82,7 @@ function variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
 end
 
 """
-    variables_emission(m, 𝒩, 𝒯, 𝒫, global_data, modeltype)
+    variables_emission(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
 
 Declaration of emission variables per technical node `n ∈ 𝒩` and emission resource `𝒫ᵉᵐ ∈ 𝒫`.
 These are differentied in:
@@ -91,7 +91,7 @@ These are differentied in:
   * `:emissions_strategic` - total strategic emissions, constrained to an upper limit based on 
   `global_data.Emission_limit`.
 """
-function variables_emission(m, 𝒩, 𝒯, 𝒫, global_data, modeltype)
+function variables_emission(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
     
     𝒩ⁿᵒᵗ = node_not_av(𝒩)    
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
@@ -103,12 +103,12 @@ function variables_emission(m, 𝒩, 𝒯, 𝒫, global_data, modeltype)
 end
 
 """
-    variables_opex(m, 𝒩, 𝒯, 𝒫, global_data, modeltype)
+    variables_opex(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
 
 Declaration of the OPEX variables (`:opex_var` and `:opex_fixed`) of the model for each investment
 period `𝒯ᴵⁿᵛ ∈ 𝒯`. Variable OPEX can be non negative to account for revenue streams.
 """
-function variables_opex(m, 𝒩, 𝒯, 𝒫, global_data, modeltype)
+function variables_opex(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
     
     𝒩ⁿᵒᵗ = node_not_av(𝒩)    
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -118,21 +118,22 @@ function variables_opex(m, 𝒩, 𝒯, 𝒫, global_data, modeltype)
 end
 
 """
-    variables_capex(m, 𝒩, 𝒯, 𝒫, global_data, modeltype)
+    variables_capex(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
 
 Declaration of the CAPEX variables of the model for each investment period `𝒯ᴵⁿᵛ ∈ 𝒯`. 
 Empty for operational models but required for multiple dispatch in investment model.
 """
-variables_capex(m, 𝒩, 𝒯, 𝒫, global_data, modeltype) = nothing
+function variables_capex(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
+end
 
 """
-    variables_surplus_deficit(m, 𝒩, 𝒯, 𝒫, modeltype)
+    variables_surplus_deficit(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Declaration of both surplus (`:sink_surplus`) and deficit (`:sink_deficit`) variables
 for `Sink` nodes `𝒩ˢⁱⁿᵏ` to quantify when there is too much or too little energy for
 satisfying the demand.
 """
-function variables_surplus_deficit(m, 𝒩, 𝒯, 𝒫, modeltype)
+function variables_surplus_deficit(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
     𝒩ˢⁱⁿᵏ = node_sub(𝒩, Sink)
 
@@ -152,7 +153,7 @@ Declaration of different storage variables for `Storage` nodes `𝒩ˢᵗᵒʳ`.
   * `:stor_rate_inst` - installed rate for storage, e.g. power in each operational period,
   constrained in the operational case to `n.Rate_cap` 
 """
-function variables_storage(m, 𝒩, 𝒯, global_data ,modeltype)
+function variables_storage(m, 𝒩, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
 
     𝒩ˢᵗᵒʳ = node_sub(𝒩, Storage)
 
@@ -167,12 +168,12 @@ end
 
 
 """
-    variables_node(m, 𝒩, 𝒯, modeltype)
+    variables_node(m, 𝒩, 𝒯, modeltype::EnergyModel)
 
 Call a method for creating e.g. other variables specific to the different 
 node types. The method is only called once for each node type.
 """
-function variables_node(m, 𝒩, 𝒯, modeltype)
+function variables_node(m, 𝒩, 𝒯, modeltype::EnergyModel)
     nodetypes = []
     for node in 𝒩
         if ! (typeof(node) in nodetypes)
@@ -183,22 +184,23 @@ function variables_node(m, 𝒩, 𝒯, modeltype)
 end
 
 """"
-    variables_node(m, 𝒩, 𝒯, node, modeltype)
+    variables_node(m, 𝒩, 𝒯, node, modeltype::EnergyModel)
 
 Default fallback method when no function is defined for a node type.
 """
-variables_node(m, 𝒩, 𝒯, node, modeltype) = nothing
+function variables_node(m, 𝒩, 𝒯, node, modeltype::EnergyModel)
+end
 
 
 """
-    constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
+    constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 
 Create link constraints for each `n ∈ 𝒩` depending on its type and calling the function
 `create_node(m, n, 𝒯, 𝒫)` for the individual node constraints.
 
 Create constraints for fixed OPEX.
 """
-function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
+function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 
     for n ∈ 𝒩
         ℒᶠʳᵒᵐ, ℒᵗᵒ = link_sub(ℒ, n)
@@ -229,11 +231,11 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
 end
 
 """
-    constraints_emissions(m, 𝒩, 𝒯, 𝒫, global_data, modeltype)
+    constraints_emissions(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
 
 Create constraints for the emissions accounting for both operational and strategic periods.
 """
-function constraints_emissions(m, 𝒩, 𝒯, 𝒫, global_data, modeltype)
+function constraints_emissions(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
     
     𝒩ⁿᵒᵗ = node_not_av(𝒩)
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
@@ -247,11 +249,11 @@ function constraints_emissions(m, 𝒩, 𝒯, 𝒫, global_data, modeltype)
 end
 
 """
-    objective(m, 𝒩, 𝒯, 𝒫, global_data, modeltype)
+    objective(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
 
 Create the objective for the optimization problem for a given modeltype. 
 """
-function objective(m, 𝒩, 𝒯, 𝒫, global_data, modeltype)
+function objective(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
 
     # Declaration of the required subsets.
     𝒩ⁿᵒᵗ = node_not_av(𝒩)
@@ -262,11 +264,11 @@ function objective(m, 𝒩, 𝒯, 𝒫, global_data, modeltype)
 end
 
 """
-    constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
+    constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 
 Call the function `create_link` for link formulation
 """
-function constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
+function constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
     for l ∈ ℒ 
         create_link(m, 𝒯, 𝒫, l, l.Formulation)
     end
@@ -438,6 +440,7 @@ end
 
 """
     create_node(m, n::Sink, 𝒯, 𝒫)
+
 Set all constraints for a `Sink`. Can serve as fallback option for all unspecified
 subtypes of `Sink`.
 """
@@ -487,12 +490,12 @@ function create_node(m, n::Availability, 𝒯, 𝒫)
 end
 
 """
-    create_link(m, 𝒯, 𝒫, l, formulation)
+    create_link(m, 𝒯, 𝒫, l, formulation::Formulation)
 
 Set the constraints for a simple `Link` (input = output). Can serve as fallback option for all
 unspecified subtypes of `Link`.
 """
-function create_link(m, 𝒯, 𝒫, l, formulation)
+function create_link(m, 𝒯, 𝒫, l, formulation::Formulation)
 	# Generic link in which each output corresponds to the input
     @constraint(m, [t ∈ 𝒯, p ∈ link_res(l)],
         m[:link_out][l, t, p] == m[:link_in][l, t, p])

@@ -57,7 +57,7 @@ struct EmptyData <: Data end
 **`Cap::TimeProfile`** is the installed capacity.\n
 **`Opex_var::TimeProfile`** is the variational operational costs per energy unit produced.\n
 **`Opex_fixed::TimeProfile`** is the fixed operational costs.\n
-**`Output::Dict{Resource, Real}`** are the generated `Resource`s.\n
+**`Output::Dict{Resource, Real}`** are the generated `Resource`s with conversion value `Real`..\n
 **`Emissions::Dict{ResourceEmit, Real}`**: emissions per energy unit produced.\n
 **`Data::Dict{String, Data}`** is the additional data (e.g. for investments).
 
