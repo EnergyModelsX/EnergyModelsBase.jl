@@ -1,12 +1,6 @@
-using TimeStructures
-
-const TS = TimeStructures
-const EMB = EnergyModelsBase
-
 
 Power = ResourceCarrier("Power", 1.0)
 CO2 = ResourceEmit("CO2", 1.0)
-
 
 function simple_graph(source::EMB.Source, sink::EMB.Sink)
     # emissions   = Dict(CO2=>0.01)
