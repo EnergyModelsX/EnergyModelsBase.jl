@@ -393,30 +393,34 @@ function create_node(m, n::Storage, 𝒯, 𝒫)
         if t == first_operational(t_inv)
             if 𝒫ˢᵗᵒʳ ∈ 𝒫ᵉᵐ
                 @constraint(m,
-                    m[:stor_level][n, t] ==  m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
-                                             m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ]
+                    m[:stor_level][n, t] ==  (m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
+                                             m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ]) * 
+                                             t.duration
                     )
                 @constraint(m, m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ] >= 0)
             else
                 @constraint(m,
                     m[:stor_level][n, t] ==  m[:stor_level][n, last_operational(t_inv)] + 
-                                             m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
-                                             m[:flow_out][n, t , 𝒫ˢᵗᵒʳ]
+                                             (m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
+                                             m[:flow_out][n, t , 𝒫ˢᵗᵒʳ]) * 
+                                             t.duration
                     )
             end
         else
             if 𝒫ˢᵗᵒʳ ∈ 𝒫ᵉᵐ
                 @constraint(m,
-                    m[:stor_level][n, t] ==  m[:stor_level][n, previous(t)] + 
-                                             m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
-                                             m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ]
+                    m[:stor_level][n, t] ==  m[:stor_level][n, previous(t, 𝒯)] + 
+                                             (m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
+                                             m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ]) * 
+                                             t.duration
                     )
                 @constraint(m, m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ] >= 0)
             else
                 @constraint(m,
-                    m[:stor_level][n, t] ==  m[:stor_level][n, previous(t)] + 
-                                             m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
-                                             m[:flow_out][n, t , 𝒫ˢᵗᵒʳ]
+                    m[:stor_level][n, t] ==  m[:stor_level][n, previous(t, 𝒯)] + 
+                                             (m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] -
+                                             m[:flow_out][n, t , 𝒫ˢᵗᵒʳ]) * 
+                                             t.duration
                     )
             end
         end
@@ -435,7 +439,7 @@ function create_node(m, n::Storage, 𝒯, 𝒫)
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         m[:opex_var][n, t_inv] == 
             sum((m[:flow_in][n, t , 𝒫ˢᵗᵒʳ] - m[:emissions_node][n, t, 𝒫ˢᵗᵒʳ])
-            * n.Opex_var[t] for t ∈ t_inv))
+            * n.Opex_var[t] * t.duration for t ∈ t_inv))
 end
 
 """
