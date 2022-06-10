@@ -18,4 +18,4 @@ docs/site/
 Manifest.toml
 
 # Output
-*.md
+*consistency_log.md
