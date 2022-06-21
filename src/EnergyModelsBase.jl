@@ -1,3 +1,6 @@
+"""
+Main module for `EnergyModelsBase.jl`.
+"""
 module EnergyModelsBase
 
 using JuMP

@@ -9,9 +9,13 @@ ASSERTS_AS_LOG = true
 logs = []
 
 
-" Macro that extends the behaviour of the @assert macro. The switch ASSERTS_AS_LOG, 
-    controls if the macro should act as a logger or a normal @assert. This macro is
-    designed to be used to check whether the data provided is consistent."
+"""
+    assert_or_log(ex, msg)
+
+Macro that extends the behaviour of the @assert macro. The switch ASSERTS_AS_LOG, 
+controls if the macro should act as a logger or a normal @assert. This macro is
+designed to be used to check whether the data provided is consistent.
+"""
 macro assert_or_log(ex, msg)
     return quote
         if ASSERTS_AS_LOG
@@ -27,7 +31,12 @@ macro assert_or_log(ex, msg)
 end
 
 
-" Check if the case data is consistent. Use the @assert_or_log macro when testing."
+"""
+    check_data(case, modeltype)
+
+Check if the case data is consistent. Use the @assert_or_log macro when testing.
+Currently only checking node data.
+"""
 function check_data(case, modeltype)
     # TODO would it be useful to create an actual type for case, instead of using a Dict with 
     # naming conventions? Could be implemented as a mutable in energymodelsbase.jl maybe?
@@ -55,7 +64,11 @@ function check_data(case, modeltype)
 end
 
 
-" Simple methods for showing all log messags. "
+"""
+    compile_logs(case, log_by_element)
+
+Simple method for showing all log messages.
+"""
 function compile_logs(case, log_by_element)
     log_message = "\n# LOGS\n\n"
     log_message *= "## Nodes\n"
@@ -85,7 +98,11 @@ function compile_logs(case, log_by_element)
 end
 
 
-" Check that all fields of a node that is a TimeProfile corresponds to the time structure 𝒯."
+"""
+    check_time_structure(n::Node, 𝒯)
+
+Check that all fields of a `Node` that are of type `TimeProfile` correspond to the time structure `𝒯`.
+"""
 function check_time_structure(n::Node, 𝒯)
     for fieldname ∈ fieldnames(typeof(n))
         if isa(getfield(n, fieldname), TimeProfile)
@@ -94,6 +111,11 @@ function check_time_structure(n::Node, 𝒯)
     end
 end
 
+"""
+    check_profile_field(fieldname, value::TimeProfile, 𝒯)
+
+Check that an individual `TimeProfile` corresponds to the time structure `𝒯`.
+"""
 function check_profile_field(fieldname, value::FixedProfile, 𝒯)
 end
 
@@ -111,15 +133,17 @@ function check_profile_field(fieldname, value::DynamicProfile, 𝒯)
 end
 
 
-function check_node(n::Node, 𝒯, modeltype::EnergyModel)
-    # Default fallback method.
-end
+"""
+    check_node(n, 𝒯, modeltype::EnergyModel)
 
+Check that the fields of a `Node n` corresponds to required structure.
+"""
+function check_node(n::Node, 𝒯, modeltype::EnergyModel)
+end
 
 function check_node(n::Source, 𝒯, modeltype::EnergyModel)
     @assert_or_log sum(n.Cap[t] >= 0 for t ∈ 𝒯) == length(𝒯) "The capacity must be non-negative."
 end
-
 
 function check_node(n::Sink, 𝒯, modeltype::EnergyModel)
     @assert_or_log sum(n.Cap[t] >= 0 for t ∈ 𝒯) == length(𝒯) "The capacity must be non-negative."
