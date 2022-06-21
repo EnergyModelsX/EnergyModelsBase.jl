@@ -512,8 +512,3 @@ end
   As an alternative, we could utilize also a different approach with an updated dictionary in
   which the variables are later changed (mutable structure)
 "
-
-"Hard coded values:
-- Maximum emissions
-- Emissions for Source and Sink
-"
