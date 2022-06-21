@@ -208,13 +208,15 @@ struct Linear <: Formulation end
 abstract type Link end
 Base.show(io::IO, l::Link) = print(io, "l$(l.from)-$(l.to)")
 
-""" A direct link between two nodes.
+""" `Direct <: Link`
+
+A direct link between two nodes.
 
 # Fields
 **`id`** is the name/identifyer of the link.\n
 **`from::Node`** is node from which there is flow into the link.\n
 **`to::Node`** is node to which there is flow out of the link.\n
-**`Formulation::Formulation`** ithe used formulation of links. If not specified,
+**`Formulation::Formulation`** is the used formulation of links. If not specified,
 a `Linear` link is assumed\n
 """
 struct Direct <: Link

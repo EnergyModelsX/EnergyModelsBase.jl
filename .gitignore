@@ -19,3 +19,6 @@ Manifest.toml
 
 # Output
 *consistency_log.md
+
+# MacOS
+.DS_Store

@@ -11,6 +11,7 @@ catch
 end
 
 using EnergyModelsBase
+const EMB = EnergyModelsBase
 
 makedocs(
     sitename = "EnergyModelsBase",
