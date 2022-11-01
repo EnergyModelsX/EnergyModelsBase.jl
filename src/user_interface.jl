@@ -80,7 +80,7 @@ function read_data(fn)
 
     # Creation of the time structure and global data
     T = UniformTwoLevel(1, 4, 1, UniformTimes(1, 4, 2))
-    global_data = GlobalData(Dict(CO2 => StrategicFixedProfile([80, 70, 60, 50]),
+    global_data = GlobalData(Dict(CO2 => StrategicFixedProfile([160, 140, 120, 100]),
                                   NG  => FixedProfile(1e6))
                                   )
 
