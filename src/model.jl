@@ -245,7 +245,7 @@ function constraints_emissions(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalD
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
         m[:emissions_total][t, p] == sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ⁿᵒᵗ))
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ],
-        m[:emissions_strategic][t_inv, p] == sum(m[:emissions_total][t, p] for t ∈ t_inv))
+        m[:emissions_strategic][t_inv, p] == sum(m[:emissions_total][t, p] * t.duration for t ∈ t_inv))
 end
 
 """
@@ -478,7 +478,7 @@ end
 
 """
     create_node(m, n::Availability, 𝒯, 𝒫)
-
+    
 Set all constraints for a `Availability`. Can serve as fallback option for all unspecified
 subtypes of `Availability`.
 
