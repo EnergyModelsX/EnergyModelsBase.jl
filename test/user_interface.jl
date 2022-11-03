@@ -1,5 +1,5 @@
 @testset "User interface" begin
-    m, case = EMB.run_model("", nothing, GLPK.Optimizer)
+    m, case = EMB.run_model("", nothing, HiGHS.Optimizer)
 
     # Retrieve data from the case structure
     global_data = case[:global_data]

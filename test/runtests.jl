@@ -3,7 +3,7 @@ using Test
 using EnergyModelsBase
 using TimeStructures
 using JuMP
-using GLPK
+using HiGHS
 
 const EMB = EnergyModelsBase
 const TS = TimeStructures

@@ -12,7 +12,7 @@ function simple_graph(source::EMB.Source, sink::EMB.Sink)
     case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources,
         :global_data => GlobalData(Dict(CO2 => FixedProfile(100))))
 
-    return EMB.run_model("", case, GLPK.Optimizer)
+    return EMB.run_model("", case, HiGHS.Optimizer)
 end
 
 
