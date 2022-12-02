@@ -90,7 +90,7 @@ function compile_logs(case, log_by_element)
         close(io)
     
         # Print the log to the console.
-        println(log_message)
+        @error log_message
 
         # If there was at least one error in the checks, an exception is thrown.
         throw(AssertionError("Inconsistent case data."))
