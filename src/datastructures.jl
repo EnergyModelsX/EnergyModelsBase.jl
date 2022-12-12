@@ -31,7 +31,7 @@ end
 
 """ Declaration of the general type of node."""
 abstract type Node end
-Base.show(io::IO, n::Node) = print(io, "n$(n.id)")
+Base.show(io::IO, n::Node) = print(io, "n_$(n.id)")
 
 """ `Source` node with only output."""
 abstract type Source <: Node end
@@ -206,7 +206,7 @@ struct Linear <: Formulation end
 
 """ Declaration of the general type for links connecting nodes."""
 abstract type Link end
-Base.show(io::IO, l::Link) = print(io, "l$(l.from)-$(l.to)")
+Base.show(io::IO, l::Link) = print(io, "l_$(l.from)-$(l.to)")
 
 """ `Direct <: Link`
 

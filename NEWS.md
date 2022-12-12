@@ -1,5 +1,12 @@
 # EnergyModelsBase changelog
 
+
+Version 0.2.7 (2022-12-12)
+--------------------------
+### Internal release
+* Renamed packages to use common prefix
+* Updated README
+
 Version 0.2.4 (2022-09-07)
 --------------------------
 ### Feature update and changes in export
