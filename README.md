@@ -1,5 +1,7 @@
 # EnergyModelsBase
 
+[![Pipeline: passing](https://gitlab.sintef.no/clean_export/energymodelsbase.jl/badges/main/pipeline.svg)](https://gitlab.sintef.no/clean_export/energymodelsbase.jl/-/jobs)
+[![Docs: stable](https://img.shields.io/badge/docs-stable-4495d1.svg)](https://clean_export.pages.sintef.no/energymodelsbase.jl)
 <!---
 [![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
 --->
