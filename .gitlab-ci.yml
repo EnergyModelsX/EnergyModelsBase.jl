@@ -1,9 +1,9 @@
 
 before_script:
-  - apt-get update -qq && apt-get install -y git  # Install git.
+  # Install git.
+  - apt-get update -qq && apt-get install -y git
 
-  # Clone private repo dependencies.
-  - which git || (apt-get update -qq && apt-get install --no-install-recommends -qqqy git)
+  # Install ssh-agent and add the private key.
   - command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )
   - eval $(ssh-agent -s)
   - echo "$PRIVATE_DEPLOY_KEY_EMB" | tr -d '\r' | ssh-add -
@@ -12,26 +12,12 @@ before_script:
   - mkdir -p ~/.ssh
   - chmod 700 ~/.ssh
 
-  # Minimal ssh-config.
-  - echo "Host gitlab.sintef.no
-        Hostname gitlab.sintef.no
-        IdentityFile ~/.ssh/id_ed25519" > ~/.ssh/config
-
-  # Copy in the private ssh key matching the gitlab deploy key.
-  - echo "$PRIVATE_DEPLOY_KEY_EMB" > ~/.ssh/id_ed25519
-  - ls ~/.ssh 
-  - chmod 600 ~/.ssh/id_ed25519
-
   # Set the known_hosts to a variable containing the public key of gitlab.sintef.no
   - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
   - chmod 644 ~/.ssh/known_hosts
 
   # Test the ssh connection.
   - ssh -T git@gitlab.sintef.no
-
-  # Set an arbitrary email and user name for cloning.
-  - git config --global user.email "git@clean-export.no"
-  - git config --global user.name "Clean Export Bot"
 
   # Add the Clean Export internal registry and the public General registry.
   - julia -e 'using Pkg; Pkg.Registry.add(RegistrySpec(url = "git@gitlab.sintef.no:clean_export/registrycleanexport.git"))'
