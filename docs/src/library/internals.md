@@ -1,6 +1,20 @@
 # Internals
 
-## Methods
+## Index
+```@index
+Pages = ["internals.md"]
+```
 
-```@docs
+## Types
+```@autodocs
+Modules = [EnergyModelsBase]
+Public = false
+Order = [:type]
+```
+
+## Methods
+```@autodocs
+Modules = [EnergyModelsBase]
+Public = false
+Order = [:function]
 ```

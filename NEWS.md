@@ -1,4 +1,4 @@
-# EnergyModelsBase changelog
+# Changelog
 
 
 Version 0.2.7 (2022-12-12)
