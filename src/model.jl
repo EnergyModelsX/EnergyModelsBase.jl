@@ -136,15 +136,42 @@ calling the method [`variables_node`](@ref) on all nodes of each type.
 """
 function variables_nodes(m, 𝒩, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
     # Vector of the unique node types in 𝒩.
-    node_types = unique(map(n -> typeof(n), 𝒩))
+    node_composite_types = unique(map(n -> typeof(n), 𝒩))
+    node_types = collect_node_types(node_composite_types)
+    # TODO sort for decreasing number of nodes, to make sure the variables from the widest
+    # category is created first.
     
-    for node_type in node_types
+    for node_type ∈ node_types
         # All nodes of the given sub type.
         𝒩ˢᵘᵇ = filter(n -> isa(n, node_type), 𝒩)
         # Convert to a Vector of common-type instad of Any.
-        𝒩ˢᵘᵇ = map(identity, 𝒩ˢᵘᵇ)
+        𝒩ˢᵘᵇ = convert(Vector{node_type}, 𝒩ˢᵘᵇ)
+        @show 𝒩ˢᵘᵇ
         variables_node(m, 𝒩ˢᵘᵇ, 𝒯, global_data, modeltype)
     end
+end
+
+
+"""
+    collect_node_types(node_types)
+
+Return a collection of all the give node_types and their supertypes.
+"""
+function collect_node_types(node_types)
+    types = node_types
+    for n ∈ node_types
+        parent = supertype(n)
+        if parent == Any
+            continue
+        end
+        
+        # If the parent is already added to the list, we can skip it.
+        if  parent ∉ node_types
+            ancestors = collect_node_types([parent])
+            types = unique(vcat(types, ancestors))
+        end
+    end
+    return types
 end
 
 
