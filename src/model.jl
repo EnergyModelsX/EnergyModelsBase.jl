@@ -24,8 +24,6 @@ function create_model(case, modeltype::EnergyModel)
     variables_opex(m, nodes, T, products, global_data, modeltype)
     variables_capex(m, nodes, T, products, global_data, modeltype)
     variables_capacity(m, nodes, T, global_data, modeltype)
-    variables_surplus_deficit(m, nodes, T, products, modeltype)
-    variables_storage(m, nodes, T, global_data, modeltype)
     variables_nodes(m, nodes, T, global_data, modeltype)
 
     # Construction of constraints for the problem
@@ -220,7 +218,8 @@ function sort_node_types(node_types::Dict)
         push!(num, value_ex)
     end
 
-    # We sort the vector of numbers `num`, and get the indexes of the sorted order.
+    # We sort the vector of numbers `num` from largest to smallest value, and get the
+    # indexes of the sorted order.
     sorted_idx = sortperm(num, rev=true)
     # Get the nodes-types from the dictionary as a vector.
     nodes = [n for n in keys(node_types)]
@@ -240,16 +239,13 @@ end
 
 
 """
-    variables_surplus_deficit(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+    variables_node(m, 𝒩ˢⁱⁿᵏ::Vector{<:Sink}, global_data::AbstractGlobalData, 𝒯, modeltype::EnergyModel)
 
 Declaration of both surplus (`:sink_surplus`) and deficit (`:sink_deficit`) variables
 for `Sink` nodes `𝒩ˢⁱⁿᵏ` to quantify when there is too much or too little energy for
 satisfying the demand.
 """
-function variables_surplus_deficit(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
-
-    𝒩ˢⁱⁿᵏ = node_sub(𝒩, Sink)
-
+function variables_node(m, 𝒩ˢⁱⁿᵏ::Vector{<:Sink}, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
     @variable(m,sink_surplus[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
     @variable(m,sink_deficit[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
 end
@@ -266,10 +262,7 @@ Declaration of different storage variables for `Storage` nodes `𝒩ˢᵗᵒʳ`.
   * `:stor_rate_inst` - installed rate for storage, e.g. power in each operational period,
   constrained in the operational case to `n.Rate_cap` 
 """
-function variables_storage(m, 𝒩, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
-
-    𝒩ˢᵗᵒʳ = node_sub(𝒩, Storage)
-
+function variables_node(m, 𝒩ˢᵗᵒʳ::Vector{<:Storage}, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
     @variable(m, stor_level[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_rate_use[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_cap_inst[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
