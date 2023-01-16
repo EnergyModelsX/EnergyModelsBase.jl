@@ -7,6 +7,7 @@ using JuMP
 using TimeStructures
 
 include("datastructures.jl")
+include("utils.jl")
 include("model.jl")
 include("checks.jl")
 include("user_interface.jl")
