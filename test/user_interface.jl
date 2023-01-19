@@ -1,6 +1,10 @@
-@testset "User interface" begin
-    m, case, model = EMB.run_model("", nothing, nothing, HiGHS.Optimizer)
+include("example_model.jl")
 
+@testset "User interface" begin
+    case, model = generate_data()
+    m = run_model(case, model, HiGHS.Optimizer)
+
+    # Retrieve data from the case structure
     𝒫   = case[:products]
     NG  = 𝒫[1]
     CO2 = 𝒫[4]

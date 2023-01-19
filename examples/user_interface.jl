@@ -1,27 +1,18 @@
-function run_model(fn, case = nothing, model = nothing, optimizer = nothing)
-   @debug "Run model" fn optimizer
+using Pkg
+Pkg.activate(joinpath(@__DIR__, "../test"))
+Pkg.instantiate()
+Pkg.develop(path=joinpath(@__DIR__, ".."))
 
-   if isnothing(case)
-        case, model = read_data(fn)
-   end
+using EnergyModelsBase
+using JuMP
+using HiGHS
+using Pkg
+using PrettyTables
+using TimeStructures
 
-   m = create_model(case, model)
 
-    if !isnothing(optimizer)
-        set_optimizer(m, optimizer)
-        set_optimizer_attribute(m, MOI.Silent(), true)
-        optimize!(m)
-        # TODO: print_solution(m) optionally show results summary (perhaps using upcoming JuMP function)
-        # TODO: save_solution(m) save results
-    else
-        @info "No optimizer given"
-    end
-    return m, case, model
-end
-
-function read_data(fn)
-    @debug "Read case data"
-    @info "Hard coded dummy model for now"
+function generate_data()
+    @info "Generate case data"
 
     # Define the different resources
     NG       = ResourceEmit("NG", 0.2)
@@ -97,3 +88,16 @@ function read_data(fn)
                 )
     return case, model
 end
+
+
+case, model = generate_data()
+m = run_model(case, model, HiGHS.Optimizer)
+
+
+pretty_table(
+    JuMP.Containers.rowtable(
+        value,
+        m[:flow_in];
+        header = [:Node, :t, :Product, :Value],
+    ),
+)

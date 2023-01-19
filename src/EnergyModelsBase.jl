@@ -10,7 +10,6 @@ include("datastructures.jl")
 include("utils.jl")
 include("model.jl")
 include("checks.jl")
-include("user_interface.jl")
 include("constraint_functions.jl")
 
 # Export the general classes
@@ -27,6 +26,6 @@ export RefNetworkEmissions, RefStorageEmissions
 export Linear, Link, Direct
 
 export @assert_or_log
-export create_model
+export create_model, run_model
 
 end # module
