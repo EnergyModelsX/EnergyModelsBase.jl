@@ -10,6 +10,7 @@ in all subtypes defined later to keep the fallback option. This requires in the 
 * Redefining `CO2Int` in fields of type `Resource` to `CO2_int` to be consistent with the other types
 * Addition of the type `AbstractGlobalData` to the function `create_node` to be able to use different ids for the `CO2` resource and addition of the field `CO2_instance` in the type `GlobalData`
 * Minor changes in constraint description that do not break previous code
+* Changed the input to the function `variables_node` to simplify the generation of variables for a specific `node` type
 
 Version 0.2.7 (2022-12-12)
 --------------------------
