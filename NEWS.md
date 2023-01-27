@@ -1,5 +1,15 @@
 # Changelog
 
+Version 0.3.0 (2023-01-19)
+--------------------------
+### Fields of reference types and new types
+* Removal of all process emissions and CO2 capture from reference types to avoid having to include them as well
+in all subtypes defined later to keep the fallback option. This requires in the future to ***remove*** `CO2` as output when using CO2 capture as it was previously the case. The original types are retained so that they can still be used
+* Introduction of a type `RefStorageEmissions` to account for a storage unit that can be used for storing `ResourceEmit`
+### Additional changes
+* Redefining `CO2Int` in fields of type `Resource` to `CO2_int` to be consistent with the other types
+* Addition of the type `AbstractGlobalData` to the function `create_node` to be able to use different ids for the `CO2` resource and addition of the field `CO2_instance` in the type `GlobalData`
+* Minor changes in constraint description that do not break previous code
 
 Version 0.2.7 (2022-12-12)
 --------------------------
@@ -14,7 +24,7 @@ Version 0.2.4 (2022-09-07)
 * Inclusion of parameter checks for surplus and deficit of sinks
 * Export of all reference nodes for easier identification of the nodes
 * Changes in the test structure with improved testing of variables
-* Changes in doc srings for individual functions/types
+* Changes in doc strings for individual functions/types
 
 Version 0.2.3 (2021-09-07)
 --------------------------

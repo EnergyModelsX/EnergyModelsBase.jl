@@ -20,7 +20,8 @@ export Resource, ResourceCarrier, ResourceEmit
 
 # Export the different node types
 export Source, Network, Sink, Storage, Availability
-export GenAvailability, RefGeneration, RefGeneration, RefSink, RefSource, RefStorage
+export GenAvailability, RefSource, RefNetwork, RefSink, RefStorage
+export RefNetworkEmissions, RefStorageEmissions
 
 export Linear, Link, Direct
 
