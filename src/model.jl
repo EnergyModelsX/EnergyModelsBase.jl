@@ -150,8 +150,11 @@ function variables_nodes(m, 𝒩, 𝒯, global_data::AbstractGlobalData, modelty
         𝒩ˢᵘᵇ = convert(Vector{node_type}, 𝒩ˢᵘᵇ)
         try
             variables_node(m, 𝒩ˢᵘᵇ, 𝒯, global_data, modeltype)
-        catch LoadError
-            # 𝒩ˢᵘᵇ was already registered, by a call to a supertype.
+        catch e
+            if !isa(e, ErrorException)
+                @error "Creating variables failed."
+            end
+            # 𝒩ˢᵘᵇ was already registered by a call to a supertype, so just continue.
         end
     end
 end

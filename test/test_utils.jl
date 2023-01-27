@@ -1,3 +1,27 @@
+using JuMP
+
+@testset "" begin
+    m = JuMP.Model()
+
+    function create_variable(range)
+        @variable(m, same_name[range] ≥ 0)
+    end
+
+    # Create a varaible named `same_name`, creating it once should be ok, but twice is not
+    # allowed in jump, regardless of the indices.
+    create_variable(1:4)
+    try
+        # Creating the variable a second time should fail. We depend on this behaviour in
+        # the method `variables_nodes()` in `model.jl`.
+        create_variable(5:8)
+    catch e
+        @show e
+        # Check that this causes an ErrorException. If this exception is thrown,
+        # `variables_nodes` will continue to the next variable. If this behaviour in JuMP
+        # changes, we must change how variables are created.
+        @test isa(e, ErrorException)
+    end
+end
 
 
 @testset "Collect and sort types" begin
