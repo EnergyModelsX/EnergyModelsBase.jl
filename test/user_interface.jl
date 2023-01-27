@@ -23,7 +23,7 @@
         @test objective_value(m) ≈ -42991.693
 
         # Check for the total number of variables
-        @test size(all_variables(m))[1] == 1240
+        @test size(all_variables(m))[1] == 1192
 
         # Check that total emissions of both methane and CO2 are within the constraint
         @test sum(value.(m[:emissions_strategic])[t_inv, CO2]
@@ -49,7 +49,7 @@
                     length(𝒯) * length(keys(Coal_PP.Input))
         
         # Check that the CO2 capture rate is correct in the natural gas power plant
-        @test sum(NG_PP.CO2_capture * sum(p_in.CO2Int * value.(m[:flow_in])[NG_PP, t, p_in] for p_in ∈ keys(NG_PP.Input)) ≈
+        @test sum(NG_PP.CO2_capture * sum(p_in.CO2_int * value.(m[:flow_in])[NG_PP, t, p_in] for p_in ∈ keys(NG_PP.Input)) ≈
                 value.(m[:flow_out])[NG_PP, t, CO2] for t ∈ 𝒯) ==
                     length(𝒯)
 

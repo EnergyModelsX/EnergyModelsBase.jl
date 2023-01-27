@@ -45,25 +45,25 @@ function read_data(fn)
     nodes = [
             GenAvailability(1, 𝒫₀, 𝒫₀),
             RefSource(2,        FixedProfile(1e12), FixedProfile(30),
-                                FixedProfile(0), Dict(NG => 1), 𝒫ᵉᵐ₀,
-                                Dict("InvestmentModels" => EmptyData())),  
+                                FixedProfile(0), Dict(NG => 1),
+                                Dict("" => EmptyData())),  
             RefSource(3,        FixedProfile(1e12), FixedProfile(9),
-                                FixedProfile(0), Dict(Coal => 1), 𝒫ᵉᵐ₀,
-                                Dict("InvestmentModels" => EmptyData())),  
-            RefGeneration(4,    FixedProfile(25),   FixedProfile(5.5),
+                                FixedProfile(0), Dict(Coal => 1),
+                                Dict("" => EmptyData())),  
+            RefNetworkEmissions(4, FixedProfile(25),   FixedProfile(5.5),
                                 FixedProfile(0), Dict(NG => 2),
                                 Dict(Power => 1, CO2 => 1), 𝒫ᵉᵐ₀, 0.9,
-                                Dict("InvestmentModels" => EmptyData())),  
-            RefGeneration(5,    FixedProfile(25),   FixedProfile(6),
+                                Dict("" => EmptyData())),  
+            RefNetwork(5,       FixedProfile(25),   FixedProfile(6),
                                 FixedProfile(0),  Dict(Coal => 2.5),
-                                Dict(Power => 1, CO2 => 1), 𝒫ᵉᵐ₀, 0,
-                                Dict("InvestmentModels" => EmptyData())),  
-            RefStorage(6,       FixedProfile(60),   FixedProfile(600), FixedProfile(9.1),
-                                FixedProfile(0),  Dict(CO2 => 1, Power => 0.02), Dict(CO2 => 1),
-                                Dict("InvestmentModels" => EmptyData())),
+                                Dict(Power => 1),
+                                Dict("" => EmptyData())),  
+            RefStorageEmissions(6, FixedProfile(60),   FixedProfile(600), FixedProfile(9.1),
+                                FixedProfile(0), CO2, Dict(CO2 => 1, Power => 0.02), Dict(CO2 => 1),
+                                Dict("" => EmptyData())),
             RefSink(7,          OperationalFixedProfile([20 30 40 30]),
                                 Dict(:Surplus => FixedProfile(0), :Deficit => FixedProfile(1e6)),
-                                Dict(Power => 1), 𝒫ᵉᵐ₀),
+                                Dict(Power => 1)),
             ]
 
     # Connect all nodes with the availability node for the overall energy/mass balance
@@ -81,9 +81,13 @@ function read_data(fn)
 
     # Creation of the time structure and global data
     T = UniformTwoLevel(1, 4, 1, UniformTimes(1, 4, 2))
-    global_data = GlobalData(Dict(CO2 => StrategicFixedProfile([160, 140, 120, 100]),
-                                  NG  => FixedProfile(1e6))
-                                  )
+    global_data = GlobalData(
+                            Dict(
+                                CO2 => StrategicFixedProfile([160, 140, 120, 100]),
+                                NG  => FixedProfile(1e6)
+                            ),
+                            CO2,
+    )
 
     # WIP data structure
     case = Dict(
