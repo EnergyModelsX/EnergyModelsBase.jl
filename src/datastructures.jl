@@ -192,7 +192,7 @@ end
 
 """ A reference `Storage` node.
 
-This node is designed to store a `ResourceCarrier`.
+This node is designed to store a `ResourceEmit`.
 
 # Fields
 - **`id`** is the name/identifier of the node.\n

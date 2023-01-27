@@ -24,9 +24,7 @@ function create_model(case, modeltype::EnergyModel)
     variables_opex(m, nodes, T, products, global_data, modeltype)
     variables_capex(m, nodes, T, products, global_data, modeltype)
     variables_capacity(m, nodes, T, global_data, modeltype)
-    variables_surplus_deficit(m, nodes, T, products, modeltype)
-    variables_storage(m, nodes, T, global_data, modeltype)
-    variables_node(m, nodes, T, modeltype)
+    variables_nodes(m, nodes, T, global_data, modeltype)
 
     # Construction of constraints for the problem
     constraints_node(m, nodes, T, products, links, global_data, modeltype)
@@ -126,23 +124,65 @@ Empty for operational models but required for multiple dispatch in investment mo
 function variables_capex(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
 end
 
+
 """
-    variables_surplus_deficit(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+    variables_nodes(m, 𝒩, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
+
+Loop through all node types and create variables specific to each type. This is done by
+calling the method [`variables_node`](@ref) on all nodes of each type.
+
+The node type representing the widest cathegory will be called first. That is, 
+`variables_node` will be called on a `Node`` before it is called and `Network`-nodes.
+be called before 
+"""
+function variables_nodes(m, 𝒩, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
+    # Vector of the unique node types in 𝒩.
+    node_composite_types = unique(map(n -> typeof(n), 𝒩))
+    # Get all `Node`-types in the type-hierarchy that the nodes 𝒩 represents.
+    node_types = collect_node_types(node_composite_types)
+    # Sort the node-types such that a supertype will always come its subtypes.
+    node_types = sort_node_types(node_types)
+
+    for node_type ∈ node_types
+        # All nodes of the given sub type.
+        𝒩ˢᵘᵇ = filter(n -> isa(n, node_type), 𝒩)
+        # Convert to a Vector of common-type instad of Any.
+        𝒩ˢᵘᵇ = convert(Vector{node_type}, 𝒩ˢᵘᵇ)
+        try
+            variables_node(m, 𝒩ˢᵘᵇ, 𝒯, global_data, modeltype)
+        catch e
+            if !isa(e, ErrorException)
+                @error "Creating variables failed."
+            end
+            # 𝒩ˢᵘᵇ was already registered by a call to a supertype, so just continue.
+        end
+    end
+end
+
+
+""""
+    variables_node(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
+
+Default fallback method when no function is defined for a node type.
+"""
+function variables_node(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
+end
+
+
+"""
+    variables_node(m, 𝒩ˢⁱⁿᵏ::Vector{<:Sink}, global_data::AbstractGlobalData, 𝒯, modeltype::EnergyModel)
 
 Declaration of both surplus (`:sink_surplus`) and deficit (`:sink_deficit`) variables
 for `Sink` nodes `𝒩ˢⁱⁿᵏ` to quantify when there is too much or too little energy for
 satisfying the demand.
 """
-function variables_surplus_deficit(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
-
-    𝒩ˢⁱⁿᵏ = node_sub(𝒩, Sink)
-
+function variables_node(m, 𝒩ˢⁱⁿᵏ::Vector{<:Sink}, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
     @variable(m,sink_surplus[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
     @variable(m,sink_deficit[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
 end
 
 """
-    variables_storage(m, 𝒩, 𝒯, 𝒫, modeltype)
+    variables_node(m, 𝒩ˢᵗᵒʳ::Vector{<:Storage}, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
 
 Declaration of different storage variables for `Storage` nodes `𝒩ˢᵗᵒʳ`. These variables are:
 
@@ -153,10 +193,7 @@ Declaration of different storage variables for `Storage` nodes `𝒩ˢᵗᵒʳ`.
   * `:stor_rate_inst` - installed rate for storage, e.g. power in each operational period,
   constrained in the operational case to `n.Rate_cap` 
 """
-function variables_storage(m, 𝒩, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
-
-    𝒩ˢᵗᵒʳ = node_sub(𝒩, Storage)
-
+function variables_node(m, 𝒩ˢᵗᵒʳ::Vector{<:Storage}, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
     @variable(m, stor_level[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_rate_use[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_cap_inst[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
@@ -164,31 +201,6 @@ function variables_storage(m, 𝒩, 𝒯, global_data::AbstractGlobalData, model
 
     @constraint(m, [n ∈ 𝒩ˢᵗᵒʳ, t ∈ 𝒯], m[:stor_cap_inst][n, t] == n.Stor_cap[t])
     @constraint(m, [n ∈ 𝒩ˢᵗᵒʳ, t ∈ 𝒯], m[:stor_rate_inst][n, t] == n.Rate_cap[t])
-end
-
-
-"""
-    variables_node(m, 𝒩, 𝒯, modeltype::EnergyModel)
-
-Call a method for creating e.g. other variables specific to the different 
-node types. The method is only called once for each node type.
-"""
-function variables_node(m, 𝒩, 𝒯, modeltype::EnergyModel)
-    nodetypes = []
-    for node in 𝒩
-        if ! (typeof(node) in nodetypes)
-            variables_node(m, 𝒩, 𝒯, node, modeltype)
-            push!(nodetypes, typeof(node))
-        end
-    end
-end
-
-""""
-    variables_node(m, 𝒩, 𝒯, node, modeltype::EnergyModel)
-
-Default fallback method when no function is defined for a node type.
-"""
-function variables_node(m, 𝒩, 𝒯, node, modeltype::EnergyModel)
 end
 
 
