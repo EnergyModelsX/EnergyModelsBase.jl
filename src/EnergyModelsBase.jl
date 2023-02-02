@@ -11,6 +11,7 @@ include("utils.jl")
 include("model.jl")
 include("checks.jl")
 include("user_interface.jl")
+include("constraint_functions.jl")
 
 # Export the general classes
 export EnergyModel, OperationalModel

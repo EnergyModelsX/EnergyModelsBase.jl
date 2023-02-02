@@ -230,16 +230,6 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, global_data::AbstractGlobalD
         create_node(m, n, 𝒯, 𝒫, global_data)
     end
 
-    # Declaration of the required subsets.
-    𝒩ⁿᵒᵗ    = node_not_sub(𝒩,Union{Storage, Availability, Sink})
-    𝒩ˢᵗᵒʳ   = node_sub(𝒩, Storage)
-    𝒯ᴵⁿᵛ    = strategic_periods(𝒯)
-
-    # Constraints for fixed OPEX constraints
-    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ], m[:opex_fixed][n, t_inv] == n.Opex_fixed[t_inv] * 
-                                             m[:cap_inst][n, first(t_inv)])
-    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ˢᵗᵒʳ], m[:opex_fixed][n, t_inv] == n.Opex_fixed[t_inv] * 
-                                              m[:stor_cap_inst][n, first(t_inv)])
 end
 
 """
@@ -296,17 +286,8 @@ Can serve as fallback option for all unspecified subtypes of `Source`.
 function create_node(m, n::Source, 𝒯, 𝒫, global_data::AbstractGlobalData)
 
     # Declaration of the required subsets.
-    𝒫ᵒᵘᵗ = keys(n.Output)
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-
-    # Constraint for the individual output stream connections.
-    @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵒᵘᵗ],
-        m[:flow_out][n, t, p] == m[:cap_use][n, t] * n.Output[p])
-
-    # Constraint for the maximum capacity.
-    @constraint(m, [t ∈ 𝒯],
-        m[:cap_use][n, t] <= m[:cap_inst][n, t])
     
     if hasfield(typeof(n), :Emissions) && !isnothing(n.Emissions)
         # Constraint for the emissions to avoid problems with unconstrained variables.
@@ -318,9 +299,15 @@ function create_node(m, n::Source, 𝒯, 𝒫, global_data::AbstractGlobalData)
             m[:emissions_node][n, t, p_em] == 0)
     end
 
-    # Constraint for the variable OPEX contribution.
-    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        m[:opex_var][n, t_inv] == sum(m[:cap_use][n, t] * n.Opex_var[t] * t.duration for t ∈ t_inv))
+    # Call of the function for the outlet flow from the `Source` node
+    constraints_flow_out(m, n, 𝒯)
+
+    # Call of the function for limiting the capacity to the maximum installed capacity
+    constraints_capacity(m, n, 𝒯)
+
+    # Call of the functions for both fixed and variable OPEX constraints introduction
+    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ)
+    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ)
 end
 
 """
@@ -333,22 +320,9 @@ function create_node(m, n::Network, 𝒯, 𝒫, global_data::AbstractGlobalData)
 
     # Declaration of the required subsets.
     𝒫ⁱⁿ  = keys(n.Input)
-    𝒫ᵒᵘᵗ = keys(n.Output)
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
     CO2 = global_data.CO2_instance
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-
-    # Constraint for the individual input stream connections.
-    @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ⁱⁿ], 
-        m[:flow_in][n, t, p] == m[:cap_use][n, t] * n.Input[p])
-
-    # Constraint for the individual output stream connections.
-    @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵒᵘᵗ],
-        m[:flow_out][n, t, p] == m[:cap_use][n, t] * n.Output[p])
-
-    # Constraint for the maximum capacity.
-    @constraint(m, [t ∈ 𝒯],
-        m[:cap_use][n, t] <= m[:cap_inst][n, t])
 
     # Constraint for the emissions associated to energy usage
     @constraint(m, [t ∈ 𝒯],
@@ -358,11 +332,17 @@ function create_node(m, n::Network, 𝒯, 𝒫, global_data::AbstractGlobalData)
     # Constraint for the other emissions to avoid problems with unconstrained variables.
     @constraint(m, [t ∈ 𝒯, p_em ∈ res_not(𝒫ᵉᵐ, CO2)],
         m[:emissions_node][n, t, p_em] == 0)
+
+    # Call of the function for the inlet flow to and outlet flow from the `Network` node
+    constraints_flow_in(m, n, 𝒯)
+    constraints_flow_out(m, n, 𝒯)
             
-    # Constraint for the variable OPEX contribution.
-    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        m[:opex_var][n, t_inv] == 
-            sum(m[:cap_use][n, t] * n.Opex_var[t] * t.duration for t ∈ t_inv))
+    # Call of the function for limiting the capacity to the maximum installed capacity
+    constraints_capacity(m, n, 𝒯)
+
+    # Call of the functions for both fixed and variable OPEX constraints introduction
+    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ)
+    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ)
 end
 
 """
@@ -380,23 +360,15 @@ function create_node(m, n::RefNetworkEmissions, 𝒯, 𝒫, global_data::Abstrac
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
     CO2 = global_data.CO2_instance
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-
-    # Constraint for the individual input stream connections.
-    @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ⁱⁿ], 
-        m[:flow_in][n, t, p] == m[:cap_use][n, t] * n.Input[p])
             
-    # Constraint for the individual output stream connections. Captured CO2 is also included based on
-    # the capture rate
+    # Constraint for the individual output stream connections.
+    # Captured CO2 is also included based on the capture rate
     @constraint(m, [t ∈ 𝒯], 
         m[:flow_out][n, t, CO2] == 
             n.CO2_capture * sum(p_in.CO2_int * m[:flow_in][n, t, p_in] for p_in ∈ 𝒫ⁱⁿ))
     @constraint(m, [t ∈ 𝒯, p ∈ res_not(𝒫ᵒᵘᵗ, CO2)],
         m[:flow_out][n, t, p] == m[:cap_use][n, t] * n.Output[p])
 
-    # Constraint for the maximum capacity.
-    @constraint(m, [t ∈ 𝒯],
-        m[:cap_use][n, t] <= m[:cap_inst][n, t])
-            
     # Constraint for the emissions associated to energy usage
     @constraint(m, [t ∈ 𝒯],
         m[:emissions_node][n, t, CO2] == 
@@ -408,10 +380,15 @@ function create_node(m, n::RefNetworkEmissions, 𝒯, 𝒫, global_data::Abstrac
         m[:emissions_node][n, t, p_em] == 
             m[:cap_use][n, t] * n.Emissions[p_em])
 
-    # Constraint for the variable OPEX contribution.n
-    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        m[:opex_var][n, t_inv] == 
-            sum(m[:cap_use][n, t] * n.Opex_var[t] * t.duration for t ∈ t_inv))
+    # Call of the function for the inlet flow to the `RefNetworkEmissions` node
+    constraints_flow_in(m, n, 𝒯)
+
+    # Call of the function for limiting the capacity to the maximum installed capacity
+    constraints_capacity(m, n, 𝒯)
+
+    # Call of the functions for both fixed and variable OPEX constraints introduction
+    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ)
+    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ)
 end
 
 """
@@ -424,22 +401,9 @@ function create_node(m, n::Storage, 𝒯, 𝒫, global_data::AbstractGlobalData)
 
     # Declaration of the required subsets.
     p_stor = n.Stor_res
-    𝒫ᵃᵈᵈ   = setdiff(keys(n.Input), [p_stor])
     𝒫ᵉᵐ    = res_sub(𝒫, ResourceEmit)
     CO2 = global_data.CO2_instance
     𝒯ᴵⁿᵛ   = strategic_periods(𝒯)
-
-    # Constraint for additional required input.
-    @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵃᵈᵈ], 
-        m[:flow_in][n, t, p] == m[:flow_in][n, t, p_stor] * n.Input[p])
-
-    # Constraint for storage rate use.
-    @constraint(m, [t ∈ 𝒯], m[:stor_rate_use][n, t] == m[:flow_in][n, t, p_stor])
-    @constraint(m, [t ∈ 𝒯], m[:stor_rate_use][n, t] <= m[:stor_rate_inst][n, t])
-
-    # Constraint for the maximum storage level
-    @constraint(m, [t ∈ 𝒯],
-        m[:stor_level][n, t] <= m[:stor_cap_inst][n, t])
 
     # Mass/energy balance constraints for stored energy carrier.
     for t_inv ∈ 𝒯ᴵⁿᵛ, t ∈ t_inv
@@ -464,11 +428,15 @@ function create_node(m, n::Storage, 𝒯, 𝒫, global_data::AbstractGlobalData)
     @constraint(m, [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
         m[:emissions_node][n, t, p_em] == 0)
 
-    # Constraint for the variable OPEX contribution.
-    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        m[:opex_var][n, t_inv] == 
-            sum(m[:flow_in][n, t, p_stor] * n.Opex_var[t] * t.duration for t ∈ t_inv))
+    # Call of the function for the inlet flow to the `Storage` node
+    constraints_flow_in(m, n, 𝒯)
+    
+    # Call of the function for limiting the capacity to the maximum installed capacity
+    constraints_capacity(m, n, 𝒯)
+
+    # Call of the functions for both fixed and variable OPEX constraints introduction
+    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ)
+    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ)
 end
 
 """
@@ -481,21 +449,8 @@ function create_node(m, n::RefStorageEmissions, 𝒯, 𝒫, global_data::Abstrac
 
     # Declaration of the required subsets.
     p_stor = n.Stor_res
-    𝒫ᵃᵈᵈ   = setdiff(keys(n.Input), [p_stor])
     𝒫ᵉᵐ    = res_sub(𝒫, ResourceEmit)
     𝒯ᴵⁿᵛ   = strategic_periods(𝒯)
-
-    # Constraint for additional required input.
-    @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵃᵈᵈ], 
-        m[:flow_in][n, t, p] == m[:flow_in][n, t, p_stor] * n.Input[p])
-
-    # Constraint for storage rate use.
-    @constraint(m, [t ∈ 𝒯], m[:stor_rate_use][n, t] == m[:flow_in][n, t, p_stor])
-    @constraint(m, [t ∈ 𝒯], m[:stor_rate_use][n, t] <= m[:stor_rate_inst][n, t])
-
-    # Constraint for the maximum storage level
-    @constraint(m, [t ∈ 𝒯],
-        m[:stor_level][n, t] <= m[:stor_cap_inst][n, t])
 
     # Mass/energy balance constraints for stored energy carrier.
     for t_inv ∈ 𝒯ᴵⁿᵛ, t ∈ t_inv
@@ -519,12 +474,15 @@ function create_node(m, n::RefStorageEmissions, 𝒯, 𝒫, global_data::Abstrac
     @constraint(m, [t ∈ 𝒯, p_em ∈ res_not(𝒫ᵉᵐ, p_stor)],
         m[:emissions_node][n, t, p_em] == 0)
 
-    # Constraint for the variable OPEX contribution.
-    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        m[:opex_var][n, t_inv] == 
-            sum((m[:flow_in][n, t , p_stor] - m[:emissions_node][n, t, p_stor])
-            * n.Opex_var[t] * t.duration for t ∈ t_inv))
+    # Call of the function for the inlet flow to the `Storage` node
+    constraints_flow_in(m, n, 𝒯)
+
+    # Call of the function for limiting the capacity to the maximum installed capacity
+    constraints_capacity(m, n, 𝒯)
+
+    # Call of the functions for both fixed and variable OPEX constraints introduction
+    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ)
+    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ)
 end
 
 """
@@ -536,18 +494,8 @@ Can serve as fallback option for all unspecified subtypes of `Sink`.
 function create_node(m, n::Sink, 𝒯, 𝒫, global_data::AbstractGlobalData)
     
     # Declaration of the required subsets.
-    𝒫ⁱⁿ  = keys(n.Input)
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-
-    # Constraint for the individual stream connections.
-    @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ⁱⁿ],
-        m[:flow_in][n, t, p] == m[:cap_use][n, t] * n.Input[p])
-
-    # Constraint for the mass balance allowing surplus and deficit.
-    @constraint(m, [t ∈ 𝒯],
-        m[:cap_use][n, t] + m[:sink_deficit][n,t] == 
-            m[:cap_inst][n, t] + m[:sink_surplus][n,t])
                 
     if hasfield(typeof(n), :Emissions) && !isnothing(n.Emissions)
         # Constraint for the emissions associated to using the sink.        
@@ -558,13 +506,16 @@ function create_node(m, n::Sink, 𝒯, 𝒫, global_data::AbstractGlobalData)
         @constraint(m, [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
             m[:emissions_node][n, t, p_em] == 0)
     end
+    
+    # Call of the function for the inlet flow to the `Sink` node
+    constraints_flow_in(m, n, 𝒯)
 
-    # Constraint for the variable OPEX contribution.
-    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        m[:opex_var][n, t_inv] == 
-            sum((m[:sink_surplus][n, t] * n.Penalty[:Surplus][t] 
-                + m[:sink_deficit][n, t] * n.Penalty[:Deficit][t])
-                * t.duration for t ∈ t_inv))
+    # Call of the function for limiting the capacity to the maximum installed capacity
+    constraints_capacity(m, n, 𝒯)
+
+    # Call of the functions for both fixed and variable OPEX constraints introduction
+    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ)
+    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ)
 end
 
 """
