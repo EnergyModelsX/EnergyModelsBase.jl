@@ -8,9 +8,12 @@ in all subtypes defined later to keep the fallback option. This requires in the 
 * Introduction of a type `RefStorageEmissions` to account for a storage unit that can be used for storing `ResourceEmit`
 ### Introduction of functions for constraints generation
 * Substitution of variable and fixed OPEX calculations as well as capacity and flow constraints through functions which utilize dispatching on `node` types
+### Redefinition of introduction of global data
+* Removal of the type `AbstractGlobalData` and all subtypes and substitution through `EnergyModel` and the corresponding subtypes
+* Addition of the field `CO2_instance` in the type `OperationalModel`
+* Addition of `ModelType` to the function `create_node` to be able to use different ids for the `CO2` resource
 ### Additional changes
 * Redefining `CO2Int` in fields of type `Resource` to `CO2_int` to be consistent with the other types
-* Addition of the type `AbstractGlobalData` to the function `create_node` to be able to use different ids for the `CO2` resource and addition of the field `CO2_instance` in the type `GlobalData`
 * Minor changes in constraint description that do not break previous code
 * Changed the input to the function `variables_node` to simplify the generation of variables for a specific `node` type
 

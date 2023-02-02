@@ -15,7 +15,6 @@ using JuMP
         # the method `variables_nodes()` in `model.jl`.
         create_variable(5:8)
     catch e
-        @show e
         # Check that this causes an ErrorException. If this exception is thrown,
         # `variables_nodes` will continue to the next variable. If this behaviour in JuMP
         # changes, we must change how variables are created.

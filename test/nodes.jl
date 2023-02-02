@@ -9,15 +9,15 @@ function simple_graph(source::EMB.Source, sink::EMB.Sink)
 
     nodes = [source, sink]
     links = [Direct(12, source, sink)]
+    model = OperationalModel(Dict(CO2 => FixedProfile(100)), CO2)
     case = Dict(
                 :T => T,
                 :nodes => nodes,
                 :links => links,
                 :products => resources,
-                :global_data => GlobalData(Dict(CO2 => FixedProfile(100)), CO2)
     )
 
-    return EMB.run_model("", case, HiGHS.Optimizer)
+    return EMB.run_model("", case, model, HiGHS.Optimizer)
 end
 
 
@@ -56,7 +56,7 @@ end
                         Dict(:Surplus => FixedProfile(-4), :Deficit => FixedProfile(4)),
                         Dict(Power => 1)
         )
-        m, case = simple_graph(source, sink)
+        m, case, model = simple_graph(source, sink)
         @test termination_status(m) == MOI.OPTIMAL        
     end
 
@@ -76,7 +76,7 @@ end
                         Dict(:Surplus => FixedProfile(4), :Deficit => FixedProfile(10)),
                         Dict(Power => 1),
         )
-        m, case = simple_graph(source, sink)
+        m, case, model = simple_graph(source, sink)
         𝒯       = case[:T]
         𝒯ᴵⁿᵛ    = strategic_periods(𝒯)
         @test sum(value.(m[:sink_deficit][sink, t] for t ∈ 𝒯)) ≈ 
@@ -92,7 +92,7 @@ end
                         Dict(:Surplus => FixedProfile(-100), :Deficit => FixedProfile(100)),
                         Dict(Power => 1),
         )
-        m, case = simple_graph(source, sink)
+        m, case, model = simple_graph(source, sink)
         𝒯       = case[:T]
         @test sum(value.(m[:sink_surplus][sink, t]) for t ∈ 𝒯) ≈ 
                     length(𝒯)*2 atol = TEST_ATOL
@@ -118,7 +118,7 @@ end
                         Dict(:Surplus => FixedProfile(4), :Deficit => FixedProfile(100)),
                         Dict(Power => 1),
         )
-        m, case = simple_graph(source, sink)
+        m, case, model = simple_graph(source, sink)
         𝒯       = case[:T]
         @test sum(value.(m[:emissions_node][source, t, CO2]) for t ∈ 𝒯) ≈ 0 atol = TEST_ATOL
         @test sum(value.(m[:emissions_node][sink, t, CO2]) for t ∈ 𝒯) ≈ 0 atol = TEST_ATOL
@@ -130,14 +130,14 @@ end
                         Dict(Power => 1),
                         Dict(CO2 => 10),
         )
-        m, case = simple_graph(source, sink_emit)
+        m, case, model = simple_graph(source, sink_emit)
         𝒯       = case[:T]
         𝒯ᴵⁿᵛ    = strategic_periods(𝒯)
         T_total = sum(sum(t.duration for t ∈ t_inv)*t_inv.duration for t_inv ∈ 𝒯ᴵⁿᵛ)
         @test sum(sum(value.(m[:cap_use][sink_emit, t])*t.duration*sink_emit.Emissions[CO2] for t ∈ t_inv) ≈ 
-                    case[:global_data].Emission_limit[CO2][t_inv] for t_inv ∈ 𝒯ᴵⁿᵛ) == 𝒯.len
+                    model.Emission_limit[CO2][t_inv] for t_inv ∈ 𝒯ᴵⁿᵛ) == 𝒯.len
         @test sum(sum(value.(m[:emissions_node][sink_emit, t, CO2])*t.duration for t ∈ t_inv) ≈ 
-                    case[:global_data].Emission_limit[CO2][t_inv] for t_inv ∈ 𝒯ᴵⁿᵛ) == 𝒯.len
+                    model.Emission_limit[CO2][t_inv] for t_inv ∈ 𝒯ᴵⁿᵛ) == 𝒯.len
 
         # Test that the emissions from a sink node with emissions are properly accounted for
         source_emit = RefSource(1,
@@ -148,14 +148,14 @@ end
                             Dict("" => EmptyData()),
                             Dict(CO2 => 10),
         )
-        m, case = simple_graph(source_emit, sink)
+        m, case, model = simple_graph(source_emit, sink)
         𝒯       = case[:T]
         𝒯ᴵⁿᵛ    = strategic_periods(𝒯)
         T_total = sum(sum(t.duration for t ∈ t_inv)*t_inv.duration for t_inv ∈ 𝒯ᴵⁿᵛ)
         @test sum(sum(value.(m[:cap_use][source_emit, t])*t.duration*source_emit.Emissions[CO2] for t ∈ t_inv) ≈ 
-                    case[:global_data].Emission_limit[CO2][t_inv] for t_inv ∈ 𝒯ᴵⁿᵛ) == 𝒯.len
+                    model.Emission_limit[CO2][t_inv] for t_inv ∈ 𝒯ᴵⁿᵛ) == 𝒯.len
         @test sum(sum(value.(m[:emissions_node][source_emit, t, CO2])*t.duration for t ∈ t_inv) ≈ 
-                    case[:global_data].Emission_limit[CO2][t_inv] for t_inv ∈ 𝒯ᴵⁿᵛ) == 𝒯.len
+                    model.Emission_limit[CO2][t_inv] for t_inv ∈ 𝒯ᴵⁿᵛ) == 𝒯.len
 
     end
 end

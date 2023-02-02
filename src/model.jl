@@ -13,32 +13,31 @@ function create_model(case, modeltype::EnergyModel)
     nodes       = case[:nodes]  
     links       = case[:links]
     products    = case[:products]
-    global_data = case[:global_data]
 
     # Check if the case data is consistent before the model is created.
     check_data(case, modeltype)
 
     # Declaration of variables for the problem
     variables_flow(m, nodes, T, products, links, modeltype)
-    variables_emission(m, nodes, T, products, global_data, modeltype)
-    variables_opex(m, nodes, T, products, global_data, modeltype)
-    variables_capex(m, nodes, T, products, global_data, modeltype)
-    variables_capacity(m, nodes, T, global_data, modeltype)
-    variables_nodes(m, nodes, T, global_data, modeltype)
+    variables_emission(m, nodes, T, products, modeltype)
+    variables_opex(m, nodes, T, products, modeltype)
+    variables_capex(m, nodes, T, products, modeltype)
+    variables_capacity(m, nodes, T, modeltype)
+    variables_nodes(m, nodes, T, modeltype)
 
     # Construction of constraints for the problem
-    constraints_node(m, nodes, T, products, links, global_data, modeltype)
-    constraints_emissions(m, nodes, T, products, global_data, modeltype)
+    constraints_node(m, nodes, T, products, links, modeltype)
+    constraints_emissions(m, nodes, T, products, modeltype)
     constraints_links(m, nodes, T, products, links, modeltype)
 
     # Construction of the objective function
-    objective(m, nodes, T, products, global_data, modeltype)
+    objective(m, nodes, T, products, modeltype)
 
     return m
 end
 
 """
-    variables_capacity(m, 𝒩, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
+    variables_capacity(m, 𝒩, 𝒯, modeltype::EnergyModel)
 
 Create variables `:cap_use` to track how much of installed capacity is used in each node
 in terms of either `:flow_in` or `:flow_out` (depending on node `n ∈ 𝒩`) for all 
@@ -49,7 +48,7 @@ value of 1 in the field `n.Cap`.
 Create variables `:cap_inst` corresponding to installed capacity and constrains the variable
 to the specified capacity `n.Cap`.
 """
-function variables_capacity(m, 𝒩, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
+function variables_capacity(m, 𝒩, 𝒯, modeltype::EnergyModel)
     
     𝒩ⁿᵒᵗ = node_not_sub(𝒩, Union{Storage, Availability})
 
@@ -80,16 +79,16 @@ function variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 end
 
 """
-    variables_emission(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
+    variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Declaration of emission variables per technical node `n ∈ 𝒩` and emission resource `𝒫ᵉᵐ ∈ 𝒫`.
 These are differentied in:
   * `:emissions_node` - emissions of a node in an operational period,
   * `:emissions_total` - total emissions in an operational period, and
   * `:emissions_strategic` - total strategic emissions, constrained to an upper limit based on 
-  `global_data.Emission_limit`.
+  `modeltype.Emission_limit`.
 """
-function variables_emission(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
+function variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
     
     𝒩ⁿᵒᵗ = node_not_av(𝒩)    
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
@@ -97,16 +96,16 @@ function variables_emission(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData
 
     @variable(m, emissions_node[𝒩ⁿᵒᵗ, 𝒯, 𝒫ᵉᵐ] >= 0) 
     @variable(m, emissions_total[𝒯, 𝒫ᵉᵐ] >= 0) 
-    @variable(m, emissions_strategic[t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ] <= global_data.Emission_limit[p][t_inv]) 
+    @variable(m, emissions_strategic[t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ] <= modeltype.Emission_limit[p][t_inv]) 
 end
 
 """
-    variables_opex(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
+    variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Declaration of the OPEX variables (`:opex_var` and `:opex_fixed`) of the model for each investment
 period `𝒯ᴵⁿᵛ ∈ 𝒯`. Variable OPEX can be non negative to account for revenue streams.
 """
-function variables_opex(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
+function variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
     
     𝒩ⁿᵒᵗ = node_not_av(𝒩)    
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -116,17 +115,17 @@ function variables_opex(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, mo
 end
 
 """
-    variables_capex(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
+    variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Declaration of the CAPEX variables of the model for each investment period `𝒯ᴵⁿᵛ ∈ 𝒯`. 
 Empty for operational models but required for multiple dispatch in investment model.
 """
-function variables_capex(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
+function variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 end
 
 
 """
-    variables_nodes(m, 𝒩, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
+    variables_nodes(m, 𝒩, 𝒯, modeltype::EnergyModel)
 
 Loop through all node types and create variables specific to each type. This is done by
 calling the method [`variables_node`](@ref) on all nodes of each type.
@@ -135,7 +134,7 @@ The node type representing the widest cathegory will be called first. That is,
 `variables_node` will be called on a `Node`` before it is called and `Network`-nodes.
 be called before 
 """
-function variables_nodes(m, 𝒩, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
+function variables_nodes(m, 𝒩, 𝒯, modeltype::EnergyModel)
     # Vector of the unique node types in 𝒩.
     node_composite_types = unique(map(n -> typeof(n), 𝒩))
     # Get all `Node`-types in the type-hierarchy that the nodes 𝒩 represents.
@@ -149,7 +148,7 @@ function variables_nodes(m, 𝒩, 𝒯, global_data::AbstractGlobalData, modelty
         # Convert to a Vector of common-type instad of Any.
         𝒩ˢᵘᵇ = convert(Vector{node_type}, 𝒩ˢᵘᵇ)
         try
-            variables_node(m, 𝒩ˢᵘᵇ, 𝒯, global_data, modeltype)
+            variables_node(m, 𝒩ˢᵘᵇ, 𝒯, modeltype)
         catch e
             if !isa(e, ErrorException)
                 @error "Creating variables failed."
@@ -161,28 +160,28 @@ end
 
 
 """"
-    variables_node(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
+    variables_node(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
 
 Default fallback method when no function is defined for a node type.
 """
-function variables_node(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
+function variables_node(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
 end
 
 
 """
-    variables_node(m, 𝒩ˢⁱⁿᵏ::Vector{<:Sink}, global_data::AbstractGlobalData, 𝒯, modeltype::EnergyModel)
+    variables_node(m, 𝒩ˢⁱⁿᵏ::Vector{<:Sink}, 𝒯, modeltype::EnergyModel)
 
 Declaration of both surplus (`:sink_surplus`) and deficit (`:sink_deficit`) variables
 for `Sink` nodes `𝒩ˢⁱⁿᵏ` to quantify when there is too much or too little energy for
 satisfying the demand.
 """
-function variables_node(m, 𝒩ˢⁱⁿᵏ::Vector{<:Sink}, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
+function variables_node(m, 𝒩ˢⁱⁿᵏ::Vector{<:Sink}, 𝒯, modeltype::EnergyModel)
     @variable(m,sink_surplus[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
     @variable(m,sink_deficit[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
 end
 
 """
-    variables_node(m, 𝒩ˢᵗᵒʳ::Vector{<:Storage}, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
+    variables_node(m, 𝒩ˢᵗᵒʳ::Vector{<:Storage}, 𝒯, modeltype::EnergyModel)
 
 Declaration of different storage variables for `Storage` nodes `𝒩ˢᵗᵒʳ`. These variables are:
 
@@ -193,7 +192,7 @@ Declaration of different storage variables for `Storage` nodes `𝒩ˢᵗᵒʳ`.
   * `:stor_rate_inst` - installed rate for storage, e.g. power in each operational period,
   constrained in the operational case to `n.Rate_cap` 
 """
-function variables_node(m, 𝒩ˢᵗᵒʳ::Vector{<:Storage}, 𝒯, global_data::AbstractGlobalData, modeltype::EnergyModel)
+function variables_node(m, 𝒩ˢᵗᵒʳ::Vector{<:Storage}, 𝒯, modeltype::EnergyModel)
     @variable(m, stor_level[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_rate_use[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_cap_inst[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
@@ -205,14 +204,14 @@ end
 
 
 """
-    constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, global_data::AbstractGlobalData, modeltype::EnergyModel)
+    constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 
 Create link constraints for each `n ∈ 𝒩` depending on its type and calling the function
 `create_node(m, n, 𝒯, 𝒫)` for the individual node constraints.
 
 Create constraints for fixed OPEX.
 """
-function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, global_data::AbstractGlobalData, modeltype::EnergyModel)
+function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 
     for n ∈ 𝒩
         ℒᶠʳᵒᵐ, ℒᵗᵒ = link_sub(ℒ, n)
@@ -227,17 +226,17 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, global_data::AbstractGlobalD
                 m[:flow_in][n, t, p] == sum(m[:link_out][l, t, p] for l in ℒᵗᵒ if p ∈ keys(l.from.Output)))
         end
         # Call of function for individual node constraints.
-        create_node(m, n, 𝒯, 𝒫, global_data)
+        create_node(m, n, 𝒯, 𝒫, modeltype)
     end
 
 end
 
 """
-    constraints_emissions(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
+    constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Create constraints for the emissions accounting for both operational and strategic periods.
 """
-function constraints_emissions(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
+function constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
     
     𝒩ⁿᵒᵗ = node_not_av(𝒩)
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
@@ -251,11 +250,11 @@ function constraints_emissions(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalD
 end
 
 """
-    objective(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
+    objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Create the objective for the optimization problem for a given modeltype. 
 """
-function objective(m, 𝒩, 𝒯, 𝒫, global_data::AbstractGlobalData, modeltype::EnergyModel)
+function objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Declaration of the required subsets.
     𝒩ⁿᵒᵗ = node_not_av(𝒩)
@@ -278,12 +277,12 @@ function constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 end
 
 """
-    create_node(m, n::Source, 𝒯, 𝒫, global_data::AbstractGlobalData)
+    create_node(m, n::Source, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Set all constraints for a `Source`.
 Can serve as fallback option for all unspecified subtypes of `Source`.
 """
-function create_node(m, n::Source, 𝒯, 𝒫, global_data::AbstractGlobalData)
+function create_node(m, n::Source, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Declaration of the required subsets.
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
@@ -311,17 +310,17 @@ function create_node(m, n::Source, 𝒯, 𝒫, global_data::AbstractGlobalData)
 end
 
 """
-    create_node(m, n::Network, 𝒯, 𝒫, global_data::AbstractGlobalData)
+    create_node(m, n::Network, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Set all constraints for a `Network`.
 Can serve as fallback option for all unspecified subtypes of `Network`.
 """
-function create_node(m, n::Network, 𝒯, 𝒫, global_data::AbstractGlobalData)
+function create_node(m, n::Network, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Declaration of the required subsets.
     𝒫ⁱⁿ  = keys(n.Input)
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
-    CO2 = global_data.CO2_instance
+    CO2 = modeltype.CO2_instance
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Constraint for the emissions associated to energy usage
@@ -346,19 +345,19 @@ function create_node(m, n::Network, 𝒯, 𝒫, global_data::AbstractGlobalData)
 end
 
 """
-    create_node(m, n::RefNetworkEmissions, 𝒯, 𝒫, global_data::AbstractGlobalData)
+    create_node(m, n::RefNetworkEmissions, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Set all constraints for a `RefNetworkEmissions`.
 This node is an extension of the `RefNetwork` node including both process emissions and
 the potential for CO2 capture.
 """
-function create_node(m, n::RefNetworkEmissions, 𝒯, 𝒫, global_data::AbstractGlobalData)
+function create_node(m, n::RefNetworkEmissions, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Declaration of the required subsets.
     𝒫ⁱⁿ  = keys(n.Input)
     𝒫ᵒᵘᵗ = collect(keys(n.Output))
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
-    CO2 = global_data.CO2_instance
+    CO2 = modeltype.CO2_instance
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
             
     # Constraint for the individual output stream connections.
@@ -392,17 +391,17 @@ function create_node(m, n::RefNetworkEmissions, 𝒯, 𝒫, global_data::Abstrac
 end
 
 """
-    create_node(m, n::Storage, 𝒯, 𝒫, global_data::AbstractGlobalData)
+    create_node(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Set all constraints for a `Storage`. Can serve as fallback option for all unspecified
 subtypes of `Storage`.
 """
-function create_node(m, n::Storage, 𝒯, 𝒫, global_data::AbstractGlobalData)
+function create_node(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Declaration of the required subsets.
     p_stor = n.Stor_res
     𝒫ᵉᵐ    = res_sub(𝒫, ResourceEmit)
-    CO2 = global_data.CO2_instance
+    CO2 = modeltype.CO2_instance
     𝒯ᴵⁿᵛ   = strategic_periods(𝒯)
 
     # Mass/energy balance constraints for stored energy carrier.
@@ -440,12 +439,12 @@ function create_node(m, n::Storage, 𝒯, 𝒫, global_data::AbstractGlobalData)
 end
 
 """
-    create_node(m, n::RefStorageEmissions, 𝒯, 𝒫, global_data::AbstractGlobalData)
+    create_node(m, n::RefStorageEmissions, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Set all constraints for a `RefStorageEmissions`.
 This storage is different to the standard storage as initial and final value differ.
 """
-function create_node(m, n::RefStorageEmissions, 𝒯, 𝒫, global_data::AbstractGlobalData)
+function create_node(m, n::RefStorageEmissions, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Declaration of the required subsets.
     p_stor = n.Stor_res
@@ -486,12 +485,12 @@ function create_node(m, n::RefStorageEmissions, 𝒯, 𝒫, global_data::Abstrac
 end
 
 """
-    create_node(m, n::Sink, 𝒯, 𝒫, global_data::AbstractGlobalData)
+    create_node(m, n::Sink, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Set all constraints for a `Sink`.
 Can serve as fallback option for all unspecified subtypes of `Sink`.
 """
-function create_node(m, n::Sink, 𝒯, 𝒫, global_data::AbstractGlobalData)
+function create_node(m, n::Sink, 𝒯, 𝒫, modeltype::EnergyModel)
     
     # Declaration of the required subsets.
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
@@ -519,7 +518,7 @@ function create_node(m, n::Sink, 𝒯, 𝒫, global_data::AbstractGlobalData)
 end
 
 """
-    create_node(m, n::Availability, 𝒯, 𝒫, global_data::AbstractGlobalData)
+    create_node(m, n::Availability, 𝒯, 𝒫, modeltype::EnergyModel)
     
 Set all constraints for a `Availability`. Can serve as fallback option for all unspecified
 subtypes of `Availability`.
@@ -528,7 +527,7 @@ Availability nodes can be seen as routing nodes. It is not necessary to have mor
 available node except if one wants to include as well transport between different availability
 nodes with associated costs (not implemented at the moment).
 """
-function create_node(m, n::Availability, 𝒯, 𝒫, global_data::AbstractGlobalData)
+function create_node(m, n::Availability, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Mass/energy balance constraints for an availability node.
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫],

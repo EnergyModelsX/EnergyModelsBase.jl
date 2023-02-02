@@ -1,12 +1,11 @@
-function run_model(fn, case = nothing, optimizer = nothing)
+function run_model(fn, case = nothing, model = nothing, optimizer = nothing)
    @debug "Run model" fn optimizer
 
    if isnothing(case)
-        case = read_data(fn)
+        case, model = read_data(fn)
    end
 
-    model = OperationalModel()
-    m = create_model(case, model)
+   m = create_model(case, model)
 
     if !isnothing(optimizer)
         set_optimizer(m, optimizer)
@@ -17,7 +16,7 @@ function run_model(fn, case = nothing, optimizer = nothing)
     else
         @info "No optimizer given"
     end
-    return m, case
+    return m, case, model
 end
 
 function read_data(fn)
@@ -81,7 +80,7 @@ function read_data(fn)
 
     # Creation of the time structure and global data
     T = UniformTwoLevel(1, 4, 1, UniformTimes(1, 4, 2))
-    global_data = GlobalData(
+    model = OperationalModel(
                             Dict(
                                 CO2 => StrategicFixedProfile([160, 140, 120, 100]),
                                 NG  => FixedProfile(1e6)
@@ -95,7 +94,6 @@ function read_data(fn)
                 :links          => links,
                 :products       => products,
                 :T              => T,
-                :global_data    => global_data,
                 )
-    return case
+    return case, model
 end

@@ -1,8 +1,5 @@
 @testset "User interface" begin
-    m, case = EMB.run_model("", nothing, HiGHS.Optimizer)
-
-    # Retrieve data from the case structure
-    global_data = case[:global_data]
+    m, case, model = EMB.run_model("", nothing, nothing, HiGHS.Optimizer)
 
     𝒫   = case[:products]
     NG  = 𝒫[1]
@@ -28,10 +25,10 @@
         # Check that total emissions of both methane and CO2 are within the constraint
         @test sum(value.(m[:emissions_strategic])[t_inv, CO2]
                 <=
-                global_data.Emission_limit[CO2][t_inv] for t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ)
+                model.Emission_limit[CO2][t_inv] for t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ)
         @test sum(value.(m[:emissions_strategic])[t_inv, NG]
                 <=
-                global_data.Emission_limit[NG][t_inv] for t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ)
+                model.Emission_limit[NG][t_inv] for t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ)
     end
 
     @testset "Node tests" begin

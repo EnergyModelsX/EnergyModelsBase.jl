@@ -334,24 +334,18 @@ function link_res(l::Link)
     return intersect(keys(l.to.Input), keys(l.from.Output))
 end
 
-""" Declaration of the general type for global data that is independent of the nodes"""
-abstract type AbstractGlobalData end
+""" Abstract type for differentation between types of models (investment, operational, ...)."""
+abstract type EnergyModel end
 
-""" Initial instance for `GlobalData`
+"""
+Operational Energy Model without investments.
 
 # Fields
 - **`Emission_limit`** is a dictionary with individual emission limits as `TimeProfile` for each 
 emission resource `ResourceEmit`.\n
 - **`CO2_instance`** is a `ResourceEmit` and corresponds to the type used for CO2.\n
 """
-struct GlobalData <: AbstractGlobalData
+struct OperationalModel <: EnergyModel
     Emission_limit::Dict{ResourceEmit, TimeProfile}
     CO2_instance::ResourceEmit
-end
-
-""" Abstract type for differentation between types of models (investment, operational, ...)."""
-abstract type EnergyModel end
-
-""" Operational Energy Model without investments."""
-struct OperationalModel <: EnergyModel
 end
