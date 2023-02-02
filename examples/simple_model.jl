@@ -19,7 +19,7 @@ function generate_data()
 
     # Define the different resources
     Power = ResourceCarrier("Power", 0.0)
-    CO2      = ResourceEmit("CO2", 1.)
+    CO2 = ResourceEmit("CO2", 1.0)
     products = [Power, CO2]
 
     # Creation of a dictionary with entries of 0 for all resources for the availability node
@@ -49,7 +49,7 @@ function generate_data()
 
     # Creation of the time structure and global data
     T = UniformTwoLevel(1, 4, 1, UniformTimes(1, 4, 2))
-    model = OperationalModel(Dict(CO2=>FixedProfile(10)), CO2)
+    model = OperationalModel(Dict(CO2 => FixedProfile(10)), CO2)
 
     # WIP data structure
     case = Dict(
