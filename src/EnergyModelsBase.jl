@@ -15,7 +15,6 @@ include("constraint_functions.jl")
 
 # Export the general classes
 export EnergyModel, OperationalModel
-export AbstractGlobalData, GlobalData
 export Data, EmptyData
 
 export Resource, ResourceCarrier, ResourceEmit
