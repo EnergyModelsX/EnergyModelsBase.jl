@@ -1,10 +1,10 @@
 # Changelog
 
-Version 0.3.1 (2023-02-02)
+Version 0.3.1 (2023-02-03)
 --------------------------
  * Take the examples out to the directory `examples`.
 
-Version 0.3.0 (2023-01-19)
+Version 0.3.0 (2023-02-02)
 --------------------------
 ### Fields of reference types and new types
 * Removal of all process emissions and CO2 capture from reference types to avoid having to include them as well
