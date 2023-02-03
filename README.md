@@ -12,37 +12,9 @@ EnergyModelsBase is the foundation package to build flexible multi-energy-carrie
 
 ## Usage
 
-Documentation is in preparation. For a minimal example, do:
+The [documentation](https://clean_export.pages.sintef.no/energymodelsbase.jl/) for `EnergyModelsBase` is in development.
 
-```julia
-using EnergyModelsBase
-using HiGHS
-using JuMP
-using PrettyTables
-using TimeStructures
-
-const EMB = EnergyModelsBase
-
-function emb_demo()
-    # Read test case from EnergyModelsBase
-    m, case = EMB.run_model("", nothing, HiGHS.Optimizer)
-
-    # Optimize
-    set_optimizer(m, HiGHS.Optimizer)
-    optimize!(m)
-
-    # Inspect some of the results
-    pretty_table(
-        JuMP.Containers.rowtable(
-            value,
-            m[:flow_out];
-            header = [:Node, :TimePeriod, :Resource, :FlowOut],
-        ),
-    )
-end
-
-emb_demo()
-```
+See examples of usage of the package and a simple guide for running them in the folder [`examples`](examples).
 
 
 ## Project Funding

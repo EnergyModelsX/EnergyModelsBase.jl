@@ -1,27 +1,6 @@
-function run_model(fn, case = nothing, model = nothing, optimizer = nothing)
-   @debug "Run model" fn optimizer
 
-   if isnothing(case)
-        case, model = read_data(fn)
-   end
 
-   m = create_model(case, model)
-
-    if !isnothing(optimizer)
-        set_optimizer(m, optimizer)
-        set_optimizer_attribute(m, MOI.Silent(), true)
-        optimize!(m)
-        # TODO: print_solution(m) optionally show results summary (perhaps using upcoming JuMP function)
-        # TODO: save_solution(m) save results
-    else
-        @info "No optimizer given"
-    end
-    return m, case, model
-end
-
-function read_data(fn)
-    @debug "Read case data"
-    @info "Hard coded dummy model for now"
+function generate_data()
 
     # Define the different resources
     NG       = ResourceEmit("NG", 0.2)

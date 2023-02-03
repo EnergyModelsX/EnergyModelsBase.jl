@@ -1,9 +1,8 @@
 # Changelog
 
-
 Version 0.3.1 (2023-02-03)
 --------------------------
-* Bugfix as 0.3.0 did not refer to the correct branch.
+ * Take the examples out to the directory `examples`.
 
 Version 0.3.0 (2023-02-02)
 --------------------------
@@ -11,12 +10,15 @@ Version 0.3.0 (2023-02-02)
 * Removal of all process emissions and CO2 capture from reference types to avoid having to include them as well
 in all subtypes defined later to keep the fallback option. This requires in the future to ***remove*** `CO2` as output when using CO2 capture as it was previously the case. The original types are retained so that they can still be used
 * Introduction of a type `RefStorageEmissions` to account for a storage unit that can be used for storing `ResourceEmit`
+
 ### Introduction of functions for constraints generation
 * Substitution of variable and fixed OPEX calculations as well as capacity and flow constraints through functions which utilize dispatching on `node` types
+
 ### Redefinition of introduction of global data
 * Removal of the type `AbstractGlobalData` and all subtypes and substitution through `EnergyModel` and the corresponding subtypes
 * Addition of the field `CO2_instance` in the type `OperationalModel`
 * Addition of `ModelType` to the function `create_node` to be able to use different ids for the `CO2` resource
+
 ### Additional changes
 * Redefining `CO2Int` in fields of type `Resource` to `CO2_int` to be consistent with the other types
 * Minor changes in constraint description that do not break previous code

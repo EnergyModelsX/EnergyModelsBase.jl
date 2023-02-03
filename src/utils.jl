@@ -1,3 +1,31 @@
+"""
+    run_model(case::Dict, optimizer)
+
+Take the case data as a dictionary and build and optimize the model.
+
+The dictionary requires the keys:
+ - :nodes ::Vector{Node}
+ - :links ::Vector{Link}
+ - :products ::Vector{Resource} 
+ - :T ::TimeStructure
+"""
+function run_model(case::Dict, model::EnergyModel, optimizer)
+   @debug "Run model" optimizer
+
+    m = create_model(case, model)
+
+    if !isnothing(optimizer)
+        set_optimizer(m, optimizer)
+        set_optimizer_attribute(m, MOI.Silent(), true)
+        optimize!(m)
+        # TODO: print_solution(m) optionally show results summary (perhaps using upcoming JuMP function)
+        # TODO: save_solution(m) save results
+    else
+        @warn "No optimizer given"
+    end
+    return m
+end
+
 
 """
     collect_node_types(node_types)

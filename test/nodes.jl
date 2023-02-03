@@ -16,8 +16,7 @@ function simple_graph(source::EMB.Source, sink::EMB.Sink)
                 :links => links,
                 :products => resources,
     )
-
-    return EMB.run_model("", case, model, HiGHS.Optimizer)
+    return run_model(case, model, HiGHS.Optimizer), case, model
 end
 
 

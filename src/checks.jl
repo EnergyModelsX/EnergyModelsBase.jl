@@ -37,7 +37,7 @@ end
 Check if the case data is consistent. Use the @assert_or_log macro when testing.
 Currently only checking node data.
 """
-function check_data(case, modeltype)
+function check_data(case, modeltype::EnergyModel)
     # TODO would it be useful to create an actual type for case, instead of using a Dict with 
     # naming conventions? Could be implemented as a mutable in energymodelsbase.jl maybe?
    
@@ -55,8 +55,9 @@ function check_data(case, modeltype)
         log_by_element[n] = logs
     end
 
-    # TODO 
-    #  * check that the timeprofile case[:T] is consistent with the ones used in the nodes.
+    logs = []
+    check_model(case, modeltype)
+    log_by_element[modeltype] = logs
 
     if ASSERTS_AS_LOG
         compile_logs(case, log_by_element)
@@ -70,16 +71,17 @@ end
 Simple method for showing all log messages.
 """
 function compile_logs(case, log_by_element)
-    log_message = "\n# LOGS\n\n"
-    log_message *= "## Nodes\n"
-    for n in case[:nodes]
-        if length(log_by_element[n]) > 0
-            log_message *= string("\n### ", n, "\n")
-            for l in log_by_element[n]
-                log_message *= string(" * ", l, "\n")
-            end
+    log_message = "\n# LOGS\n"
+
+    for (element, messages) ∈ log_by_element
+        if length(messages) > 0
+            log_message *= string("\n### ", element, "\n")
+        end
+        for l ∈ messages
+            log_message *= string(" * ", l, "\n")
         end
     end
+
     log_message *= "\n"
     
     some_error = sum(length(v) > 0 for (k, v) in log_by_element) > 0
@@ -94,6 +96,16 @@ function compile_logs(case, log_by_element)
 
         # If there was at least one error in the checks, an exception is thrown.
         throw(AssertionError("Inconsistent case data."))
+    end
+end
+
+
+function check_model(case, modeltype::EnergyModel)
+    for p ∈ case[:products]
+        if isa(p, ResourceEmit)
+            @assert_or_log haskey(modeltype.Emission_limit, p) "All ResourceEmits requires " *
+                "an entry in the dictionary GlobalData.Emission_limit. For $p there is none."
+        end
     end
 end
 
@@ -158,3 +170,4 @@ function check_node(n::Sink, 𝒯, modeltype::EnergyModel)
     end
 
 end
+
