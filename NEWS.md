@@ -1,6 +1,11 @@
 # Changelog
 
-Version 0.3.0 (2023-01-19)
+
+Version 0.3.1 (2023-02-03)
+--------------------------
+* Bugfix as 0.3.0 did not refer to the correct branch.
+
+Version 0.3.0 (2023-02-02)
 --------------------------
 ### Fields of reference types and new types
 * Removal of all process emissions and CO2 capture from reference types to avoid having to include them as well
