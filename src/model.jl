@@ -138,9 +138,9 @@ function variables_nodes(m, 𝒩, 𝒯, modeltype::EnergyModel)
     # Vector of the unique node types in 𝒩.
     node_composite_types = unique(map(n -> typeof(n), 𝒩))
     # Get all `Node`-types in the type-hierarchy that the nodes 𝒩 represents.
-    node_types = collect_node_types(node_composite_types)
+    node_types = collect_types(node_composite_types)
     # Sort the node-types such that a supertype will always come its subtypes.
-    node_types = sort_node_types(node_types)
+    node_types = sort_types(node_types)
 
     for node_type ∈ node_types
         # All nodes of the given sub type.

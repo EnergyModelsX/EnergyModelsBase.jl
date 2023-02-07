@@ -1,5 +1,9 @@
 # Changelog
 
+Version 0.3.2 (2023-02-07)
+--------------------------
+ * Generalized the function names for identifying and sorting the individual introduced types.
+
 Version 0.3.1 (2023-02-03)
 --------------------------
  * Take the examples out to the directory `examples`.

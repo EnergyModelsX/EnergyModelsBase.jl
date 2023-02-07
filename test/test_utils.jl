@@ -71,18 +71,18 @@ end
     end
 
     @testset "Test 1" begin
-        node_types = EMB.collect_node_types(get_types([source, sink]))
+        node_types = EMB.collect_types(get_types([source, sink]))
 
         test_type_ranking(node_types)
-        sorted_node_types = EMB.sort_node_types(node_types)
+        sorted_node_types = EMB.sort_types(node_types)
         test_type_order(sorted_node_types)
     end
 
     @testset "Test 2" begin
-        node_types = EMB.collect_node_types(get_types([source, sink, stor, sink_em, av]))
+        node_types = EMB.collect_types(get_types([source, sink, stor, sink_em, av]))
 
         test_type_ranking(node_types)
-        sorted_node_types = EMB.sort_node_types(node_types)
+        sorted_node_types = EMB.sort_types(node_types)
         test_type_order(sorted_node_types)
     end
 end
