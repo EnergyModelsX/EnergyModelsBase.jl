@@ -53,3 +53,20 @@ pages:
       - public
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+
+# Register version
+register:
+  image: julia:1.8
+  stage: deploy
+  script:
+    - julia -e 'using Pkg; Pkg.Registry.status()'
+    # Set name and email for the bot pushing to the registry.
+    - git config --global user.email "registrator@sintef.no"
+    - git config --global user.name "Registrator"
+    - julia --project="test" -e 'using Pkg; Pkg.instantiate()'  # install dependencies.
+    # Register the package. LocalRegistry will not register a new version if it is already registered.
+    - julia --project="test" -e 'using LocalRegistry; register()'  # register the package
+  rules:
+    # Only execute this on the default branch.
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
