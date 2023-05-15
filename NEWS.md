@@ -1,12 +1,16 @@
 # Changelog
 
+Version 0.3.3 (2023-04-26)
+--------------------------
+ * Changed where storage variables are declared to avoid potential method ambiguity through new storage variables when using `EnergyModelsInvestments`
+
 Version 0.3.2 (2023-02-07)
 --------------------------
  * Generalized the function names for identifying and sorting the individual introduced types.
 
 Version 0.3.1 (2023-02-03)
 --------------------------
- * Take the examples out to the directory `examples`.
+ * Take the examples out to the directory `examples`
 
 Version 0.3.0 (2023-02-02)
 --------------------------

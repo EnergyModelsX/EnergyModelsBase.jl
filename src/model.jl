@@ -9,29 +9,29 @@ function create_model(case, modeltype::EnergyModel)
     m = JuMP.Model()
 
     # WIP Data structure
-    T           = case[:T]          
-    nodes       = case[:nodes]  
-    links       = case[:links]
-    products    = case[:products]
+    𝒯 = case[:T]          
+    𝒩 = case[:nodes]  
+    ℒ = case[:links]
+    𝒫 = case[:products]
 
     # Check if the case data is consistent before the model is created.
     check_data(case, modeltype)
 
     # Declaration of variables for the problem
-    variables_flow(m, nodes, T, products, links, modeltype)
-    variables_emission(m, nodes, T, products, modeltype)
-    variables_opex(m, nodes, T, products, modeltype)
-    variables_capex(m, nodes, T, products, modeltype)
-    variables_capacity(m, nodes, T, modeltype)
-    variables_nodes(m, nodes, T, modeltype)
+    variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
+    variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype)
+    variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype)
+    variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype)
+    variables_capacity(m, 𝒩, 𝒯, modeltype)
+    variables_nodes(m, 𝒩, 𝒯, modeltype)
 
     # Construction of constraints for the problem
-    constraints_node(m, nodes, T, products, links, modeltype)
-    constraints_emissions(m, nodes, T, products, modeltype)
-    constraints_links(m, nodes, T, products, links, modeltype)
+    constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
+    constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype)
+    constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
 
     # Construction of the objective function
-    objective(m, nodes, T, products, modeltype)
+    objective(m, 𝒩, 𝒯, 𝒫, modeltype)
 
     return m
 end
@@ -39,25 +39,34 @@ end
 """
     variables_capacity(m, 𝒩, 𝒯, modeltype::EnergyModel)
 
-Create variables `:cap_use` to track how much of installed capacity is used in each node
-in terms of either `:flow_in` or `:flow_out` (depending on node `n ∈ 𝒩`) for all 
-time periods `t ∈ 𝒯`. The variables are **not** created for `Storage` or `Availability` nodes.
-In general, it is prefered to have the capacity as a function of a variable given with a
-value of 1 in the field `n.Cap`.
+Creation of different capacity variables for nodes `𝒩ⁿᵒᵗ` that are neither `Storage`
+nor `Availability` nodes. These variables are:
+* `:cap_use` - use of a technology node in each operational period
+* `:cap_inst` - installed capacity in each operational period in terms of either `:flow_in`
+or `:flow_out` (depending on node `n ∈ 𝒩`)
 
-Create variables `:cap_inst` corresponding to installed capacity and constrains the variable
-to the specified capacity `n.Cap`.
+Creation of different storage variables for `Storage` nodes `𝒩ˢᵗᵒʳ`. These variables are:
+
+  * `:stor_level` - storage level in each operational period
+  * `:stor_rate_use` - change of level in each operational period
+  * `:stor_cap_inst` - installed capacity for storage in each operational period, constrained
+  in the operational case to `n.Stor_cap` 
+  * `:stor_rate_inst` - installed rate for storage, e.g. power in each operational period,
+  constrained in the operational case to `n.Rate_cap` 
+
 """
 function variables_capacity(m, 𝒩, 𝒯, modeltype::EnergyModel)
     
     𝒩ⁿᵒᵗ = node_not_sub(𝒩, Union{Storage, Availability})
+    𝒩ˢᵗᵒʳ = node_sub(𝒩, Storage)
 
     @variable(m, cap_use[𝒩ⁿᵒᵗ, 𝒯] >= 0)
     @variable(m, cap_inst[𝒩ⁿᵒᵗ, 𝒯] >= 0)
 
-    for n ∈ 𝒩ⁿᵒᵗ, t ∈ 𝒯
-        @constraint(m, cap_inst[n, t] == n.Cap[t])
-    end
+    @variable(m, stor_level[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
+    @variable(m, stor_rate_use[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
+    @variable(m, stor_cap_inst[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
+    @variable(m, stor_rate_inst[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
 end
 
 """
@@ -180,28 +189,6 @@ function variables_node(m, 𝒩ˢⁱⁿᵏ::Vector{<:Sink}, 𝒯, modeltype::Ene
     @variable(m,sink_deficit[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
 end
 
-"""
-    variables_node(m, 𝒩ˢᵗᵒʳ::Vector{<:Storage}, 𝒯, modeltype::EnergyModel)
-
-Declaration of different storage variables for `Storage` nodes `𝒩ˢᵗᵒʳ`. These variables are:
-
-  * `:stor_level` - storage level in each operational period
-  * `:stor_rate_use` - change of level in each operational period
-  * `:stor_cap_inst` - installed capacity for storage in each operational period, constrained
-  in the operational case to `n.Stor_cap` 
-  * `:stor_rate_inst` - installed rate for storage, e.g. power in each operational period,
-  constrained in the operational case to `n.Rate_cap` 
-"""
-function variables_node(m, 𝒩ˢᵗᵒʳ::Vector{<:Storage}, 𝒯, modeltype::EnergyModel)
-    @variable(m, stor_level[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
-    @variable(m, stor_rate_use[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
-    @variable(m, stor_cap_inst[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
-    @variable(m, stor_rate_inst[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
-
-    @constraint(m, [n ∈ 𝒩ˢᵗᵒʳ, t ∈ 𝒯], m[:stor_cap_inst][n, t] == n.Stor_cap[t])
-    @constraint(m, [n ∈ 𝒩ˢᵗᵒʳ, t ∈ 𝒯], m[:stor_rate_inst][n, t] == n.Rate_cap[t])
-end
-
 
 """
     constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
@@ -299,14 +286,14 @@ function create_node(m, n::Source, 𝒯, 𝒫, modeltype::EnergyModel)
     end
 
     # Call of the function for the outlet flow from the `Source` node
-    constraints_flow_out(m, n, 𝒯)
+    constraints_flow_out(m, n, 𝒯, modeltype)
 
     # Call of the function for limiting the capacity to the maximum installed capacity
-    constraints_capacity(m, n, 𝒯)
+    constraints_capacity(m, n, 𝒯, modeltype)
 
     # Call of the functions for both fixed and variable OPEX constraints introduction
-    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ)
-    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ)
+    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ, modeltype)
+    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ, modeltype)
 end
 
 """
@@ -333,15 +320,15 @@ function create_node(m, n::Network, 𝒯, 𝒫, modeltype::EnergyModel)
         m[:emissions_node][n, t, p_em] == 0)
 
     # Call of the function for the inlet flow to and outlet flow from the `Network` node
-    constraints_flow_in(m, n, 𝒯)
-    constraints_flow_out(m, n, 𝒯)
+    constraints_flow_in(m, n, 𝒯, modeltype)
+    constraints_flow_out(m, n, 𝒯, modeltype)
             
     # Call of the function for limiting the capacity to the maximum installed capacity
-    constraints_capacity(m, n, 𝒯)
+    constraints_capacity(m, n, 𝒯, modeltype)
 
     # Call of the functions for both fixed and variable OPEX constraints introduction
-    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ)
-    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ)
+    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ, modeltype)
+    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ, modeltype)
 end
 
 """
@@ -380,14 +367,14 @@ function create_node(m, n::RefNetworkEmissions, 𝒯, 𝒫, modeltype::EnergyMod
             m[:cap_use][n, t] * n.Emissions[p_em])
 
     # Call of the function for the inlet flow to the `RefNetworkEmissions` node
-    constraints_flow_in(m, n, 𝒯)
+    constraints_flow_in(m, n, 𝒯, modeltype)
 
     # Call of the function for limiting the capacity to the maximum installed capacity
-    constraints_capacity(m, n, 𝒯)
+    constraints_capacity(m, n, 𝒯, modeltype)
 
     # Call of the functions for both fixed and variable OPEX constraints introduction
-    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ)
-    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ)
+    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ, modeltype)
+    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ, modeltype)
 end
 
 """
@@ -428,14 +415,14 @@ function create_node(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
         m[:emissions_node][n, t, p_em] == 0)
 
     # Call of the function for the inlet flow to the `Storage` node
-    constraints_flow_in(m, n, 𝒯)
+    constraints_flow_in(m, n, 𝒯, modeltype)
     
     # Call of the function for limiting the capacity to the maximum installed capacity
-    constraints_capacity(m, n, 𝒯)
+    constraints_capacity(m, n, 𝒯, modeltype)
 
     # Call of the functions for both fixed and variable OPEX constraints introduction
-    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ)
-    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ)
+    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ, modeltype)
+    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ, modeltype)
 end
 
 """
@@ -474,14 +461,14 @@ function create_node(m, n::RefStorageEmissions, 𝒯, 𝒫, modeltype::EnergyMod
         m[:emissions_node][n, t, p_em] == 0)
 
     # Call of the function for the inlet flow to the `Storage` node
-    constraints_flow_in(m, n, 𝒯)
+    constraints_flow_in(m, n, 𝒯, modeltype)
 
     # Call of the function for limiting the capacity to the maximum installed capacity
-    constraints_capacity(m, n, 𝒯)
+    constraints_capacity(m, n, 𝒯, modeltype)
 
     # Call of the functions for both fixed and variable OPEX constraints introduction
-    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ)
-    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ)
+    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ, modeltype)
+    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ, modeltype)
 end
 
 """
@@ -507,14 +494,14 @@ function create_node(m, n::Sink, 𝒯, 𝒫, modeltype::EnergyModel)
     end
     
     # Call of the function for the inlet flow to the `Sink` node
-    constraints_flow_in(m, n, 𝒯)
+    constraints_flow_in(m, n, 𝒯, modeltype)
 
     # Call of the function for limiting the capacity to the maximum installed capacity
-    constraints_capacity(m, n, 𝒯)
+    constraints_capacity(m, n, 𝒯, modeltype)
 
     # Call of the functions for both fixed and variable OPEX constraints introduction
-    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ)
-    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ)
+    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ, modeltype)
+    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ, modeltype)
 end
 
 """
