@@ -27,7 +27,7 @@ end
                         FixedProfile(10),
                         FixedProfile(0),
                         Dict(Power => 1),
-                        Dict("" => EmptyData())
+                        []
     )
 
     @testset "Checks :Surplus/:Deficit" begin
@@ -68,7 +68,7 @@ end
                         FixedProfile(0),
                         FixedProfile(10),
                         Dict(Power => 1),
-                        Dict("" => EmptyData())
+                        []
         )
         sink = RefSink(2,
                         FixedProfile(8),
@@ -110,7 +110,7 @@ end
                         FixedProfile(0),
                         FixedProfile(10),
                         Dict(Power => 1),
-                        Dict("" => EmptyData())
+                        []
         )
         sink = RefSink(2,
                         FixedProfile(3),
@@ -144,7 +144,7 @@ end
                             FixedProfile(0),
                             FixedProfile(10),
                             Dict(Power => 1),
-                            Dict("" => EmptyData()),
+                            [],
                             Dict(CO2 => 10),
         )
         m, case, model = simple_graph(source_emit, sink)

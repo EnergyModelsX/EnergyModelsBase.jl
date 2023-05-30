@@ -28,12 +28,12 @@ end
     CO2 = ResourceEmit("CO2", 0.0)
 
     source = RefSource("src", FixedProfile(5), FixedProfile(10), FixedProfile(5),
-        Dict(), Dict())
+        Dict(), [])
     sink = RefSink( "sink", FixedProfile(20), Dict(), Dict())
     stor = RefStorage("stor", FixedProfile(60), FixedProfile(1), FixedProfile(1),
-        FixedProfile(0), Power, Dict(), Dict(), Dict())
+        FixedProfile(0), Power, Dict(), Dict(), [])
     sink_em = RefStorageEmissions("sink-em", FixedProfile(1), FixedProfile(1),
-        FixedProfile(1), FixedProfile(1), CO2, Dict(), Dict(), Dict())
+        FixedProfile(1), FixedProfile(1), CO2, Dict(), Dict(), [])
     av = GenAvailability("av", Dict(), Dict())
 
     get_types(𝒩) = unique(map(n -> typeof(n), 𝒩))

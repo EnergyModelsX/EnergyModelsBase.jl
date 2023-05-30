@@ -80,7 +80,7 @@ process emissions are assumed through the usage of a constructor.
 - **`Opex_var::TimeProfile`** is the variational operational costs per energy unit produced.\n
 - **`Opex_fixed::TimeProfile`** is the fixed operational costs.\n
 - **`Output::Dict{Resource, Real}`** are the generated `Resource`s with conversion value `Real`..\n
-- **`Data::Dict{String, Data}`** is the additional data (e.g. for investments).\n
+- **`Data::Array{Data}`** is the additional data (e.g. for investments).\n
 - **`Emissions::Dict{ResourceEmit, Real}`**: emissions per energy unit produced.
 
 """
@@ -90,7 +90,7 @@ struct RefSource <: Source
     Opex_var::TimeProfile
     Opex_fixed::TimeProfile
     Output::Dict{Resource, Real}
-    Data::Dict{String, Data}
+    Data::Array{Data}
     Emissions::Union{Nothing, Dict{ResourceEmit, Real}}
 end
 RefSource(id, Cap, Opex_var, Opex_fixed, Output, Data) =
@@ -105,7 +105,7 @@ RefSource(id, Cap, Opex_var, Opex_fixed, Output, Data) =
 - **`Opex_fixed::TimeProfile`** is the fixed operational costs.\n
 - **`Input::Dict{Resource, Real}`** are the input `Resource`s with conversion value `Real`.\n
 - **`Output::Dict{Resource, Real}`** are the generated `Resource`s with conversion value `Real`.\n
-- **`Data::Dict{String, Data}`** is the additional data (e.g. for investments).
+- **`Data::Array{Data}`** is the additional data (e.g. for investments).
 
 """
 struct RefNetwork <: Network
@@ -115,7 +115,7 @@ struct RefNetwork <: Network
     Opex_fixed::TimeProfile
     Input::Dict{Resource, Real}
     Output::Dict{Resource, Real}
-    Data::Dict{String, Data}
+    Data::Array{Data}
 end
 
 """ A reference `Network` node with process emissions.
@@ -130,7 +130,7 @@ end
 CO2 is required to be included the be available to have CO2 capture applied properly.\n
 - **`Emissions::Dict{ResourceEmit, Real}`**: emissions per unit produced.\n
 - **`CO2_capture::Real`** is the CO2 capture rate.\n
-- **`Data::Dict{String, Data}`** is the additional data (e.g. for investments).
+- **`Data::Array{Data}`** is the additional data (e.g. for investments).
 
 """
 struct RefNetworkEmissions <: Network
@@ -142,7 +142,7 @@ struct RefNetworkEmissions <: Network
     Output::Dict{Resource, Real}
     Emissions::Dict{ResourceEmit, Real}
     CO2_capture::Real
-    Data::Dict{String, Data}
+    Data::Array{Data}
 end
 
 """ A reference `Availability` node.
@@ -175,7 +175,7 @@ This node is designed to store a `ResourceCarrier`.
 - **`Input::Dict{Resource, Real}`** are the input `Resource`s with conversion value `Real`.
 - **`Output::Dict{Resource, Real}`** are the generated `Resource`s with conversion value `Real`.
 Only relevant for linking and the stored `Resource`.\n
-- **`Data::Dict{String, Data}`** is the additional data (e.g. for investments).
+- **`Data::Array{Data}`** is the additional data (e.g. for investments).
 
 """
 struct RefStorage <: Storage
@@ -187,7 +187,7 @@ struct RefStorage <: Storage
     Stor_res::ResourceCarrier
     Input::Dict{Resource, Real}
     Output::Dict{Resource, Real}
-    Data::Dict{String, Data}
+    Data::Array{Data}
 end
 
 """ A reference `Storage` node.
@@ -204,7 +204,7 @@ This node is designed to store a `ResourceEmit`.
 - **`Input::Dict{Resource, Real}`** are the input `Resource`s with conversion value `Real`.
 - **`Output::Dict{Resource, Real}`** are the generated `Resource`s with conversion value `Real`.
 Only relevant for linking and the stored `Resource`.\n
-- **`Data::Dict{String, Data}`** is the additional data (e.g. for investments).
+- **`Data::Array{Data}`** is the additional data (e.g. for investments).
 
 """
 struct RefStorageEmissions <: Storage
@@ -216,7 +216,7 @@ struct RefStorageEmissions <: Storage
     Stor_res::ResourceEmit
     Input::Dict{Resource, Real}
     Output::Dict{Resource, Real}
-    Data::Dict{String, Data}
+    Data::Array{Data}
 end
 
 """ A reference `Sink` node.
