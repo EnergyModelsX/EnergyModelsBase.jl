@@ -1,5 +1,11 @@
 # Changelog
 
+Version 0.4.0 (2023-05-30)
+--------------------------
+### Additional input data changes
+ * Changed the structure in which the extra field `Data` is included in the nodes
+ * It is changed from `Dict{String, Data}` to `Array{Data}`
+
 Version 0.3.3 (2023-04-26)
 --------------------------
  * Changed where storage variables are declared to avoid potential method ambiguity through new storage variables when using `EnergyModelsInvestments`

@@ -36,7 +36,7 @@ function generate_data()
     nodes = [
         RefSource(2, FixedProfile(1e12), FixedProfile(30),
             FixedProfile(0), Dict(Power => 1),
-            Dict("" => EmptyData())),
+            []),
         RefSink(7, OperationalFixedProfile([20 30 40 30]),
             Dict(:Surplus => FixedProfile(0), :Deficit => FixedProfile(1e6)),
             Dict(Power => 1)),
