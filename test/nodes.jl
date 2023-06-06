@@ -5,7 +5,7 @@ CO2 = ResourceEmit("CO2", 1.0)
 function simple_graph(source::EMB.Source, sink::EMB.Sink)
 
     resources = [Power, CO2]
-    T = UniformTwoLevel(1, 2, 2, UniformTimes(1, 5, 2))
+    T = TwoLevel(2, 2, SimpleTimes(5, 2))
 
     nodes = [source, sink]
     links = [Direct(12, source, sink)]
@@ -81,10 +81,10 @@ end
         @test sum(value.(m[:sink_deficit][sink, t] for t ∈ 𝒯)) ≈ 
                     length(𝒯)*4 atol = TEST_ATOL
         @test sum(value.(m[:opex_var][sink, t_inv]) ≈ 
-                    sum(value.(m[:sink_deficit][sink, t])*t.duration*sink.Penalty[:Deficit][t] for t ∈ t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ)  ==
+                    sum(value.(m[:sink_deficit][sink, t])*duration(t)*sink.Penalty[:Deficit][t] for t ∈ t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ)  ==
                     𝒯.len
 
-        # Test that the deficit values are properly calculated and time is involved
+        # Test that the surplus values are properly calculated and time is involved
         # in the penalty calculation
         sink = RefSink(2,
                         FixedProfile(2),
@@ -93,10 +93,11 @@ end
         )
         m, case, model = simple_graph(source, sink)
         𝒯       = case[:T]
+        𝒯ᴵⁿᵛ    = strategic_periods(𝒯)
         @test sum(value.(m[:sink_surplus][sink, t]) for t ∈ 𝒯) ≈ 
                     length(𝒯)*2 atol = TEST_ATOL
         @test sum(value.(m[:opex_var][sink, t_inv]) ≈ 
-                    sum(value.(m[:sink_surplus][sink, t])*t.duration*sink.Penalty[:Surplus][t] for t ∈ t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ) ==
+                    sum(value.(m[:sink_surplus][sink, t])*duration(t)*sink.Penalty[:Surplus][t] for t ∈ t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ) ==
                     𝒯.len
             
     end
@@ -132,10 +133,10 @@ end
         m, case, model = simple_graph(source, sink_emit)
         𝒯       = case[:T]
         𝒯ᴵⁿᵛ    = strategic_periods(𝒯)
-        T_total = sum(sum(t.duration for t ∈ t_inv)*t_inv.duration for t_inv ∈ 𝒯ᴵⁿᵛ)
-        @test sum(sum(value.(m[:cap_use][sink_emit, t])*t.duration*sink_emit.Emissions[CO2] for t ∈ t_inv) ≈ 
+        T_total = sum(sum(duration(t) for t ∈ t_inv)*duration(t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ)
+        @test sum(sum(value.(m[:cap_use][sink_emit, t])*duration(t)*sink_emit.Emissions[CO2] for t ∈ t_inv) ≈ 
                     model.Emission_limit[CO2][t_inv] for t_inv ∈ 𝒯ᴵⁿᵛ) == 𝒯.len
-        @test sum(sum(value.(m[:emissions_node][sink_emit, t, CO2])*t.duration for t ∈ t_inv) ≈ 
+        @test sum(sum(value.(m[:emissions_node][sink_emit, t, CO2])*duration(t) for t ∈ t_inv) ≈ 
                     model.Emission_limit[CO2][t_inv] for t_inv ∈ 𝒯ᴵⁿᵛ) == 𝒯.len
 
         # Test that the emissions from a sink node with emissions are properly accounted for
@@ -150,10 +151,10 @@ end
         m, case, model = simple_graph(source_emit, sink)
         𝒯       = case[:T]
         𝒯ᴵⁿᵛ    = strategic_periods(𝒯)
-        T_total = sum(sum(t.duration for t ∈ t_inv)*t_inv.duration for t_inv ∈ 𝒯ᴵⁿᵛ)
-        @test sum(sum(value.(m[:cap_use][source_emit, t])*t.duration*source_emit.Emissions[CO2] for t ∈ t_inv) ≈ 
+        T_total = sum(sum(duration(t) for t ∈ t_inv)*duration(t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ)
+        @test sum(sum(value.(m[:cap_use][source_emit, t])*duration(t)*source_emit.Emissions[CO2] for t ∈ t_inv) ≈ 
                     model.Emission_limit[CO2][t_inv] for t_inv ∈ 𝒯ᴵⁿᵛ) == 𝒯.len
-        @test sum(sum(value.(m[:emissions_node][source_emit, t, CO2])*t.duration for t ∈ t_inv) ≈ 
+        @test sum(sum(value.(m[:emissions_node][source_emit, t, CO2])*duration(t) for t ∈ t_inv) ≈ 
                     model.Emission_limit[CO2][t_inv] for t_inv ∈ 𝒯ᴵⁿᵛ) == 𝒯.len
 
     end

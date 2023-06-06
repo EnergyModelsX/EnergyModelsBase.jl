@@ -4,7 +4,7 @@ Main module for `EnergyModelsBase.jl`.
 module EnergyModelsBase
 
 using JuMP
-using TimeStructures
+using TimeStruct
 
 include("datastructures.jl")
 include("utils.jl")

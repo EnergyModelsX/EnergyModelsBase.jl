@@ -184,7 +184,7 @@ function constraints_opex_var(m, n::Node, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
 
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         m[:opex_var][n, t_inv] == 
-            sum(m[:cap_use][n, t] * n.Opex_var[t] * t.duration for t ∈ t_inv)
+            sum(m[:cap_use][n, t] * n.Opex_var[t] * duration(t) for t ∈ t_inv)
     )
 end
 
@@ -198,7 +198,7 @@ function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyMod
     
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         m[:opex_var][n, t_inv] == 
-            sum(m[:flow_in][n, t, n.Stor_res] * n.Opex_var[t] * t.duration for t ∈ t_inv)
+            sum(m[:flow_in][n, t, n.Stor_res] * n.Opex_var[t] * duration(t) for t ∈ t_inv)
     )
 end
 
@@ -214,7 +214,7 @@ function constraints_opex_var(m, n::RefStorageEmissions, 𝒯ᴵⁿᵛ, modeltyp
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         m[:opex_var][n, t_inv] == 
             sum((m[:flow_in][n, t , p_stor] - m[:emissions_node][n, t, p_stor])
-            * n.Opex_var[t] * t.duration for t ∈ t_inv)
+            * n.Opex_var[t] * duration(t) for t ∈ t_inv)
     )
 end
 
@@ -230,6 +230,6 @@ function constraints_opex_var(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         m[:opex_var][n, t_inv] == 
             sum((m[:sink_surplus][n, t] * n.Penalty[:Surplus][t] 
                + m[:sink_deficit][n, t] * n.Penalty[:Deficit][t])
-               * t.duration for t ∈ t_inv)
+               * duration(t) for t ∈ t_inv)
     )
 end

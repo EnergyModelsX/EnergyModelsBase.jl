@@ -39,7 +39,7 @@ function generate_data()
             RefStorageEmissions(6, FixedProfile(60),   FixedProfile(600), FixedProfile(9.1),
                                 FixedProfile(0), CO2, Dict(CO2 => 1, Power => 0.02), Dict(CO2 => 1),
                                 []),
-            RefSink(7,          OperationalFixedProfile([20 30 40 30]),
+            RefSink(7,          OperationalProfile([20 30 40 30]),
                                 Dict(:Surplus => FixedProfile(0), :Deficit => FixedProfile(1e6)),
                                 Dict(Power => 1)),
             ]
@@ -58,10 +58,10 @@ function generate_data()
             ]
 
     # Creation of the time structure and global data
-    T = UniformTwoLevel(1, 4, 1, UniformTimes(1, 4, 2))
+    T = TwoLevel(4, 1, SimpleTimes(4, 2))
     model = OperationalModel(
                             Dict(
-                                CO2 => StrategicFixedProfile([160, 140, 120, 100]),
+                                CO2 => StrategicProfile([160, 140, 120, 100]),
                                 NG  => FixedProfile(1e6)
                             ),
                             CO2,

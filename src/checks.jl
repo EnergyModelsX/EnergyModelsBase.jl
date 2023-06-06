@@ -131,19 +131,15 @@ Check that an individual `TimeProfile` corresponds to the time structure `𝒯`.
 function check_profile_field(fieldname, value::FixedProfile, 𝒯)
 end
 
-function check_profile_field(fieldname, value::StrategicFixedProfile, 𝒯)
-    @assert_or_log length(value.vals) == 𝒯.len "Field '" * string(fieldname) * "' does not match the time structure."
+function check_profile_field(fieldname, value::StrategicProfile, 𝒯)
+    @assert_or_log length(value.vals) == length(strategic_periods(𝒯)) "Field '" * string(fieldname) * "' does not match the time structure."
 end
 
-function check_profile_field(fieldname, value::OperationalFixedProfile, 𝒯)
-    @assert_or_log length(value.vals) == 𝒯.operational.len "Field '" * string(fieldname) * "' does not match the time structure."
+function check_profile_field(fieldname, value::OperationalProfile, 𝒯)
+    for sp ∈ strategic_periods(𝒯), sc ∈ opscenarios(sp)
+        @assert_or_log length(value.vals) == length(sc) "Field '" * string(fieldname) * "' does not match the time structure."
+    end
 end
-
-function check_profile_field(fieldname, value::DynamicProfile, 𝒯)
-    @assert_or_log size(value.vals) == (𝒯.len, 𝒯.operational.len) "Field '" * string(fieldname) * "' does not match the time structure."
-
-end
-
 
 """
     check_node(n, 𝒯, modeltype::EnergyModel)
