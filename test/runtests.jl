@@ -2,10 +2,10 @@ using EnergyModelsBase
 using HiGHS
 using JuMP
 using Test
-using TimeStructures
+using TimeStruct
 
 const EMB = EnergyModelsBase
-const TS = TimeStructures
+const TS = TimeStruct
 
 const TEST_ATOL = 1e-6
 

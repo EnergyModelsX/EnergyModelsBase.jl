@@ -11,7 +11,7 @@ using JuMP
 using HiGHS
 using Pkg
 using PrettyTables
-using TimeStructures
+using TimeStruct
 
 
 function generate_data()
@@ -37,7 +37,7 @@ function generate_data()
         RefSource(2, FixedProfile(1e12), FixedProfile(30),
             FixedProfile(0), Dict(Power => 1),
             []),
-        RefSink(7, OperationalFixedProfile([20 30 40 30]),
+        RefSink(7, OperationalProfile([20 30 40 30]),
             Dict(:Surplus => FixedProfile(0), :Deficit => FixedProfile(1e6)),
             Dict(Power => 1)),
     ]
@@ -48,7 +48,7 @@ function generate_data()
     ]
 
     # Creation of the time structure and global data
-    T = UniformTwoLevel(1, 4, 1, UniformTimes(1, 4, 2))
+    T = TwoLevel(4, 1, SimpleTimes(4, 2))
     model = OperationalModel(Dict(CO2 => FixedProfile(10)), CO2)
 
     # WIP data structure

@@ -233,7 +233,7 @@ function constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
         m[:emissions_total][t, p] == sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ⁿᵒᵗ))
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ],
-        m[:emissions_strategic][t_inv, p] == sum(m[:emissions_total][t, p] * t.duration for t ∈ t_inv))
+        m[:emissions_strategic][t_inv, p] == sum(m[:emissions_total][t, p] * duration(t) for t ∈ t_inv))
 end
 
 """
@@ -248,7 +248,7 @@ function objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Calculation of the objective function.
-    @objective(m, Max, -sum((m[:opex_var][n, t_inv] + m[:opex_fixed][n, t_inv]) * t_inv.duration for t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ))
+    @objective(m, Max, -sum((m[:opex_var][n, t_inv] + m[:opex_fixed][n, t_inv]) * duration(t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ))
 end
 
 """
@@ -392,20 +392,20 @@ function create_node(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
     𝒯ᴵⁿᵛ   = strategic_periods(𝒯)
 
     # Mass/energy balance constraints for stored energy carrier.
-    for t_inv ∈ 𝒯ᴵⁿᵛ, t ∈ t_inv
-        if t == first_operational(t_inv)
+    for t_inv ∈ 𝒯ᴵⁿᵛ, (t_prev, t) ∈ withprev(t_inv)
+        if isnothing(t_prev)
             @constraint(m,
-                m[:stor_level][n, t] ==  m[:stor_level][n, last_operational(t_inv)] + 
+                m[:stor_level][n, t] ==  m[:stor_level][n, last(t_inv)] + 
                                             (m[:flow_in][n, t , p_stor] -
                                             m[:flow_out][n, t , p_stor]) * 
-                                            t.duration
+                                            duration(t)
             )
         else
             @constraint(m,
-                m[:stor_level][n, t] ==  m[:stor_level][n, previous(t, 𝒯)] + 
+                m[:stor_level][n, t] ==  m[:stor_level][n, t_prev] + 
                                             (m[:flow_in][n, t , p_stor] -
                                             m[:flow_out][n, t , p_stor]) * 
-                                            t.duration
+                                            duration(t)
             )
         end
     end
@@ -439,19 +439,19 @@ function create_node(m, n::RefStorageEmissions, 𝒯, 𝒫, modeltype::EnergyMod
     𝒯ᴵⁿᵛ   = strategic_periods(𝒯)
 
     # Mass/energy balance constraints for stored energy carrier.
-    for t_inv ∈ 𝒯ᴵⁿᵛ, t ∈ t_inv
-        if t == first_operational(t_inv)
+    for t_inv ∈ 𝒯ᴵⁿᵛ, (t_prev, t) ∈ withprev(t_inv)
+        if isnothing(t_prev)
             @constraint(m,
                 m[:stor_level][n, t] ==  (m[:flow_in][n, t , p_stor] -
                                             m[:emissions_node][n, t, p_stor]) * 
-                                            t.duration
+                                            duration(t)
                 )
         else
             @constraint(m,
-                m[:stor_level][n, t] ==  m[:stor_level][n, previous(t, 𝒯)] + 
+                m[:stor_level][n, t] ==  m[:stor_level][n, t_prev] + 
                                             (m[:flow_in][n, t , p_stor] -
                                             m[:emissions_node][n, t, p_stor]) * 
-                                            t.duration
+                                            duration(t)
                 )
         end
     end

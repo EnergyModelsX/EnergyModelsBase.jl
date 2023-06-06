@@ -1,13 +1,13 @@
 name = "EnergyModelsBase"
 uuid = "5d7e687e-f956-46f3-9045-6f5a5fd49f50"
 authors = ["Lars Hellemo <Lars.Hellemo@sintef.no>, Julian Straus <Julian.Straus@sintef.no>"]
-version = "0.4.0"
+version = "0.5.0"
 
 [deps]
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
-TimeStructures = "260f4295-b40d-47c0-843b-64f3de373d90"
+TimeStruct = "f9ed5ce0-9f41-4eaa-96da-f38ab8df101c"
 
 [compat]
 JuMP = "^0.23, 1"
-TimeStructures = "^0.1.10"
 julia = "^1.6"
+TimeStruct = "^0.6.1"
