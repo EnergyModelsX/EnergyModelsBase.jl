@@ -1,5 +1,7 @@
 """
 Main module for `EnergyModelsBase.jl`.
+
+This module provides the framework for building energy system models.
 """
 module EnergyModelsBase
 

@@ -1,9 +1,5 @@
 # [Public interface](@id sec_lib_public)
 
-```@docs
-EnergyModelsBase
-```
-
 ## Resource
 
 ```@docs
@@ -15,7 +11,7 @@ ResourceEmit
 ## Nodes
 
 ```@docs
-EMB.Node
+Node
 Source
 Network
 Sink
@@ -27,12 +23,15 @@ Availability
 
 ```@docs
 RefSource
-RefGeneration
+RefNetwork
+RefNetworkEmissions
 RefSink
 RefStorage
+RefStorageEmissions
 ```
 
 ## Links
+
 ```@docs
 Linear
 Link
@@ -40,11 +39,10 @@ Direct
 ```
 
 ## Model and data
+
 ```@docs
 EnergyModel
 OperationalModel
-AbstractGlobalData
-GlobalData
 Data
 EmptyData
 ```
