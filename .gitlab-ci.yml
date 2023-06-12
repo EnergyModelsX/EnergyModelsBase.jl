@@ -36,7 +36,13 @@ before_script:
     - echo "Run tests"
     - julia -e 'using Pkg; Pkg.Registry.status()'
     - julia --project=. -e 'using Pkg; Pkg.test(; coverage = true)'
-    
+  rules:
+    - when: always
+  
+
+test:1.9:
+  image: julia:1.9
+  <<: *test_definition
 
 test:1.9:
   image: julia:1.9
@@ -58,6 +64,8 @@ pages:
     paths:
       - public
   rules:
+    # Only execute this on the default branch and on merge requests.
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 
@@ -68,7 +76,7 @@ register:
   script:
     - julia -e 'using Pkg; Pkg.Registry.status()'
     # Set name and email for the bot pushing to the registry.
-    - git config --global user.email "registrator@sintef.no"
+    - git config --global user.email "<@>"
     - git config --global user.name "Registrator"
     - julia --project="test" -e 'using Pkg; Pkg.instantiate()'  # install dependencies.
     # Register the package. LocalRegistry will not register a new version if it is already registered.

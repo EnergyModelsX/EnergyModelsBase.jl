@@ -185,8 +185,8 @@ for `Sink` nodes `𝒩ˢⁱⁿᵏ` to quantify when there is too much or too lit
 satisfying the demand.
 """
 function variables_node(m, 𝒩ˢⁱⁿᵏ::Vector{<:Sink}, 𝒯, modeltype::EnergyModel)
-    @variable(m,sink_surplus[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
-    @variable(m,sink_deficit[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
+    @variable(m, sink_surplus[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
+    @variable(m, sink_deficit[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
 end
 
 

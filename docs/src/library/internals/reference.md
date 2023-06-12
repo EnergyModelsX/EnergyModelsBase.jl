@@ -2,7 +2,7 @@
 
 ## Index
 ```@index
-Pages = ["internals.md"]
+Pages = ["reference.md"]
 ```
 
 ## Types

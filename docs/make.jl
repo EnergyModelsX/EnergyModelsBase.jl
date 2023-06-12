@@ -10,21 +10,38 @@ if isfile(news)
 end
 cp("../NEWS.md", "src/manual/NEWS.md")
 
+
+DocMeta.setdocmeta!(EnergyModelsBase, :DocTestSetup, :(using EnergyModelsBase); recursive=true)
+
 makedocs(
-    sitename = "EnergyModelsBase",
-    format = Documenter.HTML(),
+    sitename = "EnergyModelsBase.jl",
+    repo="https://gitlab.sintef.no/clean_export/energymodelsbase.jl/blob/{commit}{path}#{line}",
+    format = Documenter.HTML(;
+        prettyurls=get(ENV, "CI", "false") == "true",
+        canonical="https://clean_export.pages.sintef.no/energymodelsbase.jl/",
+        edit_link="main",
+        assets=String[],
+    ),
     modules = [EnergyModelsBase],
     pages = [
         "Home" => "index.md",
         "Manual" => Any[
             "Quick Start" => "manual/quick-start.md",
             "Philosophy" => "manual/philosophy.md",
+            "Nodes" => "manual/nodes.md",
             "Example" => "manual/simple-example.md",
             "Release notes" => "manual/NEWS.md",
         ],
+        "How-to" => Any[
+            "Create a new node" => "how-to/create-new-node.md",
+        ],
         "Library" => Any[
             "Public" => "library/public.md",
-            "Internals" => "library/internals.md"
+            "Internals" => Any[
+                "Reference" => "library/internals/reference.md",
+                "Optimization variables" => "library/internals/optimization-variables.md",
+                "Constraint functions" => "library/internals/constraint-functions.md",
+            ]
         ]
     ]
 )
