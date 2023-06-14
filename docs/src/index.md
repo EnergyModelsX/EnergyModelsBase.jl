@@ -12,7 +12,7 @@ One of the primary design goals was to develop a model that can eaily be extende
 For running a basic energy system model, only the base technology package
 [`EnergyModelsBase.jl`](https://clean_export.pages.sintef.no/energymodelsbase.jl/)
 and the time structure package
-[`TimeStructures.jl`](https://clean_export.pages.sintef.no/timestructures.jl/)
+[`TimeStruct.jl`](https://gitlab.sintef.no/julia-one-sintef/timestruct.jl)
 is needed.
 
 The main package provides simple descriptions for energy sources, sinks, conversion, and storage units.
