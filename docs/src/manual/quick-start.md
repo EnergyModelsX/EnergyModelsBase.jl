@@ -5,9 +5,13 @@
 >     ```
 >     ] registry add git@gitlab.sintef.no:clean_export/registrycleanexport.git
 >     ```
->  3. Install the base package [`EnergyModelsBase.jl`](https://clean_export.pages.sintef.no/energymodelsbase.jl/) and the time package [`TimeStructures.jl`](https://clean_export.pages.sint    ef.no/timestructures.jl/), by running:
+>  3. Add the [SINTEF internal Julia registry](https://gitlab.sintef.no/julia-one-sintef/onesintef):
+>     ```
+>     ] registry add git@gitlab.sintef.no:julia-one-sintef/onesintef.git
+>     ```
+>  4. Install the base package [`EnergyModelsBase.jl`](https://clean_export.pages.sintef.no/energymodelsbase.jl/) and the time package [`TimeStruct.jl`](https://gitlab.sintef.no/julia-one-sintef/timestruct.jl), by running:
 >     ```
 >     ] add EnergyModelsBase
->     ] add TimeStructures
+>     ] add TimeStruct
 >     ```
->     This will fetch the packages from the CleanExport package registry.
+>     This will fetch the packages from the CleanExport package and OneSINTEF registries.
