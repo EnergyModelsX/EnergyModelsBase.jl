@@ -6,7 +6,7 @@ First, add the [*Clean Export* Julia packages repository](https://gitlab.sintef.
 ```
 ~/some/directory/ $ julia           # Starts the Julia REPL
 julia> ]                            # Enter Pkg mode 
-pkg> add EnergyModelsBase    # Install the package EnergyModelsInvestments to the current environment.
+pkg> add EnergyModelsBase           # Install the package EnergyModelsBase to the current environment.
 ```
 From the Julia REPL, run
 ```julia
