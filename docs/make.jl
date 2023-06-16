@@ -38,9 +38,9 @@ makedocs(
         "Library" => Any[
             "Public" => "library/public.md",
             "Internals" => Any[
-                "Reference" => "library/internals/reference.md",
                 "Optimization variables" => "library/internals/optimization-variables.md",
                 "Constraint functions" => "library/internals/constraint-functions.md",
+                "Reference" => "library/internals/reference.md",
             ]
         ]
     ]

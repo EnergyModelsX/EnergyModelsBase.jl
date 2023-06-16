@@ -51,8 +51,8 @@ Pages = [
 ```@contents
 Pages = [
     "library/public.md",
-    "library/internals/reference.md",
     "library/internals/optimization-variables.md",
     "library/internals/constraint-functions.md",
+    "library/internals/reference.md",
 ]
 ```

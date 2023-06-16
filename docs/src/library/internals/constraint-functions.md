@@ -49,5 +49,5 @@ It is implemented for `Node`, `Storage`, and `Sink` types.
 constraints_opex_var(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
 ```
 
-corresponds to the constraints calculating the fixed operational costs of a technology node ``n``.
+corresponds to the constraints calculating the variable operational costs of a technology node ``n``.
 It is implemented for `Node`, `Storage`, `RefStorageEmissions`, and `Sink` types.

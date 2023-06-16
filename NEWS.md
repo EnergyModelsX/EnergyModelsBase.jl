@@ -1,4 +1,8 @@
-# Changelog
+# Release notes
+
+Version 0.5.1 (2023-06-16)
+--------------------------
+ * Updated the documentation based on the new format
 
 Version 0.5.0 (2023-06-01)
 --------------------------

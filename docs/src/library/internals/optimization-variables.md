@@ -25,7 +25,7 @@ This means that the total quantity that flows into a node ``n`` during the opera
 m[:flow_in][n, t, p] * t.duration
 ```
 
-The multiplication then leads to an energy/mass quantitiy in stead of an energy/mass flow.
+The multiplication then leads to an energy/mass quantity in stead of an energy/mass flow.
 
 ## Capacity variables
 
@@ -54,7 +54,7 @@ These variables are:
 - ``\texttt{:sink\_surplus}[n, t]``: Surplus of energy/mass to `Sink` ``n`` at operational period ``t``, and
 - ``\texttt{:sink\_deficit}[n, t]``: deficit of energy/mass to `Sink` ``n`` at operational period ``t``.
 
-### Other variables
+## Other variables
 
 The following variables are not associated with any nodes:
 
