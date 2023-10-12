@@ -4,9 +4,8 @@
 Create the model and call all requried functions based on provided 'modeltype'
 and case data.
 """
-function create_model(case, modeltype::EnergyModel)
+function create_model(case, modeltype::EnergyModel, m::JuMP.Model)
     @debug "Construct model"
-    m = JuMP.Model()
 
     # WIP Data structure
     𝒯 = case[:T]          
@@ -34,6 +33,10 @@ function create_model(case, modeltype::EnergyModel)
     objective(m, 𝒩, 𝒯, 𝒫, modeltype)
 
     return m
+end
+function create_model(case, modeltype::EnergyModel)
+    m = JuMP.Model()
+    create_model(case, modeltype::EnergyModel, m)
 end
 
 """
