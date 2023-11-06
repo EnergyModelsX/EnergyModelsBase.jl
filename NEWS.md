@@ -1,5 +1,10 @@
 # Release notes
 
+Version 0.5.2 (2023-11-06)
+--------------------------
+ * Introduced method `create_model` that can take a `JuMP.Model` as input to simplify potentialuse of other type of models
+ * Fixed the documentation to avoid errors
+
 Version 0.5.1 (2023-06-16)
 --------------------------
  * Updated the documentation based on the new format

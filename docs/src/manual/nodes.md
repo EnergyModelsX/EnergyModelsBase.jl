@@ -27,4 +27,4 @@ Node
 
 The leaf nodes of the above type hierarchy tree are `struct`s, while the inner
 vertices are `abstract type`s.
-The individual nodes and their fields are explained in [the public library]((@ref sec_lib_public)).
+The individual nodes and their fields are explained in [the public library](@ref sec_lib_public).

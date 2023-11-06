@@ -41,8 +41,8 @@ Packages implementing technology specific nodes:
 Pages = [
     "manual/quick-start.md",
     "manual/philosophy.md",
-    "manual/nodes.md"
-    "manual/simple-example.md"
+    "manual/nodes.md",
+    "manual/simple-example.md",
 ]
 ```
 
