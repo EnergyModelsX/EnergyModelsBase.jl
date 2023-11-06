@@ -11,7 +11,6 @@ ResourceEmit
 ## Nodes
 
 ```@docs
-Node
 Source
 Network
 Sink
@@ -28,6 +27,7 @@ RefNetworkEmissions
 RefSink
 RefStorage
 RefStorageEmissions
+GenAvailability
 ```
 
 ## Links
@@ -45,4 +45,17 @@ EnergyModel
 OperationalModel
 Data
 EmptyData
+```
+
+## Functions for running the model
+
+```@docs
+create_model
+run_model
+```
+
+## Miscellaneous functions/macros
+
+```@docs
+@assert_or_log
 ```
