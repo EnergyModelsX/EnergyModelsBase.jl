@@ -4,10 +4,10 @@
 Take the case data as a dictionary and build and optimize the model.
 
 The dictionary requires the keys:
- - :nodes ::Vector{Node}
- - :links ::Vector{Link}
- - :products ::Vector{Resource} 
- - :T ::TimeStructure
+ - `:nodes::Vector{Node}`
+ - `:links::Vector{Link}`
+ - `:products::Vector{Resource}`
+ - `:T::TimeStructure`
 """
 function run_model(case::Dict, model::EnergyModel, optimizer)
    @debug "Run model" optimizer
@@ -49,7 +49,7 @@ function collect_types(types_list)
         if parent == Any
             continue
         end
- 
+
         # If the parent is already added to the list, we can skip it.
         if  parent ∉ types_list
             ancestors = collect_types([parent])

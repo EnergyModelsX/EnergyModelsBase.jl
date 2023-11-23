@@ -10,9 +10,11 @@ ResourceEmit
 
 ## Nodes
 
+The following abstract types are inmplemented in the basis version.
+
 ```@docs
 Source
-Network
+NetworkNode
 Sink
 Storage
 Availability
@@ -20,10 +22,12 @@ Availability
 
 ### Reference nodes
 
+The following composite types are inmplemented in the basis version.
+
 ```@docs
 RefSource
-RefNetwork
-RefNetworkEmissions
+RefNetworkNode
+RefNetworkNodeEmissions
 RefSink
 RefStorage
 RefStorageEmissions
@@ -52,6 +56,30 @@ EmptyData
 ```@docs
 create_model
 run_model
+```
+
+## Functions for extending the model
+
+The following functions are used for developing new nodes.
+See the page [Creating a new node](@ref create_new_node) for a detailed explanation on how to create a new node.
+
+```@docs
+variables_node
+create_node
+```
+
+## Constraint functions
+
+The following functions can be used in new developed nodes.
+See the page [Constraint functions](@ref constraint_functions) for a detailed explanation on their usage.
+
+```@docs
+constraints_flow_in
+constraints_flow_out
+constraints_capacity
+constraints_capacity_installed
+constraints_opex_var
+constraints_opex_fixed
 ```
 
 ## Miscellaneous functions/macros

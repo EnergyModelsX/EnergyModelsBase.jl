@@ -1,7 +1,7 @@
 # A constant used to control the behaviour of the @assert_or_log macro.
-# If set to true, the macro just adds the error messages as a log message 
-# if the test fails, without throwing an exception. When set to false, the 
-# macro just acts as a normal @assert macro, and interrupts the program at 
+# If set to true, the macro just adds the error messages as a log message
+# if the test fails, without throwing an exception. When set to false, the
+# macro just acts as a normal @assert macro, and interrupts the program at
 # first failed test.
 ASSERTS_AS_LOG = true
 
@@ -12,18 +12,18 @@ logs = []
 """
     assert_or_log(ex, msg)
 
-Macro that extends the behaviour of the @assert macro. The switch ASSERTS_AS_LOG, 
+Macro that extends the behaviour of the @assert macro. The switch ASSERTS_AS_LOG,
 controls if the macro should act as a logger or a normal @assert. This macro is
 designed to be used to check whether the data provided is consistent.
 """
 macro assert_or_log(ex, msg)
     return quote
         if ASSERTS_AS_LOG
-            # In this case, the @assert_or_log macro is used only to log 
+            # In this case, the @assert_or_log macro is used only to log
             # the error message if the test fails.
             $(esc(ex)) || push!(logs, $(esc(msg)))
         else
-            # In this case, the @assert_or_log macro should just act as 
+            # In this case, the @assert_or_log macro should just act as
             # a normal @assert, and throw an exception at the first failed assert.
             @assert($(esc(ex)), $(esc(msg)))
         end
@@ -38,10 +38,10 @@ Check if the case data is consistent. Use the @assert_or_log macro when testing.
 Currently only checking node data.
 """
 function check_data(case, modeltype::EnergyModel)
-    # TODO would it be useful to create an actual type for case, instead of using a Dict with 
+    # TODO would it be useful to create an actual type for case, instead of using a Dict with
     # naming conventions? Could be implemented as a mutable in energymodelsbase.jl maybe?
-   
-    # TODO this usage of the global vector 'logs' doesn't seem optimal. Should consider using 
+
+    # TODO this usage of the global vector 'logs' doesn't seem optimal. Should consider using
     #   the actual logging macros underneath instead.
     global logs = []
     log_by_element = Dict()
@@ -83,14 +83,14 @@ function compile_logs(case, log_by_element)
     end
 
     log_message *= "\n"
-    
+
     some_error = sum(length(v) > 0 for (k, v) in log_by_element) > 0
     if some_error
         # Write the messages to file only if there was an error.
         io = open("consistency_log.md", "w")
         println(io, log_message)
         close(io)
-    
+
         # Print the log to the console.
         @error log_message
 
@@ -103,7 +103,7 @@ end
 function check_model(case, modeltype::EnergyModel)
     for p ∈ case[:products]
         if isa(p, ResourceEmit)
-            @assert_or_log haskey(modeltype.Emission_limit, p) "All ResourceEmits requires " *
+            @assert_or_log haskey(modeltype.emission_limit, p) "All ResourceEmits requires " *
                 "an entry in the dictionary GlobalData.Emission_limit. For $p there is none."
         end
     end
@@ -150,24 +150,24 @@ function check_node(n::Node, 𝒯, modeltype::EnergyModel)
 end
 
 function check_node(n::Source, 𝒯, modeltype::EnergyModel)
-    @assert_or_log sum(n.Cap[t] >= 0 for t ∈ 𝒯) == length(𝒯) "The capacity must be non-negative."
+    @assert_or_log sum(n.cap[t] >= 0 for t ∈ 𝒯) == length(𝒯) "The capacity must be non-negative."
 end
 
 function check_node(n::Sink, 𝒯, modeltype::EnergyModel)
-    @assert_or_log sum(n.Cap[t] >= 0 for t ∈ 𝒯) == length(𝒯) "The capacity must be non-negative."
+    @assert_or_log sum(n.cap[t] >= 0 for t ∈ 𝒯) == length(𝒯) "The capacity must be non-negative."
 
-    @assert_or_log :Surplus ∈ keys(n.Penalty) &&
-                   :Deficit ∈ keys(n.Penalty) "The entries :Surplus and :Deficit are required in Sink.Penalty"
+    @assert_or_log :surplus ∈ keys(n.penalty) &&
+                   :deficit ∈ keys(n.penalty) "The entries :surplus and :deficit are required in Sink.penalty"
 
-    if :Surplus ∈ keys(n.Penalty) && :Deficit ∈ keys(n.Penalty)
+    if :surplus ∈ keys(n.penalty) && :deficit ∈ keys(n.penalty)
         # The if-condition was checked above.
-        @assert_or_log sum(n.Penalty[:Surplus][t] + n.Penalty[:Deficit][t] ≥ 0 for t ∈ 𝒯) ==
-                    length(𝒯) "An inconsistent combination of :Surplus and :Deficit lead to infeasible model."
+        @assert_or_log sum(n.penalty[:surplus][t] + n.penalty[:deficit][t] ≥ 0 for t ∈ 𝒯) ==
+                    length(𝒯) "An inconsistent combination of :surplus and :deficit lead to infeasible model."
     end
 
 end
 
-function check_node(n::RefNetworkEmissions, 𝒯, modeltype::EnergyModel)
-    @assert_or_log n.CO2_capture ≤ 1 "The field CO2_capture must be less or equal to 1."
-    @assert_or_log n.CO2_capture ≥ 0 "The field CO2_capture must be non-negative."
+function check_node(n::RefNetworkNodeEmissions, 𝒯, modeltype::EnergyModel)
+    @assert_or_log n.co2_capture ≤ 1 "The field CO2_capture must be less or equal to 1."
+    @assert_or_log n.co2_capture ≥ 0 "The field CO2_capture must be non-negative."
 end

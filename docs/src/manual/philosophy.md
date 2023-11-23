@@ -17,10 +17,10 @@ The package utilizes different `type`s that represent components in an energy sy
 These types can be summarized as:
 
 1. [`Source`](@ref) types have only an ouput to the system. Practical examples are solar PV, wind power, or available resources.
-2. [`Network`](@ref) types have both an input and an ouput. Practical examples are next to all technologies in an energy system, like *e.g.*, a natural gas reforming plant with CCS (input: natural gas and electricity, output: hydrogen and CO<sub>2</sub>) or an electrolyser (input: electricity, output: hydrogen).
+2. [`NetworkNode`](@ref) types have both an input and an ouput. Practical examples are next to all technologies in an energy system, like *e.g.*, a natural gas reforming plant with CCS (input: natural gas and electricity, output: hydrogen and CO<sub>2</sub>) or an electrolyser (input: electricity, output: hydrogen).
 3. [`Sink`](@ref) types have only an input from the system. They correspond in general to an energy/mass demand.
 
-In addition, there are two `type`s that are subtypes of `Network`:
+In addition, there are two `type`s that are subtypes of `NetworkNode`:
 
 1. [`Availability`](@ref) types are routing types. They guarantee the energy/mass balance of all connected inputs/outputs.
 2. [`Storage`](@ref) types are a special subtype as they include different variables.

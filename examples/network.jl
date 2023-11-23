@@ -21,10 +21,6 @@ function generate_data()
     CO2 = ResourceEmit("CO2", 1.0)
     products = [NG, Coal, Power, CO2]
 
-    # Creation of a dictionary with entries of 0 for all resources for the availability node
-    # to be able to create the links for the availability node.
-    𝒫₀ = Dict(k => 0 for k ∈ products)
-
     # Creation of a dictionary with entries of 0 for all emission resources
     # This dictionary is normally used as usage based non-energy emissions.
     𝒫ᵉᵐ₀ = Dict(k => 0.0 for k ∈ products if typeof(k) == ResourceEmit{Float64})
@@ -33,18 +29,18 @@ function generate_data()
     # Create the individual test nodes, corresponding to a system with an electricity demand/sink,
     # coal and nautral gas sources, coal and natural gas (with CCS) power plants and CO2 storage.
     nodes = [
-        GenAvailability(1, 𝒫₀, 𝒫₀),
+        GenAvailability(1, products),
         RefSource(2, FixedProfile(1e12), FixedProfile(30),
             FixedProfile(0), Dict(NG => 1),
             []),
         RefSource(3, FixedProfile(1e12), FixedProfile(9),
             FixedProfile(0), Dict(Coal => 1),
             []),
-        RefNetworkEmissions(4, FixedProfile(25), FixedProfile(5.5),
+        RefNetworkNodeEmissions(4, FixedProfile(25), FixedProfile(5.5),
             FixedProfile(0), Dict(NG => 2),
             Dict(Power => 1, CO2 => 1), 𝒫ᵉᵐ₀, 0.9,
             []),
-        RefNetwork(5, FixedProfile(25), FixedProfile(6),
+        RefNetworkNode(5, FixedProfile(25), FixedProfile(6),
             FixedProfile(0), Dict(Coal => 2.5),
             Dict(Power => 1),
             []),
@@ -52,7 +48,7 @@ function generate_data()
             FixedProfile(0), CO2, Dict(CO2 => 1, Power => 0.02), Dict(CO2 => 1),
             []),
         RefSink(7, OperationalProfile([20 30 40 30]),
-            Dict(:Surplus => FixedProfile(0), :Deficit => FixedProfile(1e6)),
+            Dict(:surplus => FixedProfile(0), :deficit => FixedProfile(1e6)),
             Dict(Power => 1)),
     ]
 

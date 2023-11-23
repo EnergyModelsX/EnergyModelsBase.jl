@@ -30,17 +30,17 @@ The choice of node supertype depends on what optimization variables you need for
 A new node is defined as a composite type (`struct`) and subtype of one of the standard node types,
 
 - [`Source`](@ref)
-- [`Network`](@ref)
+- [`NetworkNode`](@ref)
 - [`Sink`](@ref)
 
 Furthermore, we have the types
 
-- [`Availability`](@ref) `<: Network`
-- [`Storage`](@ref) `<: Network`
+- [`Availability`](@ref) `<: NetworkNode`
+- [`Storage`](@ref) `<: NetworkNode`
 
 which correspond to a routing node (`Availability`) and a storage node (`Storage`).
 
-The chosen parent `type` of the `NewNodeType` node decides what optimization variables are created for use by default. The main difference between the individual parent types is whether they have only an energy/mass output (`Source`), input and output (`Network`), or input (`Sink`).
+The chosen parent `type` of the `NewNodeType` node decides what optimization variables are created for use by default. The main difference between the individual parent types is whether they have only an energy/mass output (`Source`), input and output (`NetworkNode`), or input (`Sink`).
 
 You can find the created default optimization variables in [OptimizationVariables](@ref optimization_variables)*.
 
