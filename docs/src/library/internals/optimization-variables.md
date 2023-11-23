@@ -15,8 +15,8 @@ created at at strategic period ``t_\texttt{inv}`` or operational period ``t``.
 
 Flow variables correspond to the input and output to the technology node. The following flow variables are defined for the nodes:
 
-- ``\texttt{:flow\_in}[n, t, p]`` measures the flow rate of resource ``p`` into node ``n`` at operational period ``t``. It is created for subtypes of the types `Network` and `Sink` based on the field `Input` in the `struct`.
-- ``\texttt{:flow\_out}[n, t, p]`` measures the flow rate of resource ``p`` out of node ``n`` at operational period ``t``. It is created for created for subtypes of the types `Source` and `Network` based on the field `Output` in the `struct`.
+- ``\texttt{:flow\_in}[n, t, p]`` measures the flow rate of resource ``p`` into node ``n`` at operational period ``t``. It is created for subtypes of the types `NetworkNode` and `Sink` based on the field `Input` in the `struct`.
+- ``\texttt{:flow\_out}[n, t, p]`` measures the flow rate of resource ``p`` out of node ``n`` at operational period ``t``. It is created for created for subtypes of the types `Source` and `NetworkNode` based on the field `Output` in the `struct`.
 
 The flow is always given for a single hour.
 This means that the total quantity that flows into a node ``n`` during the operational period ``t`` is found by 

@@ -1,5 +1,12 @@
 # Release notes
 
+Unversioned
+--------------------------
+ * Switched fields `Input` and `Output` of `Availability` nodes from `Dict{Resource, Real}` to `Array{<:Resource}`. The former is still available as a constructor, while a new constructure is introduced which requries the input only once.
+ * Renamed `Network` to `NetworkNode` can be considered to be replaces in later iterations as it is not really needed
+ * Added functions for extracting the fields of `Node`s, `Resource`s, and `EnergyModel`s to allow for extensions
+ * Added export of functions that are frequently used in other packages
+
 Version 0.5.2 (2023-11-06)
 --------------------------
  * Introduced method `create_model` that can take a `JuMP.Model` as input to simplify potentialuse of other type of models

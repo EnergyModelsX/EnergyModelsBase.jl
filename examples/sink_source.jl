@@ -22,10 +22,6 @@ function generate_data()
     CO2 = ResourceEmit("CO2", 1.0)
     products = [Power, CO2]
 
-    # Creation of a dictionary with entries of 0 for all resources for the availability node
-    # to be able to create the links for the availability node.
-    𝒫₀ = Dict(k => 0 for k ∈ products)
-
     # Creation of a dictionary with entries of 0 for all emission resources
     # This dictionary is normally used as usage based non-energy emissions.
     𝒫ᵉᵐ₀ = Dict(k => 0.0 for k ∈ products if typeof(k) == ResourceEmit{Float64})
@@ -38,7 +34,7 @@ function generate_data()
             FixedProfile(0), Dict(Power => 1),
             []),
         RefSink(7, OperationalProfile([20 30 40 30]),
-            Dict(:Surplus => FixedProfile(0), :Deficit => FixedProfile(1e6)),
+            Dict(:surplus => FixedProfile(0), :deficit => FixedProfile(1e6)),
             Dict(Power => 1)),
     ]
 

@@ -21,13 +21,17 @@ export Data, EmptyData
 export Resource, ResourceCarrier, ResourceEmit
 
 # Export the different node types
-export Source, Network, Sink, Storage, Availability
-export GenAvailability, RefSource, RefNetwork, RefSink, RefStorage
-export RefNetworkEmissions, RefStorageEmissions
+export Source, NetworkNode, Sink, Storage, Availability
+export GenAvailability, RefSource, RefNetworkNode, RefSink, RefStorage
+export RefNetworkNodeEmissions, RefStorageEmissions
 
 export Linear, Link, Direct
 
 export @assert_or_log
 export create_model, run_model
+export variables_node, create_node
+export constraints_capacity, constraints_capacity_installed
+export constraints_flow_in, constraints_flow_out
+export constraints_opex_fixed, constraints_opex_var
 
 end # module
