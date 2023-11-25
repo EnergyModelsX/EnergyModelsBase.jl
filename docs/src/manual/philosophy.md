@@ -17,7 +17,7 @@ The package utilizes different `type`s that represent components in an energy sy
 These types can be summarized as:
 
 1. [`Source`](@ref) types have only an ouput to the system. Practical examples are solar PV, wind power, or available resources.
-2. [`NetworkNode`](@ref) types have both an input and an ouput. Practical examples are next to all technologies in an energy system, like *e.g.*, a natural gas reforming plant with CCS (input: natural gas and electricity, output: hydrogen and CO<sub>2</sub>) or an electrolyser (input: electricity, output: hydrogen).
+2. [`NetworkNode`](@ref) types have both an input and an ouput. Practical examples are next to all technologies in an energy system, like *e.g.*, a natural gas reforming plant with CCS (input: natural gas and electricity, output: hydrogen and CO₂) or an electrolyser (input: electricity, output: hydrogen).
 3. [`Sink`](@ref) types have only an input from the system. They correspond in general to an energy/mass demand.
 
 In addition, there are two `type`s that are subtypes of `NetworkNode`:
@@ -30,7 +30,7 @@ These `type`s are connected using `link`s that transport the energy/mass.
 New technologies can be introduced by defining a new composite type for the technology.
 You can find a description on how you can create a new node on the page *[Creating a new node](@ref create_new_node)*.
 
-## Extensions to the model
+## [Extensions to the model](@id sec_phil_ext)
 
 There are in general four ways to extend the model:
 
@@ -47,6 +47,9 @@ This is done in the package [`EnergyModelsInvestments.jl`](https://clean_export.
 It can be problematic when one also wants to use investments.
 In addition, care has to be taken with respect to method amibiguity when dispatching on the type `EnergyModel`.
 
-The last approach is used already in the package [`EnergyModelsInvestments.jl`](https://clean_export.pages.sintef.no/energymodelsinvestments.jl/) through the introduction of the `abstract type` `InvestmentData`.
+The last approach is already used in the package [`EnergyModelsInvestments.jl`](https://clean_export.pages.sintef.no/energymodelsinvestments.jl/) through the introduction of the `abstract type` `InvestmentData`.
 The `Array{Data}` field allows us flexibility with respect to providing additional data to the existing nodes.
-It is planned to change the implementation so that it is even easier to utilize thhis approach for model extension.
+It is implemented in `EnergyModelsBase.jl` for including emissions (both process and energy usage related).
+In that case, it allows for flexibility through either saying process (or energy related emissions) are present, or not.
+In addition, it allows for capturing the CO₂ from either the individual sources, or alternatively from both sources or not at all.
+The individual data types are explained in the Section [Emissions data](@ref sec_lib_public_emdata) in the public library as well as on [Data functions](@ref data_functions).

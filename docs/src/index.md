@@ -53,6 +53,7 @@ Pages = [
     "library/public.md",
     "library/internals/optimization-variables.md",
     "library/internals/constraint-functions.md",
+    "library/internals/data-functions.md",
     "library/internals/reference.md",
 ]
 ```

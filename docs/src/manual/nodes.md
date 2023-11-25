@@ -15,10 +15,8 @@ Node
 │  ├─ Availability
 │  │  └─ GenAvailability
 │  ├─ RefNetworkNode
-│  ├─ RefNetworkNodeEmissions
 │  └─ Storage
 │     ├─ RefStorage
-│     └─ RefStorageEmissions
 ├─ Sink
 │  └─ RefSink
 └─ Source

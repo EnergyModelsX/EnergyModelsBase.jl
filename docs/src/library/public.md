@@ -27,11 +27,21 @@ The following composite types are inmplemented in the basis version.
 ```@docs
 RefSource
 RefNetworkNode
-RefNetworkNodeEmissions
 RefSink
 RefStorage
-RefStorageEmissions
 GenAvailability
+```
+
+### Legacy constructors
+
+The following legacy constructors are implemented to avoid changing each individual model.
+It is however uncertain, how long they will remain in the model.
+To this end, it is suggest to adjust them
+
+```@docs
+RefNetwork
+RefNetworkEmissions
+RefStorageEmissions
 ```
 
 ## Links
@@ -80,6 +90,19 @@ constraints_capacity
 constraints_capacity_installed
 constraints_opex_var
 constraints_opex_fixed
+constraints_data
+```
+
+## [Emission data](@id sec_lib_public_emdata)
+
+```@docs
+EmissionsData
+CaptureData
+EmissionsEnergy
+EmissionsProcess
+CaptureEnergyEmissions
+CaptureProcessEmissions
+CaptureProcessEnergyEmissions
 ```
 
 ## Miscellaneous functions/macros

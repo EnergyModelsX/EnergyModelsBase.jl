@@ -167,7 +167,7 @@ function check_node(n::Sink, 𝒯, modeltype::EnergyModel)
 
 end
 
-function check_node(n::RefNetworkNodeEmissions, 𝒯, modeltype::EnergyModel)
-    @assert_or_log n.co2_capture ≤ 1 "The field CO2_capture must be less or equal to 1."
-    @assert_or_log n.co2_capture ≥ 0 "The field CO2_capture must be non-negative."
-end
+# function check_node(n::RefNetworkNodeEmissions, 𝒯, modeltype::EnergyModel)
+#     @assert_or_log n.co2_capture ≤ 1 "The field CO2_capture must be less or equal to 1."
+#     @assert_or_log n.co2_capture ≥ 0 "The field CO2_capture must be non-negative."
+# end
