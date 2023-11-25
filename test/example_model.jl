@@ -1,5 +1,3 @@
-
-
 function generate_data()
 
     # Define the different resources
@@ -13,6 +11,8 @@ function generate_data()
     # This dictionary is normally used as usage based non-energy emissions.
     𝒫ᵉᵐ₀ = Dict(k  => 0. for k ∈ products if typeof(k) == ResourceEmit{Float64})
     𝒫ᵉᵐ₀[CO2] = 0.0
+    capture_data = CaptureEnergyEmissions(𝒫ᵉᵐ₀, 0.9)
+    emission_data = EmissionsEnergy()
 
     # Create the individual test nodes, corresponding to a system with an electricity demand/sink,
     # coal and nautral gas sources, coal and natural gas (with CCS) power plants and CO2 storage.
@@ -24,20 +24,21 @@ function generate_data()
             RefSource(3,        FixedProfile(1e12), FixedProfile(9),
                                 FixedProfile(0), Dict(Coal => 1),
                                 []),
-            RefNetworkNodeEmissions(4, FixedProfile(25),   FixedProfile(5.5),
+            RefNetworkNode(4,   FixedProfile(25),   FixedProfile(5.5),
                                 FixedProfile(0), Dict(NG => 2),
-                                Dict(Power => 1, CO2 => 1), 𝒫ᵉᵐ₀, 0.9,
-                                []),
-            RefNetworkNode(5,       FixedProfile(25),   FixedProfile(6),
+                                Dict(Power => 1, CO2 => 1),
+                                [capture_data]),
+            RefNetworkNode(5,   FixedProfile(25),   FixedProfile(6),
                                 FixedProfile(0),  Dict(Coal => 2.5),
                                 Dict(Power => 1),
-                                []),
-            RefStorageEmissions(6, FixedProfile(60),   FixedProfile(600), FixedProfile(9.1),
+                                [emission_data]),
+            RefStorage(6, FixedProfile(60),   FixedProfile(600), FixedProfile(9.1),
                                 FixedProfile(0), CO2, Dict(CO2 => 1, Power => 0.02), Dict(CO2 => 1),
-                                []),
+                                Array{Data}([])),
             RefSink(7,          OperationalProfile([20 30 40 30]),
                                 Dict(:surplus => FixedProfile(0), :deficit => FixedProfile(1e6)),
-                                Dict(Power => 1)),
+                                Dict(Power => 1),
+                                []),
             ]
 
     # Connect all nodes with the availability node for the overall energy/mass balance

@@ -56,13 +56,114 @@ The output is in this case a dictionary `Dict` with the correct fields
 res_not(𝒫::Array{<:Resource}, res_inst::Resource) = 𝒫[findall(x -> x!=res_inst, 𝒫)]
 res_not(𝒫::Dict, res_inst::Resource) =  Dict(k => v for (k,v) ∈ 𝒫 if k != res_inst)
 
+"""
+    res_em(𝒫::Array{<:Resource})
+
+Returns all emission resources for a
+- a given array `::Array{<:Resource}`.\
+The output is in this case an `Array{<:Resource}`
+- a given dictionary `::Dict`.\
+The output is in this case a dictionary `Dict` with the correct fields
+"""
+res_em(𝒫::Array{<:Resource}) = 𝒫[findall(x -> isa(x, ResourceEmit), 𝒫)]
+res_em(𝒫::Dict) =  Dict(k => v for (k,v) ∈ 𝒫 if isa(k, ResourceEmit))
+
 """ Abstract type used to define concrete struct containing the package specific elements
 to add to the composite type defined in this package."""
 abstract type Data end
 """ Empty composite type for `Data`"""
 struct EmptyData <: Data end
 
-""" `Node` is the abstract type for all technology descriptions."""
+"""
+    EmissionsData <: Data end
+
+Abstract type for `EmissionsData` can be used to dispatch on different type of
+capture configurations.
+
+In general, the different types require the following input:
+- **`emissions::Dict{ResourceEmit, Real}`**: emissions per unit produced.\n
+- **`co2_capture::Real`** is the CO2 capture rate.\n
+
+# Types
+- **`CaptureProcessEnergyEmissions`**: Capture both the process emissions and the energy usage \
+related emissions.\n
+- **`CaptureProcessEmissions`**: Capture the process emissions, but not the energy usage related \
+emissions.\n
+- **`CaptureEnergyEmissions`**: Capture the energy usage related emissions, but not the process \
+emissions. Does not require `emissions` as input.\n
+- **`EmissionsProcess`**: No capture, but process emissions are present. Does not require \
+`co2_capture` as input, but will ignore it, if provided.\n
+"""
+
+""" `EmissionsData` as supertype for all `Data` types for emissions."""
+abstract type EmissionsData <: Data end
+""" `CaptureData` as supertype for all `EmissionsData` that include CO2 capture."""
+abstract type CaptureData <: EmissionsData end
+
+"""
+Capture both the process emissions and the energy usage related emissions.
+
+# Fields
+- **`emissions::Dict{ResourceEmit, Real}`**: emissions per unit produced.\n
+- **`co2_capture::Real`** is the CO2 capture rate.
+"""
+struct CaptureProcessEnergyEmissions <: CaptureData
+    emissions::Dict{ResourceEmit,Real}
+    co2_capture::Real
+end
+"""
+Capture the process emissions, but not the energy usage related emissions.
+
+# Fields
+- **`emissions::Dict{ResourceEmit, Real}`**: emissions per unit produced.\n
+- **`co2_capture::Real`** is the CO2 capture rate.
+"""
+struct CaptureProcessEmissions <: CaptureData
+    emissions::Dict{ResourceEmit,Real}
+    co2_capture::Real
+end
+"""
+Capture the energy usage related emissions, but not the process emissions.
+Does not require `emissions` as input, but can be supplied.
+
+# Fields
+- **`emissions::Dict{ResourceEmit, Real}`**: emissions per unit produced.\n
+- **`co2_capture::Real`** is the CO2 capture rate.
+"""
+struct CaptureEnergyEmissions <: CaptureData
+    emissions::Dict{ResourceEmit,Real}
+    co2_capture::Real
+end
+CaptureEnergyEmissions(co2_capture::Real) = CaptureEnergyEmissions(Dict(), co2_capture)
+"""
+No capture, but process emissions are present. Does not require `co2_capture` as input,
+but accepts it and will ignore it, if provided.
+
+# Fields
+- **`emissions::Dict{ResourceEmit, Real}`**: emissions per unit produced.\n
+"""
+struct EmissionsProcess <: EmissionsData
+    emissions::Dict{ResourceEmit,Real}
+end
+EmissionsProcess(emissions::Dict{ResourceEmit,Real}, _) = EmissionsProcess(emissions)
+EmissionsProcess() = EmissionsProcess(Dict())
+"""
+No capture, no process emissions are present. Does not require `co2_capture` or `emissions`
+as input, but accepts it and will ignore it, if provided.
+
+# Fields
+- **`emissions::Dict{ResourceEmit, Real}`**: emissions per unit produced.\n
+"""
+struct EmissionsEnergy <: EmissionsData
+end
+EmissionsEnergy(_, _) = EmissionsEnergy()
+EmissionsEnergy(_) = EmissionsEnergy()
+
+co2_capture(data::CaptureData) = data.co2_capture
+process_emissions(data::EmissionsData, p) = haskey(data.emissions, p) ? data.emissions[p] : 0
+process_emissions(data::EmissionsData) = collect(keys(data))
+
+""" `Node` as supertype for all technologies."""
 abstract type Node end
 Base.show(io::IO, n::Node) = print(io, "n_$(n.id)")
 
@@ -78,9 +179,6 @@ abstract type Storage <: NetworkNode end
 abstract type Availability <: NetworkNode end
 
 """ A reference `Source` node.
-
-Process emissions can be included, but if the field is not added, then no
-process emissions are assumed through the usage of a constructor.
 
 # Fields
 - **`id`** is the name/identifier of the node.\n
@@ -99,10 +197,7 @@ struct RefSource <: Source
     opex_fixed::TimeProfile
     output::Dict{Resource, Real}
     data::Array{Data}
-    emissions::Union{Nothing, Dict{ResourceEmit, Real}}
 end
-RefSource(id, cap, opex_var, opex_fixed, output, Data) =
-    RefSource(id, cap, opex_var, opex_fixed, output, Data, nothing)
 
 """ A reference `NetworkNode` node.
 
@@ -126,33 +221,6 @@ struct RefNetworkNode <: NetworkNode
     data::Array{Data}
 end
 
-""" A reference `NetworkNode` node with process emissions.
-
-# Fields
-- **`id`** is the name/identifier of the node.\n
-- **`cap::TimeProfile`** is the installed capacity.\n
-- **`opex_var::TimeProfile`** is the variational operational costs per energy unit produced.\n
-- **`opex_fixed::TimeProfile`** is the fixed operational costs.\n
-- **`input::Dict{Resource, Real}`** are the input `Resource`s with conversion value `Real`.\n
-- **`output::Dict{Resource, Real}`** are the generated `Resource`s with conversion value `Real`.
-CO2 is required to be included the be available to have CO2 capture applied properly.\n
-- **`emissions::Dict{ResourceEmit, Real}`**: emissions per unit produced.\n
-- **`co2_capture::Real`** is the CO2 capture rate.\n
-- **`data::Array{Data}`** is the additional data (e.g. for investments).
-
-"""
-struct RefNetworkNodeEmissions <: NetworkNode
-    id
-    cap::TimeProfile
-    opex_var::TimeProfile
-    opex_fixed::TimeProfile
-    input::Dict{Resource, Real}
-    output::Dict{Resource, Real}
-    emissions::Dict{ResourceEmit, Real}
-    co2_capture::Real
-    data::Array{Data}
-end
-
 """ A reference `Availability` node.
 
 # Fields
@@ -168,20 +236,19 @@ struct GenAvailability <: Availability
     input::Array{Resource}
     output::Array{Resource}
 end
-GenAvailability(id, input::Dict{<:Resource,<:Real}, output::Dict{<:Resource,<:Real}) =
-    GenAvailability(id, collect(keys(input)), collect(keys(output)))
 GenAvailability(id, 𝒫::Array{Resource}) =
     GenAvailability(id, 𝒫, 𝒫)
 
 """ A reference `Storage` node.
 
-This node is designed to store a `ResourceCarrier`.
+This node is designed to store either a `ResourceCarrier` or a `ResourceEmit`.
+It is designed as a composite type to automatically distinguish between these two.
 
 # Fields
 - **`id`** is the name/identifier of the node.\n
 - **`rate_cap::TimeProfile`** is the installed rate capacity, that is e.g. power or mass flow.\n
 - **`stor_cap::TimeProfile`** is the installed storage capacity, that is e.g. energy or mass.\n
-- **`opex_var::TimeProfile`** is the variational operational costs per energy unit produced.\n
+- **`opex_var::TimeProfile`** is the variational operational costs per energy unit stored.\n
 - **`opex_fixed::TimeProfile`** is the fixed operational costs.\n
 - **`stor_res::Resource`** is the stored `Resource`.\n
 - **`input::Dict{Resource, Real}`** are the input `Resource`s with conversion value `Real`.
@@ -190,71 +257,36 @@ Only relevant for linking and the stored `Resource`.\n
 - **`data::Array{Data}`** is the additional data (e.g. for investments).
 
 """
-struct RefStorage <: Storage
+struct RefStorage{T} <: Storage
     id
     rate_cap::TimeProfile
     stor_cap::TimeProfile
     opex_var::TimeProfile
     opex_fixed::TimeProfile
-    stor_res::ResourceCarrier
-    input::Dict{Resource, Real}
-    output::Dict{Resource, Real}
-    data::Array{Data}
-end
-
-""" A reference `Storage` node.
-
-This node is designed to store a `ResourceEmit`.
-
-# Fields
-- **`id`** is the name/identifier of the node.\n
-- **`rate_cap::TimeProfile`** is the installed rate capacity, that is e.g. power or mass flow.\n
-- **`stor_cap::TimeProfile`** is the installed storage capacity, that is e.g. energy or mass.\n
-- **`opex_var::TimeProfile`** is the variational operational costs per energy unit produced.\n
-- **`opex_fixed::TimeProfile`** is the fixed operational costs.\n
-- **`stor_res::Resource`** is the stored `Resource`.\n
-- **`input::Dict{Resource, Real}`** are the input `Resource`s with conversion value `Real`.
-- **`output::Dict{Resource, Real}`** are the generated `Resource`s with conversion value `Real`.
-Only relevant for linking and the stored `Resource`.\n
-- **`data::Array{Data}`** is the additional data (e.g. for investments).
-
-"""
-struct RefStorageEmissions <: Storage
-    id
-    rate_cap::TimeProfile
-    stor_cap::TimeProfile
-    opex_var::TimeProfile
-    opex_fixed::TimeProfile
-    stor_res::ResourceEmit
-    input::Dict{Resource, Real}
-    output::Dict{Resource, Real}
-    data::Array{Data}
+    stor_res::T
+    input::Dict{<:Resource, <:Real}
+    output::Dict{<:Resource, <:Real}
+    data::Array{<:Data}
 end
 
 """ A reference `Sink` node.
 
 This node corresponds to a demand given by the field `cap`.
-Process emissions can be included, but if the field is not added, then no
-process emissions are assumed through the usage of a constructor.
-
 # Fields
 - **`id`** is the name/identifier of the node.\n
 - **`cap::TimeProfile`** is the Demand.\n
 - **`penalty::Dict{Any, TimeProfile}`** are penalties for surplus or deficits.
 Requires the fields `:surplus` and `:deficit`.\n
 - **`input::Dict{Resource, Real}`** are the input `Resource`s with conversion value `Real`.\n
-- **`emissions::Dict{ResourceEmit, Real}`**: emissions per unit produced.\n
-
+- **`data::Array{Data}`** is the additional data (e.g. for investments).
 """
 struct RefSink <: Sink
     id
     cap::TimeProfile
     penalty::Dict{Any, TimeProfile}
     input::Dict{Resource, Real}
-    emissions::Union{Nothing, Dict{ResourceEmit, Real}}
+    data::Array{Data}
 end
-RefSink(id, cap, penalty, input) =
-    RefSink(id, cap, penalty, input, nothing)
 
 """
     node_sub(𝒩::Array{Node}, sub/subs)
@@ -262,6 +294,16 @@ RefSink(id, cap, penalty, input) =
 Return nodes that are of type sub/subs for a given Array `::Array{Node}`.
 """
 node_sub(𝒩::Array{Node}, sub = NetworkNode) = 𝒩[findall(x -> isa(x, sub), 𝒩)]
+
+"""
+    node_emissions(𝒩::Array{Node})
+
+Return nodes that have emission data for a given Array `::Array{Node}`.
+"""
+node_emissions(𝒩::Array{Node}) = 𝒩[findall(x -> has_emissions(x), 𝒩)]
+has_emissions(n::Node) = any(typeof(data) <: EmissionsData for data ∈ n.data)
+has_emissions(n::Availability) = false
+has_emissions(n::RefStorage{<:ResourceEmit}) = true
 
 """
     node_not_sub(𝒩::Array{Node}, sub)
@@ -282,7 +324,7 @@ node_not_av(𝒩::Array{Node}) = 𝒩[findall(x -> ~isa(x, Availability), 𝒩)]
 # end
 
 """
-    nodes_input(𝒩::Array{Node})
+    node_not_sub(𝒩::Array{Node}, sub)
 
 Return nodes that have an input, i.e., `Sink` and `NetworkNode` nodes.
 """
@@ -322,6 +364,7 @@ Returns the input resources of a node `n`.
 """
 input(n::Node) = collect(keys(n.input))
 input(n::Availability) = n.input
+input(n::Source) = []
 
 """
     input(n, p)
@@ -329,6 +372,7 @@ input(n::Availability) = n.input
 Returns the value of an input resource `p` of a node `n`.
 """
 input(n::Node, p) = n.input[p]
+input(n::Source, p) = nothing
 
 """
     output(n)
@@ -344,6 +388,13 @@ output(n::Availability) = n.output
 Returns the value of an output resource `p` of a node `n`.
 """
 output(n::Node, p) = n.output[p]
+
+"""
+    node_data(n::Node)
+
+Return logic whether the node is an output node.
+"""
+node_data(n::Node) = n.data
 
 """
     storage_resource(n::Storage)

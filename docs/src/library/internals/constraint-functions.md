@@ -36,6 +36,16 @@ corresponds to the constraints calculating the required inflow to a node ``n`` f
 It is implemented for `Node` types using ``\texttt{:cap\_use}[n, t]`` but not used for the `Storage` subtypes introduced in the model.
 These constraints are directly specified within the respective `create_node` function.
 
+## Storage level constraints
+
+```julia
+constraints_level(m, n::RefStorage{T}, 𝒯, 𝒫, modeltype::EnergyModel) where {T}
+```
+
+corresponds to the constraints calculating the level balance of a `RefStorage` node.
+It is implemented for the cases when the stored resource is either a `ResourceEmit`  or a `ResourceCarrier`.
+The difference is given by how the level at the first operational period in a strategic period is treated as well as that the storage for a `ResourceEmit` does not include emissions.
+
 ## Operational cost constraints
 
 ```julia
@@ -50,4 +60,4 @@ constraints_opex_var(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
 ```
 
 corresponds to the constraints calculating the variable operational costs of a technology node ``n``.
-It is implemented for `Node`, `Storage`, `RefStorageEmissions`, and `Sink` types.
+It is implemented for `Node`, `Storage`, `RefStorage{T} where {T<:ResourceEmit}`, and `Sink` types.

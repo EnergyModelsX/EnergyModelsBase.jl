@@ -40,6 +40,7 @@ makedocs(
             "Internals" => Any[
                 "Optimization variables" => "library/internals/optimization-variables.md",
                 "Constraint functions" => "library/internals/constraint-functions.md",
+                "Data functions" => "library/internals/data-functions.md",
                 "Reference" => "library/internals/reference.md",
             ]
         ]

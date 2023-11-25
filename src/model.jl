@@ -53,9 +53,9 @@ Creation of different storage variables for `Storage` nodes `𝒩ˢᵗᵒʳ`. Th
   * `:stor_level` - storage level in each operational period
   * `:stor_rate_use` - change of level in each operational period
   * `:stor_cap_inst` - installed capacity for storage in each operational period, constrained
-  in the operational case to `n.Stor_cap`
+  in the operational case to `n.stor_cap`
   * `:stor_rate_inst` - installed rate for storage, e.g. power in each operational period,
-  constrained in the operational case to `n.Rate_cap`
+  constrained in the operational case to `n.rate_cap`
 
 """
 function variables_capacity(m, 𝒩, 𝒯, modeltype::EnergyModel)
@@ -102,11 +102,11 @@ These are differentied in:
 """
 function variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
-    𝒩ⁿᵒᵗ = node_not_av(𝒩)
+    𝒩ᵉᵐ = node_emissions(𝒩)
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    @variable(m, emissions_node[𝒩ⁿᵒᵗ, 𝒯, 𝒫ᵉᵐ] >= 0)
+    @variable(m, emissions_node[𝒩ᵉᵐ, 𝒯, 𝒫ᵉᵐ] >= 0)
     @variable(m, emissions_total[𝒯, 𝒫ᵉᵐ] >= 0)
     @variable(m, emissions_strategic[t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ] <= emission_limit(modeltype, p, t_inv))
 end
@@ -228,13 +228,13 @@ Create constraints for the emissions accounting for both operational and strateg
 """
 function constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
-    𝒩ⁿᵒᵗ = node_not_av(𝒩)
+    𝒩ᵉᵐ = node_emissions(𝒩)
     𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Creation of the individual constraints.
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
-        m[:emissions_total][t, p] == sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ⁿᵒᵗ))
+        m[:emissions_total][t, p] == sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ᵉᵐ))
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ],
         m[:emissions_strategic][t_inv, p] == sum(m[:emissions_total][t, p] * duration(t) for t ∈ t_inv))
 end
@@ -275,17 +275,11 @@ Can serve as fallback option for all unspecified subtypes of `Source`.
 function create_node(m, n::Source, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Declaration of the required subsets.
-    𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    if hasfield(typeof(n), :emissions) && !isnothing(n.emissions)
-        # Constraint for the emissions to avoid problems with unconstrained variables.
-        @constraint(m, [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
-            m[:emissions_node][n, t, p_em] == m[:cap_use][n, t] * process_emissions(n, p_em))
-    else
-        # Constraint for the emissions associated to using the source.
-        @constraint(m, [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
-            m[:emissions_node][n, t, p_em] == 0)
+    # Iterate through all data and set up the constraints corresponding to the data
+    for data ∈ node_data(n)
+        constraints_data(m, n, 𝒯, 𝒫, modeltype, data)
     end
 
     # Call of the function for the outlet flow from the `Source` node
@@ -307,70 +301,17 @@ Can serve as fallback option for all unspecified subtypes of `NetworkNode`.
 """
 function create_node(m, n::NetworkNode, 𝒯, 𝒫, modeltype::EnergyModel)
 
-    # Declaration of the required subsets.
-    𝒫ⁱⁿ  = input(n)
-    𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
-    CO2 = co2_instance(modeltype)
+    # Declaration of the required subsets
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    # Constraint for the emissions associated to energy usage
-    @constraint(m, [t ∈ 𝒯],
-        m[:emissions_node][n, t, CO2] ==
-            sum(co2_int(p_in) * m[:flow_in][n, t, p_in] for p_in ∈ 𝒫ⁱⁿ))
-
-    # Constraint for the other emissions to avoid problems with unconstrained variables.
-    @constraint(m, [t ∈ 𝒯, p_em ∈ res_not(𝒫ᵉᵐ, CO2)],
-        m[:emissions_node][n, t, p_em] == 0)
+    # Iterate through all data and set up the constraints corresponding to the data
+    for data ∈ node_data(n)
+        constraints_data(m, n, 𝒯, 𝒫, modeltype, data)
+    end
 
     # Call of the function for the inlet flow to and outlet flow from the `NetworkNode` node
     constraints_flow_in(m, n, 𝒯, modeltype)
     constraints_flow_out(m, n, 𝒯, modeltype)
-
-    # Call of the function for limiting the capacity to the maximum installed capacity
-    constraints_capacity(m, n, 𝒯, modeltype)
-
-    # Call of the functions for both fixed and variable OPEX constraints introduction
-    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ, modeltype)
-    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ, modeltype)
-end
-
-"""
-    create_node(m, n::RefNetworkNodeEmissions, 𝒯, 𝒫, modeltype::EnergyModel)
-
-Set all constraints for a `RefNetworkNodeEmissions`.
-This node is an extension of the `RefNetworkNode` node including both process emissions and
-the potential for CO2 capture.
-"""
-function create_node(m, n::RefNetworkNodeEmissions, 𝒯, 𝒫, modeltype::EnergyModel)
-
-    # Declaration of the required subsets.
-    𝒫ⁱⁿ  = input(n)
-    𝒫ᵒᵘᵗ = output(n)
-    𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
-    CO2 = co2_instance(modeltype)
-    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-
-    # Constraint for the individual output stream connections.
-    # Captured CO2 is also included based on the capture rate
-    @constraint(m, [t ∈ 𝒯],
-        m[:flow_out][n, t, CO2] ==
-            co2_capture(n) * sum(co2_int(p_in) * m[:flow_in][n, t, p_in] for p_in ∈ 𝒫ⁱⁿ))
-    @constraint(m, [t ∈ 𝒯, p ∈ res_not(𝒫ᵒᵘᵗ, CO2)],
-        m[:flow_out][n, t, p] == m[:cap_use][n, t] * output(n, p))
-
-    # Constraint for the emissions associated to energy usage
-    @constraint(m, [t ∈ 𝒯],
-        m[:emissions_node][n, t, CO2] ==
-            (1-co2_capture(n)) * sum(co2_int(p_in) * m[:flow_in][n, t, p_in] for p_in ∈ 𝒫ⁱⁿ) +
-            m[:cap_use][n, t] * process_emissions(n, CO2))
-
-    # Constraint for the other emissions to avoid problems with unconstrained variables.
-    @constraint(m, [t ∈ 𝒯, p_em ∈ res_not(𝒫ᵉᵐ, CO2)],
-        m[:emissions_node][n, t, p_em] ==
-            m[:cap_use][n, t] * process_emissions(n, p_em))
-
-    # Call of the function for the inlet flow to the `RefNetworkNodeEmissions` node
-    constraints_flow_in(m, n, 𝒯, modeltype)
 
     # Call of the function for limiting the capacity to the maximum installed capacity
     constraints_capacity(m, n, 𝒯, modeltype)
@@ -389,78 +330,10 @@ subtypes of `Storage`.
 function create_node(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Declaration of the required subsets.
-    p_stor = storage_resource(n)
-    𝒫ᵉᵐ    = res_sub(𝒫, ResourceEmit)
     𝒯ᴵⁿᵛ   = strategic_periods(𝒯)
 
     # Mass/energy balance constraints for stored energy carrier.
-    for t_inv ∈ 𝒯ᴵⁿᵛ, (t_prev, t) ∈ withprev(t_inv)
-        if isnothing(t_prev)
-            @constraint(m,
-                m[:stor_level][n, t] ==  m[:stor_level][n, last(t_inv)] +
-                                            (m[:flow_in][n, t , p_stor] -
-                                            m[:flow_out][n, t , p_stor]) *
-                                            duration(t)
-            )
-        else
-            @constraint(m,
-                m[:stor_level][n, t] ==  m[:stor_level][n, t_prev] +
-                                            (m[:flow_in][n, t , p_stor] -
-                                            m[:flow_out][n, t , p_stor]) *
-                                            duration(t)
-            )
-        end
-    end
-
-    # Constraint for the emissions to avoid problems with unconstrained variables.
-    @constraint(m, [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
-        m[:emissions_node][n, t, p_em] == 0)
-
-    # Call of the function for the inlet flow to the `Storage` node
-    constraints_flow_in(m, n, 𝒯, modeltype)
-
-    # Call of the function for limiting the capacity to the maximum installed capacity
-    constraints_capacity(m, n, 𝒯, modeltype)
-
-    # Call of the functions for both fixed and variable OPEX constraints introduction
-    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ, modeltype)
-    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ, modeltype)
-end
-
-"""
-    create_node(m, n::RefStorageEmissions, 𝒯, 𝒫, modeltype::EnergyModel)
-
-Set all constraints for a `RefStorageEmissions`.
-This storage is different to the standard storage as initial and final value differ.
-"""
-function create_node(m, n::RefStorageEmissions, 𝒯, 𝒫, modeltype::EnergyModel)
-
-    # Declaration of the required subsets.
-    p_stor = storage_resource(n)
-    𝒫ᵉᵐ    = res_sub(𝒫, ResourceEmit)
-    𝒯ᴵⁿᵛ   = strategic_periods(𝒯)
-
-    # Mass/energy balance constraints for stored energy carrier.
-    for t_inv ∈ 𝒯ᴵⁿᵛ, (t_prev, t) ∈ withprev(t_inv)
-        if isnothing(t_prev)
-            @constraint(m,
-                m[:stor_level][n, t] ==  (m[:flow_in][n, t , p_stor] -
-                                            m[:emissions_node][n, t, p_stor]) *
-                                            duration(t)
-                )
-        else
-            @constraint(m,
-                m[:stor_level][n, t] ==  m[:stor_level][n, t_prev] +
-                                            (m[:flow_in][n, t , p_stor] -
-                                            m[:emissions_node][n, t, p_stor]) *
-                                            duration(t)
-                )
-        end
-    end
-
-    # Constraint for the other emissions to avoid problems with unconstrained variables.
-    @constraint(m, [t ∈ 𝒯, p_em ∈ res_not(𝒫ᵉᵐ, p_stor)],
-        m[:emissions_node][n, t, p_em] == 0)
+    constraints_level(m, n, 𝒯, 𝒫, modeltype)
 
     # Call of the function for the inlet flow to the `Storage` node
     constraints_flow_in(m, n, 𝒯, modeltype)
@@ -482,17 +355,11 @@ Can serve as fallback option for all unspecified subtypes of `Sink`.
 function create_node(m, n::Sink, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Declaration of the required subsets.
-    𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    if hasfield(typeof(n), :emissions) && !isnothing(n.emissions)
-        # Constraint for the emissions associated to using the sink.
-        @constraint(m, [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
-            m[:emissions_node][n, t, p_em] == m[:cap_use][n, t] * process_emissions(n, p_em))
-    else
-        # Constraint for the emissions to avoid problems with unconstrained variables.
-        @constraint(m, [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
-            m[:emissions_node][n, t, p_em] == 0)
+    # Iterate through all data and set up the constraints corresponding to the data
+    for data ∈ node_data(n)
+        constraints_data(m, n, 𝒯, 𝒫, modeltype, data)
     end
 
     # Call of the function for the inlet flow to the `Sink` node

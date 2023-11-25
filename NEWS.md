@@ -6,6 +6,8 @@ Unversioned
  * Renamed `Network` to `NetworkNode` can be considered to be replaces in later iterations as it is not really needed
  * Added functions for extracting the fields of `Node`s, `Resource`s, and `EnergyModel`s to allow for extensions
  * Added export of functions that are frequently used in other packages
+ * Moved the emissions to a `Data` on which we can dispatch, depending on the chosen approach for capture and process emissions
+ * Redesigned storage as parametric type to dispatch on the level balance
 
 Version 0.5.2 (2023-11-06)
 --------------------------

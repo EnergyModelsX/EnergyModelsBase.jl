@@ -48,6 +48,7 @@ function constraints_capacity(m, n::Sink, 𝒯::TimeStructure, modeltype::Energy
     constraints_capacity_installed(m, n, 𝒯, modeltype)
 end
 
+
 """
     constraints_capacity_installed(m, n, 𝒯::TimeStructure, modeltype::EnergyModel)
 
@@ -61,8 +62,6 @@ function constraints_capacity_installed(m, n::Node, 𝒯::TimeStructure, modelty
         m[:cap_inst][n, t] == cap[t]
     )
 end
-
-
 function constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
 
     cap = capacity(n)
@@ -74,6 +73,7 @@ function constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, mode
         m[:stor_rate_inst][n, t] == cap.rate[t]
     )
 end
+
 
 """
     constraints_flow_in(m, n, 𝒯::TimeStructure, modeltype::EnergyModel)
@@ -102,7 +102,7 @@ This function serves as fallback option if no other function is specified for a 
 function constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
     # Declaration of the required subsets
     p_stor = storage_resource(n)
-    𝒫ᵃᵈᵈ   = setdiff(input(n), [p_stor])
+    𝒫ᵃᵈᵈ   = res_not(input(n), p_stor)
 
     # Constraint for additional required input
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵃᵈᵈ],
@@ -114,7 +114,6 @@ function constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::Ener
         m[:stor_rate_use][n, t] == m[:flow_in][n, t, p_stor]
     )
 
-
 end
 
 
@@ -125,14 +124,81 @@ Function for creating the constraint on the outlet flow from a generic `Node`.
 This function serves as fallback option if no other function is specified for a `Node`.
 """
 function constraints_flow_out(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
-    # Declaration of the required subsets
-    𝒫ᵒᵘᵗ = output(n)
+    # Declaration of the required subsets, excluding CO2, if specified
+    𝒫ᵒᵘᵗ = res_not(output(n), co2_instance(modeltype))
 
     # Constraint for the individual output stream connections
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵒᵘᵗ],
         m[:flow_out][n, t, p] == m[:cap_use][n, t] * output(n, p)
     )
+end
 
+
+"""
+    constraints_level(m, n::RefStorage{T}, 𝒯, 𝒫, modeltype::EnergyModel) where {T<:ResourceEmit}
+
+Function for creating the level constraint for a reference storage node with a
+`ResourceCarrier` resource. In addition, it creates the emission constraints
+"""
+function constraints_level(m, n::RefStorage{T}, 𝒯, 𝒫, modeltype::EnergyModel) where {T<:ResourceCarrier}
+    # Declaration of the required subsets
+    𝒯ᴵⁿᵛ   = strategic_periods(𝒯)
+    p_stor = storage_resource(n)
+
+    # Mass/energy balance constraints for stored energy carrier.
+    for t_inv ∈ 𝒯ᴵⁿᵛ, (t_prev, t) ∈ withprev(t_inv)
+        if isnothing(t_prev)
+            @constraint(m,
+                m[:stor_level][n, t] ==  m[:stor_level][n, last(t_inv)] +
+                                            (m[:flow_in][n, t , p_stor] -
+                                            m[:flow_out][n, t , p_stor]) *
+                                            duration(t)
+            )
+        else
+            @constraint(m,
+                m[:stor_level][n, t] ==  m[:stor_level][n, t_prev] +
+                                            (m[:flow_in][n, t , p_stor] -
+                                            m[:flow_out][n, t , p_stor]) *
+                                            duration(t)
+            )
+        end
+    end
+end
+
+"""
+    constraints_level(m, n::RefStorage{T}, 𝒯, 𝒫, modeltype::EnergyModel) where {T<:ResourceEmit}
+
+Function for creating the level constraint for a reference storage node with a `ResourceEmit`
+resource. In addition, it creates the emission constraints.
+"""
+function constraints_level(m, n::RefStorage{T}, 𝒯, 𝒫, modeltype::EnergyModel) where {T<:ResourceEmit}
+
+    # Declaration of the required subsets
+    𝒯ᴵⁿᵛ   = strategic_periods(𝒯)
+    p_stor = storage_resource(n)
+    𝒫ᵉᵐ    = res_not(res_sub(𝒫, ResourceEmit), p_stor)
+
+    # Mass/energy balance constraints for stored energy carrier.
+    for t_inv ∈ 𝒯ᴵⁿᵛ, (t_prev, t) ∈ withprev(t_inv)
+        if isnothing(t_prev)
+            @constraint(m,
+                m[:stor_level][n, t] ==  (m[:flow_in][n, t , p_stor] -
+                                            m[:emissions_node][n, t, p_stor]) *
+                                            duration(t)
+            )
+        else
+            @constraint(m,
+                m[:stor_level][n, t] ==  m[:stor_level][n, t_prev] +
+                                            (m[:flow_in][n, t , p_stor] -
+                                            m[:emissions_node][n, t, p_stor]) *
+                                            duration(t)
+            )
+        end
+    end
+
+    # Constraint for the emissions to avoid problems with unconstrained variables.
+    @constraint(m, [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
+        m[:emissions_node][n, t, p_em] == 0)
 end
 
 
@@ -208,11 +274,11 @@ function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyMod
 end
 
 """
-    constraints_opex_var(m, n::RefStorageEmissions, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+    constraints_opex_var(m, n::RefStorage{T}, 𝒯ᴵⁿᵛ, modeltype::EnergyModel) where {T<:ResourceEmit}
 
-Function for creating the constraint on the variable OPEX of a `RefStorageEmissions`.
+Function for creating the constraint on the variable OPEX of a `RefStorage{ResourceEmit}`.
 """
-function constraints_opex_var(m, n::RefStorageEmissions, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+function constraints_opex_var(m, n::RefStorage{T}, 𝒯ᴵⁿᵛ, modeltype::EnergyModel) where {T<:ResourceEmit}
 
     p_stor = storage_resource(n)
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],

@@ -27,15 +27,16 @@ function generate_data()
     𝒫ᵉᵐ₀ = Dict(k => 0.0 for k ∈ products if typeof(k) == ResourceEmit{Float64})
     𝒫ᵉᵐ₀[CO2] = 0.0
 
-    # Create the individual test nodes, corresponding to a system with an electricity demand/sink,
-    # coal and nautral gas sources, coal and natural gas (with CCS) power plants and CO2 storage.
+    # Create the individual test nodes, corresponding to a system with an electricity
+    # demand/sink and source
     nodes = [
         RefSource(2, FixedProfile(1e12), FixedProfile(30),
             FixedProfile(0), Dict(Power => 1),
             []),
         RefSink(7, OperationalProfile([20 30 40 30]),
             Dict(:surplus => FixedProfile(0), :deficit => FixedProfile(1e6)),
-            Dict(Power => 1)),
+            Dict(Power => 1),
+            []),
     ]
 
     # Connect all nodes with the availability node for the overall energy/mass balance
