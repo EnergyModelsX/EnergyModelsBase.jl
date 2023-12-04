@@ -118,7 +118,7 @@ Check that all fields of a `Node` that are of type `TimeProfile` correspond to t
 function check_time_structure(n::Node, 𝒯)
     for fieldname ∈ fieldnames(typeof(n))
         if isa(getfield(n, fieldname), TimeProfile)
-            check_profile_field(fieldname, getfield(n, fieldname), 𝒯)
+            check_profile_field(n.id, fieldname, value, 𝒯)
         end
     end
 end
@@ -128,16 +128,82 @@ end
 
 Check that an individual `TimeProfile` corresponds to the time structure `𝒯`.
 """
-function check_profile_field(fieldname, value::FixedProfile, 𝒯)
+function check_profile_field(id, fieldname, value::StrategicProfile, 𝒯::TwoLevel)
+    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+    @assert_or_log length(value.vals) == length(𝒯ᴵⁿᵛ) "Field '" * string(fieldname) * "' does not match the strategic structure."
+    for t_inv ∈ 𝒯ᴵⁿᵛ
+        check_profile_field(id, fieldname, value.vals[t_inv.sp], t_inv.operational)
+    end
+end
+function check_profile_field(id, fieldname, value, 𝒯::TwoLevel)
+    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+    for t_inv ∈ 𝒯ᴵⁿᵛ
+        check_profile_field(id, fieldname, value, t_inv.operational, string(t_inv.sp))
+    end
 end
 
-function check_profile_field(fieldname, value::StrategicProfile, 𝒯)
-    @assert_or_log length(value.vals) == length(strategic_periods(𝒯)) "Field '" * string(fieldname) * "' does not match the time structure."
+function check_profile_field(id, fieldname, value, t_inv, sp)
+end
+function check_profile_field(
+    id,
+    fieldname,
+    value::OperationalProfile,
+    t_inv::SimpleTimes,
+    sp
+    )
+    len_vals = length(value.vals)
+    len_simp = length(t_inv)
+    println(len_vals-len_simp)
+    @assert_or_log len_vals > len_simp "Field '" * string(id, fieldname) * "\
+        ' is longer than the operational time structure in strategic period \
+        " * sp * ". Its last values $(len_vals - len_simp) will be omitted."
+    @assert_or_log len_vals < len_simp "Field '" * string(id, fieldname) * "\
+        ' is shorter than the operational time structure in strategic period \
+        " * sp * ". I will use the last value for the last $(len_simp - len_vals) \
+        operational periods."
+end
+function check_profile_field(
+    id,
+    fieldname,
+    value::OperationalProfile,
+    t_inv::RepresentativePeriods,
+    sp
+    )
+    if sp == "1"
+        @warn "Node " * id * ", field name " * fieldname * ":" "Using OperionalProfile with \
+            RepresentativePeriods is dangerous, as it may lead to unexpected behaviour. \
+            It only works reasonable if all representative periods have an operational \
+            time structure of the same length. Otherwise, the last value is repeated. \
+            The system is tested for the first representative period."
+    end
+    rp_1 = collect(repr_periods(t_inv))[1]
+    check_profile_field(id, fieldname, value, rp_1.operational, sp)
 end
 
-function check_profile_field(fieldname, value::OperationalProfile, 𝒯)
-    for sp ∈ strategic_periods(𝒯), sc ∈ opscenarios(sp)
-        @assert_or_log length(value.vals) == length(sc) "Field '" * string(fieldname) * "' does not match the time structure."
+function check_profile_field(
+    id,
+    fieldname,
+    value::RepresentativeProfile,
+    t_inv::SimpleTimes,
+    sp
+    )
+
+    if sp == "1"
+        @warn "Node " * id * ", field name " * fieldname * ":" "Using RepresentativeProfile \
+            with SimpleTimes is dangerous, as it may lead to unexpected behaviour. \
+            In this case, only the first profile is used and tested."
+    end
+    check_profile_field(id, fieldname, value.vals[1], t_inv, sp)
+end
+function check_profile_field(
+    id,
+    fieldname,
+    value::RepresentativeProfile,
+    t_inv::RepresentativePeriods,
+    sp
+    )
+    for t_rp ∈ t_inv.rep_periods
+        check_profile_field(id, fieldname, value.vals[1], t_rp, sp)
     end
 end
 

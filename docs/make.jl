@@ -1,6 +1,7 @@
 using Documenter
 
 using EnergyModelsBase
+using TimeStruct
 const EMB = EnergyModelsBase
 
 # Copy the NEWS.md file
@@ -34,6 +35,7 @@ makedocs(
         ],
         "How-to" => Any[
             "Create a new node" => "how-to/create-new-node.md",
+            "Utilize TimeStruct.jl" => "how-to/utilize-timestruct.md",
         ],
         "Library" => Any[
             "Public" => "library/public.md",

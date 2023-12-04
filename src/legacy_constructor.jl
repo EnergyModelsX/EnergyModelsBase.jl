@@ -120,8 +120,7 @@ end
 Legacy constructor for a `GenAvailability`. This version will be discontinued
 in the near future and replaced with the new implementation of `data`.
 
-See the documentation for further information. In this case, the emission data can be
-implement
+See the documentation for further information.
 """
 function GenAvailability(
     id,

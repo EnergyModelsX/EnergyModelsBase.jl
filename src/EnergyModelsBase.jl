@@ -6,7 +6,7 @@ This module provides the framework for building energy system models.
 module EnergyModelsBase
 
 using JuMP
-using TimeStruct
+using TimeStruct; const TS = TimeStruct
 
 include("datastructures.jl")
 include("utils.jl")
@@ -44,8 +44,26 @@ export create_model, run_model
 export variables_node, create_node
 export constraints_capacity, constraints_capacity_installed
 export constraints_flow_in, constraints_flow_out
+export constraints_level
 export constraints_opex_fixed, constraints_opex_var
 
 export constraints_data
+
+# Export commonly used functions for extracting fields in `Resource`
+export co2_int
+
+# Export commonly used functions for extracting fields in `EmissionsData`
+export co2_capture, process_emissions
+
+# Export commonly used functions for extracting fields in `Node`
+export nodes_input, nodes_output
+export capacity, input, output, opex_var, opex_fixed, surplus, deficit, storage_resource,
+    node_data
+
+# Export commonly used functions for extracting fields in `Link`
+export formulation
+
+# Export commonly used functions for extracting fields in `EnergyModel`
+export emission_limit, co2_instance
 
 end # module

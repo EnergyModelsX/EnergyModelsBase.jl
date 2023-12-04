@@ -88,6 +88,7 @@ constraints_flow_in
 constraints_flow_out
 constraints_capacity
 constraints_capacity_installed
+constraints_level
 constraints_opex_var
 constraints_opex_fixed
 constraints_data
@@ -103,6 +104,41 @@ EmissionsProcess
 CaptureEnergyEmissions
 CaptureProcessEmissions
 CaptureProcessEnergyEmissions
+```
+
+## [Functions for accessing fields](@id sec_lib_public_fields)
+
+Functions fo accessing `Node` fields:
+
+```@docs
+capacity
+opex_var
+opex_fixed
+input
+output
+node_data
+storage_resource
+surplus
+deficit
+```
+
+Functions for accessing `Link` fields:
+
+```@docs
+formulation
+```
+
+Functions for accessing `Resource` fields:
+
+```@docs
+co2_int
+```
+
+Functions for identifying `Node`s:
+
+```@docs
+nodes_input
+nodes_output
 ```
 
 ## Miscellaneous functions/macros

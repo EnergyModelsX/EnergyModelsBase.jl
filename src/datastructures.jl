@@ -198,6 +198,15 @@ struct RefSource <: Source
     output::Dict{Resource, Real}
     data::Array{Data}
 end
+function RefSource(
+    id,
+    cap::TimeProfile,
+    opex_var::TimeProfile,
+    opex_fixed::TimeProfile,
+    output::Dict{<:Resource,<:Real},
+    )
+    return RefSource(id, cap, opex_var, opex_fixed, output, [])
+end
 
 """ A reference `NetworkNode` node.
 
@@ -236,8 +245,7 @@ struct GenAvailability <: Availability
     input::Array{Resource}
     output::Array{Resource}
 end
-GenAvailability(id, 𝒫::Array{Resource}) =
-    GenAvailability(id, 𝒫, 𝒫)
+GenAvailability(id, 𝒫::Array{Resource}) = GenAvailability(id, 𝒫, 𝒫)
 
 """ A reference `Storage` node.
 
@@ -287,6 +295,15 @@ struct RefSink <: Sink
     input::Dict{Resource, Real}
     data::Array{Data}
 end
+function RefSink(
+    id,
+    cap::TimeProfile,
+    penalty::Dict{<:Any,<:TimeProfile},
+    input::Dict{<:Resource,<:Real},
+    )
+    return RefSink(id, cap, penalty, input, [])
+end
+
 
 """
     node_sub(𝒩::Array{Node}, sub/subs)
@@ -358,6 +375,14 @@ capacity(n::Node) = n.cap
 capacity(n::Storage) = (level=n.stor_cap, rate=n.rate_cap)
 
 """
+    capacity(n, t)
+
+Returns the input resources of a node `n` at time period `t`.
+"""
+capacity(n::Node, t) = n.cap[t]
+capacity(n::Storage, t) = (level=n.stor_cap[t], rate=n.rate_cap[t])
+
+"""
     input(n)
 
 Returns the input resources of a node `n`.
@@ -402,20 +427,6 @@ node_data(n::Node) = n.data
 Returns the storage resource of `Storage` node `n`.
 """
 storage_resource(n::Storage) = n.stor_res
-
-"""
-    process_emissions(n::Node, p)
-
-Returns the process emissions of node `n` for resource `p`.
-"""
-process_emissions(n::Node, p) = n.emissions[p]
-
-"""
-    process_emissions(n::Node, p)
-
-Returns the process emissions of node `n` for resource `p`.
-"""
-co2_capture(n::Node) = n.co2_capture
 
 """
     opex_var(n, t)
@@ -515,4 +526,5 @@ struct OperationalModel <: EnergyModel
 end
 
 emission_limit(model, p, t) = model.emission_limit[p][t]
+emission_limit(model) = model.emission_limit
 co2_instance(model) = model.co2_instance
