@@ -9,7 +9,8 @@
     function simple_graph(source::Source, sink::Sink)
 
         resources = [Power, CO2]
-        T = TwoLevel(2, 2, SimpleTimes(5, 2))
+        ops = SimpleTimes(5, 2)
+        T = TwoLevel(2, 2, ops; op_per_strat=duration(ops))
 
         nodes = [source, sink]
         links = [Direct(12, source, sink)]
@@ -125,7 +126,7 @@
                     length(𝒯ᴵⁿᵛ) atol=TEST_ATOL
     end
 
-    @testset "General test - RefSink" begin
+    @testset "General tests - RefSink" begin
 
         # Test that the deficit values are properly calculated and time is involved
         # in the penalty calculation
@@ -321,7 +322,8 @@ end
         )
 
         resources = [NG, Power, CO2]
-        T = TwoLevel(2, 2, SimpleTimes(5, 2))
+        ops = SimpleTimes(5, 2)
+        T = TwoLevel(2, 2, ops; op_per_strat=duration(ops))
 
         nodes = [source, network, sink]
         links = [
@@ -355,7 +357,7 @@ end
         return run_model(case, model, HiGHS.Optimizer), case, model
     end
 
-    @testset "Emission test - wo Emissions" begin
+    @testset "Emissions tests - wo Emissions" begin
         # Check that the overall emission balance is working and that the emissions
         # variables are only created if required.
 
@@ -389,7 +391,7 @@ end
                     length(𝒯)
     end
 
-    @testset "Emission test - with energy emissions" begin
+    @testset "Emissions tests - with energy emissions" begin
         # Check that the emissions are properly calculated when only energy emissions are
         # considered
 
@@ -421,7 +423,7 @@ end
                     length(𝒯)
     end
 
-    @testset "Emission test - with energy and process emissions" begin
+    @testset "Emissions tests - with energy and process emissions" begin
         # Check that the emissions are properly calculated when both energy and process
         # emissions are considered
 
@@ -458,7 +460,7 @@ end
                     length(𝒯)
     end
 
-    @testset "Emission test - with capture on energy emissions" begin
+    @testset "Emissions tests - with capture on energy emissions" begin
         # Check that the emissions are properly calculated when both energy and process
         # emissions are considered and the energy emissions are captured
 
@@ -503,7 +505,7 @@ end
                     length(𝒯) atol=TEST_ATOL
     end
 
-    @testset "Emission test - with capture on process emissions" begin
+    @testset "Emissions tests - with capture on process emissions" begin
         # Check that the emissions are properly calculated when both energy and process
         # emissions are considered and the process emissions are captured
 
@@ -548,7 +550,7 @@ end
                     length(𝒯) atol=TEST_ATOL
     end
 
-    @testset "Emission test - with capture on process emissions" begin
+    @testset "Emissions tests - with capture on process emissions" begin
         # Check that the emissions are properly calculated when both energy and process
         # emissions are considered and both emissions are captured
 
@@ -602,7 +604,7 @@ end
     CO2 = ResourceEmit("CO2", 1.0)
 
     # Function for setting up the system
-    function simple_graph(;ops=SimpleTimes(5, 2),demand=FixedProfile(10))
+    function simple_graph(;ops=SimpleTimes(5, 2), demand=FixedProfile(10))
 
 
         # Used source, network, and sink
@@ -625,7 +627,7 @@ end
         storage = RefStorage(
             "storage",
             FixedProfile(10),
-            FixedProfile(30),
+            FixedProfile(1e8),
             FixedProfile(10),
             FixedProfile(2),
             Power,
@@ -674,11 +676,11 @@ end
 
         # Test that the capacity is correctly limited
         # - constraints_capacity(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
-        @test sum(value.(m[:stor_level][stor, t]) <= value.(m[:stor_cap_inst][stor, t])
-                    for t ∈ 𝒯, atol=TEST_ATOL) ≈
+        @test sum(value.(m[:stor_level][stor, t]) - value.(m[:stor_cap_inst][stor, t])
+                     ≤ TEST_ATOL for t ∈ 𝒯) ≈
                         length(𝒯) atol=TEST_ATOL
-        @test sum(value.(m[:stor_rate_use][stor, t]) <= value.(m[:stor_rate_inst][stor, t])
-                    for t ∈ 𝒯, atol=TEST_ATOL) ≈
+        @test sum(value.(m[:stor_rate_use][stor, t]) - value.(m[:stor_rate_inst][stor, t])
+                     ≤ TEST_ATOL for t ∈ 𝒯) ≈
                         length(𝒯) atol=TEST_ATOL
 
         # Test that the design for rate usage is correct
@@ -691,12 +693,26 @@ end
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
 
-        # Test that the inlet flow is equivalent to the total demand
-        @test sum(value.(m[:stor_rate_use][stor, t]) for t ∈ 𝒯) ≈
-                sum(EMB.capacity(sink)[t] for t ∈ 𝒯) atol=TEST_ATOL
+        # Test that the inlet flow is equivalent to the total usage of the demand
+        @test sum(value.(m[:stor_rate_use][stor, t]) * duration(t) * multiple(t) for t ∈ 𝒯) ≈
+                sum(value.(m[:cap_use][sink,t]) * duration(t) * multiple(t)  for t ∈ 𝒯) atol=TEST_ATOL
+
+        # Test that the total inlet flow is equivalent to the total outlet flow rate
+        # This test corresponds to
+        @test sum(value.(m[:flow_in][stor, t, Power]) * duration(t) * multiple(t)  for t ∈ 𝒯) ≈
+                sum(value.(m[:flow_out][stor, t, Power]) * duration(t) * multiple(t)  for t ∈ 𝒯)  atol=TEST_ATOL
+
+
+        # Test that the Δ in the storage level is correctly calculated
+        # - constraints_level_aux(m, n::RefStorage{T}, 𝒯) where {S<:ResourceCarrier}
+        @test sum(value.(value.(m[:stor_level_Δ_op][stor, t])) ≈
+                value.(m[:flow_in][stor, t, Power]) - value.(m[:flow_out][stor, t, Power])
+                    for t ∈ 𝒯, atol=TEST_ATOL) ≈
+                        length(𝒯) atol=TEST_ATOL
+
     end
 
-    @testset "SimpleTimes test without storage" begin
+    @testset "SimpleTimes without storage" begin
 
         # Run the model and extract the data
         m, case, model = simple_graph()
@@ -723,20 +739,19 @@ end
 
         # Test that the input flow is equal to the output flow in the standard scenario as
         # storage does not pay off
-        # - constraints_level(m, n::RefStorage{T}, 𝒯, 𝒫, modeltype::EnergyModel) where {T<:ResourceCarrier}
-        @test sum(value.(m[:flow_in][stor, t, Power]) ≈ value.(m[:flow_out][stor, t, Power])
-                for t ∈ 𝒯, atol=TEST_ATOL) ≈
-                    length(𝒯) atol=TEST_ATOL
+        # - constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫) where {S<:ResourceCarrier}
+        @test sum(value.(m[:stor_level_Δ_op][stor, t]) ≈ 0 for t ∈ 𝒯, atol=TEST_ATOL) ≈
+                length(𝒯) atol=TEST_ATOL
 
         # Test that the fixed OPEX is correctly calculated
-        # - function constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+        # - constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(value.(m[:opex_fixed][stor, t_inv]) ≈
                 EMB.opex_fixed(stor, t_inv) * value.(m[:stor_cap_inst][stor, first(t_inv)])
                     for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
                 length(𝒯ᴵⁿᵛ) atol=TEST_ATOL
 
         # Test that variable OPEX is correctly calculated
-        # - function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+        # - constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(value.(m[:opex_var][stor, t_inv]) ≈
                 sum(EMB.opex_var(stor, t_inv) * value.(m[:flow_in][stor, t, Power]) *
                     duration(t) for t ∈ t_inv)
@@ -744,7 +759,7 @@ end
                 length(𝒯ᴵⁿᵛ) atol=TEST_ATOL
     end
 
-    @testset "SimpleTimes test with storage" begin
+    @testset "SimpleTimes with storage" begin
 
         # Run the model and extract the data
         m, case, model = simple_graph(demand=OperationalProfile([10, 15, 5, 15, 5]))
@@ -763,9 +778,7 @@ end
         # Test that the level balance is correct for standard periods (6 times)
         @test sum(sum(value.(m[:stor_level][stor, t]) ≈
                     value.(m[:stor_level][stor, t_prev]) +
-                        (value.(m[:flow_in][stor, t , Power]) -
-                         value.(m[:flow_out][stor, t , Power])) *
-                    duration(t)
+                    value.(m[:stor_level_Δ_op][stor, t]) * duration(t)
                     for (t_prev, t) ∈ withprev(t_inv) if !isnothing(t_prev))
                     for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
                         length(𝒯)-2 atol=TEST_ATOL
@@ -773,15 +786,96 @@ end
         # Test that the level balance is correct in the first period (2 times)
         @test sum(sum(value.(m[:stor_level][stor, t]) ≈
                     value.(m[:stor_level][stor, last(t_inv)]) +
-                        (value.(m[:flow_in][stor, t , Power]) -
-                         value.(m[:flow_out][stor, t , Power])) *
-                    duration(t)
+                    value.(m[:stor_level_Δ_op][stor, t]) * duration(t)
                     for (t_prev, t) ∈ withprev(t_inv) if isnothing(t_prev))
                     for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
                         2 atol=TEST_ATOL
 
         # Test that the level is 0 exactly 4 times
         @test sum(value.(m[:stor_level][stor, t]) ≈ 0 for t ∈ 𝒯, atol=TEST_ATOL) == 4
+    end
+
+    @testset "RepresentativePeriods with storage" begin
+
+        # Run the model and extract the data
+        op_profile_1 = FixedProfile(0)
+        op_profile_2 = OperationalProfile([20, 20, 20, 20, 20])
+        demand = RepresentativeProfile([op_profile_1, op_profile_2])
+
+        op_1 = SimpleTimes(100, 2)
+        op_2 = SimpleTimes(800, 2)
+
+        ops = RepresentativePeriods(2, 8760, [.5, .5], [op_1, op_2])
+
+        m, case, model = simple_graph(ops=ops, demand=demand)
+
+        𝒯    = case[:T]
+        𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+        𝒩    = case[:nodes]
+        stor = 𝒩[3]
+        cap = EMB.capacity(stor)
+
+        # Run the general tests
+        general_tests(m, case, model);
+
+        # All the tests following er for the function
+        # - constraints_level(m, n::RefStorage{T}, 𝒯, 𝒫, modeltype::EnergyModel) where {T<:ResourceCarrier}
+        for t_inv ∈ 𝒯ᴵⁿᵛ
+            𝒯ʳᵖ = repr_periods(t_inv)
+            for (t_rp_prev, t_rp) ∈ withprev(𝒯ʳᵖ), (t_prev, t) ∈ withprev(t_rp)
+                if isnothing(t_rp_prev) && isnothing(t_prev)
+                    # Test for the correct accounting in the first operational period of the
+                    # first representative period of a strategic period
+                    t_rp_last = last(𝒯ʳᵖ)
+                    @test value.(m[:stor_level][stor, t]) ≈
+                            value.(m[:stor_level][stor, first(t_rp_last)]) -
+                            value.(m[:stor_level_Δ_op][stor, first(t_rp_last)]) *
+                                duration(first(t_rp_last)) +
+                            value.(m[:stor_level_Δ_rp][stor, t_rp_last]) +
+                            value.(m[:stor_level_Δ_op][stor, t]) * duration(t) atol=TEST_ATOL
+
+                    @test value.(m[:stor_level][stor, t]) -
+                            value.(m[:stor_level_Δ_op][stor, t]) * duration(t) ≥
+                            -TEST_ATOL
+
+                    @test value.(m[:stor_level][stor, t]) -
+                            value.(m[:stor_level_Δ_op][stor, t]) * duration(t) ≤
+                            value.(m[:stor_cap_inst][stor, t]) + TEST_ATOL
+
+                elseif isnothing(t_prev)
+                    # Test for the correct accounting in the first operational period of the
+                    # other representative periods of a strategic period
+                    @test value.(m[:stor_level][stor, t]) ≈
+                            value.(m[:stor_level][stor, first(t_rp_prev)]) -
+                            value.(m[:stor_level_Δ_op][stor, first(t_rp_prev)]) *
+                                duration(first(t_rp_prev)) +
+                            value.(m[:stor_level_Δ_rp][stor, t_rp_prev]) +
+                            value.(m[:stor_level_Δ_op][stor, t]) * duration(t) atol=TEST_ATOL
+
+                    @test value.(m[:stor_level][stor, t]) -
+                            value.(m[:stor_level_Δ_op][stor, t]) * duration(t) ≥
+                            -TEST_ATOL
+
+                    @test value.(m[:stor_level][stor, t]) -
+                            value.(m[:stor_level_Δ_op][stor, t]) * duration(t) ≤
+                            value.(m[:stor_cap_inst][stor, t]) + TEST_ATOL
+                end
+            end
+        end
+        # Test for the correct accounting in all other operational periods
+        @test sum(value.(m[:stor_level][stor, t]) ≈
+                value.(m[:stor_level][stor, t_prev]) +
+                value.(m[:stor_level_Δ_op][stor, t]) * duration(t)
+                for (t_prev, t) ∈ withprev(𝒯), atol= TEST_ATOL if !isnothing(t_prev)) ≈
+                    length(𝒯) - length(𝒯ᴵⁿᵛ) * ops.len atol= TEST_ATOL
+
+        # Check that there is no outflow in the first representative period of each
+        # strategic period as the demand is set to 0, and larger than 0 in the second
+        # representative period
+        @test sum(value.(m[:flow_out][stor, t, Power]) ≈ 0 for t ∈ 𝒯) ≈
+            length(𝒯ᴵⁿᵛ)*length(op_1)
+        @test sum(value.(m[:flow_out][stor, t, Power]) > 0 for t ∈ 𝒯) ≈
+            length(𝒯ᴵⁿᵛ)*length(op_2)
     end
 end
 
@@ -793,7 +887,7 @@ end
 
 
     # Function for setting up the system
-    function simple_graph(;em_limit=[40, 40], stor_cap=0)
+    function simple_graph(;ops=SimpleTimes(5, 2) , em_limit=[40, 40], stor_cap=0)
 
         em_data = CaptureEnergyEmissions(0.9)
 
@@ -830,12 +924,11 @@ end
         sink = RefSink(
             "sink",
             FixedProfile(10),
-            Dict(:surplus => FixedProfile(0), :deficit => FixedProfile(100)),
+            Dict(:surplus => FixedProfile(0), :deficit => FixedProfile(10000)),
             Dict(Power => 1),
             [],
         )
 
-        ops = SimpleTimes(5, 2)
         T = TwoLevel(2, 2, ops; op_per_strat=duration(ops))
 
         nodes = [source, network, storage, sink]
@@ -883,9 +976,23 @@ end
         @test sum(value.(m[:flow_in][stor, t, CO2]) ≈ value.(m[:stor_rate_use][stor, t])
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
+
+        # Test that the Δ in the storage level is correctly calculated
+        # - constraints_level_aux(m, n::RefStorage{T}, 𝒯) where {S<:ResourceEmit}
+        @test sum(value.(value.(m[:stor_level_Δ_op][stor, t])) ≈
+                value.(m[:flow_in][stor, t, CO2]) - value.(m[:emissions_node][stor, t, CO2])
+                    for t ∈ 𝒯, atol=TEST_ATOL) ≈
+                        length(𝒯) atol=TEST_ATOL
+
+        # Test that the Δ in the storage level is larger than 0
+        # - constraints_level_aux(m, n::RefStorage{T}, 𝒯) where {S<:ResourceEmit}
+        @test sum(value.(value.(m[:stor_level_Δ_op][stor, t])) ≥ -TEST_ATOL
+                for t ∈ 𝒯) ≈
+                    length(𝒯) atol=TEST_ATOL
+
     end
 
-    @testset "SimpleTimes test without storage" begin
+    @testset "SimpleTimes without storage" begin
         # This test set is related to the approach of emissions in the storage node.
         # In practice, a RefStorage{<:ResourceEmit} is also designed to act as an emission source
         # This is currently not well implemented, but will be adjusted in a later stage
@@ -922,7 +1029,7 @@ end
         # Test that the fixed OPEX is correctly calculated
         # - function constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(value.(m[:opex_fixed][stor, t_inv]) ≈
-                EMB.opex_fixed(stor, t_inv) * value.(m[:stor_cap_inst][stor, first(t_inv)])
+                EMB.opex_fixed(stor, t_inv) * value.(m[:stor_rate_inst][stor, first(t_inv)])
                     for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
                 length(𝒯ᴵⁿᵛ) atol=TEST_ATOL
 
@@ -933,7 +1040,7 @@ end
                 length(𝒯ᴵⁿᵛ) atol=TEST_ATOL
     end
 
-    @testset "SimpleTimes test with storage" begin
+    @testset "SimpleTimes with storage" begin
 
         # Run the model and extract the data
         m, case, model = simple_graph(stor_cap=100, em_limit=[100, 4])
@@ -946,37 +1053,90 @@ end
         # Run the general tests
         general_tests(m, case, model);
 
-
         # Test that variable OPEX is correctly calculated
         # - function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
-        # @test sum(value.(m[:opex_var][stor, t_inv]) ≈
-        #         sum(EMB.opex_var(stor, t_inv) *
-        #         (value.(m[:flow_in][stor, t, CO2]) -
-        #          value.(m[:emissions_node][stor, t, CO2])) *
-        #         duration(t) for t ∈ t_inv)
-        #         for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
-        #         length(𝒯ᴵⁿᵛ) atol=TEST_ATOL
+        @test sum(value.(m[:opex_var][stor, t_inv]) ≈
+                sum(EMB.opex_var(stor, t_inv) *
+                (value.(m[:flow_in][stor, t, CO2]) -
+                 value.(m[:emissions_node][stor, t, CO2])) *
+                duration(t) for t ∈ t_inv)
+                for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
+                length(𝒯ᴵⁿᵛ) atol=TEST_ATOL
 
         # All the tests following er for the function
         # - constraints_level(m, n::RefStorage{T}, 𝒯, 𝒫, modeltype::EnergyModel) where {T<:ResourceEmit}
 
-        # # Test that the level balance is correct for standard periods (6 times)
-        # @test sum(sum(value.(m[:stor_level][stor, t]) ≈
-        #             value.(m[:stor_level][stor, t_prev]) +
-        #                 (value.(m[:flow_in][stor, t , CO2]) -
-        #                  value.(m[:emissions_node][stor, t , CO2])) *
-        #             duration(t)
-        #             for (t_prev, t) ∈ withprev(t_inv) if !isnothing(t_prev))
-        #             for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
-        #                 length(𝒯)-2 atol=TEST_ATOL
+        # Test that the level balance is correct for standard periods (6 times)
+        @test sum(sum(value.(m[:stor_level][stor, t]) ≈
+                    value.(m[:stor_level][stor, t_prev]) +
+                        (value.(m[:flow_in][stor, t , CO2]) -
+                         value.(m[:emissions_node][stor, t , CO2])) *
+                    duration(t)
+                    for (t_prev, t) ∈ withprev(t_inv) if !isnothing(t_prev))
+                    for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
+                        length(𝒯)-2 atol=TEST_ATOL
 
-        # # Test that the level balance is correct in the first period (2 times)
-        # @test sum(sum(value.(m[:stor_level][stor, t]) ≈
-        #                 (value.(m[:flow_in][stor, t , CO2]) -
-        #                  value.(m[:emissions_node][stor, t , CO2])) *
-        #             duration(t)
-        #             for (t_prev, t) ∈ withprev(t_inv) if isnothing(t_prev))
-        #             for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
-        #                 2 atol=TEST_ATOL
+        # Test that the level balance is correct in the first period (2 times)
+        @test sum(sum(value.(m[:stor_level][stor, t]) ≈
+                        (value.(m[:flow_in][stor, t , CO2]) -
+                         value.(m[:emissions_node][stor, t , CO2])) *
+                    duration(t)
+                    for (t_prev, t) ∈ withprev(t_inv) if isnothing(t_prev))
+                    for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
+                        2 atol=TEST_ATOL
+    end
+
+    @testset "RepresentativePeriods with storage" begin
+
+        # Run the model and extract the data
+        op_1 = SimpleTimes(5, 2)
+        op_2 = SimpleTimes(10, 2)
+        ops = RepresentativePeriods(2, 60, [.5, .5], [op_1, op_2])
+
+        m, case, model = simple_graph(ops=ops, stor_cap=1e6)
+        𝒯    = case[:T]
+        𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+        𝒩    = case[:nodes]
+        stor = 𝒩[3]
+        cap = EMB.capacity(stor)
+
+        # Run the general tests
+        general_tests(m, case, model);
+
+        # All the tests following er for the function
+        # - constraints_level(m, n::RefStorage{T}, 𝒯, 𝒫, modeltype::EnergyModel) where {T<:ResourceEmit}
+        for t_inv ∈ 𝒯ᴵⁿᵛ
+            𝒯ʳᵖ = repr_periods(t_inv)
+            for (t_rp_prev, t_rp) ∈ withprev(𝒯ʳᵖ), (t_prev, t) ∈ withprev(t_rp)
+                if isnothing(t_rp_prev) && isnothing(t_prev)
+                    # Test for the correct accounting in the first operational period of the
+                    # first representative period of a strategic period
+
+                    @test value.(m[:stor_level][stor, t]) ≈
+                            value.(m[:stor_level_Δ_op][stor, t]) * duration(t) atol=TEST_ATOL
+
+                elseif isnothing(t_prev)
+                    # Test for the correct accounting in the first operational period of the
+                    # other representative periods of a strategic period
+                    Δlevel_rp = sum(
+                            value.(m[:stor_level_Δ_op][stor, t]) *
+                            multiple_strat(t_inv, t) *
+                            duration(t) for t ∈ t_rp_prev
+                    )
+                    @test value.(m[:stor_level][stor, t]) ≈
+                            value.(m[:stor_level][stor, first(t_rp_prev)]) -
+                            value.(m[:stor_level_Δ_op][stor, first(t_rp_prev)]) *
+                                duration(first(t_rp_prev)) +
+                            value.(m[:stor_level_Δ_rp][stor, t_rp_prev]) +
+                            value.(m[:stor_level_Δ_op][stor, t]) * duration(t) atol=TEST_ATOL
+                end
+            end
+        end
+        # Test for the correct accounting in all other operational periods
+        @test sum(value.(m[:stor_level][stor, t]) ≈
+                value.(m[:stor_level][stor, t_prev]) +
+                value.(m[:stor_level_Δ_op][stor, t]) * duration(t)
+                for (t_prev, t) ∈ withprev(𝒯), atol= TEST_ATOL if !isnothing(t_prev)) ≈
+                    length(𝒯) - length(𝒯ᴵⁿᵛ) * ops.len atol= TEST_ATOL
     end
 end

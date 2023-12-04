@@ -50,8 +50,10 @@ or `:flow_out` (depending on node `n ∈ 𝒩`)
 
 Creation of different storage variables for `Storage` nodes `𝒩ˢᵗᵒʳ`. These variables are:
 
-  * `:stor_level` - storage level in each operational period
-  * `:stor_rate_use` - change of level in each operational period
+  * `:stor_level` - storage level at the end of each operational period
+  * `:stor_level_Δ_op` - storage level change in each operational period
+  * `:stor_level_Δ_rp` - storage level change in each representative period
+  * `:stor_rate_use` - storage rate use in each operational period
   * `:stor_cap_inst` - installed capacity for storage in each operational period, constrained
   in the operational case to `n.stor_cap`
   * `:stor_rate_inst` - installed rate for storage, e.g. power in each operational period,
@@ -67,6 +69,11 @@ function variables_capacity(m, 𝒩, 𝒯, modeltype::EnergyModel)
     @variable(m, cap_inst[𝒩ⁿᵒᵗ, 𝒯] >= 0)
 
     @variable(m, stor_level[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
+    @variable(m, stor_level_Δ_op[𝒩ˢᵗᵒʳ, 𝒯])
+    if 𝒯 isa TwoLevel{S,T,U} where {S,T,U<:RepresentativePeriods}
+        𝒯ʳᵖ = repr_periods(𝒯)
+        @variable(m, stor_level_Δ_rp[𝒩ˢᵗᵒʳ, 𝒯ʳᵖ])
+    end
     @variable(m, stor_rate_use[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_cap_inst[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_rate_inst[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
@@ -234,9 +241,14 @@ function constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Creation of the individual constraints.
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
-        m[:emissions_total][t, p] == sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ᵉᵐ))
+        m[:emissions_total][t, p] ==
+            sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ᵉᵐ)
+    )
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ],
-        m[:emissions_strategic][t_inv, p] == sum(m[:emissions_total][t, p] * duration(t) for t ∈ t_inv))
+        m[:emissions_strategic][t_inv, p] ==
+            sum(m[:emissions_total][t, p] * multiple(t_inv, t)
+            for t ∈ t_inv)
+    )
 end
 
 """
@@ -251,7 +263,10 @@ function objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Calculation of the objective function.
-    @objective(m, Max, -sum((m[:opex_var][n, t_inv] + m[:opex_fixed][n, t_inv]) * duration(t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ))
+    @objective(m, Max,
+        -sum((m[:opex_var][n, t_inv] + m[:opex_fixed][n, t_inv]) * duration(t_inv)
+        for t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ)
+    )
 end
 
 """

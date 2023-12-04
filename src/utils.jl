@@ -98,3 +98,11 @@ function sort_types(types_list::Dict)
     sorted_types_list = types[sorted_idx]
     return sorted_types_list
 end
+
+"""
+    multiple(t_inv, t)
+
+Provide a simplified function for returning the combination of the functions
+duration(t) * multiple_strat(t_inv, t) * probability(t)
+"""
+multiple(t_inv, t) = duration(t) * multiple_strat(t_inv, t) * probability(t)

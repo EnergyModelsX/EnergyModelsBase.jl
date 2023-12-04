@@ -67,8 +67,18 @@ function generate_data()
         Direct(61, nodes[6], nodes[1], Linear())
     ]
 
+    # Variables for the individual entries of the time structure
+    op_duration = 2 # Each operational period has a duration of 2
+    op_number = 4   # There are in total 4 operational periods
+    operational_periods = SimpleTimes(op_number, op_duration)
+
+    # The number of operational periods times the duration of the operational periods, which
+    # can also be extracted using the function `duration` which corresponds to the total
+    # duration of the operational periods in a `SimpleTimes` structure
+    op_per_strat = duration(operational_periods)
+
     # Creation of the time structure and global data
-    T = TwoLevel(4, 1, SimpleTimes(4, 2))
+    T = TwoLevel(4, 1, operational_periods; op_per_strat)
     model = OperationalModel(
         Dict(
             CO2 => StrategicProfile([160, 140, 120, 100]),

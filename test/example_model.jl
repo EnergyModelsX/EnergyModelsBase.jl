@@ -25,11 +25,11 @@ function generate_data()
                                 FixedProfile(0), Dict(Coal => 1),
                                 []),
             RefNetworkNode(4,   FixedProfile(25),   FixedProfile(5.5),
-                                FixedProfile(0), Dict(NG => 2),
+                                FixedProfile(5), Dict(NG => 2),
                                 Dict(Power => 1, CO2 => 1),
                                 [capture_data]),
             RefNetworkNode(5,   FixedProfile(25),   FixedProfile(6),
-                                FixedProfile(0),  Dict(Coal => 2.5),
+                                FixedProfile(10),  Dict(Coal => 2.5),
                                 Dict(Power => 1),
                                 [emission_data]),
             RefStorage(6, FixedProfile(60),   FixedProfile(600), FixedProfile(9.1),
@@ -55,7 +55,7 @@ function generate_data()
             ]
 
     # Creation of the time structure and global data
-    T = TwoLevel(4, 1, SimpleTimes(4, 2))
+    T = TwoLevel(4, 1, SimpleTimes(4, 2), op_per_strat=8)
     model = OperationalModel(
                             Dict(
                                 CO2 => StrategicProfile([160, 140, 120, 100]),

@@ -25,11 +25,13 @@ include("example_model.jl")
 
     @testset "General tests" begin
         # Check for the objective value
-        @test objective_value(m) ≈ -42991.693
+        # (-1500 compared to 0.5.x to include fixed OPEX)
+        @test objective_value(m) ≈ -44491.693
 
         # Check for the total number of variables
-        # (-128 as only defined for technologies with EmissionData)
-        @test size(all_variables(m))[1] == 1096
+        # (-128 compared to 0.5.x as only defined for technologies with EmissionData)
+        # (+ 16 compared to 0.5.x as increase in storage variables)
+        @test size(all_variables(m))[1] == 1112
 
         # Check that total emissions of both methane and CO2 are within the constraint
         # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
@@ -44,8 +46,8 @@ include("example_model.jl")
         # Check that the total and strategic emissions are correctly calculated
         # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
         @test sum(value.(m[:emissions_strategic][t_inv, CO2]) ≈
-                sum(value.(m[:emissions_total][t, CO2]) * duration(t) for t ∈ t_inv)
-                for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
+                sum(value.(m[:emissions_total][t, CO2]) * EMB.multiple(t_inv, t)
+                for t ∈ t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
                     length(𝒯ᴵⁿᵛ)
         @test sum(value.(m[:emissions_total][t, CO2]) ≈
                 sum(value.(m[:emissions_node][n, t, CO2]) for n ∈ 𝒩ᵉᵐ)
@@ -94,30 +96,4 @@ include("example_model.jl")
                     length(𝒯) * length(EMB.link_res(l)) for l ∈ ℒ, atol=TEST_ATOL) ≈
                         length(ℒ)
     end
-
-
-    # @testset "Link tests" begin
-
-    #     # Check that the input conversion is correct in both power plants
-    #     @test sum(sum(value.(m[:cap_use])[NG_PP, t] * EMB.input(NG_PP, p) ≈
-    #             value.(m[:flow_in])[NG_PP, t, p] for t ∈ 𝒯) for p ∈ EMB.input(NG_PP)) ==
-    #                 length(𝒯) * length(EMB.input(NG_PP))
-    #     @test sum(sum(value.(m[:cap_use])[Coal_PP, t] * EMB.input(Coal_PP, p) ≈
-    #             value.(m[:flow_in])[Coal_PP, t, p] for t ∈ 𝒯) for p ∈ EMB.input(Coal_PP)) ==
-    #                 length(𝒯) * length(EMB.input(Coal_PP))
-
-    #     # Check that the CO2 capture rate is correct in the natural gas power plant
-    #     @test sum(EMB.co2_capture(NG_PP.data[1]) * sum(EMB.co2_int(p_in) * value.(m[:flow_in])[NG_PP, t, p_in] for p_in ∈ EMB.input(NG_PP)) ≈
-    #             value.(m[:flow_out])[NG_PP, t, CO2] for t ∈ 𝒯) ==
-    #                 length(𝒯)
-
-    #     # Check that the additional energy requirement in the storage is correct
-    #     p_stor = EMB.storage_resource(CO2_stor)
-    #     𝒫ᵃᵈᵈ  = setdiff(EMB.input(CO2_stor), [p_stor])
-    #     @test sum(sum(value.(m[:flow_in])[CO2_stor, t, p_stor] * EMB.input(CO2_stor, p) ≈
-    #             value.(m[:flow_in])[CO2_stor, t, p] for t ∈ 𝒯) for p ∈ 𝒫ᵃᵈᵈ) ==
-    #                 length(𝒯) * length(𝒫ᵃᵈᵈ)
-
-    # end
-
 end
