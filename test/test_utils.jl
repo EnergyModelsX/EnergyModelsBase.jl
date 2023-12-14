@@ -1,5 +1,3 @@
-using JuMP
-
 @testset "" begin
     m = JuMP.Model()
 
@@ -26,15 +24,17 @@ end
 @testset "Collect and sort types" begin
     Power = ResourceCarrier("Power", 0.0)
     CO2 = ResourceEmit("CO2", 0.0)
+    dict = Dict{Resource,Real}()
+    array = Array{Resource}([])
 
     source = RefSource("src", FixedProfile(5), FixedProfile(10), FixedProfile(5),
-        Dict(), [])
-    sink = RefSink( "sink", FixedProfile(20), Dict(), Dict())
+        dict, [])
+    sink = RefSink( "sink", FixedProfile(20), dict, dict, Array{Data}([]))
     stor = RefStorage("stor", FixedProfile(60), FixedProfile(1), FixedProfile(1),
-        FixedProfile(0), Power, Dict(), Dict(), [])
-    sink_em = RefStorageEmissions("sink-em", FixedProfile(1), FixedProfile(1),
-        FixedProfile(1), FixedProfile(1), CO2, Dict(), Dict(), [])
-    av = GenAvailability("av", Dict(), Dict())
+        FixedProfile(0), Power, dict, dict, Array{Data}([]))
+    stor_em = RefStorageEmissions("sink-em", FixedProfile(1), FixedProfile(1),
+        FixedProfile(1), FixedProfile(1), CO2, dict, dict, Array{Data}([]))
+    av = GenAvailability("av", array)
 
     get_types(𝒩) = unique(map(n -> typeof(n), 𝒩))
 
@@ -45,13 +45,14 @@ end
         @test node_types[RefSource] == 3
         @test node_types[RefSink] == 3
 
-        if haskey(node_types, Network)
-            @test node_types[Network] == 2
+        if haskey(node_types, NetworkNode)
+            @test node_types[NetworkNode] == 2
             @test node_types[Availability] == 3
             @test node_types[GenAvailability] == 4
 
             @test node_types[Storage] == 3
-            @test node_types[RefStorageEmissions] == 4
+            @test node_types[RefStorage{ResourceCarrier{Float64}}] == 4
+            @test node_types[RefStorage{ResourceEmit{Float64}}] == 4
         end
     end
 
@@ -62,10 +63,10 @@ end
         @test indexes[EMB.Node] == 1
         @test indexes[Source] < indexes[RefSource]
         @test indexes[Sink] < indexes[RefSink]
-        if haskey(indexes, Network)
-            @test indexes[Network] < indexes[Storage]
-            @test indexes[Network] < indexes[Availability]
-            @test indexes[Storage] < indexes[RefStorageEmissions]
+        if haskey(indexes, NetworkNode)
+            @test indexes[NetworkNode] < indexes[Storage]
+            @test indexes[NetworkNode] < indexes[Availability]
+            @test indexes[Storage] < indexes[RefStorage{ResourceCarrier{Float64}}]
             @test indexes[Availability] < indexes[GenAvailability]
         end
     end
@@ -79,7 +80,7 @@ end
     end
 
     @testset "Test 2" begin
-        node_types = EMB.collect_types(get_types([source, sink, stor, sink_em, av]))
+        node_types = EMB.collect_types(get_types([source, sink, stor, stor_em, av]))
 
         test_type_ranking(node_types)
         sorted_node_types = EMB.sort_types(node_types)

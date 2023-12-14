@@ -11,14 +11,12 @@ julia> print_tree(EMB.Node)
 
 ```
 Node
-├─ Network
+├─ NetworkNode
 │  ├─ Availability
 │  │  └─ GenAvailability
-│  ├─ RefNetwork
-│  ├─ RefNetworkEmissions
+│  ├─ RefNetworkNode
 │  └─ Storage
 │     ├─ RefStorage
-│     └─ RefStorageEmissions
 ├─ Sink
 │  └─ RefSink
 └─ Source
