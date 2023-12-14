@@ -84,6 +84,10 @@ function generate_data()
             CO2 => StrategicProfile([160, 140, 120, 100]),
             NG => FixedProfile(1e6)
         ),
+        Dict(
+            CO2 => FixedProfile(0),
+            NG => FixedProfile(0),
+        ),
         CO2,
     )
 

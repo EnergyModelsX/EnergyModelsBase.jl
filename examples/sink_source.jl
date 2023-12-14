@@ -56,7 +56,11 @@ function generate_data()
 
     # Creation of the time structure and global data
     T = TwoLevel(4, 1, operational_periods; op_per_strat)
-    model = OperationalModel(Dict(CO2 => FixedProfile(10)), CO2)
+    model = OperationalModel(
+        Dict(CO2 => FixedProfile(10)),
+        Dict(CO2 => FixedProfile(0)),
+        CO2
+    )
 
     # WIP data structure
     case = Dict(
