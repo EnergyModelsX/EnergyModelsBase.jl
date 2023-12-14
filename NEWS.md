@@ -1,6 +1,6 @@
 # Release notes
 
-Version 0.6.0 (2023-12-06)
+Version 0.6.0 (2023-12-14)
 --------------------------
  * Switched fields `Input` and `Output` of `Availability` nodes from `Dict{Resource, Real}` to `Array{<:Resource}`. The former is still available as a constructor, while a new constructor is introduced which requries the input only once.
  * All fields in composite types are now lower case.
