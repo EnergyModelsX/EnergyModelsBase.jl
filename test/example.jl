@@ -13,8 +13,8 @@ include("example_model.jl")
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     𝒩    = case[:nodes]
-    𝒩ⁿᵒᵗ = EMB.node_not_av(𝒩)
-    𝒩ᵉᵐ  = EMB.node_emissions(𝒩)
+    𝒩ⁿᵒᵗ = EMB.nodes_not_av(𝒩)
+    𝒩ᵉᵐ  = nodes_emissions(𝒩)
     avail    = 𝒩[1]
     NG_PP    = 𝒩[4]
     Coal_PP  = 𝒩[5]
@@ -66,18 +66,18 @@ include("example_model.jl")
         for n ∈ 𝒩
             ℒᶠʳᵒᵐ, ℒᵗᵒ = EMB.link_sub(ℒ, n)
             # Constraint for output flowrate and input links.
-            if EMB.node_output(n)
+            if has_output(n)
                 @test sum(value.(m[:flow_out][n, t, p]) ≈
-                    sum(value.(m[:link_in][l, t, p]) for l in ℒᶠʳᵒᵐ if p ∈ EMB.input(l.to))
-                    for t ∈ 𝒯, p ∈ EMB.output(n), atol=TEST_ATOL) ≈
-                        length(𝒯) * length(EMB.output(n))
+                    sum(value.(m[:link_in][l, t, p]) for l in ℒᶠʳᵒᵐ if p ∈ inputs(l.to))
+                    for t ∈ 𝒯, p ∈ outputs(n), atol=TEST_ATOL) ≈
+                        length(𝒯) * length(outputs(n))
             end
             # Constraint for input flowrate and output links.
-            if EMB.node_input(n)
+            if has_input(n)
                 @test sum(value.(m[:flow_in][n, t, p]) ≈
-                    sum(value.(m[:link_out][l, t, p]) for l in ℒᵗᵒ if p ∈ EMB.output(l.from))
-                    for t ∈ 𝒯, p ∈ EMB.input(n), atol=TEST_ATOL) ≈
-                        length(𝒯) * length(EMB.input(n))
+                    sum(value.(m[:link_out][l, t, p]) for l in ℒᵗᵒ if p ∈ outputs(l.from))
+                    for t ∈ 𝒯, p ∈ inputs(n), atol=TEST_ATOL) ≈
+                        length(𝒯) * length(inputs(n))
             end
         end
 

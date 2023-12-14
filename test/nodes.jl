@@ -106,7 +106,7 @@
         # Test that the outflow is equal to the specified capacity usage
         # - constraints_flow_out(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(value.(m[:flow_out][source, t, Power]) ≈
-                value.(m[:cap_use][source, t]) * EMB.output(source, Power)
+                value.(m[:cap_use][source, t]) * outputs(source, Power)
                 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯) atol=TEST_ATOL
 
@@ -153,7 +153,7 @@
         # Test that the inflow is equal to the specified capacity usage
         # - constraints_flow_in(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(value.(m[:flow_in][sink, t, Power]) ≈
-                value.(m[:cap_use][sink, t]) * EMB.input(sink, Power)
+                value.(m[:cap_use][sink, t]) * inputs(sink, Power)
                 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯) atol=TEST_ATOL
 
@@ -174,7 +174,7 @@
         # Test that the opex calculations are correct
         # - constraints_opex_var(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(value.(m[:opex_var][sink, t_inv]) ≈
-                sum(value.(m[:sink_deficit][sink, t]) * duration(t) * EMB.deficit(sink, t) for t ∈ t_inv)
+                sum(value.(m[:sink_deficit][sink, t]) * duration(t) * deficit_penalty(sink, t) for t ∈ t_inv)
                 for t_inv ∈ 𝒯ᴵⁿᵛ)  ≈
                     length(𝒯ᴵⁿᵛ) atol=TEST_ATOL
 
@@ -202,7 +202,7 @@
         # Test that the opex calculations are correct
         # - constraints_opex_var(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(value.(m[:opex_var][sink, t_inv]) ≈
-                sum(value.(m[:sink_surplus][sink, t]) * duration(t) * EMB.surplus(sink, t) for t ∈ t_inv)
+                sum(value.(m[:sink_surplus][sink, t]) * duration(t) * surplus_penalty(sink, t) for t ∈ t_inv)
                 for t_inv ∈ 𝒯ᴵⁿᵛ) ==
                     length(𝒯ᴵⁿᵛ)
 
@@ -245,7 +245,7 @@
         m, case, model = simple_graph(source, snk_emit)
         𝒯       = case[:T]
         # Test that the emissions are properly calculated
-        @test sum(value.(m[:cap_use][snk_emit, t]) * EMB.process_emissions(em_data, CO2) ≈
+        @test sum(value.(m[:cap_use][snk_emit, t]) * process_emissions(em_data, CO2) ≈
                 value.(m[:emissions_node][snk_emit, t, CO2]) for t ∈ 𝒯) ≈
                     length(𝒯) atol=TEST_ATOL
 
@@ -265,7 +265,7 @@
         # Test that the emissions are properly calculated, although no input is present in
         # a `Source ndoe`
         # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsProcess)
-        @test sum(value.(m[:cap_use][src_emit, t]) * EMB.process_emissions(em_data, CO2) ≈
+        @test sum(value.(m[:cap_use][src_emit, t]) * process_emissions(em_data, CO2) ≈
                 value.(m[:emissions_node][src_emit, t, CO2]) for t ∈ 𝒯) ≈
                     length(𝒯) atol=TEST_ATOL
     end
@@ -399,7 +399,7 @@ end
         em_data = EmissionsEnergy()
         m, case, model = simple_graph(data_em=em_data)
         𝒩     = case[:nodes]
-        𝒩ᵉᵐ   = EMB.node_emissions(𝒩)
+        𝒩ᵉᵐ   = nodes_emissions(𝒩)
         net   = 𝒩[2]
 
         𝒯     = case[:T]
@@ -415,7 +415,7 @@ end
         # Check that the total and strategic emissions are correctly calculated
         # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsEnergy)
         @test sum(value.(m[:emissions_node][net, t, CO2]) ≈
-                sum(value.(m[:flow_in][net, t, p]) * EMB.co2_int(p) for p ∈ EMB.input(net))
+                sum(value.(m[:flow_in][net, t, p]) * EMB.co2_int(p) for p ∈ inputs(net))
                 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯)
         @test sum(value.(m[:emissions_node][net, t, NG]) ≈ 0
@@ -431,7 +431,7 @@ end
         em_data = EmissionsProcess(Dict(CO2 => 0.1, NG => 0.5))
         m, case, model = simple_graph(data_em=em_data)
         𝒩     = case[:nodes]
-        𝒩ᵉᵐ   = EMB.node_emissions(𝒩)
+        𝒩ᵉᵐ   = nodes_emissions(𝒩)
         net   = 𝒩[2]
 
         𝒯     = case[:T]
@@ -450,12 +450,12 @@ end
         # Check that the total and strategic emissions are correctly calculated
         # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsProcess)
         @test sum(value.(m[:emissions_node][net, t, CO2]) ≈
-                sum(value.(m[:flow_in][net, t, p]) * EMB.co2_int(p) for p ∈ EMB.input(net)) +
-                value.(m[:cap_use][net, t]) * EMB.process_emissions(em_data, CO2)
+                sum(value.(m[:flow_in][net, t, p]) * EMB.co2_int(p) for p ∈ inputs(net)) +
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2)
                 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯)
         @test sum(value.(m[:emissions_node][net, t, NG]) ≈
-                value.(m[:cap_use][net, t]) * EMB.process_emissions(em_data, NG)
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, NG)
                 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯)
     end
@@ -468,7 +468,7 @@ end
         em_data = CaptureEnergyEmissions(Dict(CO2 => 0.1, NG => 0.5), 0.9)
         m, case, model = simple_graph(data_em=em_data)
         𝒩     = case[:nodes]
-        𝒩ᵉᵐ   = EMB.node_emissions(𝒩)
+        𝒩ᵉᵐ   = nodes_emissions(𝒩)
         net   = 𝒩[2]
 
         𝒯     = case[:T]
@@ -487,20 +487,20 @@ end
         # Check that the total and strategic emissions are correctly calculated
         # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
         @test sum(value.(m[:emissions_node][net, t, CO2]) ≈
-                sum(value.(m[:flow_in][net, t, p]) * EMB.co2_int(p) for p ∈ EMB.input(net)) *
+                sum(value.(m[:flow_in][net, t, p]) * EMB.co2_int(p) for p ∈ inputs(net)) *
                 (1 - EMB.co2_capture(em_data)) +
-                value.(m[:cap_use][net, t]) * EMB.process_emissions(em_data, CO2)
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2)
                 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯) atol=TEST_ATOL
         @test sum(value.(m[:emissions_node][net, t, NG]) ≈
-                value.(m[:cap_use][net, t]) * EMB.process_emissions(em_data, NG)
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, NG)
                 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯) atol=TEST_ATOL
 
         # Test that the CO2 capture is calculated correctly
         # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
         @test sum(value.(m[:flow_out][net, t, CO2]) ≈
-                sum(value.(m[:flow_in][net, t, p]) * EMB.co2_int(p) for p ∈ EMB.input(net)) *
+                sum(value.(m[:flow_in][net, t, p]) * EMB.co2_int(p) for p ∈ inputs(net)) *
                 EMB.co2_capture(em_data) for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯) atol=TEST_ATOL
     end
@@ -513,7 +513,7 @@ end
         em_data = CaptureProcessEmissions(Dict(CO2 => 0.1, NG => 0.5), 0.9)
         m, case, model = simple_graph(data_em=em_data)
         𝒩     = case[:nodes]
-        𝒩ᵉᵐ   = EMB.node_emissions(𝒩)
+        𝒩ᵉᵐ   = nodes_emissions(𝒩)
         net   = 𝒩[2]
 
         𝒯     = case[:T]
@@ -532,20 +532,20 @@ end
         # Check that the total and strategic emissions are correctly calculated
         # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
         @test sum(value.(m[:emissions_node][net, t, CO2]) ≈
-                sum(value.(m[:flow_in][net, t, p]) * EMB.co2_int(p) for p ∈ EMB.input(net)) +
-                value.(m[:cap_use][net, t]) * EMB.process_emissions(em_data, CO2) *
+                sum(value.(m[:flow_in][net, t, p]) * EMB.co2_int(p) for p ∈ inputs(net)) +
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2) *
                 (1 - EMB.co2_capture(em_data))
                 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯) atol=TEST_ATOL
         @test sum(value.(m[:emissions_node][net, t, NG]) ≈
-                value.(m[:cap_use][net, t]) * EMB.process_emissions(em_data, NG)
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, NG)
                 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯) atol=TEST_ATOL
 
         # Test that the CO2 capture is calculated correctly
         # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
         @test sum(value.(m[:flow_out][net, t, CO2]) ≈
-                value.(m[:cap_use][net, t]) * EMB.process_emissions(em_data, CO2) *
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2) *
                 EMB.co2_capture(em_data) for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯) atol=TEST_ATOL
     end
@@ -558,7 +558,7 @@ end
         em_data = CaptureProcessEnergyEmissions(Dict(CO2 => 0.1, NG => 0.5), 0.9)
         m, case, model = simple_graph(data_em=em_data)
         𝒩     = case[:nodes]
-        𝒩ᵉᵐ   = EMB.node_emissions(𝒩)
+        𝒩ᵉᵐ   = nodes_emissions(𝒩)
         net   = 𝒩[2]
 
         𝒯     = case[:T]
@@ -577,21 +577,21 @@ end
         # Check that the total and strategic emissions are correctly calculated
         # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
         @test sum(value.(m[:emissions_node][net, t, CO2]) ≈
-                (sum(value.(m[:flow_in][net, t, p]) * EMB.co2_int(p) for p ∈ EMB.input(net)) +
-                value.(m[:cap_use][net, t]) * EMB.process_emissions(em_data, CO2)) *
+                (sum(value.(m[:flow_in][net, t, p]) * EMB.co2_int(p) for p ∈ inputs(net)) +
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2)) *
                 (1 - EMB.co2_capture(em_data))
                 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯) atol=TEST_ATOL
         @test sum(value.(m[:emissions_node][net, t, NG]) ≈
-                value.(m[:cap_use][net, t]) * EMB.process_emissions(em_data, NG)
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, NG)
                 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯) atol=TEST_ATOL
 
         # Test that the CO2 capture is calculated correctly
         # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
         @test sum(value.(m[:flow_out][net, t, CO2]) ≈
-                (sum(value.(m[:flow_in][net, t, p]) * EMB.co2_int(p) for p ∈ EMB.input(net)) +
-                value.(m[:cap_use][net, t]) * EMB.process_emissions(em_data, CO2)) *
+                (sum(value.(m[:flow_in][net, t, p]) * EMB.co2_int(p) for p ∈ inputs(net)) +
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2)) *
                 EMB.co2_capture(em_data) for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯) atol=TEST_ATOL
     end
@@ -689,7 +689,7 @@ end
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
         @test sum(value.(m[:flow_in][stor, t, aux]) ≈
-                    value.(m[:stor_rate_use][stor, t]) * EMB.input(stor, aux)
+                    value.(m[:stor_rate_use][stor, t]) * inputs(stor, aux)
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
 

@@ -114,12 +114,19 @@ Functions fo accessing `Node` fields:
 capacity
 opex_var
 opex_fixed
-input
-output
+inputs
+outputs
 node_data
 storage_resource
-surplus
-deficit
+surplus_penalty
+deficit_penalty
+```
+
+Functions for accessing `EmissionsData` fields:
+
+```@docs
+co2_capture
+process_emissions
 ```
 
 Functions for accessing `Link` fields:
@@ -139,6 +146,10 @@ Functions for identifying `Node`s:
 ```@docs
 nodes_input
 nodes_output
+nodes_emissions
+has_input
+has_output
+has_emissions
 ```
 
 ## Miscellaneous functions/macros

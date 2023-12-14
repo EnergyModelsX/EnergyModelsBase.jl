@@ -16,9 +16,9 @@ emissions.\n
 function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsEnergy)
 
     # Declaration of the required subsets.
-    𝒫ⁱⁿ = input(n)
+    𝒫ⁱⁿ = inputs(n)
     CO2 = co2_instance(modeltype)
-    𝒫ᵉᵐ = res_not(res_em(𝒫), CO2)
+    𝒫ᵉᵐ = setdiff(res_em(𝒫), [CO2])
 
     # Constraint for the CO2 emissions
     @constraint(
@@ -34,9 +34,9 @@ end
 function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsProcess)
 
     # Declaration of the required subsets.
-    𝒫ⁱⁿ = input(n)
+    𝒫ⁱⁿ = inputs(n)
     CO2 = co2_instance(modeltype)
-    𝒫ᵉᵐ = res_not(res_em(𝒫), CO2)
+    𝒫ᵉᵐ = setdiff(res_em(𝒫), [CO2])
 
     # Constraint for the CO2 emissions
     @constraint(
@@ -57,9 +57,9 @@ end
 function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
 
     # Declaration of the required subsets.
-    𝒫ⁱⁿ = input(n)
+    𝒫ⁱⁿ = inputs(n)
     CO2 = co2_instance(modeltype)
-    𝒫ᵉᵐ = res_not(res_em(𝒫), CO2)
+    𝒫ᵉᵐ = setdiff(res_em(𝒫), [CO2])
 
     # Calculate the total amount of CO2 to be considered for capture
     CO2_tot = @expression(m, [t ∈ 𝒯], sum(co2_int(p) * m[:flow_in][n, t, p] for p ∈ 𝒫ⁱⁿ))
@@ -86,9 +86,9 @@ end
 function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureProcessEmissions)
 
     # Declaration of the required subsets.
-    𝒫ⁱⁿ = input(n)
+    𝒫ⁱⁿ = inputs(n)
     CO2 = co2_instance(modeltype)
-    𝒫ᵉᵐ = res_not(res_em(𝒫), CO2)
+    𝒫ᵉᵐ = setdiff(res_em(𝒫), [CO2])
 
     # Calculate the total amount of CO2 to be considered for capture
     CO2_tot = @expression(m, [t ∈ 𝒯], m[:cap_use][n, t] * process_emissions(data, CO2))
@@ -114,9 +114,9 @@ end
 function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureProcessEnergyEmissions)
 
     # Declaration of the required subsets
-    𝒫ⁱⁿ = input(n)
+    𝒫ⁱⁿ = inputs(n)
     CO2 = co2_instance(modeltype)
-    𝒫ᵉᵐ = res_not(res_em(𝒫), CO2)
+    𝒫ᵉᵐ = setdiff(res_em(𝒫), [CO2])
 
     # Calculate the total amount of CO2 to be considered for capture
     CO2_tot = @expression(
