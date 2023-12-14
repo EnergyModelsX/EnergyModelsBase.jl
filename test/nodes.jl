@@ -14,7 +14,11 @@
 
         nodes = [source, sink]
         links = [Direct(12, source, sink)]
-        model = OperationalModel(Dict(CO2 => FixedProfile(100)), CO2)
+        model = OperationalModel(
+            Dict(CO2 => FixedProfile(100)),
+            Dict(CO2 => FixedProfile(0)),
+            CO2
+        )
         case = Dict(
                     :T => T,
                     :nodes => nodes,
@@ -347,7 +351,11 @@ end
         end
 
 
-        model = OperationalModel(Dict(CO2 => FixedProfile(100), NG => FixedProfile(100)), CO2)
+        model = OperationalModel(
+            Dict(CO2 => FixedProfile(100), NG => FixedProfile(100)),
+            Dict(CO2 => FixedProfile(0), NG => FixedProfile(0)),
+            CO2
+        )
         case = Dict(
                     :T => T,
                     :nodes => nodes,
@@ -654,7 +662,11 @@ end
             ]
         resources = [Power, aux, CO2]
 
-        model = OperationalModel(Dict(CO2 => FixedProfile(100)), CO2)
+        model = OperationalModel(
+            Dict(CO2 => FixedProfile(100)),
+            Dict(CO2 => FixedProfile(0)),
+            CO2
+        )
         case = Dict(
                     :T => T,
                     :nodes => nodes,
@@ -939,7 +951,11 @@ end
             ]
         resources = [NG, Power, CO2]
 
-        model = OperationalModel(Dict(CO2 => StrategicProfile(em_limit), NG => FixedProfile(0)), CO2)
+        model = OperationalModel(
+            Dict(CO2 => StrategicProfile(em_limit), NG => FixedProfile(0)),
+            Dict(CO2 => FixedProfile(0), NG => FixedProfile(0)),
+            CO2
+        )
         case = Dict(
                     :T => T,
                     :nodes => nodes,

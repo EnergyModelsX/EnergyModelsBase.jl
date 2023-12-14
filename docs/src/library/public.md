@@ -141,6 +141,14 @@ Functions for accessing `Resource` fields:
 co2_int
 ```
 
+Functions for accessing `EnergyModel` fields:
+
+```@docs
+emission_limit
+emission_price
+co2_instance
+```
+
 Functions for identifying `Node`s:
 
 ```@docs

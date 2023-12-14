@@ -71,6 +71,6 @@ export capacity, inputs, outputs, opex_var, opex_fixed, surplus_penalty, deficit
 export formulation
 
 # Export commonly used functions for extracting fields in `EnergyModel`
-export emission_limit, co2_instance
+export emission_limit, emission_price, co2_instance
 
 end # module

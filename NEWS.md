@@ -3,14 +3,15 @@
 Version 0.6.0 (2023-12-06)
 --------------------------
  * Switched fields `Input` and `Output` of `Availability` nodes from `Dict{Resource, Real}` to `Array{<:Resource}`. The former is still available as a constructor, while a new constructor is introduced which requries the input only once.
- * All fields in composite types are now lower case
- * Renamed `Network` to `NetworkNode`. `NetworkNode` can be considered to be replaced in a later iterations as it is not really needed
- * Added functions for extracting the fields of `Node`s, `Resource`s, and `EnergyModel`s to allow for extensions
- * Added export of functions that are frequently used in other packages
- * Moved the emissions to a `Data` type on which we can dispatch, depending on the chosen approach for capture and process emissions
- * Redesigned storage as parametric type to dispatch on the level balance
- * Included potential for different durations of operational periods
- * Included representative periods. These do only affect a `Storage` node as these are the only time dependent nodes
+ * All fields in composite types are now lower case.
+ * Renamed `Network` to `NetworkNode`. `NetworkNode` can be considered to be replaced in a later iterations as it is not really needed.
+ * Added functions for extracting the fields of `Node`s, `Resource`s, and `EnergyModel`s to allow for extensions.
+ * Added export of functions that are frequently used in other packages.
+ * Moved the emissions to a `Data` type on which we can dispatch, depending on the chosen approach for capture and process emissions.
+ * Redesigned storage as parametric type to dispatch on the level balance. This includes as well the introduction of a new variable.
+ * Included potential for different durations of operational periods.
+ * Included representative periods. These do only affect a `Storage` node as these are the only time dependent nodes.
+ * Added emission prices to `OperationalModel`.
 
 Version 0.5.2 (2023-11-06)
 --------------------------

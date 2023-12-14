@@ -260,12 +260,20 @@ function objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Declaration of the required subsets.
     𝒩ⁿᵒᵗ = nodes_not_av(𝒩)
+    𝒫ᵉᵐ  = filter(is_resource_emit, 𝒫)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+
+    opex = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
+        sum((m[:opex_var][n, t_inv] + m[:opex_fixed][n, t_inv]) for n ∈ 𝒩ⁿᵒᵗ)
+    )
+
+    emissions = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
+        sum(m[:emissions_strategic][t_inv, p] * emission_price(modeltype, p, t_inv) for p ∈ 𝒫ᵉᵐ)
+    )
 
     # Calculation of the objective function.
     @objective(m, Max,
-        -sum((m[:opex_var][n, t_inv] + m[:opex_fixed][n, t_inv]) * duration(t_inv)
-        for t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ)
+        -sum(opex[t_inv] + emissions[t_inv] * duration(t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ)
     )
 end
 

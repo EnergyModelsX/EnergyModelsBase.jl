@@ -134,6 +134,7 @@ function GenAvailability(
 
     return GenAvailability(id, collect(keys(input)), collect(keys(output)))
 end
+
 """
 Legacy constructor for a `RefSink` node with [process] emissions. This version will be
 discontinued in the near future and replaced with the new implementation of `data`.
@@ -156,4 +157,27 @@ function RefSink(
     em_data = EmissionsProcess(emissions)
 
     return RefSink(id, cap, penalty, input, [em_data])
+end
+
+
+"""
+Legacy constructor for an `OperationalModel` without emission prices. This version will be
+discontinued in the near future and replaced with the new implementation with an emission
+price.
+
+See the documentation for further information regarding the introduction of an emission
+price.
+"""
+function OperationalModel(
+    emission_limit::Dict{<:ResourceEmit, <:TimeProfile},
+    co2_instance::ResourceEmit,
+    )
+
+    @warn("this implementation of `OperationalModel` will be discontinued in the near \
+    future. See the documentation for the new implementation with the additional field:
+    `emission_price`")
+
+    emission_price = Dict(k => FixedProfile(0) for k ∈ keys(emission_limit))
+
+    return OperationalModel(emission_limit, emission_price, co2_instance)
 end
