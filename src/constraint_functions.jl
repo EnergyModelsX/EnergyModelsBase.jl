@@ -83,11 +83,11 @@ This function serves as fallback option if no other function is specified for a 
 """
 function constraints_flow_in(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
     # Declaration of the required subsets
-    𝒫ⁱⁿ  = input(n)
+    𝒫ⁱⁿ  = inputs(n)
 
     # Constraint for the individual input stream connections
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ⁱⁿ],
-        m[:flow_in][n, t, p] == m[:cap_use][n, t] * input(n, p)
+        m[:flow_in][n, t, p] == m[:cap_use][n, t] * inputs(n, p)
     )
 
 
@@ -102,11 +102,11 @@ This function serves as fallback option if no other function is specified for a 
 function constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
     # Declaration of the required subsets
     p_stor = storage_resource(n)
-    𝒫ᵃᵈᵈ   = res_not(input(n), p_stor)
+    𝒫ᵃᵈᵈ   = setdiff(inputs(n), [p_stor])
 
     # Constraint for additional required input
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵃᵈᵈ],
-        m[:flow_in][n, t, p] == m[:flow_in][n, t, p_stor] * input(n, p)
+        m[:flow_in][n, t, p] == m[:flow_in][n, t, p_stor] * inputs(n, p)
     )
 
     # Constraint for storage rate use
@@ -125,11 +125,11 @@ This function serves as fallback option if no other function is specified for a 
 """
 function constraints_flow_out(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
     # Declaration of the required subsets, excluding CO2, if specified
-    𝒫ᵒᵘᵗ = res_not(output(n), co2_instance(modeltype))
+    𝒫ᵒᵘᵗ = res_not(outputs(n), co2_instance(modeltype))
 
     # Constraint for the individual output stream connections
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵒᵘᵗ],
-        m[:flow_out][n, t, p] == m[:cap_use][n, t] * output(n, p)
+        m[:flow_out][n, t, p] == m[:cap_use][n, t] * outputs(n, p)
     )
 end
 
@@ -179,7 +179,7 @@ Function for creating the Δ constraint for the level of a reference storage nod
 function constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫) where {S<:ResourceEmit}
     # Declaration of the required subsets
     p_stor = storage_resource(n)
-    𝒫ᵉᵐ    = res_not(res_sub(𝒫, ResourceEmit), p_stor)
+    𝒫ᵉᵐ    = setdiff(res_sub(𝒫, ResourceEmit), [p_stor])
 
     # Constraint for the change in the level in a given operational period
     @constraint(m, [t ∈ 𝒯],
@@ -552,8 +552,8 @@ function constraints_opex_var(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
 
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         m[:opex_var][n, t_inv] ==
-            sum((m[:sink_surplus][n, t] * surplus(n, t) +
-                 m[:sink_deficit][n, t] * deficit(n, t)) *
+            sum((m[:sink_surplus][n, t] * surplus_penalty(n, t) +
+                 m[:sink_deficit][n, t] * deficit_penalty(n, t)) *
                 multiple(t_inv, t)
             for t ∈ t_inv)
     )

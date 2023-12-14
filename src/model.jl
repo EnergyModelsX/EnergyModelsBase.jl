@@ -62,8 +62,8 @@ Creation of different storage variables for `Storage` nodes `𝒩ˢᵗᵒʳ`. Th
 """
 function variables_capacity(m, 𝒩, 𝒯, modeltype::EnergyModel)
 
-    𝒩ⁿᵒᵗ = node_not_sub(𝒩, Union{Storage, Availability})
-    𝒩ˢᵗᵒʳ = node_sub(𝒩, Storage)
+    𝒩ⁿᵒᵗ = nodes_not_sub(𝒩, Union{Storage, Availability})
+    𝒩ˢᵗᵒʳ = filter(is_storage, 𝒩)
 
     @variable(m, cap_use[𝒩ⁿᵒᵗ, 𝒯] >= 0)
     @variable(m, cap_inst[𝒩ⁿᵒᵗ, 𝒯] >= 0)
@@ -87,11 +87,11 @@ each technological node `n ∈ 𝒩` and link `l ∈ ℒ` (`:link_in` and `:link
 """
 function variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 
-    𝒩ⁱⁿ  = nodes_input(𝒩)
-    𝒩ᵒᵘᵗ = nodes_output(𝒩)
+    𝒩ⁱⁿ  = filter(has_input, 𝒩)
+    𝒩ᵒᵘᵗ = filter(has_output, 𝒩)
 
-    @variable(m, flow_in[n_in ∈ 𝒩ⁱⁿ,    𝒯, input(n_in)] >= 0)
-    @variable(m, flow_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯, output(n_out)] >= 0)
+    @variable(m, flow_in[n_in ∈ 𝒩ⁱⁿ,    𝒯, inputs(n_in)] >= 0)
+    @variable(m, flow_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯, outputs(n_out)] >= 0)
 
     @variable(m, link_in[l ∈ ℒ,  𝒯, link_res(l)] >= 0)
     @variable(m, link_out[l ∈ ℒ, 𝒯, link_res(l)] >= 0)
@@ -109,8 +109,8 @@ These are differentied in:
 """
 function variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
-    𝒩ᵉᵐ = node_emissions(𝒩)
-    𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
+    𝒩ᵉᵐ = filter(has_emissions, 𝒩)
+    𝒫ᵉᵐ  = filter(is_resource_emit, 𝒫)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     @variable(m, emissions_node[𝒩ᵉᵐ, 𝒯, 𝒫ᵉᵐ] >= 0)
@@ -126,7 +126,7 @@ period `𝒯ᴵⁿᵛ ∈ 𝒯`. Variable OPEX can be non negative to account fo
 """
 function variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
-    𝒩ⁿᵒᵗ = node_not_av(𝒩)
+    𝒩ⁿᵒᵗ = nodes_not_av(𝒩)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     @variable(m, opex_var[𝒩ⁿᵒᵗ, 𝒯ᴵⁿᵛ])
@@ -213,14 +213,14 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
     for n ∈ 𝒩
         ℒᶠʳᵒᵐ, ℒᵗᵒ = link_sub(ℒ, n)
         # Constraint for output flowrate and input links.
-        if node_output(n)
-            @constraint(m, [t ∈ 𝒯, p ∈ output(n)],
-                m[:flow_out][n, t, p] == sum(m[:link_in][l, t, p] for l in ℒᶠʳᵒᵐ if p ∈ input(l.to)))
+        if has_output(n)
+            @constraint(m, [t ∈ 𝒯, p ∈ outputs(n)],
+                m[:flow_out][n, t, p] == sum(m[:link_in][l, t, p] for l in ℒᶠʳᵒᵐ if p ∈ inputs(l.to)))
         end
         # Constraint for input flowrate and output links.
-        if node_input(n)
-            @constraint(m, [t ∈ 𝒯, p ∈ input(n)],
-                m[:flow_in][n, t, p] == sum(m[:link_out][l, t, p] for l in ℒᵗᵒ if p ∈ output(l.from)))
+        if has_input(n)
+            @constraint(m, [t ∈ 𝒯, p ∈ inputs(n)],
+                m[:flow_in][n, t, p] == sum(m[:link_out][l, t, p] for l in ℒᵗᵒ if p ∈ outputs(l.from)))
         end
         # Call of function for individual node constraints.
         create_node(m, n, 𝒯, 𝒫, modeltype)
@@ -235,8 +235,8 @@ Create constraints for the emissions accounting for both operational and strateg
 """
 function constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
-    𝒩ᵉᵐ = node_emissions(𝒩)
-    𝒫ᵉᵐ  = res_sub(𝒫, ResourceEmit)
+    𝒩ᵉᵐ = filter(has_emissions, 𝒩)
+    𝒫ᵉᵐ  = filter(is_resource_emit, 𝒫)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Creation of the individual constraints.
@@ -259,7 +259,7 @@ Create the objective for the optimization problem for a given modeltype.
 function objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Declaration of the required subsets.
-    𝒩ⁿᵒᵗ = node_not_av(𝒩)
+    𝒩ⁿᵒᵗ = nodes_not_av(𝒩)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Calculation of the objective function.
