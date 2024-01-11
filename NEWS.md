@@ -1,5 +1,9 @@
 # Release notes
 
+Version 0.6.1 (2024-01-11)
+--------------------------
+ * Fix: add missing parenthesis in the objective function.
+
 Version 0.6.0 (2023-12-14)
 --------------------------
  * Switched fields `Input` and `Output` of `Availability` nodes from `Dict{Resource, Real}` to `Array{<:Resource}`. The former is still available as a constructor, while a new constructor is introduced which requries the input only once.

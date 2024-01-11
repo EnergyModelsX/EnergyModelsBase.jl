@@ -26,7 +26,8 @@ include("example_model.jl")
     @testset "General tests" begin
         # Check for the objective value
         # (-1500 compared to 0.5.x to include fixed OPEX)
-        @test objective_value(m) ≈ -44491.693
+        # (*2 compared to 0.6.0 due to change in strategic period duration)
+        @test objective_value(m) ≈ -88983.386
 
         # Check for the total number of variables
         # (-128 compared to 0.5.x as only defined for technologies with EmissionData)
