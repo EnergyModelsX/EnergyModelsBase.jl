@@ -55,7 +55,7 @@ function generate_data()
             ]
 
     # Creation of the time structure and global data
-    T = TwoLevel(4, 1, SimpleTimes(4, 2), op_per_strat=8)
+    T = TwoLevel(4, 2, SimpleTimes(4, 2), op_per_strat=8)
     model = OperationalModel(
                             Dict(
                                 CO2 => StrategicProfile([160, 140, 120, 100]),
