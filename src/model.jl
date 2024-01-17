@@ -169,10 +169,18 @@ function variables_nodes(m, 𝒩, 𝒯, modeltype::EnergyModel)
         try
             variables_node(m, 𝒩ˢᵘᵇ, 𝒯, modeltype)
         catch e
-            if !isa(e, ErrorException)
-                @error "Creating variables failed."
+            # Parts of the exception message we are looking for.
+            pre1 = "An object of name"
+            pre2 = "is already attached to this model."
+            if isa(e, ErrorException)
+                if occursin(pre1, e.msg) && occursin(pre2, e.msg)
+                    # 𝒩ˢᵘᵇ was already registered by a call to a supertype, so just continue.
+                    continue
+                end
             end
-            # 𝒩ˢᵘᵇ was already registered by a call to a supertype, so just continue.
+            # If we make it to this point, this means some other error occured. This should
+            # not be ignored.
+            throw(e)
         end
     end
 end
