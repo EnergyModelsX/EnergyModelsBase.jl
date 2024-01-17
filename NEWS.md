@@ -1,5 +1,10 @@
 # Release notes
 
+Version 0.6.3 (2024-01-17)
+--------------------------
+ * Changed name of `constraints_level`  to `constraints_level_sp` when the time input is given as a `StrategicPeriod` to improve understandability.
+ * Add `modeltype::EnergyModel` as an argument to the methods `constraints_level_sp` (see above) and `constraints_level_aux`.
+
 Version 0.6.2 (2024-01-17)
 --------------------------
  * When variables are created with the method `variables_nodes`, it will lead to an `ErrorException` when the method tries to create a variable that has already been created. This is ok, and this error should be ignored. This change specifies exactly what error should be ignored, to avoid that other types of errors are also ignored.
@@ -10,7 +15,7 @@ Version 0.6.1 (2024-01-11)
 
 Version 0.6.0 (2023-12-14)
 --------------------------
- * Switched fields `Input` and `Output` of `Availability` nodes from `Dict{Resource, Real}` to `Array{<:Resource}`. The former is still available as a constructor, while a new constructor is introduced which requries the input only once.
+ * Switched fields `Input` and `Output` of `Availability` nodes from `Dict{Resource, Real}` to `Array{<:Resource}`. The former is still available as a constructor, while a new constructor is introduced which requires the input only once.
  * All fields in composite types are now lower case.
  * Renamed `Network` to `NetworkNode`. `NetworkNode` can be considered to be replaced in a later iterations as it is not really needed.
  * Added functions for extracting the fields of `Node`s, `Resource`s, and `EnergyModel`s to allow for extensions.

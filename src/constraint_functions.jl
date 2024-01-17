@@ -145,22 +145,22 @@ function constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
     𝒯ᴵⁿᵛ   = strategic_periods(𝒯)
 
     # Call the auxiliary function for additional constraints on the level
-    constraints_level_aux(m, n, 𝒯, 𝒫)
+    constraints_level_aux(m, n, 𝒯, 𝒫, modeltype)
 
     # Mass/energy balance constraints for stored energy carrier.
     for t_inv ∈ 𝒯ᴵⁿᵛ
-        constraints_level(m, n, t_inv, 𝒫)
+        constraints_level_sp(m, n, t_inv, 𝒫, modeltype)
     end
 end
 
 
 """
-    constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫) where {S<:ResourceCarrier}
+    constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫, modeltype::EnergyModel) where {S<:ResourceCarrier}
 
 Function for creating the Δ constraint for the level of a reference storage node with a
 `ResourceCarrier` resource.
 """
-function constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫) where {S<:ResourceCarrier}
+function constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫, modeltype::EnergyModel) where {S<:ResourceCarrier}
     # Declaration of the required subsets
     p_stor = storage_resource(n)
 
@@ -171,12 +171,12 @@ function constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫) where {S<:Resour
 end
 
 """
-    constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫) where {S<:ResourceEmit}
+    constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫, modeltype::EnergyModel) where {S<:ResourceEmit}
 
 Function for creating the Δ constraint for the level of a reference storage node with a
 `ResourceEmit` resource.
 """
-function constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫) where {S<:ResourceEmit}
+function constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫, modeltype::EnergyModel) where {S<:ResourceEmit}
     # Declaration of the required subsets
     p_stor = storage_resource(n)
     𝒫ᵉᵐ    = setdiff(res_sub(𝒫, ResourceEmit), [p_stor])
@@ -196,21 +196,23 @@ function constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫) where {S<:Resour
 end
 
 """
-    constraints_level(
+    constraints_level_sp(
         m,
         n::RefStorage{S},
         t_inv::TS.StrategicPeriod{T, U},
-        𝒫
+        𝒫,
+        modeltype::EnergyModel
         ) where {S<:ResourceCarrier, T, U<:SimpleTimes}
 
 Function for creating the level constraint for a reference storage node with a
 `ResourceCarrier` resource when the operational TimeStructure is given as `SimpleTimes`.
 """
-function constraints_level(
+function constraints_level_sp(
     m,
     n::RefStorage{S},
     t_inv::TS.StrategicPeriod{T, U},
-    𝒫
+    𝒫,
+    modeltype::EnergyModel
     ) where {S<:ResourceCarrier, T, U<:SimpleTimes}
 
     # Mass/energy balance constraints for stored energy carrier.
@@ -232,22 +234,24 @@ function constraints_level(
 end
 
 """
-    constraints_level(
+    constraints_level_sp(
         m,
         n::RefStorage{S},
         t_inv::TS.StrategicPeriod{T, RepresentativePeriods{U, T, SimpleTimes{T}}},
-        𝒫
+        𝒫,
+        modeltype::EnergyModel
         ) where {S<:ResourceCarrier, T, U}
 
 Function for creating the level constraint for a reference storage node with a
 `ResourceCarrier` resource when the operational TimeStructure is given as
 `RepresentativePeriods`.
 """
-function constraints_level(
+function constraints_level_sp(
     m,
     n::RefStorage{S},
     t_inv::TS.StrategicPeriod{T, RepresentativePeriods{U, T, SimpleTimes{T}}},
-    𝒫
+    𝒫,
+    modeltype::EnergyModel
     ) where {S<:ResourceCarrier, T, U}
 
     # Declaration of the required subsets
@@ -329,21 +333,23 @@ function constraints_level(
 end
 
 """
-    constraints_level(
+    constraints_level_sp(
         m,
         n::RefStorage{S},
         t_inv::TS.StrategicPeriod{T, U},
-        𝒫
+        𝒫,
+        modeltype::EnergyModel
         ) where {S<:ResourceEmit, T, U<:SimpleTimes}
 
 Function for creating the level constraint for a reference storage node with a
 `ResourceEmit` resource when the operational TimeStructure is given as `SimpleTimes`.
 """
-function constraints_level(
+function constraints_level_sp(
     m,
     n::RefStorage{S},
     t_inv::TS.StrategicPeriod{T, U},
-    𝒫
+    𝒫,
+    modeltype::EnergyModel
     ) where {S<:ResourceEmit, T, U<:SimpleTimes}
 
     # Mass/energy balance constraints for stored energy carrier.
@@ -364,22 +370,24 @@ function constraints_level(
 end
 
 """
-    constraints_level(
+    constraints_level_sp(
         m,
         n::RefStorage{S},
         t_inv::TS.StrategicPeriod{T, RepresentativePeriods{U, T, SimpleTimes{T}}},
-        𝒫
+        𝒫,
+        modeltype::EnergyModel
         ) where {S<:ResourceEmit, T, U}
 
 Function for creating the level constraint for a reference storage node with a
 `ResourceEmit` resource when the operational TimeStructure is given as
 `RepresentativePeriods`.
 """
-function constraints_level(
+function constraints_level_sp(
     m,
     n::RefStorage{S},
     t_inv::TS.StrategicPeriod{T, RepresentativePeriods{U, T, SimpleTimes{T}}},
-    𝒫
+    𝒫,
+    modeltype::EnergyModel
     ) where {S<:ResourceEmit, T, U}
 
     # Declaration of the required subsets
