@@ -1,5 +1,9 @@
 # Release notes
 
+Version 0.6.4 (2024-01-18)
+--------------------------
+ * Minor modification to the `EmissionsData` allowing now also time dependent process emissions.
+
 Version 0.6.3 (2024-01-17)
 --------------------------
  * Changed name of `constraints_level`  to `constraints_level_sp` when the time input is given as a `StrategicPeriod` to improve understandability.

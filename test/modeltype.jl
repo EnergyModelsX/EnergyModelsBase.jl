@@ -60,7 +60,7 @@
         # Test that the emission cap is enforced in the case when it may lead to a deficit
 
         cap = 30.0      # Emission cap in a strategic period
-        em_data = EmissionsProcess(Dict(CO2 => 1))
+        em_data = EmissionsProcess(Dict(CO2 => 1.0))
         em_cap = FixedProfile(cap)
         em_price = FixedProfile(0)
 
@@ -87,7 +87,7 @@
 
         cap = 40.0      # Emission cap in a strategic period
         price = 1.0     # Emission price per emitted unit of CO2
-        em_data = EmissionsProcess(Dict(CO2 => 1))
+        em_data = EmissionsProcess(Dict(CO2 => 1.0))
         em_cap = FixedProfile(cap)
         em_price = FixedProfile(price)
 
