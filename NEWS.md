@@ -1,5 +1,9 @@
 # Release notes
 
+Version 0.6.2 (2024-01-17)
+--------------------------
+ * When variables are created with the method `variables_nodes`, it will lead to an `ErrorException` when the method tries to create a variable that has already been created. This is ok, and this error should be ignored. This change specifies exactly what error should be ignored, to avoid that other types of errors are also ignored.
+
 Version 0.6.1 (2024-01-11)
 --------------------------
  * Fix: add missing parenthesis in the objective function.
