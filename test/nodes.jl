@@ -238,7 +238,7 @@
 
         # Test that the emissions from a sink node with emissions are properly accounted for
         # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsProcess)
-        em_data = EmissionsProcess(Dict(CO2 => 10))
+        em_data = EmissionsProcess(Dict(CO2 => 10.0))
         snk_emit = RefSink(
             "sink_emit",
             FixedProfile(3),
@@ -249,13 +249,13 @@
         m, case, model = simple_graph(source, snk_emit)
         𝒯       = case[:T]
         # Test that the emissions are properly calculated
-        @test sum(value.(m[:cap_use][snk_emit, t]) * process_emissions(em_data, CO2) ≈
+        @test sum(value.(m[:cap_use][snk_emit, t]) * process_emissions(em_data, CO2, t) ≈
                 value.(m[:emissions_node][snk_emit, t, CO2]) for t ∈ 𝒯) ≈
                     length(𝒯) atol=TEST_ATOL
 
         # Test that the emissions from a source node with emissions are properly accounted for
         # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsProcess)
-        em_data = EmissionsProcess(Dict(CO2 => 10))
+        em_data = EmissionsProcess(Dict(CO2 => 10.0))
         src_emit = RefSource(
             "source_emit",
             FixedProfile(4),
@@ -269,7 +269,7 @@
         # Test that the emissions are properly calculated, although no input is present in
         # a `Source ndoe`
         # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsProcess)
-        @test sum(value.(m[:cap_use][src_emit, t]) * process_emissions(em_data, CO2) ≈
+        @test sum(value.(m[:cap_use][src_emit, t]) * process_emissions(em_data, CO2, t) ≈
                 value.(m[:emissions_node][src_emit, t, CO2]) for t ∈ 𝒯) ≈
                     length(𝒯) atol=TEST_ATOL
     end
@@ -459,11 +459,48 @@ end
         # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsProcess)
         @test sum(value.(m[:emissions_node][net, t, CO2]) ≈
                 sum(value.(m[:flow_in][net, t, p]) * EMB.co2_int(p) for p ∈ inputs(net)) +
-                value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2)
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2, t)
                 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯)
         @test sum(value.(m[:emissions_node][net, t, NG]) ≈
-                value.(m[:cap_use][net, t]) * process_emissions(em_data, NG)
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, NG, t)
+                for t ∈ 𝒯, atol=TEST_ATOL) ≈
+                    length(𝒯)
+    end
+
+    @testset "Emissions tests - with energy and process emissions as TimeProfile" begin
+        # Check that the emissions are properly calculated when both energy and process
+        # emissions are considered
+
+        # Run the model and extract the data
+        em_data = EmissionsProcess(Dict(CO2 => FixedProfile(0.1), NG => FixedProfile(0.5)))
+        m, case, model = simple_graph(data_em=em_data)
+        𝒩     = case[:nodes]
+        𝒩ᵉᵐ   = nodes_emissions(𝒩)
+        net   = 𝒩[2]
+
+        𝒯     = case[:T]
+        𝒯ᴵⁿᵛ  = strategic_periods(𝒯)
+
+        𝒫   = case[:products]
+        𝒫ᵉᵐ = EMB.res_not(EMB.res_em(𝒫), CO2)
+
+        # Check that there is production
+        @test sum(value.(m[:cap_use][net, t]) > 0 for t ∈ 𝒯) ≈ length(𝒯) atol=TEST_ATOL
+
+        # Check that the # of created variables correspond to the # of nodes with emissions
+        # - variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+        @test size(m[:emissions_node])[1] == 2
+
+        # Check that the total and strategic emissions are correctly calculated
+        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsProcess)
+        @test sum(value.(m[:emissions_node][net, t, CO2]) ≈
+                sum(value.(m[:flow_in][net, t, p]) * EMB.co2_int(p) for p ∈ inputs(net)) +
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2, t)
+                for t ∈ 𝒯, atol=TEST_ATOL) ≈
+                    length(𝒯)
+        @test sum(value.(m[:emissions_node][net, t, NG]) ≈
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, NG, t)
                 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯)
     end
@@ -497,11 +534,11 @@ end
         @test sum(value.(m[:emissions_node][net, t, CO2]) ≈
                 sum(value.(m[:flow_in][net, t, p]) * EMB.co2_int(p) for p ∈ inputs(net)) *
                 (1 - EMB.co2_capture(em_data)) +
-                value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2)
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2, t)
                 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯) atol=TEST_ATOL
         @test sum(value.(m[:emissions_node][net, t, NG]) ≈
-                value.(m[:cap_use][net, t]) * process_emissions(em_data, NG)
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, NG, t)
                 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯) atol=TEST_ATOL
 
@@ -541,19 +578,19 @@ end
         # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
         @test sum(value.(m[:emissions_node][net, t, CO2]) ≈
                 sum(value.(m[:flow_in][net, t, p]) * EMB.co2_int(p) for p ∈ inputs(net)) +
-                value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2) *
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2, t) *
                 (1 - EMB.co2_capture(em_data))
                 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯) atol=TEST_ATOL
         @test sum(value.(m[:emissions_node][net, t, NG]) ≈
-                value.(m[:cap_use][net, t]) * process_emissions(em_data, NG)
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, NG, t)
                 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯) atol=TEST_ATOL
 
         # Test that the CO2 capture is calculated correctly
         # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
         @test sum(value.(m[:flow_out][net, t, CO2]) ≈
-                value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2) *
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2, t) *
                 EMB.co2_capture(em_data) for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯) atol=TEST_ATOL
     end
@@ -586,12 +623,12 @@ end
         # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
         @test sum(value.(m[:emissions_node][net, t, CO2]) ≈
                 (sum(value.(m[:flow_in][net, t, p]) * EMB.co2_int(p) for p ∈ inputs(net)) +
-                value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2)) *
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2, t)) *
                 (1 - EMB.co2_capture(em_data))
                 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯) atol=TEST_ATOL
         @test sum(value.(m[:emissions_node][net, t, NG]) ≈
-                value.(m[:cap_use][net, t]) * process_emissions(em_data, NG)
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, NG, t)
                 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯) atol=TEST_ATOL
 
@@ -599,7 +636,7 @@ end
         # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
         @test sum(value.(m[:flow_out][net, t, CO2]) ≈
                 (sum(value.(m[:flow_in][net, t, p]) * EMB.co2_int(p) for p ∈ inputs(net)) +
-                value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2)) *
+                value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2, t)) *
                 EMB.co2_capture(em_data) for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯) atol=TEST_ATOL
     end
