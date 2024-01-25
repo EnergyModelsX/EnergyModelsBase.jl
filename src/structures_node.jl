@@ -20,9 +20,8 @@ abstract type Availability <: NetworkNode end
 - **`cap::TimeProfile`** is the installed capacity.\n
 - **`opex_var::TimeProfile`** is the variational operational costs per energy unit produced.\n
 - **`opex_fixed::TimeProfile`** is the fixed operational costs.\n
-- **`output::Dict{Resource, Real}`** are the generated `Resource`s with conversion value `Real`..\n
-- **`data::Array{Data}`** is the additional data (e.g. for investments).\n
-- **`emissions::Dict{ResourceEmit, Real}`**: emissions per energy unit produced.
+- **`output::Dict{Resource, Real}`** are the generated `Resource`s with conversion value `Real`.\n
+- **`data::Array{Data}`** is the additional data (e.g. for investments).
 
 """
 struct RefSource <: Source
@@ -53,7 +52,6 @@ end
 - **`input::Dict{Resource, Real}`** are the input `Resource`s with conversion value `Real`.\n
 - **`output::Dict{Resource, Real}`** are the generated `Resource`s with conversion value `Real`.\n
 - **`data::Array{Data}`** is the additional data (e.g. for investments).
-
 """
 struct RefNetworkNode <: NetworkNode
     id
@@ -69,11 +67,12 @@ end
 
 # Fields
 - **`id`** is the name/identifier of the node.\n
-- **`inputs::Array{<:Resource}`** are the input `Resource`s with conversion value `Real`.
-The latter are not relevant but included for consistency with other formulations.\n
-- **`output::Array{<:Resource}`** are the generated `Resource`s with conversion value `Real`.
-The latter are not relevant but included for consistency with other formulations.\n
+- **`inputs::Array{Resource}`** are the input `Resource`s.\n
+- **`output::Array{Resource}`** are the output `Resource`s.\n
 
+A constructor is provided so that only a single array can be provided with the fields:
+- **`id`** is the name/identifier of the node.\n
+- **`𝒫::Array{Resource}`** are the `Resource`s.\n
 """
 struct GenAvailability <: Availability
     id
@@ -95,10 +94,9 @@ It is designed as a composite type to automatically distinguish between these tw
 - **`opex_fixed::TimeProfile`** is the fixed operational costs.\n
 - **`stor_res::Resource`** is the stored `Resource`.\n
 - **`input::Dict{Resource, Real}`** are the input `Resource`s with conversion value `Real`.
-- **`output::Dict{Resource, Real}`** are the generated `Resource`s with conversion value `Real`.
+- **`output::Dict{Resource, Real}`** are the generated `Resource`s with conversion value `Real`. \
 Only relevant for linking and the stored `Resource`.\n
 - **`data::Array{Data}`** is the additional data (e.g. for investments).
-
 """
 struct RefStorage{T} <: Storage
     id
@@ -115,10 +113,11 @@ end
 """ A reference `Sink` node.
 
 This node corresponds to a demand given by the field `cap`.
+
 # Fields
 - **`id`** is the name/identifier of the node.\n
 - **`cap::TimeProfile`** is the Demand.\n
-- **`penalty::Dict{Any, TimeProfile}`** are penalties for surplus or deficits.
+- **`penalty::Dict{Any, TimeProfile}`** are penalties for surplus or deficits. \
 Requires the fields `:surplus` and `:deficit`.\n
 - **`input::Dict{Resource, Real}`** are the input `Resource`s with conversion value `Real`.\n
 - **`data::Array{Data}`** is the additional data (e.g. for investments).

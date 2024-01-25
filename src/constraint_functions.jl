@@ -205,7 +205,7 @@ end
         ) where {S<:ResourceCarrier, T, U<:SimpleTimes}
 
 Function for creating the level constraint for a reference storage node with a
-`ResourceCarrier` resource when the operational TimeStructure is given as `SimpleTimes`.
+`ResourceCarrier` resource when the operational `TimeStructure` is given as `SimpleTimes`.
 """
 function constraints_level_sp(
     m,
@@ -243,7 +243,7 @@ end
         ) where {S<:ResourceCarrier, T, U}
 
 Function for creating the level constraint for a reference storage node with a
-`ResourceCarrier` resource when the operational TimeStructure is given as
+`ResourceCarrier` resource when the operational `TimeStructure` is given as
 `RepresentativePeriods`.
 """
 function constraints_level_sp(

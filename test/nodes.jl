@@ -753,7 +753,7 @@ end
 
 
         # Test that the Δ in the storage level is correctly calculated
-        # - constraints_level_aux(m, n::RefStorage{T}, 𝒯) where {S<:ResourceCarrier}
+        # - constraints_level_aux(m, n::RefStorage{T}, 𝒯, modeltype::EnergyModel) where {S<:ResourceCarrier}
         @test sum(value.(value.(m[:stor_level_Δ_op][stor, t])) ≈
                 value.(m[:flow_in][stor, t, Power]) - value.(m[:flow_out][stor, t, Power])
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
@@ -788,7 +788,7 @@ end
 
         # Test that the input flow is equal to the output flow in the standard scenario as
         # storage does not pay off
-        # - constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫) where {S<:ResourceCarrier}
+        # - constraints_level_aux(m, n::RefStorage{T}, 𝒯, 𝒫, modeltype::EnergyModel) where {T<:ResourceCarrier}
         @test sum(value.(m[:stor_level_Δ_op][stor, t]) ≈ 0 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                 length(𝒯) atol=TEST_ATOL
 
@@ -821,8 +821,14 @@ end
         # Run the general tests
         general_tests(m, case, model);
 
-        # All the tests following er for the function
-        # - constraints_level(m, n::RefStorage{T}, 𝒯, 𝒫, modeltype::EnergyModel) where {T<:ResourceCarrier}
+        # All the tests following are for the function
+        # - constraints_level_sp(
+        #       m,
+        #       n::RefStorage{S},
+        #       t_inv::TS.StrategicPeriod{T, U},
+        #       𝒫,
+        #       modeltype::EnergyModel
+        #       ) where {S<:ResourceCarrier, T, U<:SimpleTimes}
 
         # Test that the level balance is correct for standard periods (6 times)
         @test sum(sum(value.(m[:stor_level][stor, t]) ≈
@@ -868,7 +874,13 @@ end
         general_tests(m, case, model);
 
         # All the tests following er for the function
-        # - constraints_level(m, n::RefStorage{T}, 𝒯, 𝒫, modeltype::EnergyModel) where {T<:ResourceCarrier}
+        # - constraints_level_sp(
+        #       m,
+        #       n::RefStorage{S},
+        #       t_inv::TS.StrategicPeriod{T, RepresentativePeriods{U, T, SimpleTimes{T}}},
+        #       𝒫,
+        #       modeltype::EnergyModel
+        #       ) where {S<:ResourceCarrier, T, U}
         for t_inv ∈ 𝒯ᴵⁿᵛ
             𝒯ʳᵖ = repr_periods(t_inv)
             for (t_rp_prev, t_rp) ∈ withprev(𝒯ʳᵖ), (t_prev, t) ∈ withprev(t_rp)
@@ -1031,14 +1043,14 @@ end
                         length(𝒯) atol=TEST_ATOL
 
         # Test that the Δ in the storage level is correctly calculated
-        # - constraints_level_aux(m, n::RefStorage{T}, 𝒯) where {S<:ResourceEmit}
+        # - constraints_level_aux(m, n::RefStorage{T}, 𝒯, modeltype::EnergyModel) where {S<:ResourceEmit}
         @test sum(value.(value.(m[:stor_level_Δ_op][stor, t])) ≈
                 value.(m[:flow_in][stor, t, CO2]) - value.(m[:emissions_node][stor, t, CO2])
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
 
         # Test that the Δ in the storage level is larger than 0
-        # - constraints_level_aux(m, n::RefStorage{T}, 𝒯) where {S<:ResourceEmit}
+        # - constraints_level_aux(m, n::RefStorage{T}, 𝒯, modeltype::EnergyModel) where {S<:ResourceEmit}
         @test sum(value.(value.(m[:stor_level_Δ_op][stor, t])) ≥ -TEST_ATOL
                 for t ∈ 𝒯) ≈
                     length(𝒯) atol=TEST_ATOL
@@ -1048,7 +1060,7 @@ end
     @testset "SimpleTimes without storage" begin
         # This test set is related to the approach of emissions in the storage node.
         # In practice, a RefStorage{<:ResourceEmit} is also designed to act as an emission source
-        # This is currently not well implemented, but will be adjusted in a later stage
+        # This is currently not well implemented, but will be adjusted in a later stage,
 
         # Run the model and extract the data
         m, case, model = simple_graph()
@@ -1074,7 +1086,7 @@ end
                         length(𝒯) atol=TEST_ATOL
 
         # Test that the input flow is equal to the emissions as the limit allows it
-        # - constraints_level(m, n::RefStorage{T}, 𝒯, 𝒫, modeltype::EnergyModel) where {T<:ResourceEmit}
+        # - constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫, modeltype::EnergyModel) where {S<:ResourceEmit}
         @test sum(value.(m[:flow_in][stor, t, CO2]) ≈ value.(m[:emissions_node][stor, t, CO2])
                 for t ∈ 𝒯, atol=TEST_ATOL) ≈
                     length(𝒯) atol=TEST_ATOL
@@ -1117,7 +1129,13 @@ end
                 length(𝒯ᴵⁿᵛ) atol=TEST_ATOL
 
         # All the tests following er for the function
-        # - constraints_level(m, n::RefStorage{T}, 𝒯, 𝒫, modeltype::EnergyModel) where {T<:ResourceEmit}
+        # - constraints_level_sp(
+        #       m,
+        #       n::RefStorage{S},
+        #       t_inv::TS.StrategicPeriod{T, U},
+        #       𝒫,
+        #       modeltype::EnergyModel
+        #       ) where {S<:ResourceCarrier, T, U<:SimpleTimes}
 
         # Test that the level balance is correct for standard periods (6 times)
         @test sum(sum(value.(m[:stor_level][stor, t]) ≈
@@ -1157,7 +1175,13 @@ end
         general_tests(m, case, model);
 
         # All the tests following er for the function
-        # - constraints_level(m, n::RefStorage{T}, 𝒯, 𝒫, modeltype::EnergyModel) where {T<:ResourceEmit}
+        # - constraints_level_sp(
+        #       m,
+        #       n::RefStorage{S},
+        #       t_inv::TS.StrategicPeriod{T, RepresentativePeriods{U, T, SimpleTimes{T}}},
+        #       𝒫,
+        #       modeltype::EnergyModel
+        #       ) where {S<:ResourceCarrier, T, U}
         for t_inv ∈ 𝒯ᴵⁿᵛ
             𝒯ʳᵖ = repr_periods(t_inv)
             for (t_rp_prev, t_rp) ∈ withprev(𝒯ʳᵖ), (t_prev, t) ∈ withprev(t_rp)

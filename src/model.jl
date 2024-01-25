@@ -100,12 +100,14 @@ end
 """
     variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
-Declaration of emission variables per technical node `n ∈ 𝒩` and emission resource `𝒫ᵉᵐ ∈ 𝒫`.
-These are differentied in:
+Declaration of emission variables per technology node with emissions `n ∈ 𝒩ᵉᵐ` and emission
+resource `𝒫ᵉᵐ ∈ 𝒫`.
+
+The emission variables are differentiated in:
   * `:emissions_node` - emissions of a node in an operational period,
   * `:emissions_total` - total emissions in an operational period, and
-  * `:emissions_strategic` - total strategic emissions, constrained to an upper limit based on
-  `modeltype.Emission_limit`.
+  * `:emissions_strategic` - total strategic emissions, constrained to an upper limit based\
+   on the field `emission_limit` of the `EnergyModel`.
 """
 function variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
@@ -115,7 +117,8 @@ function variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
     @variable(m, emissions_node[𝒩ᵉᵐ, 𝒯, 𝒫ᵉᵐ] >= 0)
     @variable(m, emissions_total[𝒯, 𝒫ᵉᵐ] >= 0)
-    @variable(m, emissions_strategic[t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ] <= emission_limit(modeltype, p, t_inv))
+    @variable(m, emissions_strategic[t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ] <=
+                emission_limit(modeltype, p, t_inv))
 end
 
 """
@@ -150,8 +153,7 @@ Loop through all node types and create variables specific to each type. This is 
 calling the method [`variables_node`](@ref) on all nodes of each type.
 
 The node type representing the widest cathegory will be called first. That is,
-`variables_node` will be called on a `Node`` before it is called and `NetworkNode`-nodes.
-be called before
+`variables_node` will be called on a `Node` before it is called on `NetworkNode`-nodes.
 """
 function variables_nodes(m, 𝒩, 𝒯, modeltype::EnergyModel)
     # Vector of the unique node types in 𝒩.

@@ -16,8 +16,8 @@ A direct link between two nodes.
 - **`id`** is the name/identifier of the link.\n
 - **`from::Node`** is node from which there is flow into the link.\n
 - **`to::Node`** is node to which there is flow out of the link.\n
-- **`formulation::Formulation`** is the used formulation of links. If not specified,
-a `Linear` link is assumed\n
+- **`formulation::Formulation`** is the used formulation of links. If not specified, \
+a `Linear` link is assumed.\n
 
 """
 struct Direct <: Link
@@ -32,7 +32,7 @@ Direct(id, from::Node, to::Node) = Direct(id, from, to, Linear())
 """
     link_sub(ℒ, n::Node)
 
-Return connected links for a given node  `::Array{Link}`.
+Return connected links for a given node `n`.
 """
 function link_sub(ℒ, n::Node)
     return [ℒ[findall(x -> x.from == n, ℒ)],
@@ -42,7 +42,7 @@ end
 """
     link_res(l::Link)
 
-Return the resources transported for a given link l.
+Return the resources transported for a given link `l`.
 """
 link_res(l::Link) = intersect(inputs(l.to), outputs(l.from))
 
