@@ -12,8 +12,8 @@ logs = []
 """
     assert_or_log(ex, msg)
 
-Macro that extends the behaviour of the @assert macro. The switch ASSERTS_AS_LOG,
-controls if the macro should act as a logger or a normal @assert. This macro is
+Macro that extends the behaviour of the `@assert` macro. The switch `ASSERTS_AS_LOG`,
+controls if the macro should act as a logger or a normal `@assert`. This macro is
 designed to be used to check whether the data provided is consistent.
 """
 macro assert_or_log(ex, msg)
@@ -34,7 +34,7 @@ end
 """
     check_data(case, modeltype)
 
-Check if the case data is consistent. Use the @assert_or_log macro when testing.
+Check if the case data is consistent. Use the `@assert_or_log` macro when testing.
 Currently only checking node data.
 """
 function check_data(case, modeltype::EnergyModel)
@@ -210,7 +210,7 @@ end
 """
     check_node(n, 𝒯, modeltype::EnergyModel)
 
-Check that the fields of a `Node n` corresponds to required structure.
+Check that the fields of a `Node` corresponds to required structure.
 """
 function check_node(n::Node, 𝒯, modeltype::EnergyModel)
 end

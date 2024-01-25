@@ -29,7 +29,10 @@ makedocs(
         "Manual" => Any[
             "Quick Start" => "manual/quick-start.md",
             "Philosophy" => "manual/philosophy.md",
-            "Nodes" => "manual/nodes.md",
+            # "Nodes" => "manual/nodes.md",
+            "Optimization variables" => "manual/optimization-variables.md",
+            "Constraint functions" => "manual/constraint-functions.md",
+            "Data functions" => "manual/data-functions.md",
             "Example" => "manual/simple-example.md",
             "Release notes" => "manual/NEWS.md",
         ],
@@ -40,9 +43,6 @@ makedocs(
         "Library" => Any[
             "Public" => "library/public.md",
             "Internals" => Any[
-                "Optimization variables" => "library/internals/optimization-variables.md",
-                "Constraint functions" => "library/internals/constraint-functions.md",
-                "Data functions" => "library/internals/data-functions.md",
                 "Reference" => "library/internals/reference.md",
             ]
         ]

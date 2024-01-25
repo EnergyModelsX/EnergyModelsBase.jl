@@ -6,17 +6,39 @@ One key aim in the development of `EnergyModelsBase` was to create an energy sys
 
 1. offers maximum flexibility with respect to the description of technologies,
 2. is simple to extend with additional features without requiring changes in the core structure, and
-3. is built simple so that the thought process for understanding the model is straight forward.
+3. is designed in a way such that the thought process for understanding the model is straight forward.
 
-Julia as a programming language offers the  flexibility required in points 1 and 2 through the concept of multiple dispatch.
-Point 3 is achieved through a one direction flow in function calls, that is that we limit the number of required files and function calls for the individual technology constraint creations, and meaningfull names to the individual functions. 
+Julia as a programming language offers the flexibility required in points 1 and 2 through the concept of multiple dispatch.
+The philosophy hence focueses on only creating variables and constraintes that are used, instead of creating all potential constraints and variables and constrain a large fraction of these variables to a value of 0.
+In that respect, `EnergyModelsBase` moves away from a parameter driven flexibility to a type driven flexibility.
+Point 3 is achieved through a one direction flow in function calls, that is that we limit the number of required files and function calls for the individual technology constraint creations, and meaningful names of the individual functions.
 
-## Description of technologies
+The general concept of the model in `EnergyModelsBase` is based on a graph structure.
+The technologies within the modeled energy system are represented by `Node`s.
+These `Node`s correspond to, *eg*, a hydropower plant, a gas turbine, or the Haber-Bosch process.
+The individual nodes are then connected *via* `Link`s/edges representing the transport of mass or energy between the technologies.
+`EnergyModelsBase` is represented using directed graphs, that is, flow is only possible in one direction through the links.
+The included `Resource`s 𝒫 are user defined.
+These resources have a unit associated with them, although this is not modelled explicitly in the current implementation.
+These units define the units/values that have to be applied when converting resources.
+
+`EnergyModelsBase` does not include all necessary constraints for individual technologies.
+Instead, it is seen as a lightweight core structure that can be extended by the user through the development of specific `Node` functions.
+Potential additional `Node`s can focus on, *e.g.*:
+
+1. Piecewise linear efficiencies of technologies,
+2. Inclusion of ramping constraints for technologies for which these are relevant,
+3. Minimmum capacity usage based on disjunctions, or
+4. Improved description of start-up and shut-down energy and time demands through disjunctions
+
+to name some of potential new constraints.
+
+## [Description of technologies](@id sec_des_nodes)
 
 The package utilizes different `type`s that represent components in an energy system.
 These types can be summarized as:
 
-1. [`Source`](@ref) types have only an ouput to the system. Practical examples are solar PV, wind power, or available resources.
+1. [`Source`](@ref) types have only an ouput to the system. Practical examples are solar PV, wind power, or available resources at a given price.
 2. [`NetworkNode`](@ref) types have both an input and an ouput. Practical examples are next to all technologies in an energy system, like *e.g.*, a natural gas reforming plant with CCS (input: natural gas and electricity, output: hydrogen and CO₂) or an electrolyser (input: electricity, output: hydrogen).
 3. [`Sink`](@ref) types have only an input from the system. They correspond in general to an energy/mass demand.
 
@@ -35,9 +57,13 @@ You can find a description on how you can create a new node on the page *[Creati
 There are in general four ways to extend the model:
 
 1. Introducing new technology descriptions as described in *[Creating a new node](@ref create_new_node)*,
-2. Call of the `create_model` function with subsequent functionc alls,
+2. Call of the `create_model` function with subsequent function calls for adding additional constraints,
 3. Dispatching on the type `EnergyModel`, and
-4. Use the field `Data` in the individual composite types.
+4. Use the field `data` in the individual composite types.
+
+Introducing new technology descriptions is the basis for extending the model.
+This approach allows for a different mathematical description compared to the included reference nodes.
+As an example, it is possible to introduce a new demand node that provides a profit for satisfying a demand combined with having no penalty if the demand is not satisfied.
 
 Calling `create_model` within a new function allows the introduction of entirely new functions.
 This approach is chosen in [`EnergyModelsGeography.jl`](https://clean_export.pages.sintef.no/energymodelsgeography.jl/) although it still uses dispatch on individual technology nodes.
@@ -47,9 +73,12 @@ This is done in the package [`EnergyModelsInvestments.jl`](https://clean_export.
 It can be problematic when one also wants to use investments.
 In addition, care has to be taken with respect to method amibiguity when dispatching on the type `EnergyModel`.
 
-The last approach is already used in the package [`EnergyModelsInvestments.jl`](https://clean_export.pages.sintef.no/energymodelsinvestments.jl/) through the introduction of the `abstract type` `InvestmentData`.
-The `Array{Data}` field allows us flexibility with respect to providing additional data to the existing nodes.
+The `Array{Data}` field provides us with flexibility with respect to providing additional data to the existing nodes.
 It is implemented in `EnergyModelsBase.jl` for including emissions (both process and energy usage related).
-In that case, it allows for flexibility through either saying process (or energy related emissions) are present, or not.
-In addition, it allows for capturing the CO₂ from either the individual sources, or alternatively from both sources or not at all.
-The individual data types are explained in the Section [Emissions data](@ref sec_lib_public_emdata) in the public library as well as on [Data functions](@ref data_functions).
+In that case, it allows for flexibility through either saying whether process (or energy related emissions) are present, or not.
+In addition, it allows for capturing the CO₂ from either the individual CO₂ sources (process and energy usage related), alternatively from both sources, or not at all.
+The individual data types are explained in the Section *[Emissions data](@ref sec_lib_public_emdata)* in the public library as well as on *[Data functions](@ref data_functions)*.
+In addition, it is already used in the package [`EnergyModelsInvestments.jl`](https://clean_export.pages.sintef.no/energymodelsinvestments.jl/) through the introduction of the `abstract type` `InvestmentData` as subtype of `Data`.
+The introduction of `InvestmentData` allows providing additional parameters to individual technologies.
+However, the implementation in `EnergyModelsInvestments.jl` does not utilize the extension through the *[Data functions](@ref data_functions)*.
+Instead, as outlined above, it dispatches on the type `EnergyModel`.

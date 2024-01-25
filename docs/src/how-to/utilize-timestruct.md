@@ -1,7 +1,7 @@
 # [Utilize `TimeStruct.jl`](@id utilize_timestruct)
 
-`EnergyModelsBase` uses for the description of time the package `TimeStruct.jl`.
-`TimeStruct.jl` offers a large variety of different options that can appear to be overwhelming, when first exposed to them.
+`EnergyModelsBase` uses for the description of time the package [`TimeStruct.jl`](https://sintefore.github.io/TimeStruct.jl/stable/).
+[`TimeStruct.jl`](https://sintefore.github.io/TimeStruct.jl/stable/) offers a large variety of different options that can appear to be overwhelming, when first exposed to them.
 Hence, it is important to highlight how it works and which parameters you would want to analyse.
 
 ## Structures for time description
@@ -25,11 +25,11 @@ operational_periods = SimpleTimes(op_number, op_duration)
 
 In above's example, we assume that we have in total 24 operational periods which have the same duration each, _i.e._, a duration of 1.
 The unit in itself is not important, but it can be either if you consider that a duration of 1 corresponds to one hour.
-In this case, the operational periods would correspond to full day.
+In this case, the operational periods would correspond to a full day.
 
-!!! note 
+!!! note
 
-    All operational periods are continuous. This implies that one is not allowed to have jumps in the representative periods. This affects all "dynamic" constraints, that is constraints where the current operational period is dependent on the previous operational period. In `EnergyModesBase.jl`, this is only the case for the level balance in `RefStorage`. Representative periods allow for jumps between operational periods, as outlined below.
+    All operational periods are continuous. This implies that one is not allowed to have jumps in the representative periods. This affects all "dynamic" constraints, that is, constraints where the current operational period is dependent on the previous operational period. In `EnergyModesBase.jl`, this is only the case for the level balance in `RefStorage`. Representative periods allow for jumps between operational periods, as outlined below.
 
 Note that `TimeStruct.jl` does not require that each operational period has the same length.
 Consider the following example:
@@ -70,11 +70,11 @@ and a constructor will automatically deduce that there have to be 11 operational
 It is used in all subsequent structures.
 When iterating over a `TimeStructure`, _e.g._, as `t ∈ operational_periods`, you obtain the single operational periods that are required for solving the optimal dispatch.
 
-!!! warning 
+!!! warning
 
-    Energy conversion, production, or emissions of a node as well as all flows are always defined for a duration of length 1 in operational periods. You have to be careful when considering the output from the model. The same holds for capacities provided in the input file. 
+    Energy conversion, production, or emissions of a node as well as all flows are always defined for a duration of length 1 in operational periods. You have to be careful when considering the output from the model. The same holds for capacities provided in the input file.
 
-### Representative periods
+### [Representative periods](@id ts_rp)
 
 Representative periods are introduced through the structure `RepresentativePeriods`.
 Representative periods correspond to a repetition of different periods.
@@ -139,7 +139,7 @@ In this case, we have to specifiy `TwoLevel` slightly differently:
 Note, that we used in this example the optional keyword argument `op_per_strat` which links the duration 1 of an operational period to the duration 1 of a strategic period.
 If we would like to have a duration of 1 in an operational period corresponding to an hour and a duration of 1 in a strategic period to a year, we need to use the value `op_per_strat = 365*24 = 8760`.
 
-!!! warning 
+!!! warning
 
     It is important to be certain which value one should use for `op_per_strat`. When using the wrong value, one obtains wrong operational results that may affect the analysis.
 
@@ -158,7 +158,7 @@ When iterating through a strategic period, you obtain the individual operational
 
 ```julia
 for t_inv ∈ 𝒯ᴵⁿᵛ, t ∈ t_inv end
-# is equivalent to 
+# is equivalent to
 for t ∈ 𝒯 end
 ```
 
@@ -166,7 +166,7 @@ The advantage of approach 1 is that you can also use the indices of the strategi
 However, it may make the code look more complicated, when this is not required.
 It does not have any implication on the model building speed and it is up to the user, which approach to choose.
 
-!!! warning 
+!!! warning
 
     Fixed operational expenditures and emission limits provided to a model have to be provided for a duration of 1 in the strategic period.
 
@@ -226,7 +226,7 @@ The example has a progressively increasing value going from 1 in the first hour 
 
 `OperationalProfile` is normally used for varying demand or profiles for renewable power generation.
 
-!!! warning 
+!!! warning
 
     It is possible to have an `OperationalProfile` that is shorter or longer than the profile in the time structure.
     If the profile is shorter, then the last value is repeated.
@@ -261,7 +261,7 @@ demand = RepresentativeProfile([profile_winter, profile_summer])
 This implies that we can use both `OperationalProfile` and `FixedProfile` combined.
 The only requirement is that if one is using Integer input, then the other also has to use Integer input.
 
-!!! warning 
+!!! warning
 
     It is possible to use `RepresentativeProfile` without `RepresentativePeriods`.
     In this case, the first provided profile is used.
