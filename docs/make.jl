@@ -5,21 +5,19 @@ using TimeStruct
 const EMB = EnergyModelsBase
 
 # Copy the NEWS.md file
-news = "src/manual/NEWS.md"
+news = "docs/src/manual/NEWS.md"
 if isfile(news)
     rm(news)
 end
-cp("../NEWS.md", "src/manual/NEWS.md")
+cp("NEWS.md", news)
 
 
 DocMeta.setdocmeta!(EnergyModelsBase, :DocTestSetup, :(using EnergyModelsBase); recursive=true)
 
 makedocs(
     sitename = "EnergyModelsBase.jl",
-    repo="https://gitlab.sintef.no/clean_export/energymodelsbase.jl/blob/{commit}{path}#{line}",
     format = Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://clean_export.pages.sintef.no/energymodelsbase.jl/",
         edit_link="main",
         assets=String[],
     ),
@@ -29,7 +27,6 @@ makedocs(
         "Manual" => Any[
             "Quick Start" => "manual/quick-start.md",
             "Philosophy" => "manual/philosophy.md",
-            # "Nodes" => "manual/nodes.md",
             "Optimization variables" => "manual/optimization-variables.md",
             "Constraint functions" => "manual/constraint-functions.md",
             "Data functions" => "manual/data-functions.md",
@@ -49,9 +46,6 @@ makedocs(
     ]
 )
 
-# Documenter can also automatically deploy documentation to gh-pages.
-# See "Hosting Documentation" and deploydocs() in the Documenter manual
-# for more information.
-#=deploydocs(
-    repo = "<repository url>"
-)=#
+deploydocs(;
+    repo = "github.com/EnergyModelsX/EnergyModelsBase.jl.git",
+)
