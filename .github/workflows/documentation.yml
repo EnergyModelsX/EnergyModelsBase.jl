@@ -18,7 +18,7 @@ jobs:
         run: |
           using Pkg
           Pkg.add(url="https://github.com/sintefore/TimeStruct.jl")
-          Pkg.develop(path="..")
+          Pkg.develop(PackageSpec(path=pwd()))
           Pkg.instantiate()
       - name: Build and deploy
         env:
