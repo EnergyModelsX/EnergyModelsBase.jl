@@ -42,7 +42,7 @@ Version 0.5.1 (2023-06-16)
 Version 0.5.0 (2023-06-01)
 --------------------------
 ### Switch to TimeStruct.jl
- * Switched the time structure representation to [TimeStruct.jl](https://gitlab.sintef.no/julia-one-sintef/timestruct.jl)
+ * Switched the time structure representation to [TimeStruct.jl](https://sintefore.github.io/TimeStruct.jl/)
  * TimeStruct.jl is implemented with only the basis features that were available in TimesStructures.jl. This implies that neither operational nor strategic uncertainty is included in the model
 
 Version 0.4.0 (2023-05-30)

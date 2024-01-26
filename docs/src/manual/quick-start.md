@@ -1,17 +1,16 @@
 # Quick Start
 
 >  1. Install the most recent version of [Julia](https://julialang.org/downloads/)
->  2. Add the [CleanExport internal Julia registry](https://gitlab.sintef.no/clean_export/registrycleanexport):
+>  2. Install the package [`EnergyModelsBase`](https://energymodelsx.github.io/EnergyModelsBase.jl/) and the time package [`TimeStruct`](https://sintefore.github.io/TimeStruct.jl/), by running:
 >     ```
->     ] registry add git@gitlab.sintef.no:clean_export/registrycleanexport.git
->     ```
->  3. Add the [SINTEF internal Julia registry](https://gitlab.sintef.no/julia-one-sintef/onesintef):
->     ```
->     ] registry add git@gitlab.sintef.no:julia-one-sintef/onesintef.git
->     ```
->  4. Install the base package [`EnergyModelsBase.jl`](https://clean_export.pages.sintef.no/energymodelsbase.jl/) and the time package [`TimeStruct.jl`](https://gitlab.sintef.no/julia-one-sintef/timestruct.jl), by running:
->     ```
->     ] add EnergyModelsBase
 >     ] add TimeStruct
+>     ] add EnergyModelsBase
 >     ```
->     This will fetch the packages from the CleanExport package and OneSINTEF registries.
+
+!!! note
+    If you receive the error that one of the packages is not yet registered, you have to add the packages using the GitHub repositories through
+    ```
+    ] add https://github.com/sintefore/TimeStruct.jl
+    ] add https://github.com/EnergyModelsX/EnergyModelsBase.jl
+    ```
+    Once the packages are registered, this is not required any longer.

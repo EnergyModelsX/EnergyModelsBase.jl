@@ -1,9 +1,9 @@
 # [Optimization variables](@id optimization_variables)
 
-[`EnergyModelsBase`](@ref) creates a variety of default variables for the individual nodes and edges.
+`EnergyModelsBase` creates a variety of default variables for the individual nodes and edges.
 These default variables are in general also created when new `Node`s or `Link`s are developed.
 It is not necessary to utilize all of the default variables in the individual nodes.
-It is however recommended to include in this situation constraints or fixes using either the `@constraint` macro or alternatively the `JuMP.jl` function `fix(x, value)`.
+It is however recommended to include in this situation constraints or fixes using either the `@constraint` macro or alternatively the `JuMP` function `fix(x, value)`.
 The latter is the recommended approach.
 
 !!! note
