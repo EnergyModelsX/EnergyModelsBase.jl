@@ -47,6 +47,5 @@ makedocs(
 )
 
 deploydocs(;
-    push_preview = true,
     repo = "github.com/EnergyModelsX/EnergyModelsBase.jl.git",
 )
