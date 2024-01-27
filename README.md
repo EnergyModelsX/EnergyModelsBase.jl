@@ -1,6 +1,6 @@
 # EnergyModelsBase
 
-[![Build Status](https://github.com/EnergyModelsX/EnergyModelsBase.jl/workflows/CI/badge.svg?branch=main)](https://github.com/EnergyModelsX/EnergyModelsBase.jl/actions?query=workflow%3ACI)
+[![Build Status](https://github.com/EnergyModelsX/EnergyModelsBase.jl/workflows/CI/badge.svg)](https://github.com/EnergyModelsX/EnergyModelsBase.jl/actions?query=workflow%3ACI)
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://energymodelsx.github.io/EnergyModelsBase.jl//stable)
 [![In Development](https://img.shields.io/badge/docs-dev-blue.svg)](https://energymodelsx.github.io/EnergyModelsBase.jl/dev/)
 
