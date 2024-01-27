@@ -35,7 +35,6 @@ Pages = [
     "manual/optimization-variables.md",
     "manual/constraint-functions.md",
     "manual/data-functions.md",
-    "manual/nodes.md",
     "manual/simple-example.md",
 ]
 ```
