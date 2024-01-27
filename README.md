@@ -1,16 +1,12 @@
 # EnergyModelsBase
 
-[![Build Status](https://github.com/EnergyModelsX/EnergyModelsBase.jl/workflows/CI/badge.svg?branch=main)](https://github.com/EnergyModelsX/EnergyModelsBase.jl/actions?query=workflow%3ACI)
+[![Build Status](https://github.com/EnergyModelsX/EnergyModelsBase.jl/workflows/CI/badge.svg)](https://github.com/EnergyModelsX/EnergyModelsBase.jl/actions?query=workflow%3ACI)
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://energymodelsx.github.io/EnergyModelsBase.jl//stable)
 [![In Development](https://img.shields.io/badge/docs-dev-blue.svg)](https://energymodelsx.github.io/EnergyModelsBase.jl/dev/)
 
 `EnergyModelsBase` is the core package for building flexible multi-energy-carrier energy systems models.
 It is designed to model the basic operations of various generation, conversion and storage technologies.
 `EnergyModelsBase` is designed to enable optimization of operations, and to be be easily extendible to investment models, and/or to include new technologies or more detailed models of key technologies.
-
-> **Note:**
->
-> We migrated recently from an internal Git solution to GitHub, including the package [`TimeStruct`](https://github.com/sintefore/TimeStruct.jl). As `TimeStruct` is not yet registered, it is not possible to run the tests without significant changes in the CI. Hence, we plan to wait with creating a release to be certain the tests are running. As a result, the stable docs are not yet available.
 
 ## Usage
 

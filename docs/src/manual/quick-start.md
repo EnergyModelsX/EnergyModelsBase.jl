@@ -8,9 +8,8 @@
 >     ```
 
 !!! note
-    If you receive the error that one of the packages is not yet registered, you have to add the packages using the GitHub repositories through
+    If you receive the error that `EnergyModelsBase` is not yet registered, you have to add the package using the GitHub repositories through
     ```
-    ] add https://github.com/sintefore/TimeStruct.jl
     ] add https://github.com/EnergyModelsX/EnergyModelsBase.jl
     ```
-    Once the packages are registered, this is not required.
+    Once the package is registered, this is not required.
