@@ -13,4 +13,4 @@
     ] add https://github.com/sintefore/TimeStruct.jl
     ] add https://github.com/EnergyModelsX/EnergyModelsBase.jl
     ```
-    Once the packages are registered, this is not required any longer.
+    Once the packages are registered, this is not required.
