@@ -8,10 +8,6 @@
 It is designed to model the basic operations of various generation, conversion and storage technologies.
 `EnergyModelsBase` is designed to enable optimization of operations, and to be be easily extendible to investment models, and/or to include new technologies or more detailed models of key technologies.
 
-> **Note:**
->
-> We migrated recently from an internal Git solution to GitHub, including the package [`TimeStruct`](https://github.com/sintefore/TimeStruct.jl). As `TimeStruct` is not yet registered, it is not possible to run the tests without significant changes in the CI. Hence, we plan to wait with creating a release to be certain the tests are running. As a result, the stable docs are not yet available.
-
 ## Usage
 
 The usage of the package is based illustrated through the commented [`examples`](examples).

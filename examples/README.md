@@ -1,9 +1,10 @@
 # Running the examples
 
-You have to add the packages `TimeStruct`, `EnergyModelsBase`, `JuMP`, `HiGHS`, and `PrettyTables` to your current project in order to run the examples.
-How to add packages is explained in the *[Quick start](https://energymodelsx.github.io/EnergyModelsBase.jl/dev/manual/quick-start/)* of the documentation
+You have to add the package `EnergyModelsBase` to your current project in order to run the examples.
+It is not necessary to add the other used packages, as the example is instantiating itself.
+How to add packages is explained in the *[Quick start](https://energymodelsx.github.io/EnergyModelsBase.jl/stable/manual/quick-start/)* of the documentation
 
-Once you have the respective pacakges installed in your project, you can run from the Julia REPL the following code:
+You can run from the Julia REPL the following code:
 
 ```julia
 # Starts the Julia REPL
