@@ -1,18 +1,19 @@
 # EnergyModelsBase
 
-`EnergyModelsBase` is the core package to building flexible multi-energy-carrier energy systems models.
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://energymodelsx.github.io/EnergyModelsBase.jl//stable)
+[![In Development](https://img.shields.io/badge/docs-dev-blue.svg)](https://energymodelsx.github.io/EnergyModelsBase.jl/dev/)
+
+`EnergyModelsBase` is the core package for building flexible multi-energy-carrier energy systems models.
 It is designed to model the basic operations of various generation, conversion and storage technologies.
 `EnergyModelsBase` is designed to enable optimization of operations, and to be be easily extendible to investment models, and/or to include new technologies or more detailed models of key technologies.
 
-> **Note**
-> We migrated recently from an internal Git solution to GitHub, including the package [`TimeStruct`](https://github.com/sintefore/TimeStruct.jl). As `TimeStruct` is not yet registered, it is not possible to build automatically the documentation or run the tests without significant changes in the CI. Every user is however free to build the documentation from the [`docs`](docs) folder.
+> **Note:**
+>
+> We migrated recently from an internal Git solution to GitHub, including the package [`TimeStruct`](https://github.com/sintefore/TimeStruct.jl). As `TimeStruct` is not yet registered, it is not possible to run the tests without significant changes in the CI. Hence, we plan to wait with creating a release to be certain the tests are running. As a result, the stable docs are not yet available.
 
 ## Usage
 
-The documentation for `EnergyModelsBase` is currently not available as we migrated recently to GitHub.
-Once `TimeStruct` is registered in the Julia Registry, we will update the README.md  and add the links to the documentation.
-
-See examples of usage of the package and a simple guide for running them in the folder [`examples`](examples).
+The usage of the package is based illustrated through the commented [`examples`](examples).
 
 ## Cite
 

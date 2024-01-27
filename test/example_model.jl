@@ -7,11 +7,8 @@ function generate_data()
     CO2      = ResourceEmit("CO2",1.)
     products = [NG, Coal, Power, CO2]
 
-    # Creation of a dictionary with entries of 0 for all emission resources
-    # This dictionary is normally used as usage based non-energy emissions.
-    𝒫ᵉᵐ₀ = Dict(k  => 0. for k ∈ products if typeof(k) == ResourceEmit{Float64})
-    𝒫ᵉᵐ₀[CO2] = 0.0
-    capture_data = CaptureEnergyEmissions(𝒫ᵉᵐ₀, 0.9)
+    # Creation of the emission data for the individual nodes.
+    capture_data = CaptureEnergyEmissions(0.9)
     emission_data = EmissionsEnergy()
 
     # Create the individual test nodes, corresponding to a system with an electricity demand/sink,

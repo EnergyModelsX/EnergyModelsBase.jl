@@ -22,11 +22,6 @@ function generate_data()
     CO2 = ResourceEmit("CO2", 1.0)
     products = [Power, CO2]
 
-    # Creation of a dictionary with entries of 0 for all emission resources
-    # This dictionary is normally used as usage based non-energy emissions.
-    𝒫ᵉᵐ₀ = Dict(k => 0.0 for k ∈ products if typeof(k) == ResourceEmit{Float64})
-    𝒫ᵉᵐ₀[CO2] = 0.0
-
     # Create the individual test nodes, corresponding to a system with an electricity
     # demand/sink and source
     nodes = [

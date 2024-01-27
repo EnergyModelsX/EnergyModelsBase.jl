@@ -66,19 +66,19 @@ This approach allows for a different mathematical description compared to the in
 As an example, it is possible to introduce a new demand node that provides a profit for satisfying a demand combined with having no penalty if the demand is not satisfied.
 
 Calling `create_model` within a new function allows the introduction of entirely new functions.
-This approach is chosen in [`EnergyModelsGeography.jl`](https://clean_export.pages.sintef.no/energymodelsgeography.jl/) although it still uses dispatch on individual technology nodes.
+This approach is chosen in [`EnergyModelsGeography`](https://energymodelsx.github.io/EnergyModelsGeography.jl/) although it still uses dispatch on individual technology nodes.
 
 Dispatching on the type `EnergyModel` allows for adding methods to all functions that have `modeltype` included in the call.
-This is done in the package [`EnergyModelsInvestments.jl`](https://clean_export.pages.sintef.no/energymodelsinvestments.jl/) where investments are added to the model through introducting the `abstract type` `AbstractInvestmentModel`.
+This is done in the package [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/) where investments are added to the model through introducting the `abstract type` `AbstractInvestmentModel`.
 It can be problematic when one also wants to use investments.
 In addition, care has to be taken with respect to method amibiguity when dispatching on the type `EnergyModel`.
 
 The `Array{Data}` field provides us with flexibility with respect to providing additional data to the existing nodes.
-It is implemented in `EnergyModelsBase.jl` for including emissions (both process and energy usage related).
+It is implemented in `EnergyModelsBase` for including emissions (both process and energy usage related).
 In that case, it allows for flexibility through either saying whether process (or energy related emissions) are present, or not.
 In addition, it allows for capturing the CO₂ from either the individual CO₂ sources (process and energy usage related), alternatively from both sources, or not at all.
 The individual data types are explained in the Section *[Emissions data](@ref sec_lib_public_emdata)* in the public library as well as on *[Data functions](@ref data_functions)*.
-In addition, it is already used in the package [`EnergyModelsInvestments.jl`](https://clean_export.pages.sintef.no/energymodelsinvestments.jl/) through the introduction of the `abstract type` `InvestmentData` as subtype of `Data`.
+In addition, it is already used in the package [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/) through the introduction of the `abstract type` `InvestmentData` as subtype of `Data`.
 The introduction of `InvestmentData` allows providing additional parameters to individual technologies.
-However, the implementation in `EnergyModelsInvestments.jl` does not utilize the extension through the *[Data functions](@ref data_functions)*.
+However, the implementation in `EnergyModelsInvestments` does not utilize the extension through the *[Data functions](@ref data_functions)*.
 Instead, as outlined above, it dispatches on the type `EnergyModel`.

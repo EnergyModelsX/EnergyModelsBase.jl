@@ -108,4 +108,4 @@ A more detailed explanation of the different `abstract type`s can be found in *[
 
 ## Example
 
-As an example, you can check out how *[Renewable Producers](https://gitlab.sintef.no/clean_export/energymodelsrenewableproducers.jl)* introduces two new technology types, a `Source` and a `Storage`.
+As an example, you can check out how *[Renewable Producers](https://energymodelsx.github.io/EnergyModelsRenewableProducers.jl/dev/)* introduces two new technology types, a `Source` and a `Storage`.

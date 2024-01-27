@@ -1,10 +1,5 @@
 """
-Resources that can be transported and converted.
-
-# Fields
-- **`id`** is the name/identifyer of the resource.\n
-- **`co2_int::T`** is the the CO2 intensity.\n
-
+General resource supertype to be used for the declaration of subtypes.
 """
 abstract type Resource end
 Base.show(io::IO, r::Resource) = print(io, "$(r.id)")
@@ -12,10 +7,12 @@ Base.show(io::IO, r::Resource) = print(io, "$(r.id)")
 """
 Resources that can can be emitted (e.g., CO2, CH4, NOx).
 
+These resources can be included as resources that are emitted, *e.g*, in the variable \
+[``\\texttt{emissions\\_strategic}``](@ref var_emission).
+
 # Fields
 - **`id`** is the name/identifyer of the resource.\n
-- **`co2_int::T`** is the the CO2 intensity.\n
-
+- **`co2_int::T`** is the the CO2 intensity, *e.g.*, t/MWh.
 """
 struct ResourceEmit{T<:Real} <: Resource
     id
@@ -23,7 +20,13 @@ struct ResourceEmit{T<:Real} <: Resource
 end
 
 """
-General resources.
+Resources that can be transported and converted.
+These resources cannot be included as resources that are emitted, *e.g*, in the variable \
+[``\\texttt{emissions\\_strategic}``](@ref var_emission).
+
+# Fields
+- **`id`** is the name/identifyer of the resource.\n
+- **`co2_int::T`** is the the CO2 intensity, *e.g.*, t/MWh.
 """
 struct ResourceCarrier{T<:Real} <: Resource
     id

@@ -1,5 +1,11 @@
 # [Public interface](@id sec_lib_public)
 
+## Module
+
+```@docs
+EnergyModelsBase
+```
+
 ## Resources
 
 `Resource`s correspond to the mass/energy that is converted or transported within an energy system.
@@ -8,8 +14,8 @@ Instead, they are implemented through flows and levels, as explained in *[Optimi
 
 ### `Resource` types
 
-The following resources are implemented in `EnergyModelsBase.jl`.
-`EnergyModelsBase.jl` differentiates between `ResourceCarrier` and `ResourceEmit` resources.
+The following resources are implemented in `EnergyModelsBase`.
+`EnergyModelsBase` differentiates between `ResourceCarrier` and `ResourceEmit` resources.
 The key difference between both is that `ResourceEmit` resources can have emissions, *e.g.*, CO₂ or methane.
 Emissions are accounted for and can have either a cap and/or a price associated with them.
 
@@ -33,14 +39,14 @@ co2_int
 
 ## Nodes
 
-`Node`s are used in `EnergyModelsBase.jl` to convert `Resource`s.
+`Node`s are used in `EnergyModelsBase` to convert `Resource`s.
 They are coupled to the rest of the system through the *[Flow variables](@ref var_flow)*.
-Nodes are the key types for extending `EnergyModelsBase.jl` through dispatch.
+Nodes are the key types for extending `EnergyModelsBase` through dispatch.
 You can find an introduction of the different node types on the page *[Creating a new node](@ref create_new_node)*
 
 ### Abstract `Node` types
 
-The following abstract node types are implemented in the `EnergyModelsBase.jl`.
+The following abstract node types are implemented in the `EnergyModelsBase`.
 These abstract types are relevant for dispatching in individual functions.
 
 ```@docs
@@ -53,7 +59,7 @@ Availability
 
 ### [Reference node types](@id sec_lib_public_refnodes)
 
-The following composite types are inmplemented in the `EnergyModelsBase.jl`.
+The following composite types are inmplemented in the `EnergyModelsBase`.
 They can be used for describing a simple energy system without any non-linear or binary based expressions.
 Hence, there are, *e.g.*, no operation point specific efficiencies implemented.
 
@@ -128,7 +134,7 @@ RefStorageEmissions
 
 ### `Link` types
 
-The following types for links are implemented in `EnergyModelsBase.jl`.
+The following types for links are implemented in `EnergyModelsBase`.
 The thought process is to dispatch on the [`EMB.Formulation`](@ref) of a link as additional option.
 This is in the current stage not implemented.
 
@@ -155,8 +161,8 @@ formulation
 ### `EnergyModel` and `Data` types
 
 The type `EnergyModel` is used for creating the global parameters of a model.
-It can be as well used for extending `EnergyModelsBase.jl` as described in the section *[Extensions to the model](@ref sec_phil_ext)*.
-`EnergyModelsBase.jl` only provides an `OperationalModel` while `InvestmentModel` is added through the extension `EnergyModelsInvestments.jl`
+It can be as well used for extending `EnergyModelsBase` as described in the section *[Extensions to the model](@ref sec_phil_ext)*.
+`EnergyModelsBase` only provides an `OperationalModel` while `InvestmentModel` is added through the extension [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/)
 
 ```@docs
 EnergyModel
@@ -188,12 +194,12 @@ co2_instance
 
 ## Functions for running the model
 
-The following functions are provided for both creating a model using `EnergyModelsBase.jl` and solving said model.
+The following functions are provided for both creating a model using `EnergyModelsBase` and solving said model.
 Both functions have the input `case` and `model`.
 `run_model` calls `create_model` in the function, hence, it is not necessary to call the function beforehand.
 
 The `case` dictionary has to follow a certain outline.
-In this case, it is simplest to look at the provided *[examples](https://gitlab.sintef.no/clean_export/energymodelsbase.jl/-/tree/main/examples)*.
+In this case, it is simplest to look at the provided *[examples](https://github.com/EnergyModelsX/EnergyModelsBase.jl/tree/main/examples)*.
 
 !!! note
     We are currently debating to replace the dictionary used for `case` as well with a composite type.
@@ -221,7 +227,7 @@ See the pages *[Constraint functions](@ref constraint_functions)* and *[Data fun
 
 !!! warning
     The function `constraints_capacity_installed` should not be changed.
-    It is used for the inclusion of investments through `EnergyModelsInvestments.jl`.
+    It is used for the inclusion of investments through `EnergyModelsInvestments`.
     It also has to be called, if you create a new function `constraints_capacity`.
 
 ```@docs

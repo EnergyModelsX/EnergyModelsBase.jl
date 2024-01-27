@@ -1,14 +1,14 @@
-# [Utilize `TimeStruct.jl`](@id utilize_timestruct)
+# [Utilize `TimeStruct`](@id utilize_timestruct)
 
-`EnergyModelsBase` uses for the description of time the package [`TimeStruct.jl`](https://sintefore.github.io/TimeStruct.jl/stable/).
-[`TimeStruct.jl`](https://sintefore.github.io/TimeStruct.jl/stable/) offers a large variety of different options that can appear to be overwhelming, when first exposed to them.
+`EnergyModelsBase` uses for the description of time the package [`TimeStruct`](https://sintefore.github.io/TimeStruct.jl/stable/).
+[`TimeStruct`](https://sintefore.github.io/TimeStruct.jl/stable/) offers a large variety of different options that can appear to be overwhelming, when first exposed to them.
 Hence, it is important to highlight how it works and which parameters you would want to analyse.
 
 ## Structures for time description
 
-`TimeStruct.jl` introduces individual structures that are used for describing time.
+`TimeStruct` introduces individual structures that are used for describing time.
 In the following introduction, the most important structures are explained.
-There are other structures, but these will be added once `EnergyModelsbase.jl` supports their formulation.
+There are other structures, but these will be added once `EnergyModelsbase` supports their formulation.
 
 ### Operational periods
 
@@ -29,9 +29,9 @@ In this case, the operational periods would correspond to a full day.
 
 !!! note
 
-    All operational periods are continuous. This implies that one is not allowed to have jumps in the representative periods. This affects all "dynamic" constraints, that is, constraints where the current operational period is dependent on the previous operational period. In `EnergyModesBase.jl`, this is only the case for the level balance in `RefStorage`. Representative periods allow for jumps between operational periods, as outlined below.
+    All operational periods are continuous. This implies that one is not allowed to have jumps in the representative periods. This affects all "dynamic" constraints, that is, constraints where the current operational period is dependent on the previous operational period. In `EnergyModesBase`, this is only the case for the level balance in `RefStorage`. Representative periods allow for jumps between operational periods, as outlined below.
 
-Note that `TimeStruct.jl` does not require that each operational period has the same length.
+Note that `TimeStruct` does not require that each operational period has the same length.
 Consider the following example:
 
 ```jldoctest test_label; setup = :(using TimeStruct)
@@ -66,7 +66,7 @@ SimpleTimes{Int64}(11, [4, 2, 1, 1, 2, 4, 2, 1, 1, 2, 4])
 
 and a constructor will automatically deduce that there have to be 11 operational periods.
 
-`SimpleTimes` is also the lowest `TimeStructure` that is present in `TimeStruct.jl`.
+`SimpleTimes` is also the lowest `TimeStructure` that is present in `TimeStruct`.
 It is used in all subsequent structures.
 When iterating over a `TimeStructure`, _e.g._, as `t ∈ operational_periods`, you obtain the single operational periods that are required for solving the optimal dispatch.
 
