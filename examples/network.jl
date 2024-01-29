@@ -9,7 +9,6 @@ Pkg.develop(path=joinpath(@__DIR__, ".."))
 using EnergyModelsBase
 using JuMP
 using HiGHS
-using Pkg
 using PrettyTables
 using TimeStruct
 
@@ -24,12 +23,37 @@ function generate_data()
     CO2 = ResourceEmit("CO2", 1.0)
     products = [NG, Coal, Power, CO2]
 
+    # Variables for the individual entries of the time structure
+    op_duration = 2 # Each operational period has a duration of 2
+    op_number = 4   # There are in total 4 operational periods
+    operational_periods = SimpleTimes(op_number, op_duration)
+
+    # The number of operational periods times the duration of the operational periods, which
+    # can also be extracted using the function `duration` of a `SimpleTimes` structure.
+    # This implies, that a strategic period is 8 times longer than an operational period,
+    # resulting in the values below as "/8h".
+    op_per_strat = duration(operational_periods)
+
+    # Creation of the time structure and global data
+    T = TwoLevel(4, 1, operational_periods; op_per_strat)
+    model = OperationalModel(
+        Dict(   # Emission cap for CO₂ in t/8h and for NG in MWh/8h
+            CO2 => StrategicProfile([160, 140, 120, 100]),
+            NG => FixedProfile(1e6)
+        ),
+        Dict(   # Emission price for CO₂ in EUR/t and for NG in EUR/MWh
+            CO2 => FixedProfile(0),
+            NG => FixedProfile(0),
+        ),
+        CO2,    # CO2 instance
+    )
+
     # Creation of the emission data for the individual nodes.
     capture_data = CaptureEnergyEmissions(0.9)
     emission_data = EmissionsEnergy()
 
     # Create the individual test nodes, corresponding to a system with an electricity demand/sink,
-    # coal and nautral gas sources, coal and natural gas (with CCS) power plants and CO2 storage.
+    # coal and nautral gas sources, coal and natural gas (with CCS) power plants and CO₂ storage.
     nodes = [
         GenAvailability(1, products),
         RefSource(
@@ -57,7 +81,7 @@ function generate_data()
             Dict(Power => 1, CO2 => 1), # Output from the node with output ratio
             # Line above: CO2 is required as output for variable definition, but the
             # value does not matter
-            [capture_data],             # Additonal data for emissions and CO2 capture
+            [capture_data],             # Additonal data for emissions and CO₂ capture
         ),
         RefNetworkNode(
             5,                          # Node id
@@ -70,15 +94,15 @@ function generate_data()
         ),
         RefStorage(
             6,                          # Node id
-            FixedProfile(60),           # Rate capacity in MW
-            FixedProfile(600),          # Storage capacity in MWh
-            FixedProfile(9.1),          # Storage variable OPEX for the rate in EUR/MW
-            FixedProfile(0),            # Storage fixed OPEX for the rate in EUR/8h
+            FixedProfile(60),           # Rate capacity in t/h
+            FixedProfile(600),          # Storage capacity in t
+            FixedProfile(9.1),          # Storage variable OPEX for the rate in EUR/t
+            FixedProfile(0),            # Storage fixed OPEX for the rate in EUR/(t/h 8h)
             CO2,                        # Stored resource
             Dict(CO2 => 1, Power => 0.02), # Input resource with input ratio
-            # Line above: This implies that storing CO2 requires Power
+            # Line above: This implies that storing CO₂ requires Power
             Dict(CO2 => 1),             # Output from the node with output ratio
-            # In practice, for CO2 storage, this is never used.
+            # In practice, for CO₂ storage, this is never used.
             Array{Data}([]),            # Potential additional data
         ),
         RefSink(
@@ -103,30 +127,6 @@ function generate_data()
         Direct(61, nodes[6], nodes[1], Linear())
     ]
 
-    # Variables for the individual entries of the time structure
-    op_duration = 2 # Each operational period has a duration of 2
-    op_number = 4   # There are in total 4 operational periods
-    operational_periods = SimpleTimes(op_number, op_duration)
-
-    # The number of operational periods times the duration of the operational periods, which
-    # can also be extracted using the function `duration` which corresponds to the total
-    # duration of the operational periods in a `SimpleTimes` structure
-    op_per_strat = duration(operational_periods)
-
-    # Creation of the time structure and global data
-    T = TwoLevel(4, 1, operational_periods; op_per_strat)
-    model = OperationalModel(
-        Dict(   # Emission cap for CO2 in t/8h and for NG in MWh/8h
-            CO2 => StrategicProfile([160, 140, 120, 100]),
-            NG => FixedProfile(1e6)
-        ),
-        Dict(   # Emission price for CO2 in EUR/t and for NG in EUR/MWh
-            CO2 => FixedProfile(0),
-            NG => FixedProfile(0),
-        ),
-        CO2,    # CO2 instance
-    )
-
     # WIP data structure
     case = Dict(
         :nodes => nodes,
@@ -137,15 +137,25 @@ function generate_data()
     return case, model
 end
 
-
+# Create the case and model data and run the model
 case, model = generate_data()
-m = run_model(case, model, HiGHS.Optimizer)
+optimizer = optimizer_with_attributes(HiGHS.Optimizer, MOI.Silent() => true)
+m = EMB.run_model(case, model, optimizer)
 
-
+# Display some results
+@info "Capacity usage of the coal power plant"
 pretty_table(
     JuMP.Containers.rowtable(
         value,
-        m[:flow_in];
-        header=[:Node, :t, :Product, :Value]
+        m[:cap_use][case[:nodes][5], :];
+        header=[:t, :Value]
+    ),
+)
+@info "Capacity usage of the nautral gas + CCS power plant"
+pretty_table(
+    JuMP.Containers.rowtable(
+        value,
+        m[:cap_use][case[:nodes][4], :];
+        header=[:t, :Value]
     ),
 )

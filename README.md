@@ -10,14 +10,16 @@ It is designed to model the basic operations of various generation, conversion a
 
 ## Usage
 
-The usage of the package is based illustrated through the commented [`examples`](examples).
+The usage of the package is best illustrated through the commented [`examples`](examples).
+The examples are minimum working examples highlighting how to build simple energy system models.
 
 ## Cite
 
 If you find `EnergyModelsBase` useful in your work, we kindly request that you cite the following publication:
 
-```@article{boedal_2024,
-  title = {Hydrogen for harvesting the potential of offshore wind: A North Sea case study},
+```bibtex
+@article{boedal_2024,
+  title = {Hydrogen for harvesting the potential of offshore wind: A {N}orth {S}ea case study},
   journal = {Applied Energy},
   volume = {357},
   pages = {122484},
@@ -25,7 +27,7 @@ If you find `EnergyModelsBase` useful in your work, we kindly request that you c
   issn = {0306-2619},
   doi = {https://doi.org/10.1016/j.apenergy.2023.122484},
   url = {https://www.sciencedirect.com/science/article/pii/S0306261923018482},
-  author = {Espen Flo Bødal and Sigmund Eggen Holm and Avinash Subramanian and Goran Durakovic and Dimitri Pinel and Lars Hellemo and Miguel Muñoz Ortiz and Brage Rugstad Knudsen and Julian Straus}
+  author = {Espen Flo B{\o}dal and Sigmund Eggen Holm and Avinash Subramanian and Goran Durakovic and Dimitri Pinel and Lars Hellemo and Miguel Mu{\~n}oz Ortiz and Brage Rugstad Knudsen and Julian Straus}
 }
 ```
 

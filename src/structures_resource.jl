@@ -5,14 +5,14 @@ abstract type Resource end
 Base.show(io::IO, r::Resource) = print(io, "$(r.id)")
 
 """
-Resources that can can be emitted (e.g., CO2, CH4, NOx).
+Resources that can can be emitted (e.g., CO₂, CH₄, NOₓ).
 
 These resources can be included as resources that are emitted, *e.g*, in the variable \
 [``\\texttt{emissions\\_strategic}``](@ref var_emission).
 
 # Fields
 - **`id`** is the name/identifyer of the resource.\n
-- **`co2_int::T`** is the the CO2 intensity, *e.g.*, t/MWh.
+- **`co2_int::T`** is the the CO₂ intensity, *e.g.*, t/MWh.
 """
 struct ResourceEmit{T<:Real} <: Resource
     id
@@ -26,7 +26,7 @@ These resources cannot be included as resources that are emitted, *e.g*, in the 
 
 # Fields
 - **`id`** is the name/identifyer of the resource.\n
-- **`co2_int::T`** is the the CO2 intensity, *e.g.*, t/MWh.
+- **`co2_int::T`** is the the CO₂ intensity, *e.g.*, t/MWh.
 """
 struct ResourceCarrier{T<:Real} <: Resource
     id
@@ -36,7 +36,7 @@ end
 """
     co2_int(p::Resource)
 
-Returns the CO2 intensity of resource `p`
+Returns the CO₂ intensity of resource `p`
 """
 co2_int(p::Resource) = p.co2_int
 
