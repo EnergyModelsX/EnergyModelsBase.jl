@@ -1,7 +1,7 @@
 """ Declaration of the general type for formulation of links."""
 abstract type Formulation end
 
-""" Linear `Link`, that is input equals output."""
+""" Linear `Formulation`, that is input equals output."""
 struct Linear <: Formulation end
 
 """ Declaration of the general type for links connecting nodes."""

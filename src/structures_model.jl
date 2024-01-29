@@ -5,11 +5,11 @@ abstract type EnergyModel end
 Operational Energy Model without investments.
 
 # Fields
-- **`emission_limit`** is a dictionary with individual emission limits as `TimeProfile` for each
-emission resource `ResourceEmit`.\n
-- **`emission_price::Dict{ResourceEmit, TimeProfile}`** are the prices for the different
+- **`emission_limit`** is a dictionary with individual emission limits as `TimeProfile` for \
+each emission resource `ResourceEmit`.\n
+- **`emission_price::Dict{ResourceEmit, TimeProfile}`** are the prices for the different \
 emissions types considered.\n
-- **`co2_instance`** is a `ResourceEmit` and corresponds to the type used for CO2.\n
+- **`co2_instance`** is a `ResourceEmit` and corresponds to the type used for CO₂.\n
 """
 struct OperationalModel <: EnergyModel
     emission_limit::Dict{ResourceEmit, TimeProfile}
@@ -64,6 +64,6 @@ emission_price(model, p, t) = haskey(model.emission_price, p) ? model.emission_p
 """
     co2_instance(model)
 
-Returns the CO2 instance used in modelling.
+Returns the CO₂ instance used in modelling.
 """
 co2_instance(model) = model.co2_instance

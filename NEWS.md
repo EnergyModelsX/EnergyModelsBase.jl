@@ -66,8 +66,8 @@ Version 0.3.1 (2023-02-03)
 Version 0.3.0 (2023-02-02)
 --------------------------
 ### Fields of reference types and new types
-* Removal of all process emissions and CO2 capture from reference types to avoid having to include them as well
-in all subtypes defined later to keep the fallback option. This requires in the future to ***remove*** `CO2` as output when using CO2 capture as it was previously the case. The original types are retained so that they can still be used
+* Removal of all process emissions and CO₂ capture from reference types to avoid having to include them as well
+in all subtypes defined later to keep the fallback option. This requires in the future to ***remove*** CO₂ as output when using CO₂ capture as it was previously the case. The original types are retained so that they can still be used
 * Introduction of a type `RefStorageEmissions` to account for a storage unit that can be used for storing `ResourceEmit`
 
 ### Introduction of functions for constraints generation
@@ -76,7 +76,7 @@ in all subtypes defined later to keep the fallback option. This requires in the 
 ### Redefinition of introduction of global data
 * Removal of the type `AbstractGlobalData` and all subtypes and substitution through `EnergyModel` and the corresponding subtypes
 * Addition of the field `CO2_instance` in the type `OperationalModel`
-* Addition of `ModelType` to the function `create_node` to be able to use different ids for the `CO2` resource
+* Addition of `ModelType` to the function `create_node` to be able to use different ids for the CO₂ resource
 
 ### Additional changes
 * Redefining `CO2Int` in fields of type `Resource` to `CO2_int` to be consistent with the other types
@@ -124,7 +124,7 @@ Version 0.2.1 (2021-04-22)
 ### Feature updates
 * Reduction in variables through introduction of input/output (#2)
 dictionaries for all nodes that only include necessary components
-* Improvement related to emissions to avoid wrong accounting when other emission carriers than CO2 are present (#2)
+* Improvement related to emissions to avoid wrong accounting when other emission carriers than CO₂ are present (#2)
 * Link resources generated automatically from input (#2)
 
 ### Changes in naming

@@ -9,7 +9,6 @@ Pkg.develop(path=joinpath(@__DIR__, ".."))
 using EnergyModelsBase
 using JuMP
 using HiGHS
-using Pkg
 using PrettyTables
 using TimeStruct
 
@@ -21,6 +20,25 @@ function generate_data()
     Power = ResourceCarrier("Power", 0.0)
     CO2 = ResourceEmit("CO2", 1.0)
     products = [Power, CO2]
+
+    # Variables for the individual entries of the time structure
+    op_duration = 2 # Each operational period has a duration of 2
+    op_number = 4   # There are in total 4 operational periods
+    operational_periods = SimpleTimes(op_number, op_duration)
+
+    # The number of operational periods times the duration of the operational periods, which
+    # can also be extracted using the function `duration` of a `SimpleTimes` structure.
+    # This implies, that a strategic period is 8 times longer than an operational period,
+    # resulting in the values below as "/8h".
+    op_per_strat = duration(operational_periods)
+
+    # Creation of the time structure and global data
+    T = TwoLevel(2, 1, operational_periods; op_per_strat)
+    model = OperationalModel(
+        Dict(CO2 => FixedProfile(10)),  # Emission cap for CO₂ in t/8h
+        Dict(CO2 => FixedProfile(0)),   # Emission price for CO₂ in EUR/t
+        CO2,                            # CO₂ instance
+    )
 
     # Create the individual test nodes, corresponding to a system with an electricity
     # demand/sink and source
@@ -47,24 +65,6 @@ function generate_data()
         Direct(12, nodes[1], nodes[2], Linear())
     ]
 
-    # Variables for the individual entries of the time structure
-    op_duration = 2 # Each operational period has a duration of 2
-    op_number = 4   # There are in total 4 operational periods
-    operational_periods = SimpleTimes(op_number, op_duration)
-
-    # The number of operational periods times the duration of the operational periods, which
-    # can also be extracted using the function `duration` which corresponds to the total
-    # duration of the operational periods in a `SimpleTimes` structure
-    op_per_strat = duration(operational_periods)
-
-    # Creation of the time structure and global data
-    T = TwoLevel(4, 1, operational_periods; op_per_strat)
-    model = OperationalModel(
-        Dict(CO2 => FixedProfile(10)),  # Emission cap for CO2 in t/8h
-        Dict(CO2 => FixedProfile(0)),   # Emission price for CO2 in EUR/t
-        CO2,                            # CO2 instance
-    )
-
     # WIP data structure
     case = Dict(
         :nodes => nodes,
@@ -76,26 +76,18 @@ function generate_data()
 end
 
 
+# Create the case and model data and run the model
 case, model = generate_data()
-m = run_model(case, model, HiGHS.Optimizer)
-
+optimizer = optimizer_with_attributes(HiGHS.Optimizer, MOI.Silent() => true)
+m = EMB.run_model(case, model, optimizer)
 
 # Inspect some of the results
+source, sink = case[:nodes]
+@info "Capacity usage of the power source"
 pretty_table(
     JuMP.Containers.rowtable(
         value,
-        m[:flow_in];
-        header=[:Node, :t, :Product, :Value]
+        m[:cap_use][source, :];
+        header=[:t, :Value]
     ),
 )
-
-
-source, sink = case[:nodes]
-power = case[:products][1]
-
-# Flow between the nodes
-for t ∈ case[:T]
-    @show t
-    @show value.(m[:flow_out][source, t, power])
-    @show value.(m[:flow_in][sink, t, power])
-end

@@ -9,12 +9,12 @@ The energy system model is based on the *[JuMP](https://jump.dev/JuMP.jl/stable/
 >     ```julia
 >     variables_node(m, 𝒩ˢᵘᵇ::Vector{<:NewTechNode}, 𝒯, modeltype::EnergyModel)
 >     ```
->     Implement this method if you want to create additional optimization variables for the new node. *See [how to create JuMP variables](https://jump.dev/JuMP.jl/stable/manual/variables/) in the JuMP documentation.*
+>     Implement this method if you want to create additional optimization variables for the new node. See *[how to create JuMP variables](https://jump.dev/JuMP.jl/stable/manual/variables/)* in the JuMP documentation.
 >  3. Implement the method
 >     ```julia
 >     create_node(m, n::NewTechNode, 𝒯, 𝒫, modeltype::EnergyModel)
 >     ```
->      In this method the constraints for the new node are created. *See [how to create JuMP constraints](https://jump.dev/JuMP.jl/stable/manual/constraints/)*.
+>      In this method the constraints for the new node are created. See *[how to create JuMP constraints](https://jump.dev/JuMP.jl/stable/manual/constraints/)* in the JuMP documentation.
 
 While step 1 is always required, it is possible to omit step 2 if no new variables are required.
 It is also possible to create unregistered variables for each instance of the node.
@@ -108,4 +108,4 @@ A more detailed explanation of the different `abstract type`s can be found in *[
 
 ## Example
 
-As an example, you can check out how *[Renewable Producers](https://energymodelsx.github.io/EnergyModelsRenewableProducers.jl/dev/)* introduces two new technology types, a `Source` and a `Storage`.
+As an example, you can check out how *[`EnergyModelsRenewableProducers`](https://energymodelsx.github.io/EnergyModelsRenewableProducers.jl/)* introduces two new technology types, a `Source` and a `Storage`.

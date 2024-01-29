@@ -1,7 +1,7 @@
 """
     constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::DataEmissions)
 
-Constraints functions for calculating both the emissions and amount of CO2 captured in the
+Constraints functions for calculating both the emissions and amount of CO₂ captured in the
 process.
 
 There exist several configurations:
