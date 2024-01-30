@@ -62,7 +62,6 @@ function generate_data()
             FixedProfile(30),           # Variable OPEX in EUR/MW
             FixedProfile(0),            # Fixed OPEX in EUR/8h
             Dict(NG => 1),              # Output from the Node, in this gase, NG
-            [],                         # Potential additional data
         ),
         RefSource(
             3,                          # Node id
@@ -70,7 +69,6 @@ function generate_data()
             FixedProfile(9),            # Variable OPEX in EUR/MWh
             FixedProfile(0),            # Fixed OPEX in EUR/8h
             Dict(Coal => 1),            # Output from the Node, in this gase, coal
-            [],                         # Potential additional data
         ),
         RefNetworkNode(
             4,                          # Node id
@@ -103,7 +101,6 @@ function generate_data()
             # Line above: This implies that storing CO₂ requires Power
             Dict(CO2 => 1),             # Output from the node with output ratio
             # In practice, for CO₂ storage, this is never used.
-            Array{Data}([]),            # Potential additional data
         ),
         RefSink(
             7,                          # Node id

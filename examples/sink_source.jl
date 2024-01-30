@@ -49,7 +49,6 @@ function generate_data()
             FixedProfile(30),           # Variable OPEX in EUR/MW
             FixedProfile(0),            # Fixed OPEX in EUR/8h
             Dict(Power => 1),           # Output from the Node, in this gase, Power
-            [],                         # Potential additional data
         ),
         RefSink(
             2,                          # Node id

@@ -11,7 +11,7 @@ function RefSource(
     opex_var::TimeProfile,
     opex_fixed::TimeProfile,
     output::Dict{<:Resource,<:Real},
-    data::Array,
+    data::Vector,
     emissions::Dict{<:ResourceEmit,<:Real},
     )
 
@@ -36,7 +36,7 @@ function RefNetwork(
     opex_fixed::TimeProfile,
     input::Dict{<:Resource,<:Real},
     output::Dict{<:Resource,<:Real},
-    data::Array,
+    data::Vector,
     )
 
     @warn("The implementation of a `RefNetwork` will be discontinued in \
@@ -63,7 +63,7 @@ function RefNetworkEmissions(
     output::Dict{<:Resource,<:Real},
     emissions::Dict{<:ResourceEmit,<:Real},
     co2_capture::Real,
-    data::Array,
+    data::Vector,
     )
 
     @warn("The implementation of a `RefNetworkEmissions` will be discontinued in \
@@ -93,7 +93,7 @@ function RefStorageEmissions(
     stor_res::ResourceEmit,
     input::Dict{<:Resource,<:Real},
     output::Dict{<:Resource,<:Real},
-    data::Array,
+    data::Vector,
     )
 
     @warn("The implementation of a `RefStorageEmissions` will be discontinued in \
@@ -111,7 +111,7 @@ function RefStorageEmissions(
         stor_res,
         input,
         output,
-        Array{Data}(data),
+        Vector{Data}(data),
     )
     return tmp
 end
