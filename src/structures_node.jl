@@ -21,7 +21,8 @@ abstract type Availability <: NetworkNode end
 - **`opex_var::TimeProfile`** is the variational operational costs per energy unit produced.\n
 - **`opex_fixed::TimeProfile`** is the fixed operational costs.\n
 - **`output::Dict{<:Resource, <:Real}`** are the generated `Resource`s with conversion value `Real`.\n
-- **`data::Vector{<:Data}`** is the additional data (e.g. for investments).
+- **`data::Vector{Data}`** is the additional data (e.g. for investments). The field \
+`data` is conditional through usage of a constructor.
 
 """
 struct RefSource <: Source
@@ -30,7 +31,7 @@ struct RefSource <: Source
     opex_var::TimeProfile
     opex_fixed::TimeProfile
     output::Dict{<:Resource, <:Real}
-    data::Vector{<:Data}
+    data::Vector{Data}
 end
 function RefSource(
         id,
@@ -51,7 +52,8 @@ end
 - **`opex_fixed::TimeProfile`** is the fixed operational costs.\n
 - **`input::Dict{<:Resource, <:Real}`** are the input `Resource`s with conversion value `Real`.\n
 - **`output::Dict{<:Resource, <:Real}`** are the generated `Resource`s with conversion value `Real`.\n
-- **`data::Vector{<:Data}`** is the additional data (e.g. for investments).
+- **`data::Vector{Data}`** is the additional data (e.g. for investments). The field \
+`data` is conditional through usage of a constructor.
 """
 struct RefNetworkNode <: NetworkNode
     id
@@ -60,7 +62,7 @@ struct RefNetworkNode <: NetworkNode
     opex_fixed::TimeProfile
     input::Dict{<:Resource, <:Real}
     output::Dict{<:Resource, <:Real}
-    data::Vector{<:Data}
+    data::Vector{Data}
 end
 function RefNetworkNode(
         id,
@@ -106,7 +108,8 @@ It is designed as a composite type to automatically distinguish between these tw
 - **`input::Dict{<:Resource, <:Real}`** are the input `Resource`s with conversion value `Real`.
 - **`output::Dict{<:Resource, <:Real}`** are the generated `Resource`s with conversion value `Real`. \
 Only relevant for linking and the stored `Resource`.\n
-- **`data::Vector{<:Data}`** is the additional data (e.g. for investments).
+- **`data::Vector{<:Data}`** is the additional data (e.g. for investments). The field \
+`data` is conditional through usage of a constructor.
 """
 struct RefStorage{T<:Resource} <: Storage
     id
@@ -152,14 +155,15 @@ This node corresponds to a demand given by the field `cap`.
 - **`penalty::Dict{Any, TimeProfile}`** are penalties for surplus or deficits. \
 Requires the fields `:surplus` and `:deficit`.\n
 - **`input::Dict{<:Resource, <:Real}`** are the input `Resource`s with conversion value `Real`.\n
-- **`data::Vector{<:Data}`** is the additional data (e.g. for investments).
+- **`data::Vector{Data}`** is the additional data (e.g. for investments). The field \
+`data` is conditional through usage of a constructor.
 """
 struct RefSink <: Sink
     id
     cap::TimeProfile
     penalty::Dict{Symbol, <:TimeProfile}
     input::Dict{<:Resource, <:Real}
-    data::Vector{<:Data}
+    data::Vector{Data}
 end
 function RefSink(
     id,
@@ -271,7 +275,7 @@ has_output(n::Node) = true
 has_output(n::Sink) = false
 
 """
-    capacity(n)
+    capacity(n::Node)
 
 Returns the capacity of a node `n` as `TimeProfile`. In the case of a `Storage` node,
 the capacity is returned as `NamedTuple` with the fields `level` and `rate`.
@@ -280,10 +284,10 @@ capacity(n::Node) = n.cap
 capacity(n::Storage) = (level=n.stor_cap, rate=n.rate_cap)
 
 """
-    capacity(n, t)
+    capacity(n::Node, t)
 
-Returns the capacity of a node `n` at time period `t`. In the case of a `Storage` node,
-the capacity is returned as `NamedTuple` with the fields `level` and `rate`.
+Returns the capacity of a node `n` at operational period `t`. In the case of a `Storage`
+node, the capacity is returned as `NamedTuple` with the fields `level` and `rate`.
 """
 capacity(n::Node, t) = n.cap[t]
 capacity(n::Storage, t) = (level=n.stor_cap[t], rate=n.rate_cap[t])
@@ -337,30 +341,30 @@ Returns the storage resource of `Storage` node `n`.
 storage_resource(n::Storage) = n.stor_res
 
 """
-    opex_var(n)
+    opex_var(n::Node)
 
 Returns the variable OPEX of a node `n` as `TimeProfile`.
 """
 opex_var(n::Node) = n.opex_var
 """
-    opex_var(n, t)
+    opex_var(n::Node, t)
 
 Returns the variable OPEX of a node `n` in operational period `t`
 """
 opex_var(n::Node, t) = n.opex_var[t]
 
 """
-    opex_fixed(n)
+    opex_fixed(n::Node)
 
 Returns the fixed OPEX of a node `n` as `TimeProfile`.
 """
 opex_fixed(n::Node) = n.opex_fixed
 """
-    opex_fixed(n, t)
+    opex_fixed(n::Node, t_inv)
 
-Returns the fixed OPEX of a node `n` at time period `t`
+Returns the fixed OPEX of a node `n` at strategic period `t_inv`
 """
-opex_fixed(n::Node, t) = n.opex_fixed[t]
+opex_fixed(n::Node, t_inv) = n.opex_fixed[t_inv]
 
 """
     surplus_penalty(n::Sink)
@@ -369,7 +373,7 @@ Returns the surplus penalty of sink `n` as `TimeProfile`.
 surplus_penalty(n::Sink) = n.penalty[:surplus]
 """
     surplus_penalty(n::Sink, t)
-Returns the surplus penalty of sink `n` at time period `t`
+Returns the surplus penalty of sink `n` at operational period `t`
 """
 surplus_penalty(n::Sink, t) = n.penalty[:surplus][t]
 
@@ -380,6 +384,6 @@ Returns the deficit penalty of sink `n` as `TimeProfile`.
 deficit_penalty(n::Sink) = n.penalty[:deficit]
 """
     deficit_penalty(n::Sink, t)
-Returns the deficit penalty of sink `n` at time period `t`
+Returns the deficit penalty of sink `n` at operational period `t`
 """
 deficit_penalty(n::Sink, t) = n.penalty[:deficit][t]
