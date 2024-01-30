@@ -1,7 +1,8 @@
 """
-    run_model(case::Dict, optimizer)
+    run_model(case::Dict, model::EnergyModel, optimizer)
 
-Take the case data as a dictionary and build and optimize the model.
+Take the `case` data as a dictionary and the `model` and build and optimize the model.
+Returns the solved JuMP model.
 
 The dictionary requires the keys:
  - `:nodes::Vector{Node}`
