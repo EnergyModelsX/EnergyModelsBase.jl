@@ -17,6 +17,12 @@
         # `variables_nodes` will continue to the next variable. If this behaviour in JuMP
         # changes, we must change how variables are created.
         @test isa(e, ErrorException)
+
+        # Check that the error message is not changed.
+        pre1 = "An object of name"
+        pre2 = "is already attached to this model."
+        @test occursin(pre1, e.msg)
+        @test occursin(pre2, e.msg)
     end
 end
 
@@ -25,7 +31,7 @@ end
     Power = ResourceCarrier("Power", 0.0)
     CO2 = ResourceEmit("CO2", 0.0)
     dict = Dict{Resource,Real}()
-    vec = Vector{Resource}([])
+    vec = Resource[]
 
     source = RefSource("src", FixedProfile(5), FixedProfile(10), FixedProfile(5),
         dict)

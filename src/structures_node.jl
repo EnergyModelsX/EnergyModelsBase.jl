@@ -39,7 +39,7 @@ function RefSource(
         opex_fixed::TimeProfile,
         output::Dict{<:Resource,<:Real},
     )
-    return RefSource(id, cap, opex_var, opex_fixed, output, Vector{Data}([]))
+    return RefSource(id, cap, opex_var, opex_fixed, output, Data[])
 end
 
 """ A reference `NetworkNode` node.
@@ -70,7 +70,7 @@ function RefNetworkNode(
         input::Dict{<:Resource, <:Real},
         output::Dict{<:Resource, <:Real},
     )
-    return RefNetworkNode(id, cap, opex_var, opex_fixed, input, output, Vector{Data}([]))
+    return RefNetworkNode(id, cap, opex_var, opex_fixed, input, output, Data[])
 end
 
 """ A reference `Availability` node.
@@ -138,7 +138,7 @@ function RefStorage(
         stor_res,
         input,
         output,
-        Vector{Data}([]),
+        Data[],
     )
 end
 
@@ -167,7 +167,7 @@ function RefSink(
     penalty::Dict{<:Any,<:TimeProfile},
     input::Dict{<:Resource,<:Real},
     )
-    return RefSink(id, cap, penalty, input, Vector{Data}([]))
+    return RefSink(id, cap, penalty, input, Data[])
 end
 
 """

@@ -16,14 +16,14 @@ an input as `TimeProfile` or `Float64`.\n
 - **`co2_capture::Float64`**: CO₂ capture rate.\n
 
 # Types
-- **`CaptureProcessEnergyEmissions`**: Capture both the process emissions and the energy usage \
-related emissions.\n
-- **`CaptureProcessEmissions`**: Capture the process emissions, but not the energy usage related \
-emissions.\n
-- **`CaptureEnergyEmissions`**: Capture the energy usage related emissions, but not the process \
-emissions. Does not require `emissions` as input.\n
-- **`EmissionsProcess`**: No capture, but process emissions are present. Does not require \
-`co2_capture` as input, but will ignore it, if provided.\n
+- **`CaptureProcessEnergyEmissions`**: Capture both the process emissions and the \
+energy usage related emissions.\n
+- **`CaptureProcessEmissions`**: Capture the process emissions, but not the \
+energy usage related emissions.\n
+- **`CaptureEnergyEmissions`**: Capture the energy usage related emissions, but not the \
+process emissions. Does not require `emissions` as input.\n
+- **`EmissionsProcess`**: No capture, but process emissions are present. \
+Does not require `co2_capture` as input, but will ignore it, if provided.\n
 - **`EmissionsEnergy`**: No capture and no process emissions. Does not require \
 `co2_capture` or `emissions` as input, but will ignore them, if provided.\n
 """
@@ -108,28 +108,28 @@ Returns the `ResourceEmit`s that have process emissions in the `data`.
 process_emissions(data::EmissionsData) = collect(keys(data.emissions))
 
 """
-    process_emissions(data::EmissionsData, p)
+    process_emissions(data::EmissionsData{T}, p::ResourceEmit)
 Returns the the process emissions of resource `p` in the `data` as `TimeProfile`.
 If the process emissions are provided as `Float64`, it returns a FixedProfile(x).
 If there are no process emissions, it returns a FixedProfile(0).
 """
-process_emissions(data::EmissionsData{T}, p) where {T<:Float64} =
+process_emissions(data::EmissionsData{T}, p::ResourceEmit) where {T<:Float64} =
     haskey(data.emissions, p) ? FixedProfile(data.emissions[p]) : FixedProfile(0)
-process_emissions(data::EmissionsData{T}, p) where {T<:TimeProfile} =
+process_emissions(data::EmissionsData{T}, p::ResourceEmit) where {T<:TimeProfile} =
     haskey(data.emissions, p) ? data.emissions[p] : FixedProfile(0)
-process_emissions(data::EmissionsEnergy{T}, p) where {T} =
+process_emissions(data::EmissionsEnergy{T}, p::ResourceEmit) where {T} =
     @error("The type `EmissionsEnergy` should not be used in combination with calling \
     the function `process_emissions`.")
 
 """
-    process_emissions(data::EmissionsData, p, t)
+    process_emissions(data::EmissionsData{T}, p:ResourceEmit, t)
 Returns the the process emissions of resource `p` in the `data` at operational period t.
 If there are no process emissions, it returns a value of 0.
 """
-process_emissions(data::EmissionsData{T}, p, t) where {T<:Float64} =
+process_emissions(data::EmissionsData{T}, p::ResourceEmit, t) where {T<:Float64} =
     haskey(data.emissions, p) ? data.emissions[p] : 0
-process_emissions(data::EmissionsData{T}, p, t) where {T<:TimeProfile} =
+process_emissions(data::EmissionsData{T}, p::ResourceEmit, t) where {T<:TimeProfile} =
     haskey(data.emissions, p) ? data.emissions[p][t] : 0
-process_emissions(data::EmissionsEnergy{T}, p, t) where {T} =
+process_emissions(data::EmissionsEnergy{T}, p::ResourceEmit, t) where {T} =
     @error("The type `EmissionsEnergy` should not be used in combination with calling \
     the function `process_emissions`.")

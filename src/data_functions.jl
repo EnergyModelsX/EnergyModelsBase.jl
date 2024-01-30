@@ -7,7 +7,7 @@ process.
 There exist several configurations:
 - **`EmissionsEnergy`**: Only energy usage related emissions.\n
 - **`EmissionsProcess`**: Both process and energy usage related emissions.\n
-- **`CaptureEnergyEmissions`**: Capture of energy usage related emissions, can include
+- **`CaptureEnergyEmissions`**: Capture of energy usage related emissions, can include \
 process emissions.\n
 - **`CaptureProcessEmissions`**: Capture of process emissions.\n
 - **`CaptureProcessEnergyEmissions`**: Capture of both process and energy usage related
