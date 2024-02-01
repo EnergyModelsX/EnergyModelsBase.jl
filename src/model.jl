@@ -106,8 +106,8 @@ resource `𝒫ᵉᵐ ∈ 𝒫`.
 The emission variables are differentiated in:
   * `:emissions_node` - emissions of a node in an operational period,
   * `:emissions_total` - total emissions in an operational period, and
-  * `:emissions_strategic` - total strategic emissions, constrained to an upper limit based\
-   on the field `emission_limit` of the `EnergyModel`.
+  * `:emissions_strategic` - total strategic emissions, constrained to an upper limit \
+  based on the field `emission_limit` of the `EnergyModel`.
 """
 function variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
@@ -124,7 +124,7 @@ end
 """
     variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
-Declaration of the OPEX variables (`:opex_var` and `:opex_fixed`) of the model for each investment
+Declaration of the OPEX variables (`:opex_var` and `:opex_fixed`) of the model for each
 period `𝒯ᴵⁿᵛ ∈ 𝒯`. Variable OPEX can be non negative to account for revenue streams.
 """
 function variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
@@ -413,8 +413,8 @@ Set all constraints for a `Availability`. Can serve as fallback option for all u
 subtypes of `Availability`.
 
 Availability nodes can be seen as routing nodes. It is not necessary to have more than one
-available node except if one wants to include as well transport between different availability
-nodes with associated costs (not implemented at the moment).
+available node except if one wants to include as well transport between different
+`Availability` nodes with associated costs (not implemented at the moment).
 """
 function create_node(m, n::Availability, 𝒯, 𝒫, modeltype::EnergyModel)
 
@@ -426,8 +426,8 @@ end
 """
     create_link(m, 𝒯, 𝒫, l, formulation::Formulation)
 
-Set the constraints for a simple `Link` (input = output). Can serve as fallback option for all
-unspecified subtypes of `Link`.
+Set the constraints for a simple `Link` (input = output). Can serve as fallback option for
+all unspecified subtypes of `Link`.
 """
 function create_link(m, 𝒯, 𝒫, l, formulation::Formulation)
 

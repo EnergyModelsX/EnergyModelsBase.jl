@@ -213,7 +213,7 @@ function constraints_level_sp(
     t_inv::TS.StrategicPeriod{T, U},
     𝒫,
     modeltype::EnergyModel
-    ) where {S<:ResourceCarrier, T, U<:SimpleTimes}
+) where {S<:ResourceCarrier, T, U<:SimpleTimes}
 
     # Mass/energy balance constraints for stored energy carrier.
     for (t_prev, t) ∈ withprev(t_inv)
@@ -252,7 +252,7 @@ function constraints_level_sp(
     t_inv::TS.StrategicPeriod{T, RepresentativePeriods{U, T, SimpleTimes{T}}},
     𝒫,
     modeltype::EnergyModel
-    ) where {S<:ResourceCarrier, T, U}
+) where {S<:ResourceCarrier, T, U}
 
     # Declaration of the required subsets
     𝒯ʳᵖ = repr_periods(t_inv)
@@ -350,7 +350,7 @@ function constraints_level_sp(
     t_inv::TS.StrategicPeriod{T, U},
     𝒫,
     modeltype::EnergyModel
-    ) where {S<:ResourceEmit, T, U<:SimpleTimes}
+) where {S<:ResourceEmit, T, U<:SimpleTimes}
 
     # Mass/energy balance constraints for stored energy carrier.
     for (t_prev, t) ∈ withprev(t_inv)
@@ -388,7 +388,7 @@ function constraints_level_sp(
     t_inv::TS.StrategicPeriod{T, RepresentativePeriods{U, T, SimpleTimes{T}}},
     𝒫,
     modeltype::EnergyModel
-    ) where {S<:ResourceEmit, T, U}
+) where {S<:ResourceEmit, T, U}
 
     # Declaration of the required subsets
     𝒯ʳᵖ = repr_periods(t_inv)

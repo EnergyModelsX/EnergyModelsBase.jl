@@ -34,12 +34,12 @@ struct RefSource <: Source
     data::Vector{Data}
 end
 function RefSource(
-        id,
-        cap::TimeProfile,
-        opex_var::TimeProfile,
-        opex_fixed::TimeProfile,
-        output::Dict{<:Resource,<:Real},
-    )
+    id,
+    cap::TimeProfile,
+    opex_var::TimeProfile,
+    opex_fixed::TimeProfile,
+    output::Dict{<:Resource,<:Real},
+)
     return RefSource(id, cap, opex_var, opex_fixed, output, Data[])
 end
 
@@ -65,13 +65,13 @@ struct RefNetworkNode <: NetworkNode
     data::Vector{Data}
 end
 function RefNetworkNode(
-        id,
-        cap::TimeProfile,
-        opex_var::TimeProfile,
-        opex_fixed::TimeProfile,
-        input::Dict{<:Resource, <:Real},
-        output::Dict{<:Resource, <:Real},
-    )
+    id,
+    cap::TimeProfile,
+    opex_var::TimeProfile,
+    opex_fixed::TimeProfile,
+    input::Dict{<:Resource, <:Real},
+    output::Dict{<:Resource, <:Real},
+)
     return RefNetworkNode(id, cap, opex_var, opex_fixed, input, output, Data[])
 end
 
@@ -104,7 +104,7 @@ It is designed as a composite type to automatically distinguish between these tw
 - **`stor_cap::TimeProfile`** is the installed storage capacity, that is e.g. energy or mass.\n
 - **`opex_var::TimeProfile`** is the variational operational costs per energy unit stored.\n
 - **`opex_fixed::TimeProfile`** is the fixed operational costs.\n
-- **`stor_res::Resource`** is the stored `Resource`.\n
+- **`stor_res::T`** is the stored `Resource`.\n
 - **`input::Dict{<:Resource, <:Real}`** are the input `Resource`s with conversion value `Real`.
 - **`output::Dict{<:Resource, <:Real}`** are the generated `Resource`s with conversion value `Real`. \
 Only relevant for linking and the stored `Resource`.\n
@@ -123,15 +123,15 @@ struct RefStorage{T<:Resource} <: Storage
     data::Vector{<:Data}
 end
 function RefStorage(
-        id,
-        rate_cap::TimeProfile,
-        stor_cap::TimeProfile,
-        opex_var::TimeProfile,
-        opex_fixed::TimeProfile,
-        stor_res::T,
-        input::Dict{<:Resource, <:Real},
-        output::Dict{<:Resource, <:Real},
-    ) where {T}
+    id,
+    rate_cap::TimeProfile,
+    stor_cap::TimeProfile,
+    opex_var::TimeProfile,
+    opex_fixed::TimeProfile,
+    stor_res::T,
+    input::Dict{<:Resource, <:Real},
+    output::Dict{<:Resource, <:Real},
+) where {T<:Resource}
     return RefStorage(
         id,
         rate_cap,
@@ -170,7 +170,7 @@ function RefSink(
     cap::TimeProfile,
     penalty::Dict{<:Any,<:TimeProfile},
     input::Dict{<:Resource,<:Real},
-    )
+)
     return RefSink(id, cap, penalty, input, Data[])
 end
 
