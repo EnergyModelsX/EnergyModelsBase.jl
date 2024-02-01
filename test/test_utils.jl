@@ -17,6 +17,12 @@
         # `variables_nodes` will continue to the next variable. If this behaviour in JuMP
         # changes, we must change how variables are created.
         @test isa(e, ErrorException)
+
+        # Check that the error message is not changed.
+        pre1 = "An object of name"
+        pre2 = "is already attached to this model."
+        @test occursin(pre1, e.msg)
+        @test occursin(pre2, e.msg)
     end
 end
 
@@ -25,16 +31,16 @@ end
     Power = ResourceCarrier("Power", 0.0)
     CO2 = ResourceEmit("CO2", 0.0)
     dict = Dict{Resource,Real}()
-    array = Array{Resource}([])
+    vec = Resource[]
 
     source = RefSource("src", FixedProfile(5), FixedProfile(10), FixedProfile(5),
-        dict, [])
-    sink = RefSink( "sink", FixedProfile(20), dict, dict, Array{Data}([]))
+        dict)
+    sink = RefSink( "sink", FixedProfile(20), Dict{Symbol,TimeProfile}(), dict)
     stor = RefStorage("stor", FixedProfile(60), FixedProfile(1), FixedProfile(1),
-        FixedProfile(0), Power, dict, dict, Array{Data}([]))
-    stor_em = RefStorageEmissions("sink-em", FixedProfile(1), FixedProfile(1),
-        FixedProfile(1), FixedProfile(1), CO2, dict, dict, Array{Data}([]))
-    av = GenAvailability("av", array)
+        FixedProfile(0), Power, dict, dict)
+    stor_em = RefStorage("stor-em", FixedProfile(1), FixedProfile(1),
+        FixedProfile(1), FixedProfile(1), CO2, dict, dict)
+    av = GenAvailability("av", vec)
 
     get_types(𝒩) = unique(map(n -> typeof(n), 𝒩))
 

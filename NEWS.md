@@ -1,5 +1,9 @@
 # Release notes
 
+Version 0.6.5 (2024-01-31)
+--------------------------
+ * Updated the restrictions on the fields of individual types to be consistent.
+
 Version 0.6.4 (2024-01-18)
 --------------------------
  * Minor modification to the `EmissionsData` allowing now also time dependent process emissions. This is achieved through switching to a parametric type.

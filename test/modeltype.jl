@@ -21,7 +21,6 @@
             FixedProfile(4),
             Dict(:surplus => FixedProfile(0), :deficit => FixedProfile(100)),
             Dict(Power => 1),
-            [],
         )
 
         resources = [Power, CO2]

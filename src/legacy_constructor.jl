@@ -11,9 +11,9 @@ function RefSource(
     opex_var::TimeProfile,
     opex_fixed::TimeProfile,
     output::Dict{<:Resource,<:Real},
-    data::Array,
+    data::Vector,
     emissions::Dict{<:ResourceEmit,<:Real},
-    )
+)
 
     @warn("This implementation of a `RefSource` will be discontinued in the near future. \
     See the documentation for the new implementation using the `data` field.
@@ -36,8 +36,8 @@ function RefNetwork(
     opex_fixed::TimeProfile,
     input::Dict{<:Resource,<:Real},
     output::Dict{<:Resource,<:Real},
-    data::Array,
-    )
+    data::Vector,
+)
 
     @warn("The implementation of a `RefNetwork` will be discontinued in \
     the near future. The name is replaced by RefNetworkNode, while the fields remain \
@@ -63,8 +63,8 @@ function RefNetworkEmissions(
     output::Dict{<:Resource,<:Real},
     emissions::Dict{<:ResourceEmit,<:Real},
     co2_capture::Real,
-    data::Array,
-    )
+    data::Vector,
+)
 
     @warn("The implementation of a `RefNetworkEmissions` will be discontinued in \
     the near future. See the documentation for the new implementation using the `data` \
@@ -93,8 +93,8 @@ function RefStorageEmissions(
     stor_res::ResourceEmit,
     input::Dict{<:Resource,<:Real},
     output::Dict{<:Resource,<:Real},
-    data::Array,
-    )
+    data::Vector,
+)
 
     @warn("The implementation of a `RefStorageEmissions` will be discontinued in \
     the near future. See the documentation for the new implementation using a parametric \
@@ -111,7 +111,7 @@ function RefStorageEmissions(
         stor_res,
         input,
         output,
-        Array{Data}(data),
+        Vector{Data}(data),
     )
     return tmp
 end
@@ -126,7 +126,7 @@ function GenAvailability(
     id,
     input::Dict{<:Resource,<:Real},
     output::Dict{<:Resource,<:Real},
-    )
+)
 
     @warn("This implementation of a `GenAvailability` will be discontinued in \
     the near future. See the documentation for the new implementation not requiring using \
@@ -148,7 +148,7 @@ function RefSink(
     penalty::Dict{<:Any,<:TimeProfile},
     input::Dict{<:Resource,<:Real},
     emissions::Dict{<:ResourceEmit,<:Real},
-    )
+)
 
     @warn("This implementation of a `RefSink` will be discontinued in the near future. \
     See the documentation for the new implementation using the `data` field. \
@@ -171,7 +171,7 @@ price.
 function OperationalModel(
     emission_limit::Dict{<:ResourceEmit, <:TimeProfile},
     co2_instance::ResourceEmit,
-    )
+)
 
     @warn("this implementation of `OperationalModel` will be discontinued in the near \
     future. See the documentation for the new implementation with the additional field:

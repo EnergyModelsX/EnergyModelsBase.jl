@@ -30,11 +30,11 @@ Direct(id, from::Node, to::Node) = Direct(id, from, to, Linear())
 
 
 """
-    link_sub(ℒ, n::Node)
+    link_sub(ℒ::Vector{<:Link}, n::Node)
 
 Return connected links for a given node `n`.
 """
-function link_sub(ℒ, n::Node)
+function link_sub(ℒ::Vector{<:Link}, n::Node)
     return [ℒ[findall(x -> x.from == n, ℒ)],
             ℒ[findall(x -> x.to   == n, ℒ)]]
 end

@@ -36,7 +36,6 @@
             FixedProfile(10),
             FixedProfile(0),
             Dict(Power => 1),
-            [],
         )
 
         # Test that an inconsistent Sink.Penalty dict is caught by the checks.
@@ -45,7 +44,6 @@
             FixedProfile(3),
             Dict(:surplus => FixedProfile(4), :def => FixedProfile(2)),
             Dict(Power => 1),
-            [],
         )
         @test_throws AssertionError simple_graph(source, sink)
 
@@ -56,7 +54,6 @@
             FixedProfile(3),
             Dict(:surplus => FixedProfile(-4), :deficit => FixedProfile(2)),
             Dict(Power => 1),
-            [],
         )
         @test_throws AssertionError simple_graph(source, sink)
 
@@ -66,7 +63,6 @@
             FixedProfile(3),
             Dict(:surplus => FixedProfile(-4), :deficit => FixedProfile(4)),
             Dict(Power => 1),
-            [],
         )
         m, case, model = simple_graph(source, sink)
         @test termination_status(m) == MOI.OPTIMAL
@@ -81,14 +77,12 @@
             FixedProfile(2),
             FixedProfile(10),
             Dict(Power => 1.5),
-            []
         )
         sink = RefSink(
             "sink",
             OperationalProfile([6, 8, 10, 6, 8]),
             Dict(:surplus => FixedProfile(4), :deficit => FixedProfile(10)),
             Dict(Power => 1),
-            [],
         )
 
         m, case, model = simple_graph(source, sink)
@@ -140,14 +134,12 @@
             FixedProfile(2),
             FixedProfile(10),
             Dict(Power => 1),
-            []
         )
         sink = RefSink(
             "sink",
             FixedProfile(8),
             Dict(:surplus => FixedProfile(4), :deficit => FixedProfile(10)),
             Dict(Power => 1),
-            [],
         )
 
         m, case, model = simple_graph(source, sink)
@@ -188,7 +180,6 @@
                         FixedProfile(2),
                         Dict(:surplus => FixedProfile(-100), :deficit => FixedProfile(100)),
                         Dict(Power => 1),
-                        [],
         )
         m, case, model = simple_graph(source, sink)
         𝒯       = case[:T]
@@ -222,14 +213,12 @@
             FixedProfile(0),
             FixedProfile(10),
             Dict(Power => 1),
-            []
         )
         sink = RefSink(
             "sink",
             FixedProfile(3),
             Dict(:surplus => FixedProfile(4), :deficit => FixedProfile(100)),
             Dict(Power => 1),
-            [],
         )
         m, case, model = simple_graph(source, sink)
         𝒯       = case[:T]
@@ -294,8 +283,8 @@ end
             data_source = [EmissionsProcess(Dict(CO2 => 0.5))]
         else
             output = Dict(Power => 1)
-            data_net = []
-            data_source = []
+            data_net = Vector{Data}([])
+            data_source = Vector{Data}([])
         end
 
         # Used source, network, and sink
@@ -322,7 +311,6 @@ end
             FixedProfile(3),
             Dict(:surplus => FixedProfile(4), :deficit => FixedProfile(100)),
             Dict(Power => 1),
-            [],
         )
 
         resources = [NG, Power, CO2]
@@ -344,7 +332,6 @@ end
                     :deficit => FixedProfile(20),
                 ),
                 Dict(CO2 => 1, Power => 0.02),
-                []
             )
             push!(nodes, CO2_stor)
             append!(links, [Direct(14, source, CO2_stor),  Direct(24, network, CO2_stor)])
@@ -651,7 +638,6 @@ end
     # Function for setting up the system
     function simple_graph(;ops=SimpleTimes(5, 2), demand=FixedProfile(10))
 
-
         # Used source, network, and sink
         source = RefSource(
             "source",
@@ -659,7 +645,6 @@ end
             FixedProfile(10),
             FixedProfile(0),
             Dict(Power => 1),
-            [],
         )
         aux_source = RefSource(
             "aux",
@@ -667,7 +652,6 @@ end
             FixedProfile(10),
             FixedProfile(0),
             Dict(aux => 1),
-            [],
         )
         storage = RefStorage(
             "storage",
@@ -678,7 +662,6 @@ end
             Power,
             Dict(Power => 1, aux => 0.05),
             Dict(Power => 1),
-            Array{Data}([])
         )
 
         sink = RefSink(
@@ -686,7 +669,6 @@ end
             demand,
             Dict(:surplus => FixedProfile(4), :deficit => FixedProfile(1000)),
             Dict(Power => 1),
-            [],
         )
 
         T = TwoLevel(2, 2, ops; op_per_strat=duration(ops))
@@ -959,7 +941,6 @@ end
             FixedProfile(10),
             FixedProfile(0),
             Dict(NG => 1),
-            Array{Data}([])
         )
         network = RefNetworkNode(
             "network",
@@ -979,7 +960,6 @@ end
             CO2,
             Dict(CO2 => 1),
             Dict(CO2 => 1),
-            Array{Data}([])
         )
 
         sink = RefSink(
@@ -987,7 +967,6 @@ end
             FixedProfile(10),
             Dict(:surplus => FixedProfile(0), :deficit => FixedProfile(10000)),
             Dict(Power => 1),
-            [],
         )
 
         T = TwoLevel(2, 2, ops; op_per_strat=duration(ops))
