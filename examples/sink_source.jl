@@ -78,7 +78,7 @@ end
 # Create the case and model data and run the model
 case, model = generate_data()
 optimizer = optimizer_with_attributes(HiGHS.Optimizer, MOI.Silent() => true)
-m = EMB.run_model(case, model, optimizer)
+m = run_model(case, model, optimizer)
 
 # Inspect some of the results
 source, sink = case[:nodes]
