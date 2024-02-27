@@ -250,7 +250,7 @@ function constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Creation of the individual constraints.
-    @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
+    @constraint(m, con_em_tot[t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
         m[:emissions_total][t, p] ==
             sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ᵉᵐ)
     )
