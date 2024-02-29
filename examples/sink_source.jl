@@ -1,6 +1,6 @@
 using Pkg
 # Activate the local environment including EnergyModelsBase, HiGHS, PrettyTables
-Pkg.activate()
+Pkg.activate(@__DIR__)
 # Install the dependencies.
 Pkg.instantiate()
 

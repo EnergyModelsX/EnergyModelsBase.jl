@@ -12,5 +12,5 @@
             end
         end
     end
-    Pkg.activate()
+    Pkg.activate(@__DIR__)
 end
