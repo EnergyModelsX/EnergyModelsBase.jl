@@ -7,10 +7,15 @@ How to add packages is explained in the *[Quick start](https://energymodelsx.git
 You can run from the Julia REPL the following code:
 
 ```julia
-# Starts the Julia REPL
-julia> using EnergyModelsBase
+# Import EnergyModelsBase
+using EnergyModelsBase
+
 # Get the path of the examples directory
-julia> exdir = joinpath(pkgdir(EnergyModelsBase), "examples")
-# Include the code into the Julia REPL to run the first example
-julia> include(joinpath(exdir, "sink_source.jl"))
+exdir = joinpath(pkgdir(EnergyModelsBase), "examples")
+
+# Include the code into the Julia REPL to run the simple sink-source example
+include(joinpath(exdir, "sink_source.jl"))
+
+# Include the code into the Julia REPL to run the simple network example
+include(joinpath(exdir, "sink_source.jl"))
 ```
