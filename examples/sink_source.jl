@@ -1,20 +1,24 @@
 using Pkg
-# Activate the test-environment, where PrettyTables and HiGHS are added as dependencies.
-Pkg.activate(joinpath(@__DIR__, "../test"))
+# Activate the local environment including EnergyModelsBase, HiGHS, PrettyTables
+Pkg.activate(@__DIR__)
 # Install the dependencies.
 Pkg.instantiate()
-# Add the package EnergyModelsBase to the environment.
-Pkg.develop(path=joinpath(@__DIR__, ".."))
 
+# Import the required packages
 using EnergyModelsBase
 using JuMP
 using HiGHS
 using PrettyTables
 using TimeStruct
 
+"""
+    generate_example_data()
 
-function generate_data()
-    @info "Generate case data"
+Generate the data for an example consisting of an electricity source and sink. It shows how
+the source adjusts to the demand.
+"""
+function generate_example_data()
+    @info "Generate case data - Simple sink-source example"
 
     # Define the different resources and their emission intensity in tCO2/MWh
     Power = ResourceCarrier("Power", 0.0)
@@ -30,7 +34,7 @@ function generate_data()
     # can also be extracted using the function `duration` of a `SimpleTimes` structure.
     # This implies, that a strategic period is 8 times longer than an operational period,
     # resulting in the values below as "/8h".
-    op_per_strat = duration(operational_periods)
+    op_per_strat = op_duration * op_number
 
     # Creation of the time structure and global data
     T = TwoLevel(2, 1, operational_periods; op_per_strat)
@@ -44,14 +48,14 @@ function generate_data()
     # demand/sink and source
     nodes = [
         RefSource(
-            1,                          # Node id
+            "electricity source",       # Node id
             FixedProfile(1e12),         # Capacity in MW
             FixedProfile(30),           # Variable OPEX in EUR/MW
             FixedProfile(0),            # Fixed OPEX in EUR/8h
             Dict(Power => 1),           # Output from the Node, in this gase, Power
         ),
         RefSink(
-            2,                          # Node id
+            "electricity demand",       # Node id
             OperationalProfile([20 30 40 30]), # Demand in MW
             Dict(:surplus => FixedProfile(0), :deficit => FixedProfile(1e6)),
             # Line above: Surplus and deficit penalty for the node in EUR/MWh
@@ -61,7 +65,7 @@ function generate_data()
 
     # Connect all nodes with the availability node for the overall energy/mass balance
     links = [
-        Direct(12, nodes[1], nodes[2], Linear())
+        Direct("source-demand", nodes[1], nodes[2], Linear())
     ]
 
     # WIP data structure
@@ -74,13 +78,12 @@ function generate_data()
     return case, model
 end
 
-
-# Create the case and model data and run the model
-case, model = generate_data()
+# Generate the case and model data and run the model
+case, model = generate_example_data()
 optimizer = optimizer_with_attributes(HiGHS.Optimizer, MOI.Silent() => true)
 m = run_model(case, model, optimizer)
 
-# Inspect some of the results
+# Display some results
 source, sink = case[:nodes]
 @info "Capacity usage of the power source"
 pretty_table(
