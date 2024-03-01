@@ -144,7 +144,7 @@ case, model = generate_example_data()
 optimizer = optimizer_with_attributes(HiGHS.Optimizer, MOI.Silent() => true)
 m = run_model(case, model, optimizer)
 
-# Display some the results
+# Display some results
 ng_ccs_pp, coal_pp,  = case[:nodes][[4,5]]
 @info "Capacity usage of the coal power plant"
 pretty_table(

@@ -83,7 +83,7 @@ case, model = generate_example_data()
 optimizer = optimizer_with_attributes(HiGHS.Optimizer, MOI.Silent() => true)
 m = run_model(case, model, optimizer)
 
-# Display some the results
+# Display some results
 source, sink = case[:nodes]
 @info "Capacity usage of the power source"
 pretty_table(

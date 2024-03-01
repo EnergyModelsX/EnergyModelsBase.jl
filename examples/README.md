@@ -17,5 +17,5 @@ exdir = joinpath(pkgdir(EnergyModelsBase), "examples")
 include(joinpath(exdir, "sink_source.jl"))
 
 # Include the code into the Julia REPL to run the simple network example
-include(joinpath(exdir, "sink_source.jl"))
+include(joinpath(exdir, "network.jl"))
 ```
