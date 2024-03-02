@@ -8,6 +8,7 @@ Unversioned
  * Added functions `inputs`, `outputs`, and `data_nodes` for `Availability` and `outputs` for `Source` nodes.
  * Allow availability to not require all resources in the the `input` and `output` field.
  * Moved all files declaring structures to a separate folder for improved readability.
+ * Reworked the structure of the test folder.
 
 Version 0.6.5 (2024-01-31)
 --------------------------
