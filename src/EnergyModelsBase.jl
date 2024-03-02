@@ -14,11 +14,11 @@ using JuMP
 using TimeStruct; const TS = TimeStruct
 
 # Different introduced types
-include("structures_resource.jl")
-include("structures_data.jl")
-include("structures_node.jl")
-include("structures_link.jl")
-include("structures_model.jl")
+include(joinpath("structures", "resource.jl"))
+include(joinpath("structures", "data.jl"))
+include(joinpath("structures", "node.jl"))
+include(joinpath("structures", "link.jl"))
+include(joinpath("structures", "model.jl"))
 
 include("utils.jl")
 include("model.jl")
