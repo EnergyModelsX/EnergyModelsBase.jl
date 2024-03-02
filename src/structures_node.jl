@@ -207,12 +207,6 @@ is_sink(n::Node) = false
 is_sink(n::Sink) = true
 
 
-"""
-    nodes_sub(𝒩::Array{<:Node}, sub/subs)
-
-Return nodes that are of type sub/subs for a given Array `::Array{<:Node}`.
-"""
-node_sub(𝒩::Array{<:Node}, sub = NetworkNode) = 𝒩[findall(x -> isa(x, sub), 𝒩)]
 
 """
     has_emissions(n::Node)
@@ -231,16 +225,23 @@ Return nodes that have emission data for a given Array `::Array{<:Node}`.
 nodes_emissions(𝒩::Array{<:Node}) = filter(has_emissions, 𝒩)
 
 """
+    nodes_sub(𝒩::Array{<:Node}, sub)
+
+Return nodes that are of type `sub` for a given Array `𝒩::Array{<:Node}`.
+"""
+nodes_sub(𝒩::Array{<:Node}, sub = NetworkNode) = filter(x -> isa(x, sub), 𝒩)
+
+"""
     nodes_not_sub(𝒩::Array{<:Node}, sub)
 
-Return nodes that are not of type `sub` for a given Array `::Array{<:Node}`.
+Return nodes that are not of type `sub` for a given Array `𝒩::Array{<:Node}`.
 """
 nodes_not_sub(𝒩::Array{<:Node}, sub = NetworkNode) = filter(x -> ~isa(x, sub), 𝒩)
 
 """
     nodes_not_av(𝒩::Array{<:Node})
 
-Return nodes that are not `Availability` nodes for a given Array `::Array{<:Node}`.
+Return nodes that are not `Availability` nodes for a given Array `𝒩::Array{<:Node}`.
 """
 nodes_not_av(𝒩::Array{<:Node}) = filter(x -> ~isa(x, Availability), 𝒩)
 
@@ -308,6 +309,7 @@ inputs(n::Source) = []
 Returns the value of an input resource `p` of a node `n`.
 """
 inputs(n::Node, p::Resource) = n.input[p]
+inputs(n::Availability, p::Resource) = 1
 inputs(n::Source, p::Resource) = nothing
 
 """
@@ -318,6 +320,7 @@ Returns the output resources of a node `n`. These resources are specified via th
 """
 outputs(n::Node) = collect(keys(n.output))
 outputs(n::Availability) = n.output
+outputs(n::Sink) = []
 
 """
     outputs(n::Node, p::Resource)
@@ -325,6 +328,8 @@ outputs(n::Availability) = n.output
 Returns the value of an output resource `p` of a node `n`.
 """
 outputs(n::Node, p::Resource) = n.output[p]
+outputs(n::Availability, p::Resource) = 1
+outputs(n::Sink, p::Resource) = nothing
 
 """
     node_data(n::Node)
@@ -332,6 +337,7 @@ outputs(n::Node, p::Resource) = n.output[p]
 Returns the `Data` array of node `n`.
 """
 node_data(n::Node) = n.data
+node_data(n::Availability) = []
 
 """
     storage_resource(n::Storage)

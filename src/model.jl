@@ -419,7 +419,7 @@ available node except if one wants to include as well transport between differen
 function create_node(m, n::Availability, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Mass/energy balance constraints for an availability node.
-    @constraint(m, [t ∈ 𝒯, p ∈ 𝒫],
+    @constraint(m, [t ∈ 𝒯, p ∈ inputs(n)],
         m[:flow_in][n, t, p] == m[:flow_out][n, t, p])
 end
 

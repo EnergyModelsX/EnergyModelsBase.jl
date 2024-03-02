@@ -5,6 +5,8 @@ Unversioned
 --------------------------
  * Fixed a bug when running the examples from a non-cloned version of `EnergyModelsBase`.
  * This was achieved through a separate Project.toml in the examples.
+ * Added functions `inputs`, `outputs`, and `data_nodes` for `Availability` and `outputs` for `Source` nodes.
+ * Allow availability to not require all resources in the the `input` and `output` field.
 
 Version 0.6.5 (2024-01-31)
 --------------------------
