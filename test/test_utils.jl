@@ -1,11 +1,11 @@
-@testset "" begin
+@testset "Variable creation" begin
     m = JuMP.Model()
 
     function create_variable(range)
         @variable(m, same_name[range] ≥ 0)
     end
 
-    # Create a varaible named `same_name`, creating it once should be ok, but twice is not
+    # Create a variable named `same_name`, creating it once should be ok, but twice is not
     # allowed in jump, regardless of the indices.
     create_variable(1:4)
     try

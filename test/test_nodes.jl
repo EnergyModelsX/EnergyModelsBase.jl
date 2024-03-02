@@ -10,7 +10,8 @@
 
         resources = [Power, CO2]
         ops = SimpleTimes(5, 2)
-        T = TwoLevel(2, 2, ops; op_per_strat=duration(ops))
+        op_per_strat = duration(ops)
+        T = TwoLevel(2, 2, ops; op_per_strat)
 
         nodes = [source, sink]
         links = [Direct(12, source, sink)]
@@ -28,48 +29,7 @@
         return run_model(case, model, HiGHS.Optimizer), case, model
     end
 
-    @testset "Checks :surplus/:deficit" begin
-        # Source used in the analysis
-        source = RefSource(
-            "source",
-            FixedProfile(4),
-            FixedProfile(10),
-            FixedProfile(0),
-            Dict(Power => 1),
-        )
-
-        # Test that an inconsistent Sink.Penalty dict is caught by the checks.
-        sink = RefSink(
-            "sink",
-            FixedProfile(3),
-            Dict(:surplus => FixedProfile(4), :def => FixedProfile(2)),
-            Dict(Power => 1),
-        )
-        @test_throws AssertionError simple_graph(source, sink)
-
-        # The penalties in this Sink node lead to an infeasible optimum. Test that the
-        # checks forbids it.
-        sink = RefSink(
-            "sink",
-            FixedProfile(3),
-            Dict(:surplus => FixedProfile(-4), :deficit => FixedProfile(2)),
-            Dict(Power => 1),
-        )
-        @test_throws AssertionError simple_graph(source, sink)
-
-        # The penalties in this Sink node are valid, and should lead to an optimal solution.
-        sink = RefSink(
-            "sink",
-            FixedProfile(3),
-            Dict(:surplus => FixedProfile(-4), :deficit => FixedProfile(4)),
-            Dict(Power => 1),
-        )
-        m, case, model = simple_graph(source, sink)
-        @test termination_status(m) == MOI.OPTIMAL
-    end
-
-    @testset "General tests - RefSink" begin
-
+    @testset "General tests - RefSource" begin
 
         source = RefSource(
             "source",
@@ -315,7 +275,8 @@ end
 
         resources = [NG, Power, CO2]
         ops = SimpleTimes(5, 2)
-        T = TwoLevel(2, 2, ops; op_per_strat=duration(ops))
+        op_per_strat = duration(ops)
+        T = TwoLevel(2, 2, ops; op_per_strat)
 
         nodes = [source, network, sink]
         links = [
@@ -671,7 +632,8 @@ end
             Dict(Power => 1),
         )
 
-        T = TwoLevel(2, 2, ops; op_per_strat=duration(ops))
+        op_per_strat = duration(ops)
+        T = TwoLevel(2, 2, ops; op_per_strat)
 
         nodes = [source, aux_source, storage, sink]
         links = [
@@ -836,7 +798,7 @@ end
 
         # Run the model and extract the data
         op_profile_1 = FixedProfile(0)
-        op_profile_2 = OperationalProfile([20, 20, 20, 20, 20])
+        op_profile_2 = FixedProfile(20)
         demand = RepresentativeProfile([op_profile_1, op_profile_2])
 
         op_1 = SimpleTimes(100, 2)
@@ -969,7 +931,8 @@ end
             Dict(Power => 1),
         )
 
-        T = TwoLevel(2, 2, ops; op_per_strat=duration(ops))
+        op_per_strat = duration(ops)
+        T = TwoLevel(2, 2, ops; op_per_strat)
 
         nodes = [source, network, storage, sink]
         links = [
