@@ -1,6 +1,6 @@
 # Release notes
 
-## Unversioned
+## Version 0.6.6 (2024-03-XX)
 
 ### Examples
 
@@ -26,7 +26,8 @@
 
 ## Version 0.6.4 (2024-01-18)
 
-* Minor modification to the `EmissionsData` allowing now also time dependent process emissions. This is achieved through switching to a parametric type.
+* Minor modification to the `EmissionsData` allowing now also time dependent process emissions.
+* This is achieved through switching to a parametric type.
 
 ## Version 0.6.3 (2024-01-17)
 

@@ -257,108 +257,191 @@ Check that the fields of a `Node` corresponds to required structure.
 """
 function check_node(n::Node, 𝒯, modeltype::EnergyModel)
 end
+"""
+    check_node(n::Availability, 𝒯, modeltype::EnergyModel)
+
+This method checks that an `Availability` node is valid. By default, that does not include
+any checks.
+"""
 function check_node(n::Availability, 𝒯, modeltype::EnergyModel)
 end
+"""
+    check_node(n::Source, 𝒯, modeltype::EnergyModel)
+
+This method checks that a `Source` node is valid.
+
+These checks are always performed, if the user is not creating a new method. Hence, it is
+important that a new `Source` type includes at least the same fields as in the `RefSource`
+node or that a new `Source` type receives a new method for `check_node`.
+
+## Checks
+ - The field `cap` is required to be non-negative.
+ - The values of the dictionary `output` are required to be non-negative.
+ - The value of the field `fixed_opex` is required to be non-negative.
+"""
 function check_node(n::Source, 𝒯, modeltype::EnergyModel)
 
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     @assert_or_log(
-        sum(capacity(n, t) >= 0 for t ∈ 𝒯) == length(𝒯),
+        sum(capacity(n, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
         "The capacity must be non-negative."
     )
     @assert_or_log(
-        sum(opex_fixed(n, t_inv) >= 0 for t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ),
+        sum(opex_fixed(n, t_inv) ≥ 0 for t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ),
         "The fixed OPEX must be non-negative."
     )
     @assert_or_log(
-        sum(outputs(n, p) >= 0 for p ∈ outputs(n)) == length(outputs(n)),
+        sum(outputs(n, p) ≥ 0 for p ∈ outputs(n)) == length(outputs(n)),
         "The values for the Dictionary `output` must be non-negative."
     )
 end
+"""
+    check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel)
+
+This method checks that a `NetworkNode` node is valid.
+
+These checks are always performed, if the user is not creating a new method. Hence, it is
+important that a new `NetworkNode` type includes at least the same fields as in the
+`RefNetworkNode` node or that a new `NetworkNode` type receives a new method for `check_node`.
+
+## Checks
+ - The field `cap` is required to be non-negative.
+ - The values of the dictionary `input` are required to be non-negative.
+ - The values of the dictionary `output` are required to be non-negative.
+ - The value of the field `fixed_opex` is required to be non-negative.
+"""
 function check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel)
 
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     @assert_or_log(
-        sum(capacity(n, t) >= 0 for t ∈ 𝒯) == length(𝒯),
+        sum(capacity(n, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
         "The capacity must be non-negative."
     )
     @assert_or_log(
-        sum(inputs(n, p) >= 0 for p ∈ inputs(n)) == length(inputs(n)),
+        sum(inputs(n, p) ≥ 0 for p ∈ inputs(n)) == length(inputs(n)),
         "The values for the Dictionary `input` must be non-negative."
     )
     @assert_or_log(
-        sum(outputs(n, p) >= 0 for p ∈ outputs(n)) == length(outputs(n)),
+        sum(outputs(n, p) ≥ 0 for p ∈ outputs(n)) == length(outputs(n)),
         "The values for the Dictionary `output` must be non-negative."
     )
     @assert_or_log(
-        sum(opex_fixed(n, t_inv) >= 0 for t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ),
+        sum(opex_fixed(n, t_inv) ≥ 0 for t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ),
         "The fixed OPEX must be non-negative."
     )
 end
+"""
+    check_node(n::Storage, 𝒯, modeltype::EnergyModel)
+
+This method checks that a `Storage` node is valid.
+
+These checks are always performed, if the user is not creating a new method. Hence, it is
+important that a new `Storage` type includes at least the same fields as in the
+`RefStorage` node or that a new `Storage` type receives a new method for `check_node`.
+
+## Checks
+ - The value of the field `rate_cap` is required to be non-negative.
+ - The value of the field `stor_cap` is required to be non-negative.
+ - The values of the dictionary `input` are required to be non-negative.
+ - The values of the dictionary `output` are required to be non-negative.
+ - The value of the field `fixed_opex` is required to be non-negative.
+"""
 function check_node(n::Storage, 𝒯, modeltype::EnergyModel)
 
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+    cap = capacity(n)
 
     @assert_or_log(
-        sum(capacity(n, t).rate >= 0 for t ∈ 𝒯) == length(𝒯),
+        sum(cap.rate[t] ≥ 0 for t ∈ 𝒯) == length(𝒯),
         "The rate capacity must be non-negative."
     )
     @assert_or_log(
-        sum(capacity(n, t).level >= 0 for t ∈ 𝒯) == length(𝒯),
+        sum(cap.level[t] ≥ 0 for t ∈ 𝒯) == length(𝒯),
         "The level capacity must be non-negative."
     )
     @assert_or_log(
-        sum(inputs(n, p) >= 0 for p ∈ inputs(n)) == length(inputs(n)),
+        sum(inputs(n, p) ≥ 0 for p ∈ inputs(n)) == length(inputs(n)),
         "The values for the Dictionary `input` must be non-negative."
     )
     @assert_or_log(
-        sum(outputs(n, p) >= 0 for p ∈ outputs(n)) == length(outputs(n)),
+        sum(outputs(n, p) ≥ 0 for p ∈ outputs(n)) == length(outputs(n)),
         "The values for the Dictionary `output` must be non-negative."
     )
     @assert_or_log(
-        sum(opex_fixed(n, t_inv) >= 0 for t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ),
+        sum(opex_fixed(n, t_inv) ≥ 0 for t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ),
         "The fixed OPEX must be non-negative."
     )
 end
+"""
+    check_node(n::Sink, 𝒯, modeltype::EnergyModel)
+
+This method checks that a `Sink` node is valid.
+
+These checks are always performed, if the user is not creating a new method. Hence, it is
+important that a new `Sink` type includes at least the same fields as in the `RefSink` node
+or that a new `Source` type receives a new method for `check_node`.
+
+## Checks
+ - The field `cap` is required to be non-negative.
+ - The values of the dictionary `input` are required to be non-negative.
+ - The dictionary `penalty` is required to have the keys `:deficit` and `:surplus`.
+ - The sum of the values `:deficit` and `:surplus` in the dictionary `penalty` has to be \
+ non-negative to avoid an infeasible model.
+"""
 function check_node(n::Sink, 𝒯, modeltype::EnergyModel)
     @assert_or_log(
-        sum(capacity(n, t) >= 0 for t ∈ 𝒯) == length(𝒯),
+        sum(capacity(n, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
         "The capacity must be non-negative."
     )
     @assert_or_log(
-        sum(inputs(n, p) >= 0 for p ∈ inputs(n)) == length(inputs(n)),
+        sum(inputs(n, p) ≥ 0 for p ∈ inputs(n)) == length(inputs(n)),
         "The values for the Dictionary `input` must be non-negative."
     )
     @assert_or_log(
         :surplus ∈ keys(n.penalty) && :deficit ∈ keys(n.penalty),
-        "The entries :surplus and :deficit are required in Sink.penalty"
+        "The entries :surplus and :deficit are required in the field `penalty`"
     )
 
     if :surplus ∈ keys(n.penalty) && :deficit ∈ keys(n.penalty)
         # The if-condition was checked above.
         @assert_or_log(
             sum(surplus_penalty(n, t) + deficit_penalty(n, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
-            "An inconsistent combination of :surplus and :deficit lead to a infeasible model."
+            "An inconsistent combination of `:surplus` and `:deficit` leads to an infeasible model."
         )
     end
 end
 
 
 """
-    check_node_data(n, 𝒯, modeltype::EnergyModel)
+    check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel)
 
 Check that the included `Data` types of a `Node` corresponds to required structure.
 This function will always result in a multiple error message, if several instances of the
 same supertype is loaded.
 """
 check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel) = nothing
+
+
+"""
+    check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel)
+
+Check that the included `Data` types of a `Node` corresponds to required structure.
+This function will always result in a multiple error message, if several instances of the
+same supertype is loaded.
+
+## Checks
+- Each node can only have a single `EmissionsData`.
+- Time profiles for process emissions, if present.
+- The value of the field `co2_capture` is required to be in the range ``[0, 1]``, if \
+[`CaptureData`](@ref) is used.
+"""
 function check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel)
 
     em_data = filter(data -> typeof(data) <: EmissionsData, node_data(n))
     @assert_or_log(
-        length(em_data) <= 1,
+        length(em_data) ≤ 1,
         "Only one `EmissionsData` can be added to each node."
     )
 
@@ -375,7 +458,7 @@ function check_node_data(n::Node, data::CaptureData, 𝒯, modeltype::EnergyMode
 
     em_data = filter(data -> typeof(data) <: EmissionsData, node_data(n))
     @assert_or_log(
-        length(em_data) <= 1,
+        length(em_data) ≤ 1,
         "Only one `EmissionsData` can be added to each node."
     )
 
