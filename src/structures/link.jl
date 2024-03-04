@@ -32,7 +32,8 @@ Direct(id, from::Node, to::Node) = Direct(id, from, to, Linear())
 """
     link_sub(ℒ::Vector{<:Link}, n::Node)
 
-Return connected links for a given node `n`.
+Return connected links from the vector `ℒ` for a given node `n` as array.
+The first subarray corresponds to the `from` field, while the second to the `to` field.
 """
 function link_sub(ℒ::Vector{<:Link}, n::Node)
     return [filter(x -> x.from == n, ℒ),

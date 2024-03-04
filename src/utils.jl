@@ -107,3 +107,110 @@ Provide a simplified function for returning the combination of the functions
 duration(t) * multiple_strat(t_inv, t) * probability(t)
 """
 multiple(t_inv, t) = duration(t) * multiple_strat(t_inv, t) * probability(t)
+
+# function previous_level(
+#     m,
+#     n::Storage,
+#     prev_pers::PrevPeriods{Nothing, Nothing, Nothing},
+#     t::TS.TimePeriod,
+#     modeltype::EnergyModel,
+# )
+#     @info "Frist operational period in the first strategic period"
+
+# end
+
+function previous_level(
+    m,
+    n::Storage,
+    prev_pers::PrevPeriods{<:nt, Nothing, Nothing},
+    t::TS.TimePeriod,
+    modeltype::EnergyModel,
+)
+
+    # Return the previous storage level based on cyclic constraints when representative
+    # periods are included
+    return @expression(
+        m,
+        # Initial storage in previous representative period
+        m[:stor_level][n, first(prev_pers.last)] -
+        m[:stor_level_Δ_op][n, first(prev_pers.last)] * duration(first(prev_pers.last)) +
+        # Increase in previous representative period
+        m[:stor_level_Δ_rp][n, prev_pers.last]
+    )
+
+    # # Return the previous storage level as 0 in the first representative period of the first
+    # # strategic period
+    # return @expression(m, 0)
+end
+function previous_level(
+    m,
+    n::RefStorage{R},
+    prev_pers::PrevPeriods{<:nt, Nothing, Nothing},
+    t::TS.TimePeriod,
+    modeltype::EnergyModel,
+) where {R<:ResourceEmit}
+
+    # Return the previous storage level as 0 in the first representative period of the first
+    # strategic period
+    return @expression(m, 0)
+end
+function previous_level(
+    m,
+    n::Storage,
+    prev_pers::PrevPeriods{<:nt, <:TS.AbstractStrategicPeriod, Nothing},
+    t::TS.TimePeriod,
+    modeltype::EnergyModel,
+)
+
+    # Return the previous storage level based on cyclic constraints
+    return @expression(
+        m,
+        # Storage level in previous operational period
+        m[:stor_level][n, prev_pers.last]
+    )
+
+    # # Return the previous storage level as 0 in the first representative period of the first
+    # # strategic period
+    # return @expression(m, 0)
+end
+function previous_level(
+    m,
+    n::RefStorage{R},
+    prev_pers::PrevPeriods{<:nt, <:TS.AbstractStrategicPeriod, Nothing},
+    t::TS.TimePeriod,
+    modeltype::EnergyModel,
+) where {R<:ResourceEmit}
+
+    # Return the previous storage level as 0 for the reference storage unit
+    return @expression(m, 0)
+end
+function previous_level(
+    m,
+    n::Storage,
+    prev_pers::PrevPeriods{<:nt, <:TS.AbstractRepresentativePeriod, Nothing},
+    t::TS.TimePeriod,
+    modeltype::EnergyModel,
+)
+
+    # Return the previous storage level with the increase in the representative period
+    return @expression(
+        m,
+        # Initial storage in previous rp
+        m[:stor_level][n, first(prev_pers.rp)] -
+        m[:stor_level_Δ_op][n, first(prev_pers.rp)] * duration(first(prev_pers.rp)) +
+        # Increase in previous representative period
+        m[:stor_level_Δ_rp][n, prev_pers.rp]
+    )
+end
+
+function previous_level(
+    m,
+    n::Storage,
+    prev_pers::PrevPeriods,
+    t::TS.TimePeriod,
+    modeltype::EnergyModel,
+)
+
+    # Previous storage level, as there are no changes
+    return @expression(m, m[:stor_level][n, prev_pers.op])
+end

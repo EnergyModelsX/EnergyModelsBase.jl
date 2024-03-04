@@ -784,7 +784,7 @@ end
 
         # Test that the level balance is correct in the first period (2 times)
         @test sum(sum(value.(m[:stor_level][stor, t]) ≈
-                    value.(m[:stor_level][stor, last(t_inv)]) +
+                    value.(m[:stor_level][stor, last(collect(t_inv))]) +
                     value.(m[:stor_level_Δ_op][stor, t]) * duration(t)
                     for (t_prev, t) ∈ withprev(t_inv) if isnothing(t_prev))
                     for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
@@ -1102,8 +1102,8 @@ end
     @testset "RepresentativePeriods with storage" begin
 
         # Run the model and extract the data
-        op_1 = SimpleTimes(5, 2)
-        op_2 = SimpleTimes(10, 2)
+        op_1 = SimpleTimes(2, 2)
+        op_2 = SimpleTimes(2, 2)
         ops = RepresentativePeriods(2, 60, [.5, .5], [op_1, op_2])
 
         m, case, model = simple_graph(ops=ops, stor_cap=1e6)

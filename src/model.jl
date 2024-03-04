@@ -295,7 +295,7 @@ function objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Calculation of the objective function.
     @objective(m, Max,
-        -sum((opex[t_inv] + emissions[t_inv]) * duration(t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ)
+        -sum((opex[t_inv] + emissions[t_inv]) * duration_strat(t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ)
     )
 end
 
