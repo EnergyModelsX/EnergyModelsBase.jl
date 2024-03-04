@@ -111,6 +111,13 @@ end
 
     day = SimpleTimes(24, 1)
 
+    # Test that there is an error with wrong strategic profiles
+    # - EMB.check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel)
+    ts = TwoLevel(2, 1, day)
+    ops = OperationalProfile(ones(24))
+    tp = StrategicProfile([ops, ops, ops])
+    @test_throws AssertionError simple_graph(ts, tp)
+
     # Test that there is an error with wrong operational profiles
     # - EMB.check_profile(fieldname, value::OperationalProfile, ts::SimpleTimes, sp)
     ts = TwoLevel(2, 1, day)

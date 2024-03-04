@@ -153,7 +153,7 @@ function check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel)
     end
     @assert_or_log len_vals == len_simp "Field '" * string(fieldname) * message
     for t_inv ∈ 𝒯ᴵⁿᵛ
-        check_profile(fieldname, value[t_inv], t_inv.operational, t_inv.sp)
+        check_profile(fieldname, value.vals[t_inv.sp], t_inv.operational, t_inv.sp)
     end
 end
 function check_profile(fieldname, value, 𝒯::TwoLevel)
