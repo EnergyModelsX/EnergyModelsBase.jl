@@ -15,4 +15,5 @@ const TEST_ATOL = 1e-6
     include("test_modeltype.jl")
     include("test_examples.jl")
     include("test_utils.jl")
+    include("test_checks.jl")
 end

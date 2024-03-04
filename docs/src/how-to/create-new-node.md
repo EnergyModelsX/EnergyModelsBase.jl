@@ -20,6 +20,12 @@ While step 1 is always required, it is possible to omit step 2 if no new variabl
 It is also possible to create unregistered variables for each instance of the node.
 This is however only advised if you do not need to access the value of the variables after the optimization.
 
+!!! warning
+    When creating a new node type, you are free to change the field names to whatever name you desire. However, if you change the  field names, there are several things to consider:
+
+    1. Certain functions are used within the core structure of the code for accessing the fields. These functions can be found in the *[Public Interface](@ref functions_fields_node)*.
+    2. The function [`EMB.check_node`](@ref) conducts some checks on the individual node data. If the fields and structure from the reference nodes are not present, you also have to create a new function for your node.
+
 ## Additional tips for creating new nodes
 
 1. If the `NewNodeType` should be able to include investments, it is necessary to i) call the function [`constraints_capacity_installed`](@ref).

@@ -3,7 +3,8 @@
 # if the test fails, without throwing an exception. When set to false, the
 # macro just acts as a normal @assert macro, and interrupts the program at
 # first failed test.
-ASSERTS_AS_LOG = true
+global ASSERTS_AS_LOG = true
+global TEST_ENV = false
 
 # Global vector used to gather the log messages.
 logs = []
@@ -46,11 +47,17 @@ function check_data(case, modeltype::EnergyModel)
     global logs = []
     log_by_element = Dict()
 
+    𝒯 = case[:T]
+
     for n ∈ case[:nodes]
+
         # Empty the logs list before each check.
         global logs = []
-        check_node(n, case[:T], modeltype)
-        check_time_structure(n, case[:T])
+        check_node(n, 𝒯, modeltype)
+        for data ∈ node_data(n)
+            check_node_data(n, data, 𝒯, modeltype)
+        end
+        check_time_structure(n, 𝒯)
         # Put all log messages that emerged during the check, in a dictionary with the node as key.
         log_by_element[n] = logs
     end
@@ -64,7 +71,6 @@ function check_data(case, modeltype::EnergyModel)
     end
 end
 
-
 """
     compile_logs(case, log_by_element)
 
@@ -75,10 +81,10 @@ function compile_logs(case, log_by_element)
 
     for (element, messages) ∈ log_by_element
         if length(messages) > 0
-            log_message *= string("\n### ", element, "\n")
+            log_message *= string("\n### ", element, "\n\n")
         end
         for l ∈ messages
-            log_message *= string(" * ", l, "\n")
+            log_message *= string("* ", l, "\n")
         end
     end
 
@@ -86,13 +92,16 @@ function compile_logs(case, log_by_element)
 
     some_error = sum(length(v) > 0 for (k, v) in log_by_element) > 0
     if some_error
-        # Write the messages to file only if there was an error.
-        io = open("consistency_log.md", "w")
-        println(io, log_message)
-        close(io)
+        # Only print and write the logs if not in a test environment
+        if !TEST_ENV
+            # Write the messages to file only if there was an error.
+            io = open("consistency_log.md", "w")
+            println(io, log_message)
+            close(io)
 
-        # Print the log to the console.
-        @error log_message
+            # Print the log to the console if test is not loaded
+            @error log_message
+        end
 
         # If there was at least one error in the checks, an exception is thrown.
         throw(AssertionError("Inconsistent case data."))
@@ -117,123 +126,353 @@ Check that all fields of a `Node` that are of type `TimeProfile` correspond to t
 """
 function check_time_structure(n::Node, 𝒯)
     for fieldname ∈ fieldnames(typeof(n))
-        if isa(getfield(n, fieldname), TimeProfile)
-            check_profile_field(n.id, fieldname, value, 𝒯)
+        value = getfield(n, fieldname)
+        if isa(value, TimeProfile)
+            check_profile(fieldname, value, 𝒯)
         end
     end
 end
 
 """
-    check_profile_field(fieldname, value::TimeProfile, 𝒯)
+    check_profile(fieldname, value::TimeProfile, 𝒯)
 
 Check that an individual `TimeProfile` corresponds to the time structure `𝒯`.
+It currently does not include support for identifying `OperationalProfile`s.
 """
-function check_profile_field(id, fieldname, value::StrategicProfile, 𝒯::TwoLevel)
+function check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-    @assert_or_log length(value.vals) == length(𝒯ᴵⁿᵛ) "Field '" * string(fieldname) * "' does not match the strategic structure."
+
+    len_vals = length(value.vals)
+    len_simp = length(𝒯ᴵⁿᵛ)
+    if len_vals > len_simp
+        message = "' is shorter than the strategic time structure. \
+        Its last values $(len_vals - len_simp) will be omitted."
+    elseif len_vals < len_simp
+        message = "' is shorter than the strategic time structure. It will use the last \
+        value for the last $(len_simp - len_vals) strategic periods."
+    end
+    @assert_or_log len_vals == len_simp "Field '" * string(fieldname) * message
     for t_inv ∈ 𝒯ᴵⁿᵛ
-        check_profile_field(id, fieldname, value.vals[t_inv.sp], t_inv.operational)
+        check_profile(fieldname, value.vals[t_inv.sp], t_inv.operational, t_inv.sp)
     end
 end
-function check_profile_field(id, fieldname, value, 𝒯::TwoLevel)
+function check_profile(fieldname, value, 𝒯::TwoLevel)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
     for t_inv ∈ 𝒯ᴵⁿᵛ
-        check_profile_field(id, fieldname, value, t_inv.operational, string(t_inv.sp))
+        check_profile(fieldname, value, t_inv.operational, t_inv.sp)
     end
 end
 
-function check_profile_field(id, fieldname, value, t_inv, sp)
-end
-function check_profile_field(
-    id,
+"""
+    check_profile(fieldname, value::TimeProfile, ts::TimeStructure, sp)
+
+Check that an individual `TimeProfile` corresponds to the time structure `ts` in strategic
+period sp. The function flow is designed to provide errors in all situations
+It currently does not include support for identifying `OperationalProfile`s.
+"""
+function check_profile(
     fieldname,
     value::OperationalProfile,
-    t_inv::SimpleTimes,
+    ts::SimpleTimes,
     sp
     )
     len_vals = length(value.vals)
-    len_simp = length(t_inv)
-    println(len_vals-len_simp)
-    @assert_or_log len_vals > len_simp "Field '" * string(id, fieldname) * "\
-        ' is longer than the operational time structure in strategic period \
-        " * sp * ". Its last values $(len_vals - len_simp) will be omitted."
-    @assert_or_log len_vals < len_simp "Field '" * string(id, fieldname) * "\
-        ' is shorter than the operational time structure in strategic period \
-        " * sp * ". I will use the last value for the last $(len_simp - len_vals) \
+    len_simp = length(ts)
+    if len_vals > len_simp
+        message = "' in strategic period $(sp)  is longer than the operational time  \
+        structure. Its last values $(len_vals - len_simp) will be omitted."
+    elseif len_vals < len_simp
+        message = "' in strategic period $(sp) is shorter than the operational \
+        time structure. It will use the last value for the last $(len_simp - len_vals) \
         operational periods."
+    end
+    @assert_or_log len_vals == len_simp "Field '" * string(fieldname) * message
 end
-function check_profile_field(
-    id,
+function check_profile(
     fieldname,
     value::OperationalProfile,
-    t_inv::RepresentativePeriods,
+    ts::RepresentativePeriods,
     sp
     )
-    if sp == "1"
-        @warn "Node " * id * ", field name " * fieldname * ":" "Using OperionalProfile with \
-            RepresentativePeriods is dangerous, as it may lead to unexpected behaviour. \
+    if sp == 1
+        @warn "Field " * string(fieldname) * ": Using `OperionalProfile` with \
+            `RepresentativePeriods` is dangerous, as it may lead to unexpected behaviour. \
             It only works reasonable if all representative periods have an operational \
             time structure of the same length. Otherwise, the last value is repeated. \
-            The system is tested for the first representative period."
+            The system is tested for the all representative periods."
     end
-    rp_1 = collect(repr_periods(t_inv))[1]
-    check_profile_field(id, fieldname, value, rp_1.operational, sp)
+    for t_rp ∈ repr_periods(ts)
+        check_profile(fieldname, value, t_rp.operational, sp)
+    end
 end
 
-function check_profile_field(
-    id,
+function check_profile(
     fieldname,
     value::RepresentativeProfile,
-    t_inv::SimpleTimes,
+    ts::SimpleTimes,
     sp
     )
-
-    if sp == "1"
-        @warn "Node " * id * ", field name " * fieldname * ":" "Using RepresentativeProfile \
-            with SimpleTimes is dangerous, as it may lead to unexpected behaviour. \
+    if sp == 1
+        @warn "Field " * string(fieldname) * ": Using `RepresentativeProfile` \
+            with `SimpleTimes` is dangerous, as it may lead to unexpected behaviour. \
             In this case, only the first profile is used and tested."
     end
-    check_profile_field(id, fieldname, value.vals[1], t_inv, sp)
+    check_profile(fieldname, value.vals[1], ts, sp)
 end
-function check_profile_field(
-    id,
+function check_profile(
     fieldname,
     value::RepresentativeProfile,
-    t_inv::RepresentativePeriods,
+    ts::RepresentativePeriods,
     sp
     )
-    for t_rp ∈ t_inv.rep_periods
-        check_profile_field(id, fieldname, value.vals[1], t_rp, sp)
+
+    len_vals = length(value.vals)
+    len_simp = length(repr_periods(ts))
+    if len_vals > len_simp
+        message = "' is longer than the representative time structure in strategic period \
+        $(sp). Its last values $(len_vals - len_simp) will be omitted."
+    elseif len_vals < len_simp
+        message = "' is shorter than the representative time structure in strategic period \
+        $(sp). It will use the last value for the last $(len_simp - len_vals) \
+        operational periods."
+    end
+    @assert_or_log len_vals == len_simp "Field '\
+    " * string(fieldname) * "' in strategic period $(sp) does not match \
+    the corresponding representative structure."
+    for t_rp ∈ repr_periods(ts)
+        check_profile(
+            fieldname,
+            value.vals[minimum([t_rp.rper, length(value.vals)])],
+            t_rp.operational,
+            sp,
+        )
     end
 end
+check_profile(fieldname, value, ts, sp) = nothing
 
 """
-    check_node(n, 𝒯, modeltype::EnergyModel)
+    check_node(n::Node, 𝒯, modeltype::EnergyModel)
 
 Check that the fields of a `Node` corresponds to required structure.
 """
 function check_node(n::Node, 𝒯, modeltype::EnergyModel)
 end
+"""
+    check_node(n::Availability, 𝒯, modeltype::EnergyModel)
 
-function check_node(n::Source, 𝒯, modeltype::EnergyModel)
-    @assert_or_log sum(n.cap[t] >= 0 for t ∈ 𝒯) == length(𝒯) "The capacity must be non-negative."
+This method checks that an `Availability` node is valid. By default, that does not include
+any checks.
+"""
+function check_node(n::Availability, 𝒯, modeltype::EnergyModel)
 end
+"""
+    check_node(n::Source, 𝒯, modeltype::EnergyModel)
 
+This method checks that a `Source` node is valid.
+
+These checks are always performed, if the user is not creating a new method. Hence, it is
+important that a new `Source` type includes at least the same fields as in the `RefSource`
+node or that a new `Source` type receives a new method for `check_node`.
+
+## Checks
+ - The field `cap` is required to be non-negative.
+ - The values of the dictionary `output` are required to be non-negative.
+ - The value of the field `fixed_opex` is required to be non-negative.
+"""
+function check_node(n::Source, 𝒯, modeltype::EnergyModel)
+
+    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+
+    @assert_or_log(
+        sum(capacity(n, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+        "The capacity must be non-negative."
+    )
+    @assert_or_log(
+        sum(opex_fixed(n, t_inv) ≥ 0 for t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ),
+        "The fixed OPEX must be non-negative."
+    )
+    @assert_or_log(
+        sum(outputs(n, p) ≥ 0 for p ∈ outputs(n)) == length(outputs(n)),
+        "The values for the Dictionary `output` must be non-negative."
+    )
+end
+"""
+    check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel)
+
+This method checks that a `NetworkNode` node is valid.
+
+These checks are always performed, if the user is not creating a new method. Hence, it is
+important that a new `NetworkNode` type includes at least the same fields as in the
+`RefNetworkNode` node or that a new `NetworkNode` type receives a new method for `check_node`.
+
+## Checks
+ - The field `cap` is required to be non-negative.
+ - The values of the dictionary `input` are required to be non-negative.
+ - The values of the dictionary `output` are required to be non-negative.
+ - The value of the field `fixed_opex` is required to be non-negative.
+"""
+function check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel)
+
+    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+
+    @assert_or_log(
+        sum(capacity(n, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+        "The capacity must be non-negative."
+    )
+    @assert_or_log(
+        sum(inputs(n, p) ≥ 0 for p ∈ inputs(n)) == length(inputs(n)),
+        "The values for the Dictionary `input` must be non-negative."
+    )
+    @assert_or_log(
+        sum(outputs(n, p) ≥ 0 for p ∈ outputs(n)) == length(outputs(n)),
+        "The values for the Dictionary `output` must be non-negative."
+    )
+    @assert_or_log(
+        sum(opex_fixed(n, t_inv) ≥ 0 for t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ),
+        "The fixed OPEX must be non-negative."
+    )
+end
+"""
+    check_node(n::Storage, 𝒯, modeltype::EnergyModel)
+
+This method checks that a `Storage` node is valid.
+
+These checks are always performed, if the user is not creating a new method. Hence, it is
+important that a new `Storage` type includes at least the same fields as in the
+`RefStorage` node or that a new `Storage` type receives a new method for `check_node`.
+
+## Checks
+ - The value of the field `rate_cap` is required to be non-negative.
+ - The value of the field `stor_cap` is required to be non-negative.
+ - The values of the dictionary `input` are required to be non-negative.
+ - The values of the dictionary `output` are required to be non-negative.
+ - The value of the field `fixed_opex` is required to be non-negative.
+"""
+function check_node(n::Storage, 𝒯, modeltype::EnergyModel)
+
+    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+    cap = capacity(n)
+
+    @assert_or_log(
+        sum(cap.rate[t] ≥ 0 for t ∈ 𝒯) == length(𝒯),
+        "The rate capacity must be non-negative."
+    )
+    @assert_or_log(
+        sum(cap.level[t] ≥ 0 for t ∈ 𝒯) == length(𝒯),
+        "The level capacity must be non-negative."
+    )
+    @assert_or_log(
+        sum(inputs(n, p) ≥ 0 for p ∈ inputs(n)) == length(inputs(n)),
+        "The values for the Dictionary `input` must be non-negative."
+    )
+    @assert_or_log(
+        sum(outputs(n, p) ≥ 0 for p ∈ outputs(n)) == length(outputs(n)),
+        "The values for the Dictionary `output` must be non-negative."
+    )
+    @assert_or_log(
+        sum(opex_fixed(n, t_inv) ≥ 0 for t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ),
+        "The fixed OPEX must be non-negative."
+    )
+end
+"""
+    check_node(n::Sink, 𝒯, modeltype::EnergyModel)
+
+This method checks that a `Sink` node is valid.
+
+These checks are always performed, if the user is not creating a new method. Hence, it is
+important that a new `Sink` type includes at least the same fields as in the `RefSink` node
+or that a new `Source` type receives a new method for `check_node`.
+
+## Checks
+ - The field `cap` is required to be non-negative.
+ - The values of the dictionary `input` are required to be non-negative.
+ - The dictionary `penalty` is required to have the keys `:deficit` and `:surplus`.
+ - The sum of the values `:deficit` and `:surplus` in the dictionary `penalty` has to be \
+ non-negative to avoid an infeasible model.
+"""
 function check_node(n::Sink, 𝒯, modeltype::EnergyModel)
-    @assert_or_log sum(n.cap[t] >= 0 for t ∈ 𝒯) == length(𝒯) "The capacity must be non-negative."
-
-    @assert_or_log :surplus ∈ keys(n.penalty) &&
-                   :deficit ∈ keys(n.penalty) "The entries :surplus and :deficit are required in Sink.penalty"
+    @assert_or_log(
+        sum(capacity(n, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+        "The capacity must be non-negative."
+    )
+    @assert_or_log(
+        sum(inputs(n, p) ≥ 0 for p ∈ inputs(n)) == length(inputs(n)),
+        "The values for the Dictionary `input` must be non-negative."
+    )
+    @assert_or_log(
+        :surplus ∈ keys(n.penalty) && :deficit ∈ keys(n.penalty),
+        "The entries :surplus and :deficit are required in the field `penalty`"
+    )
 
     if :surplus ∈ keys(n.penalty) && :deficit ∈ keys(n.penalty)
         # The if-condition was checked above.
-        @assert_or_log sum(n.penalty[:surplus][t] + n.penalty[:deficit][t] ≥ 0 for t ∈ 𝒯) ==
-                    length(𝒯) "An inconsistent combination of :surplus and :deficit lead to infeasible model."
+        @assert_or_log(
+            sum(surplus_penalty(n, t) + deficit_penalty(n, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+            "An inconsistent combination of `:surplus` and `:deficit` leads to an infeasible model."
+        )
     end
-
 end
 
-# function check_node(n::RefNetworkNodeEmissions, 𝒯, modeltype::EnergyModel)
-#     @assert_or_log n.co2_capture ≤ 1 "The field CO2_capture must be less or equal to 1."
-#     @assert_or_log n.co2_capture ≥ 0 "The field CO2_capture must be non-negative."
-# end
+
+"""
+    check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel)
+
+Check that the included `Data` types of a `Node` corresponds to required structure.
+This function will always result in a multiple error message, if several instances of the
+same supertype is loaded.
+"""
+check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel) = nothing
+
+
+"""
+    check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel)
+
+Check that the included `Data` types of a `Node` corresponds to required structure.
+This function will always result in a multiple error message, if several instances of the
+same supertype is loaded.
+
+## Checks
+- Each node can only have a single `EmissionsData`.
+- Time profiles for process emissions, if present.
+- The value of the field `co2_capture` is required to be in the range ``[0, 1]``, if \
+[`CaptureData`](@ref) is used.
+"""
+function check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel)
+
+    em_data = filter(data -> typeof(data) <: EmissionsData, node_data(n))
+    @assert_or_log(
+        length(em_data) ≤ 1,
+        "Only one `EmissionsData` can be added to each node."
+    )
+
+    # No checks necessary for a standard `EmissionsEnergy`
+    isa(data, EmissionsEnergy) && return
+
+    for p ∈ process_emissions(data)
+        value = process_emissions(data, p)
+        !isa(value, TimeProfile) && continue
+        check_profile(string(p)*" process emissions", value, 𝒯)
+    end
+end
+function check_node_data(n::Node, data::CaptureData, 𝒯, modeltype::EnergyModel)
+
+    em_data = filter(data -> typeof(data) <: EmissionsData, node_data(n))
+    @assert_or_log(
+        length(em_data) ≤ 1,
+        "Only one `EmissionsData` can be added to each node."
+    )
+
+    for p ∈ process_emissions(data)
+        value = process_emissions(data, p)
+        !isa(value, TimeProfile) && continue
+        check_profile(string(p)*" process emissions", value, 𝒯)
+    end
+    @assert_or_log(
+        co2_capture(data) ≤ 1,
+        "The field `co2_capture` in `CaptureData` must be less or equal to 1."
+    )
+    @assert_or_log(
+        co2_capture(data) ≥ 0,
+        "The field `co2_capture` in `CaptureData` must be non-negative."
+    )
+end
