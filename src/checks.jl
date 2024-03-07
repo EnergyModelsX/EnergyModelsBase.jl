@@ -33,12 +33,12 @@ end
 
 
 """
-    check_data(case, modeltype)
+    check_data(case, modeltype, check_timeprofiles)
 
 Check if the case data is consistent. Use the `@assert_or_log` macro when testing.
 Currently only checking node data.
 """
-function check_data(case, modeltype::EnergyModel)
+function check_data(case, modeltype::EnergyModel, check_timeprofiles)
     # TODO would it be useful to create an actual type for case, instead of using a Dict with
     # naming conventions? Could be implemented as a mutable in energymodelsbase.jl maybe?
 
@@ -49,15 +49,29 @@ function check_data(case, modeltype::EnergyModel)
 
     𝒯 = case[:T]
 
+    if !check_timeprofiles
+        @warn "Checking of the time profiles is deactivated:\n" *
+        "Deactivating the checks for the time profiles is strongly discouraged.\n" *
+        "While the model will still run, unexpected results can occur, as well as\n" *
+        "inconsistent case data.\n\n" *
+        "Deactivating the checks for the timeprofiles should only be considered,\n" *
+        "when testing new components. In all other instances, it is recommended to\n" *
+        "provide the correct timeprofiles using a preprocessing routine. \n\n" *
+        "If timeprofiles are not checked, inconsistencies can occur."
+    end
+
     for n ∈ case[:nodes]
 
         # Empty the logs list before each check.
         global logs = []
         check_node(n, 𝒯, modeltype)
         for data ∈ node_data(n)
-            check_node_data(n, data, 𝒯, modeltype)
+            check_node_data(n, data, 𝒯, modeltype, check_timeprofiles)
         end
-        check_time_structure(n, 𝒯)
+
+        if check_timeprofiles
+            check_time_structure(n, 𝒯)
+        end
         # Put all log messages that emerged during the check, in a dictionary with the node as key.
         log_by_element[n] = logs
     end
@@ -112,8 +126,8 @@ end
 function check_model(case, modeltype::EnergyModel)
     for p ∈ case[:products]
         if isa(p, ResourceEmit)
-            @assert_or_log haskey(modeltype.emission_limit, p) "All ResourceEmits requires " *
-                "an entry in the dictionary GlobalData.Emission_limit. For $p there is none."
+            @assert_or_log haskey(emission_limit(modeltype), p) "All `ResourceEmit`s " *
+                "require an entry in the dictionary `emission_limit`. For $p there is none."
         end
     end
 end
@@ -145,15 +159,20 @@ function check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel)
     len_vals = length(value.vals)
     len_simp = length(𝒯ᴵⁿᵛ)
     if len_vals > len_simp
-        message = "' is shorter than the strategic time structure. \
-        Its last values $(len_vals - len_simp) will be omitted."
+        message = "' is longer than the strategic time structure. \
+        Its last $(len_vals - len_simp) value(s) will be omitted."
     elseif len_vals < len_simp
         message = "' is shorter than the strategic time structure. It will use the last \
-        value for the last $(len_simp - len_vals) strategic periods."
+        value for the last $(len_simp - len_vals) strategic period(s)."
     end
     @assert_or_log len_vals == len_simp "Field '" * string(fieldname) * message
     for t_inv ∈ 𝒯ᴵⁿᵛ
-        check_profile(fieldname, value.vals[t_inv.sp], t_inv.operational, t_inv.sp)
+        check_profile(
+            fieldname,
+            value.vals[minimum([t_inv.sp, length(value.vals)])],
+            t_inv.operational,
+            t_inv.sp,
+        )
     end
 end
 function check_profile(fieldname, value, 𝒯::TwoLevel)
@@ -180,11 +199,11 @@ function check_profile(
     len_simp = length(ts)
     if len_vals > len_simp
         message = "' in strategic period $(sp)  is longer than the operational time  \
-        structure. Its last values $(len_vals - len_simp) will be omitted."
+        structure. Its last $(len_vals - len_simp) value(s) will be omitted."
     elseif len_vals < len_simp
         message = "' in strategic period $(sp) is shorter than the operational \
         time structure. It will use the last value for the last $(len_simp - len_vals) \
-        operational periods."
+        operational period(s)."
     end
     @assert_or_log len_vals == len_simp "Field '" * string(fieldname) * message
 end
@@ -415,17 +434,17 @@ end
 
 
 """
-    check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel)
+    check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles)
 
 Check that the included `Data` types of a `Node` corresponds to required structure.
 This function will always result in a multiple error message, if several instances of the
 same supertype is loaded.
 """
-check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel) = nothing
+check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles) = nothing
 
 
 """
-    check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel)
+    check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel, check_timeprofiles)
 
 Check that the included `Data` types of a `Node` corresponds to required structure.
 This function will always result in a multiple error message, if several instances of the
@@ -437,7 +456,7 @@ same supertype is loaded.
 - The value of the field `co2_capture` is required to be in the range ``[0, 1]``, if \
 [`CaptureData`](@ref) is used.
 """
-function check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel)
+function check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel, check_timeprofiles)
 
     em_data = filter(data -> typeof(data) <: EmissionsData, node_data(n))
     @assert_or_log(
@@ -450,11 +469,12 @@ function check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyMo
 
     for p ∈ process_emissions(data)
         value = process_emissions(data, p)
+        !check_timeprofiles && continue
         !isa(value, TimeProfile) && continue
         check_profile(string(p)*" process emissions", value, 𝒯)
     end
 end
-function check_node_data(n::Node, data::CaptureData, 𝒯, modeltype::EnergyModel)
+function check_node_data(n::Node, data::CaptureData, 𝒯, modeltype::EnergyModel, check_timeprofiles=true)
 
     em_data = filter(data -> typeof(data) <: EmissionsData, node_data(n))
     @assert_or_log(
@@ -464,6 +484,7 @@ function check_node_data(n::Node, data::CaptureData, 𝒯, modeltype::EnergyMode
 
     for p ∈ process_emissions(data)
         value = process_emissions(data, p)
+        !check_timeprofiles && continue
         !isa(value, TimeProfile) && continue
         check_profile(string(p)*" process emissions", value, 𝒯)
     end

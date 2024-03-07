@@ -44,21 +44,41 @@ EMB.TEST_ENV = true
                     :links => links,
                     :products => resources,
         )
+        return case, model
+    end
+
+    # Create a function for running the simple graph
+    function run_simple_graph(em_data::Vector{<:EmissionsData})
+        case, model = simple_graph(em_data)
         return run_model(case, model, HiGHS.Optimizer), case, model
     end
 
     # Test that only a single EmissionData is allowed
     # - EMB.check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel)
     em_data = [EmissionsProcess(Dict(CO2 => 10.0)), EmissionsEnergy()]
-    @test_throws AssertionError simple_graph(em_data)
+    @test_throws AssertionError run_simple_graph(em_data)
 
     # Test that the capture rate is bound by 0 and 1
     # - EMB.check_node_data(n::Node, data::CaptureData, 𝒯, modeltype::EnergyModel)
     em_data = [CaptureEnergyEmissions(1.2)]
-    @test_throws AssertionError simple_graph(em_data)
-
+    @test_throws AssertionError run_simple_graph(em_data)
     em_data = [CaptureEnergyEmissions(-1.2)]
-    @test_throws AssertionError simple_graph(em_data)
+    @test_throws AssertionError run_simple_graph(em_data)
+
+    # Test that the timeprofile check is working
+    # - EMB.check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel
+    em_data = [EmissionsProcess(Dict(CO2 => StrategicProfile([1])))]
+    @test_throws AssertionError run_simple_graph(em_data)
+    case, model = simple_graph(em_data)
+    msg = "Checking of the time profiles is deactivated:\n" *
+    "Deactivating the checks for the time profiles is strongly discouraged.\n" *
+    "While the model will still run, unexpected results can occur, as well as\n" *
+    "inconsistent case data.\n\n" *
+    "Deactivating the checks for the timeprofiles should only be considered,\n" *
+    "when testing new components. In all other instances, it is recommended to\n" *
+    "provide the correct timeprofiles using a preprocessing routine. \n\n" *
+    "If timeprofiles are not checked, inconsistencies can occur."
+    @test_logs (:warn, msg) create_model(case, model; check_timeprofiles=false)
 
 end
 
@@ -106,6 +126,12 @@ end
                     :links => links,
                     :products => resources,
         )
+        return case, model
+    end
+
+    # Create a function for running the simple graph
+    function run_simple_graph(T::TimeStructure, tp::TimeProfile)
+        case, model = simple_graph(T, tp)
         return run_model(case, model, HiGHS.Optimizer), case, model
     end
 
@@ -116,15 +142,15 @@ end
     ts = TwoLevel(2, 1, day)
     ops = OperationalProfile(ones(24))
     tp = StrategicProfile([ops, ops, ops])
-    @test_throws AssertionError simple_graph(ts, tp)
+    @test_throws AssertionError run_simple_graph(ts, tp)
 
     # Test that there is an error with wrong operational profiles
     # - EMB.check_profile(fieldname, value::OperationalProfile, ts::SimpleTimes, sp)
     ts = TwoLevel(2, 1, day)
     tp = OperationalProfile(ones(20))
-    @test_throws AssertionError simple_graph(ts, tp)
+    @test_throws AssertionError run_simple_graph(ts, tp)
     tp = OperationalProfile(ones(30))
-    @test_throws AssertionError simple_graph(ts, tp)
+    @test_throws AssertionError run_simple_graph(ts, tp)
 
     # Test that there is warning when using OperationalProfile with RepresentativePeriods
     # - EMB.check_profile(fieldname, value::RepresentativeProfile, ts::SimpleTimes, sp)
@@ -135,7 +161,7 @@ end
     It only works reasonable if all representative periods have an operational \
     time structure of the same length. Otherwise, the last value is repeated. \
     The system is tested for the all representative periods."
-    @test_logs (:warn, msg) simple_graph(ts, tp)
+    @test_logs (:warn, msg) run_simple_graph(ts, tp)
 
     # Test that there is warning when using RepresentativeProfile without RepresentativePeriods
     # - EMB.check_profile(fieldname, value::RepresentativeProfile, ts::SimpleTimes, sp)
@@ -143,13 +169,25 @@ end
     tp = RepresentativeProfile([FixedProfile(5), FixedProfile(10)])
     msg = "Field cap: Using `RepresentativeProfile` with `SimpleTimes` is dangerous, as it \
     may lead to unexpected behaviour. In this case, only the first profile is used and tested."
-    @test_logs (:warn, msg) simple_graph(ts, tp)
+    @test_logs (:warn, msg) run_simple_graph(ts, tp)
 
     # Test that there is an error when `RepresentativeProfile` have a different length than
     # the corresponding `RepresentativePeriods`
     # - EMB.check_profile(fieldname, value::RepresentativeProfile, ts::SimpleTimes, sp)
     ts = TwoLevel(2, 1, RepresentativePeriods(3, 8760, ones(3)/3, [day, day, day]))
-    @test_throws AssertionError simple_graph(ts, tp)
+    @test_throws AssertionError run_simple_graph(ts, tp)
+
+    # Check that turning of the timeprofile checks leads to a warning
+    case, model = simple_graph(ts, tp)
+    msg = "Checking of the time profiles is deactivated:\n" *
+    "Deactivating the checks for the time profiles is strongly discouraged.\n" *
+    "While the model will still run, unexpected results can occur, as well as\n" *
+    "inconsistent case data.\n\n" *
+    "Deactivating the checks for the timeprofiles should only be considered,\n" *
+    "when testing new components. In all other instances, it is recommended to\n" *
+    "provide the correct timeprofiles using a preprocessing routine. \n\n" *
+    "If timeprofiles are not checked, inconsistencies can occur."
+    @test_logs (:warn, msg) create_model(case, model; check_timeprofiles=false)
 end
 
 @testset "Test checks - Nodes" begin

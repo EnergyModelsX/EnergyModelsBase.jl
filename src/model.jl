@@ -4,7 +4,7 @@
 Create the model and call all required functions based on provided `modeltype`
 and case data.
 """
-function create_model(case, modeltype::EnergyModel, m::JuMP.Model)
+function create_model(case, modeltype::EnergyModel, m::JuMP.Model; check_timeprofiles=true)
     @debug "Construct model"
 
     # WIP Data structure
@@ -14,7 +14,7 @@ function create_model(case, modeltype::EnergyModel, m::JuMP.Model)
     𝒫 = case[:products]
 
     # Check if the case data is consistent before the model is created.
-    check_data(case, modeltype)
+    check_data(case, modeltype, check_timeprofiles)
 
     # Declaration of variables for the problem
     variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
@@ -34,9 +34,9 @@ function create_model(case, modeltype::EnergyModel, m::JuMP.Model)
 
     return m
 end
-function create_model(case, modeltype::EnergyModel)
+function create_model(case, modeltype::EnergyModel; check_timeprofiles=true)
     m = JuMP.Model()
-    create_model(case, modeltype::EnergyModel, m)
+    create_model(case, modeltype::EnergyModel, m; check_timeprofiles)
 end
 
 """
