@@ -527,8 +527,9 @@ node or that a new `Source` type receives a new method for `check_node`.
 ## Checks
  - The field `cap` is required to be non-negative.
  - The values of the dictionary `output` are required to be non-negative.
- - The value of the field `fixed_opex` is required to be follow a given structure as
-   outlined in the function `check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`.
+ - The value of the field `fixed_opex` is required to be non-negative and
+   accessible through a `StrategicPeriod` as outlined in the function
+   `check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`.
 """
 function check_node(n::Source, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
@@ -557,8 +558,9 @@ important that a new `NetworkNode` type includes at least the same fields as in 
  - The field `cap` is required to be non-negative.
  - The values of the dictionary `input` are required to be non-negative.
  - The values of the dictionary `output` are required to be non-negative.
- - The value of the field `fixed_opex` is required to be follow a given structure as
-   outlined in the function `check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`.
+ - The value of the field `fixed_opex` is required to be non-negative and
+   accessible through a `StrategicPeriod` as outlined in the function
+   `check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`.
 """
 function check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
@@ -592,8 +594,9 @@ important that a new `Storage` type includes at least the same fields as in the
  - The value of the field `stor_cap` is required to be non-negative.
  - The values of the dictionary `input` are required to be non-negative.
  - The values of the dictionary `output` are required to be non-negative.
- - The value of the field `fixed_opex` is required to be follow a given structure as
-   outlined in the function `check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`.
+ - The value of the field `fixed_opex` is required to be non-negative and
+   accessible through a `StrategicPeriod` as outlined in the function
+   `check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`.
 """
 function check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
