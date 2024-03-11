@@ -48,7 +48,7 @@ function create_model(case, modeltype::EnergyModel, m::JuMP.Model; check_timepro
 end
 function create_model(case, modeltype::EnergyModel; check_timeprofiles::Bool=true)
     m = JuMP.Model()
-    create_model(case, modeltype::EnergyModel, m; check_timeprofiles)
+    create_model(case, modeltype, m; check_timeprofiles)
 end
 
 """
