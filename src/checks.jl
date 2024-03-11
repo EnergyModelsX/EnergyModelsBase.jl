@@ -372,17 +372,17 @@ end
 check_profile(fieldname, value, ts, sp) = nothing
 
 """
-    check_strategic_profile(time_profile, message)
+    check_strategic_profile(time_profile::TimeProfile, message::String)
 
-Function for checking that and individual `TimeProfile` does not include the wrong type for
+Function for checking that an individual `TimeProfile` does not include the wrong type for
 strategic indexing
 
 ## Checks
 - `TimeProfile`s access in `StrategicPeriod`s cannot include `OperationalProfile`, \
-`RepresentativeProfile`, or `ScenarioProfile` as this is not allowed through indexing \
+`ScenarioProfile`, or `RepresentativeProfile` as this is not allowed through indexing \
 on the `TimeProfile`.
 """
-function check_strategic_profile(time_profile, message)
+function check_strategic_profile(time_profile::TimeProfile, message::String)
 
     @assert_or_log(
         !isa(time_profile, OperationalProfile),
@@ -408,6 +408,66 @@ function check_strategic_profile(time_profile, message)
         @assert_or_log(
             !isa(time_profile.vals, Vector{<:RepresentativeProfile}),
             "Representative profiles in strategic profiles " * message
+        )
+    end
+end
+
+"""
+    check_representative_profile(time_profile::TimeProfile, message::String)
+
+Function for checking that an individual `TimeProfile` does not include the wrong type for
+representative periods indexing
+
+## Input
+- `time_profile` - The time profile that should be checked.
+- `message` - A message that should be printed after the type of profile.
+
+## Checks
+- `TimeProfile`s access in `RepresentativePeriod`s cannot include `OperationalProfile` \
+or `ScenarioProfile` as this is not allowed through indexing on the `TimeProfile`.
+"""
+function check_representative_profile(time_profile::TimeProfile, message::String)
+
+    @assert_or_log(
+        !isa(time_profile, OperationalProfile),
+        "Operational profiles " * message
+    )
+    @assert_or_log(
+        !isa(time_profile, ScenarioProfile),
+        "Scenario profiles " * message
+    )
+    if isa(time_profile, StrategicProfile)
+        @assert_or_log(
+            !isa(time_profile.vals, Vector{<:OperationalProfile}),
+            "Operational profiles in strategic profiles " * message
+        )
+        @assert_or_log(
+            !isa(time_profile.vals, Vector{<:ScenarioProfile}),
+            "Scenario profiles in strategic profiles " * message
+        )
+    end
+end
+
+"""
+    check_scenario_profile(time_profile::TimeProfile, message::String)
+
+Function for checking that an individual `TimeProfile` does not include the wrong type for
+scenario indexing
+
+## Checks
+- `TimeProfile`s access in `RepresentativePeriod`s cannot include `OperationalProfile` \
+or `ScenarioProfile` as this is not allowed through indexing on the `TimeProfile`.
+"""
+function check_scenario_profile(time_profile::TimeProfile, message::String)
+
+    @assert_or_log(
+        !isa(time_profile, OperationalProfile),
+        "Operational profiles " * message
+    )
+    if isa(time_profile, StrategicProfile)
+        @assert_or_log(
+            !isa(time_profile.vals, Vector{<:OperationalProfile}),
+            "Operational profiles in strategic profiles " * message
         )
     end
 end
