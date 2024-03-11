@@ -47,7 +47,6 @@ function check_data(case, modeltype::EnergyModel, check_timeprofiles)
     global logs = []
     log_by_element = Dict()
 
-    𝒯 = case[:T]
 
     if !check_timeprofiles
         @warn "Checking of the time profiles is deactivated:\n" *
@@ -59,6 +58,16 @@ function check_data(case, modeltype::EnergyModel, check_timeprofiles)
         "provide the correct timeprofiles using a preprocessing routine. \n\n" *
         "If timeprofiles are not checked, inconsistencies can occur."
     end
+
+    # Check the case data. If the case data is not in the correct format, the overall check
+    # is cancelled as extractions would not be possible
+    check_case_data(case)
+    log_by_element["Case data"] = logs
+    if ASSERTS_AS_LOG
+        compile_logs(case, log_by_element)
+    end
+
+    𝒯 = case[:T]
 
     for n ∈ case[:nodes]
 
@@ -77,8 +86,8 @@ function check_data(case, modeltype::EnergyModel, check_timeprofiles)
     end
 
     logs = []
-    check_model(case, modeltype)
-    log_by_element[modeltype] = logs
+    check_model(case, modeltype, check_timeprofiles)
+    log_by_element["Modeltype"] = logs
 
     if ASSERTS_AS_LOG
         compile_logs(case, log_by_element)
@@ -122,16 +131,109 @@ function compile_logs(case, log_by_element)
     end
 end
 
+"""
+    check_case_data(case)
 
-function check_model(case, modeltype::EnergyModel)
-    for p ∈ case[:products]
-        if isa(p, ResourceEmit)
-            @assert_or_log haskey(emission_limit(modeltype), p) "All `ResourceEmit`s " *
-                "require an entry in the dictionary `emission_limit`. For $p there is none."
+Checks the `case` dictionary is in the correct format.
+
+## Checks
+- The dictionary requires the keys `:T`, `:nodes`, `:links`, and `:products`.
+- The individual keys are of the correct type, that is
+  - `:T::TimeStructure`,
+  - `:nodes::Vector{<:Node}`,
+  - `:links::Vector{<:Link}`, and
+  - `:products::Vector{<:Resource}`.
+"""
+function check_case_data(case)
+
+    case_keys = [:T, :nodes, :links, :products]
+    key_map = Dict(
+        :T => TimeStructure,
+        :nodes => Vector{<:Node},
+        :links => Vector{<:Link},
+        :products => Vector{<:Resource},
+    )
+    for key ∈ case_keys
+        @assert_or_log(
+            haskey(case, key),
+            "The `case` dictionary requires the key `:" * string(key) * "` which is " *
+            "not included."
+        )
+        if haskey(case, key)
+            @assert_or_log(
+                isa(case[key], key_map[key]),
+                "The key `" * string(key) * "` in the `case` dictionary contains " *
+                "other types than the allowed."
+            )
         end
     end
 end
 
+"""
+    check_model(case, modeltype::EnergyModel, check_timeprofiles)
+
+Checks the `modeltype` .
+
+## Checks
+- All `ResourceEmit`s require a corresponding value in the field `emission_limit`.
+- The `emission_limit` time profiles cannot have a finer granulation than `StrategicProfile`.
+- The `emission_price` time profiles cannot have a finer granulation than `StrategicProfile`.
+
+## Conditional checks (if `check_timeprofiles=true`)
+- The profiles in `emission_limit` have to have the same length as the number of strategic
+  periods.
+- The profiles in `emission_price` have to have the same length as the number of strategic
+periods.
+"""
+function check_model(case, modeltype::EnergyModel, check_timeprofiles)
+
+    𝒯ᴵⁿᵛ = strategic_periods(case[:T])
+
+    # Check for inclusion of all emission resources
+    for p ∈ case[:products]
+        if isa(p, ResourceEmit)
+            @assert_or_log(
+                haskey(emission_limit(modeltype), p),
+                "All `ResourceEmit`s require an entry in the dictionary " *
+                "`emission_limit`. For $p there is none."
+            )
+        end
+    end
+
+    for p ∈ keys(emission_limit(modeltype))
+        em_limit = emission_limit(modeltype, p)
+        # Check for the strategic periods
+        if isa(em_limit, StrategicProfile) && check_timeprofiles
+            @assert_or_log(
+                length(em_limit.vals) == length(𝒯ᴵⁿᵛ),
+                "The timeprofile provided for resource `" * string(p) * "` in the field " *
+                "`emission_limit` does not match the strategic structure."
+            )
+        end
+
+        # Check for potential indexing problems
+        message = "are not allowed for the resource: " * string(p) * " in the Dictionary " *
+            "`emission_limit`."
+        check_strategic_profile(em_limit, message)
+    end
+
+    for p ∈ keys(emission_price(modeltype))
+        em_limit = emission_price(modeltype, p)
+        # Check for the strategic periods
+        if isa(em_limit, StrategicProfile) && check_timeprofiles
+            @assert_or_log(
+                length(em_limit.vals) == length(𝒯ᴵⁿᵛ),
+                "The timeprofile provided for resource `" * string(p) * "` in the field " *
+                "`emission_price` does not match the strategic structure."
+            )
+        end
+
+        # Check for potential indexing problems
+        message = "are not allowed for the resource: " * string(p) * " in the Dictionary " *
+            "`emission_price`."
+        check_strategic_profile(em_limit, message)
+    end
+end
 
 """
     check_time_structure(n::Node, 𝒯)
@@ -268,6 +370,47 @@ function check_profile(
     end
 end
 check_profile(fieldname, value, ts, sp) = nothing
+
+"""
+    check_strategic_profile(time_profile, message)
+
+Function for checking that and individual `TimeProfile` does not include the wrong type for
+strategic indexing
+
+## Checks
+- `TimeProfile`s access in `StrategicPeriod`s cannot include `OperationalProfile`, \
+`RepresentativeProfile`, or `ScenarioProfile` as this is not allowed through indexing \
+on the `TimeProfile`.
+"""
+function check_strategic_profile(time_profile, message)
+
+    @assert_or_log(
+        !isa(time_profile, OperationalProfile),
+        "Operational profiles " * message
+    )
+    @assert_or_log(
+        !isa(time_profile, ScenarioProfile),
+        "Scenario profiles " * message
+    )
+    @assert_or_log(
+        !isa(time_profile, RepresentativeProfile),
+        "Representative profiles " * message
+    )
+    if isa(time_profile, StrategicProfile)
+        @assert_or_log(
+            !isa(time_profile.vals, Vector{<:OperationalProfile}),
+            "Operational profiles in strategic profiles " * message
+        )
+        @assert_or_log(
+            !isa(time_profile.vals, Vector{<:ScenarioProfile}),
+            "Scenario profiles in strategic profiles " * message
+        )
+        @assert_or_log(
+            !isa(time_profile.vals, Vector{<:RepresentativeProfile}),
+            "Representative profiles in strategic profiles " * message
+        )
+    end
+end
 
 """
     check_node(n::Node, 𝒯, modeltype::EnergyModel)

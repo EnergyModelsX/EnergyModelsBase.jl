@@ -1,6 +1,180 @@
 # Set the global to true to suppress the error message
 EMB.TEST_ENV = true
 
+@testset "Test checks - case dictionary" begin
+    # Resources used in the analysis
+    Power = ResourceCarrier("Power", 0.0)
+    CO2 = ResourceEmit("CO2", 1.0)
+
+    # Function for setting up the system
+    function simple_graph()
+
+        resources = [Power, CO2]
+        ops = SimpleTimes(5, 2)
+        T = TwoLevel(2, 2, ops; op_per_strat=10)
+
+        source = RefSource(
+            "source_emit",
+            FixedProfile(4),
+            FixedProfile(0),
+            FixedProfile(10),
+            Dict(Power => 1),
+        )
+        sink = RefSink(
+            "sink",
+            FixedProfile(3),
+            Dict(:surplus => FixedProfile(-4), :deficit => FixedProfile(4)),
+            Dict(Power => 1),
+        )
+
+        ops = SimpleTimes(5, 2)
+        T = TwoLevel(2, 2, ops; op_per_strat=10)
+
+        nodes = [source, sink]
+        links = [Direct(12, source, sink)]
+        model = OperationalModel(
+            Dict(CO2 => FixedProfile(100)),
+            Dict(CO2 => FixedProfile(0)),
+            CO2
+        )
+        case = Dict(
+                    :T => T,
+                    :nodes => nodes,
+                    :links => links,
+                    :products => resources,
+        )
+        return case, model
+    end
+
+    # Check that the keys are present
+    # - EMB.check_case_data(case)
+    case, model = simple_graph()
+    for key ∈ keys(case)
+        case_test = deepcopy(case)
+        pop!(case_test, key)
+        println(case_test)
+        @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
+    end
+
+    # Check that the keys are of the correct format and do not include any unwanted types
+    # - EMB.check_case_data(case)
+    case_test = deepcopy(case)
+    case_test[:T] = 10
+    @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
+    case_test = deepcopy(case)
+    case_test[:nodes] = [case[:nodes], case[:nodes], 10]
+    @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
+    case_test = deepcopy(case)
+    case_test[:links] = [case[:links], 10]
+    @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
+    case_test = deepcopy(case)
+    case_test[:products] = [case[:products], case[:products], 10]
+    @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
+end
+
+@testset "Test checks - modeltype" begin
+    # Resources used in the analysis
+    Power = ResourceCarrier("Power", 0.0)
+    CO2 = ResourceEmit("CO2", 1.0)
+
+    # Function for setting up the system
+    function simple_graph()
+
+        resources = [Power, CO2]
+        ops = SimpleTimes(5, 2)
+        T = TwoLevel(2, 2, ops; op_per_strat=10)
+
+        source = RefSource(
+            "source_emit",
+            FixedProfile(4),
+            FixedProfile(0),
+            FixedProfile(10),
+            Dict(Power => 1),
+        )
+        sink = RefSink(
+            "sink",
+            FixedProfile(3),
+            Dict(:surplus => FixedProfile(-4), :deficit => FixedProfile(4)),
+            Dict(Power => 1),
+        )
+
+        ops = SimpleTimes(5, 2)
+        T = TwoLevel(2, 2, ops; op_per_strat=10)
+
+        nodes = [source, sink]
+        links = [Direct(12, source, sink)]
+        case = Dict(
+                    :T => T,
+                    :nodes => nodes,
+                    :links => links,
+                    :products => resources,
+        )
+        return case
+    end
+
+    # Create a function for running the simple graph
+    function run_simple_graph(co2_limit::TS.TimeProfile)
+        case = simple_graph()
+        model = OperationalModel(
+            Dict(CO2 => co2_limit),
+            Dict(CO2 => FixedProfile(0)),
+            CO2
+        )
+        return run_model(case, model, HiGHS.Optimizer), case, model
+    end
+
+    # Extract the default values
+    case = simple_graph()
+    model = OperationalModel(
+        Dict(CO2 => FixedProfile(100)),
+        Dict(CO2 => FixedProfile(0)),
+        CO2
+    )
+
+    # Check that all resources present in the case data are included in the emission limit
+    # - EMB.check_model(case, modeltype::EnergyModel, check_timeprofiles)
+    case_test = deepcopy(case)
+    case_test[:products] = [Power, CO2, ResourceEmit("NG", 0.06)]
+    @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
+
+    # Check that the timeprofiles for emission limit and price are correct
+    # - EMB.check_model(case, modeltype::EnergyModel, check_timeprofiles)
+    model = OperationalModel(
+        Dict(CO2 => StrategicProfile([100])),
+        Dict(CO2 => FixedProfile(0)),
+        CO2
+    )
+    @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
+    model = OperationalModel(
+        Dict(CO2 => FixedProfile(0)),
+        Dict(CO2 => StrategicProfile([100])),
+        CO2
+    )
+    @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
+
+    # Check that we receive an error if the profiles are wrong
+    # - check_strategic_profile(time_profile, message)
+    rprofile = RepresentativeProfile([FixedProfile(100)])
+    scprofile = ScenarioProfile([FixedProfile(100)])
+    oprofile = OperationalProfile(ones(100))
+
+    co2_limit = oprofile
+    @test_throws AssertionError run_simple_graph(co2_limit)
+    co2_limit = scprofile
+    @test_throws AssertionError run_simple_graph(co2_limit)
+    co2_limit = rprofile
+    @test_throws AssertionError run_simple_graph(co2_limit)
+    co2_limit = StrategicProfile([4])
+    @test_throws AssertionError run_simple_graph(co2_limit)
+
+    co2_limit = StrategicProfile([oprofile, oprofile, oprofile, oprofile])
+    @test_throws AssertionError run_simple_graph(co2_limit)
+    co2_limit = StrategicProfile([scprofile, scprofile, scprofile, scprofile])
+    @test_throws AssertionError run_simple_graph(co2_limit)
+    co2_limit = StrategicProfile([rprofile, rprofile, rprofile, rprofile])
+    @test_throws AssertionError run_simple_graph(co2_limit)
+end
+
 @testset "Test checks - emission data" begin
     # Resources used in the analysis
     Power = ResourceCarrier("Power", 0.0)
@@ -79,7 +253,6 @@ EMB.TEST_ENV = true
     "provide the correct timeprofiles using a preprocessing routine. \n\n" *
     "If timeprofiles are not checked, inconsistencies can occur."
     @test_logs (:warn, msg) create_model(case, model; check_timeprofiles=false)
-
 end
 
 @testset "Test checks - timeprofiles" begin
