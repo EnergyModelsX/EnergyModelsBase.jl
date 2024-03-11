@@ -33,12 +33,12 @@ end
 
 
 """
-    check_data(case, modeltype, check_timeprofiles)
+    check_data(case, modeltype, check_timeprofiles::Bool)
 
 Check if the case data is consistent. Use the `@assert_or_log` macro when testing.
 Currently only checking node data.
 """
-function check_data(case, modeltype::EnergyModel, check_timeprofiles)
+function check_data(case, modeltype::EnergyModel, check_timeprofiles::Bool)
     # TODO would it be useful to create an actual type for case, instead of using a Dict with
     # naming conventions? Could be implemented as a mutable in energymodelsbase.jl maybe?
 
@@ -73,7 +73,7 @@ function check_data(case, modeltype::EnergyModel, check_timeprofiles)
 
         # Empty the logs list before each check.
         global logs = []
-        check_node(n, 𝒯, modeltype)
+        check_node(n, 𝒯, modeltype, check_timeprofiles::Bool)
         for data ∈ node_data(n)
             check_node_data(n, data, 𝒯, modeltype, check_timeprofiles)
         end
@@ -170,7 +170,7 @@ function check_case_data(case)
 end
 
 """
-    check_model(case, modeltype::EnergyModel, check_timeprofiles)
+    check_model(case, modeltype::EnergyModel, check_timeprofiles::Bool)
 
 Checks the `modeltype` .
 
@@ -185,7 +185,7 @@ Checks the `modeltype` .
 - The profiles in `emission_price` have to have the same length as the number of strategic
 periods.
 """
-function check_model(case, modeltype::EnergyModel, check_timeprofiles)
+function check_model(case, modeltype::EnergyModel, check_timeprofiles::Bool)
 
     𝒯ᴵⁿᵛ = strategic_periods(case[:T])
 
@@ -396,6 +396,11 @@ function check_strategic_profile(time_profile::TimeProfile, message::String)
         !isa(time_profile, RepresentativeProfile),
         "Representative profiles " * message
     )
+
+    bool_sp = !isa(time_profile, OperationalProfile) *
+        !isa(time_profile, ScenarioProfile) *
+        !isa(time_profile, RepresentativeProfile)
+
     if isa(time_profile, StrategicProfile)
         @assert_or_log(
             !isa(time_profile.vals, Vector{<:OperationalProfile}),
@@ -409,7 +414,13 @@ function check_strategic_profile(time_profile::TimeProfile, message::String)
             !isa(time_profile.vals, Vector{<:RepresentativeProfile}),
             "Representative profiles in strategic profiles " * message
         )
+
+        bool_sp *= !isa(time_profile.vals, Vector{<:OperationalProfile}) *
+            !isa(time_profile.vals, Vector{<:ScenarioProfile}) *
+            !isa(time_profile.vals, Vector{<:RepresentativeProfile})
     end
+
+    return bool_sp
 end
 
 """
@@ -436,6 +447,11 @@ function check_representative_profile(time_profile::TimeProfile, message::String
         !isa(time_profile, ScenarioProfile),
         "Scenario profiles " * message
     )
+
+    bool_rp = !isa(time_profile, OperationalProfile) *
+        !isa(time_profile, ScenarioProfile)
+
+
     if isa(time_profile, StrategicProfile)
         @assert_or_log(
             !isa(time_profile.vals, Vector{<:OperationalProfile}),
@@ -445,7 +461,12 @@ function check_representative_profile(time_profile::TimeProfile, message::String
             !isa(time_profile.vals, Vector{<:ScenarioProfile}),
             "Scenario profiles in strategic profiles " * message
         )
+
+        bool_rp *= !isa(time_profile.vals, Vector{<:OperationalProfile}) *
+            !isa(time_profile.vals, Vector{<:ScenarioProfile})
     end
+
+    return bool_rp
 end
 
 """
@@ -464,12 +485,19 @@ function check_scenario_profile(time_profile::TimeProfile, message::String)
         !isa(time_profile, OperationalProfile),
         "Operational profiles " * message
     )
+
+    bool_scp = !isa(time_profile, OperationalProfile)
+
     if isa(time_profile, StrategicProfile)
         @assert_or_log(
             !isa(time_profile.vals, Vector{<:OperationalProfile}),
             "Operational profiles in strategic profiles " * message
         )
+
+        bool_scp *= !isa(time_profile.vals, Vector{<:OperationalProfile})
     end
+
+    return bool_scp
 end
 
 """
@@ -477,7 +505,7 @@ end
 
 Check that the fields of a `Node` corresponds to required structure.
 """
-function check_node(n::Node, 𝒯, modeltype::EnergyModel)
+function check_node(n::Node, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 end
 """
     check_node(n::Availability, 𝒯, modeltype::EnergyModel)
@@ -485,7 +513,7 @@ end
 This method checks that an `Availability` node is valid. By default, that does not include
 any checks.
 """
-function check_node(n::Availability, 𝒯, modeltype::EnergyModel)
+function check_node(n::Availability, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 end
 """
     check_node(n::Source, 𝒯, modeltype::EnergyModel)
@@ -499,9 +527,10 @@ node or that a new `Source` type receives a new method for `check_node`.
 ## Checks
  - The field `cap` is required to be non-negative.
  - The values of the dictionary `output` are required to be non-negative.
- - The value of the field `fixed_opex` is required to be non-negative.
+ - The value of the field `fixed_opex` is required to be follow a given structure as
+   outlined in the function `check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`.
 """
-function check_node(n::Source, 𝒯, modeltype::EnergyModel)
+function check_node(n::Source, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
@@ -510,13 +539,10 @@ function check_node(n::Source, 𝒯, modeltype::EnergyModel)
         "The capacity must be non-negative."
     )
     @assert_or_log(
-        sum(opex_fixed(n, t_inv) ≥ 0 for t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ),
-        "The fixed OPEX must be non-negative."
-    )
-    @assert_or_log(
         sum(outputs(n, p) ≥ 0 for p ∈ outputs(n)) == length(outputs(n)),
         "The values for the Dictionary `output` must be non-negative."
     )
+    check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)
 end
 """
     check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel)
@@ -531,9 +557,10 @@ important that a new `NetworkNode` type includes at least the same fields as in 
  - The field `cap` is required to be non-negative.
  - The values of the dictionary `input` are required to be non-negative.
  - The values of the dictionary `output` are required to be non-negative.
- - The value of the field `fixed_opex` is required to be non-negative.
+ - The value of the field `fixed_opex` is required to be follow a given structure as
+   outlined in the function `check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`.
 """
-function check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel)
+function check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
@@ -549,10 +576,7 @@ function check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel)
         sum(outputs(n, p) ≥ 0 for p ∈ outputs(n)) == length(outputs(n)),
         "The values for the Dictionary `output` must be non-negative."
     )
-    @assert_or_log(
-        sum(opex_fixed(n, t_inv) ≥ 0 for t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ),
-        "The fixed OPEX must be non-negative."
-    )
+    check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)
 end
 """
     check_node(n::Storage, 𝒯, modeltype::EnergyModel)
@@ -568,9 +592,10 @@ important that a new `Storage` type includes at least the same fields as in the
  - The value of the field `stor_cap` is required to be non-negative.
  - The values of the dictionary `input` are required to be non-negative.
  - The values of the dictionary `output` are required to be non-negative.
- - The value of the field `fixed_opex` is required to be non-negative.
+ - The value of the field `fixed_opex` is required to be follow a given structure as
+   outlined in the function `check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`.
 """
-function check_node(n::Storage, 𝒯, modeltype::EnergyModel)
+function check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
     cap = capacity(n)
@@ -591,10 +616,7 @@ function check_node(n::Storage, 𝒯, modeltype::EnergyModel)
         sum(outputs(n, p) ≥ 0 for p ∈ outputs(n)) == length(outputs(n)),
         "The values for the Dictionary `output` must be non-negative."
     )
-    @assert_or_log(
-        sum(opex_fixed(n, t_inv) ≥ 0 for t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ),
-        "The fixed OPEX must be non-negative."
-    )
+    check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)
 end
 """
     check_node(n::Sink, 𝒯, modeltype::EnergyModel)
@@ -612,7 +634,7 @@ or that a new `Source` type receives a new method for `check_node`.
  - The sum of the values `:deficit` and `:surplus` in the dictionary `penalty` has to be \
  non-negative to avoid an infeasible model.
 """
-function check_node(n::Sink, 𝒯, modeltype::EnergyModel)
+function check_node(n::Sink, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     @assert_or_log(
         sum(capacity(n, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
         "The capacity must be non-negative."
@@ -634,20 +656,53 @@ function check_node(n::Sink, 𝒯, modeltype::EnergyModel)
         )
     end
 end
+"""
+    check_fixed_opex(n::Node, 𝒯ᴵⁿᵛ, check_timeprofiles::Bool)
 
+Checks that the fixed opex value follows the given TimeStructure.
+
+## Checks
+- The `opex_fixed` time profile cannot have a finer granulation than `StrategicProfile`.
+
+## Conditional checks (if `check_timeprofiles=true`)
+- The profiles in `opex_fixed` have to have the same length as the number of strategic
+  periods.
+"""
+function check_fixed_opex(n::Node, 𝒯ᴵⁿᵛ, check_timeprofiles::Bool)
+
+    if isa(opex_fixed(n), StrategicProfile) && check_timeprofiles
+        @assert_or_log(
+            length(opex_fixed(n).vals) == length(𝒯ᴵⁿᵛ),
+            "The timeprofile provided for the field `opex_fixed` does not match the " *
+            "strategic structure."
+        )
+    end
+
+    # Check for potential indexing problems
+    message = "are not allowed for the field `opex_fixed`."
+    bool_sp = check_strategic_profile(opex_fixed(n), message)
+
+    # Check that the value is positive in all cases
+    if bool_sp
+        @assert_or_log(
+            sum(opex_fixed(n, t_inv) ≥ 0 for t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ),
+            "The fixed OPEX must be non-negative."
+        )
+    end
+end
 
 """
-    check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles)
+    check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
 Check that the included `Data` types of a `Node` corresponds to required structure.
 This function will always result in a multiple error message, if several instances of the
 same supertype is loaded.
 """
-check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles) = nothing
+check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) = nothing
 
 
 """
-    check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel, check_timeprofiles)
+    check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
 Check that the included `Data` types of a `Node` corresponds to required structure.
 This function will always result in a multiple error message, if several instances of the
@@ -659,7 +714,7 @@ same supertype is loaded.
 - The value of the field `co2_capture` is required to be in the range ``[0, 1]``, if \
 [`CaptureData`](@ref) is used.
 """
-function check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel, check_timeprofiles)
+function check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
     em_data = filter(data -> typeof(data) <: EmissionsData, node_data(n))
     @assert_or_log(
@@ -677,7 +732,7 @@ function check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyMo
         check_profile(string(p)*" process emissions", value, 𝒯)
     end
 end
-function check_node_data(n::Node, data::CaptureData, 𝒯, modeltype::EnergyModel, check_timeprofiles=true)
+function check_node_data(n::Node, data::CaptureData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
     em_data = filter(data -> typeof(data) <: EmissionsData, node_data(n))
     @assert_or_log(

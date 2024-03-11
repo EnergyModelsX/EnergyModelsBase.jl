@@ -120,7 +120,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2
         )
-        return run_model(case, model, HiGHS.Optimizer), case, model
+        return create_model(case, model), case, model
     end
 
     # Extract the default values
@@ -224,7 +224,7 @@ end
     # Create a function for running the simple graph
     function run_simple_graph(em_data::Vector{<:EmissionsData})
         case, model = simple_graph(em_data)
-        return run_model(case, model, HiGHS.Optimizer), case, model
+        return create_model(case, model), case, model
     end
 
     # Test that only a single EmissionData is allowed
@@ -305,7 +305,7 @@ end
     # Create a function for running the simple graph
     function run_simple_graph(T::TimeStructure, tp::TimeProfile)
         case, model = simple_graph(T, tp)
-        return run_model(case, model, HiGHS.Optimizer), case, model
+        return create_model(case, model), case, model
     end
 
     day = SimpleTimes(24, 1)
@@ -390,7 +390,7 @@ end
                     :links => links,
                     :products => resources,
         )
-        return run_model(case, model, HiGHS.Optimizer), case, model
+        return create_model(case, model), case, model
     end
 
     # Test that the fields of a Source are correctly checked
@@ -425,14 +425,25 @@ end
         @test_throws AssertionError simple_graph(source, sink)
 
         # Test that a wrong fixed OPEX is caught by the checks.
-        source = RefSource(
-            "source",
-            FixedProfile(4),
-            FixedProfile(10),
-            FixedProfile(-5),
-            Dict(Power => 1),
-        )
-        @test_throws AssertionError simple_graph(source, sink)
+        function check_opex_prof(opex_fixed, sink)
+            source = RefSource(
+                "source",
+                FixedProfile(4),
+                FixedProfile(10),
+                opex_fixed,
+                Dict(Power => 1),
+            )
+            return simple_graph(source, sink)
+        end
+        opex_fixed = FixedProfile(-5)
+        @test_throws AssertionError check_opex_prof(opex_fixed, sink)
+
+        # Test that a wrong profile for fixed OPEX is caught by the checks.
+        # - check_fixed_opex(n::Node, 𝒯ᴵⁿᵛ, check_timeprofiles::Bool)
+        opex_fixed = StrategicProfile([1])
+        @test_throws AssertionError check_opex_prof(opex_fixed, sink)
+        opex_fixed = OperationalProfile([1])
+        @test_throws AssertionError check_opex_prof(opex_fixed, sink)
 
         # Test that correct input solves the model to optimality.
         source = RefSource(
@@ -442,7 +453,8 @@ end
             FixedProfile(5),
             Dict(Power => 1),
         )
-        m , _, _ = simple_graph(source, sink)
+        _, case, model = simple_graph(source, sink)
+        m = run_model(case, model, HiGHS.Optimizer)
         @test termination_status(m) == MOI.OPTIMAL
     end
 
@@ -493,7 +505,8 @@ end
             Dict(:surplus => FixedProfile(4), :deficit => FixedProfile(10)),
             Dict(Power => 1),
         )
-        m , _, _ = simple_graph(source, sink)
+        _, case, model = simple_graph(source, sink)
+        m = run_model(case, model, HiGHS.Optimizer)
         @test termination_status(m) == MOI.OPTIMAL
     end
 
@@ -537,7 +550,7 @@ end
                     :links => links,
                     :products => resources,
         )
-        return run_model(case, model, HiGHS.Optimizer), case, model
+        return create_model(case, model), case, model
     end
 
     # Test that the fields of a NetworkNode are correctly checked
@@ -597,7 +610,8 @@ end
             Dict(NG => 2),
             Dict(Power => 1),
         )
-        m , _, _ = simple_graph(network)
+        _, case, model = simple_graph(network)
+        m = run_model(case, model, HiGHS.Optimizer)
         @test termination_status(m) == MOI.OPTIMAL
     end
 
@@ -649,7 +663,7 @@ end
                     :links => links,
                     :products => resources,
         )
-        return run_model(case, model, HiGHS.Optimizer), case, model
+        return create_model(case, model), case, model
     end
 
     # Test that the fields of a Storage are correctly checked
@@ -743,7 +757,8 @@ end
             Dict(Power => 1, aux => 0.05),
             Dict(Power => 1),
         )
-        m , _, _ = simple_graph(storage)
+        _, case, model = simple_graph(storage)
+        m = run_model(case, model, HiGHS.Optimizer)
         @test termination_status(m) == MOI.OPTIMAL
     end
 end
