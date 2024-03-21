@@ -50,11 +50,11 @@ function check_data(case, modeltype::EnergyModel, check_timeprofiles::Bool)
 
     if !check_timeprofiles
         @warn "Checking of the time profiles is deactivated:\n" *
-        "Deactivating the checks for the time profiles is strongly discouraged.\n" *
-        "While the model will still run, unexpected results can occur, as well as\n" *
+        "Deactivating the checks for the time profiles is strongly discouraged. " *
+        "While the model will still run, unexpected results can occur, as well as " *
         "inconsistent case data.\n\n" *
-        "Deactivating the checks for the timeprofiles should only be considered,\n" *
-        "when testing new components. In all other instances, it is recommended to\n" *
+        "Deactivating the checks for the timeprofiles should only be considered, " *
+        "when testing new components. In all other instances, it is recommended to " *
         "provide the correct timeprofiles using a preprocessing routine.\n\n" *
         "If timeprofiles are not checked, inconsistencies can occur."  maxlog=1
     end

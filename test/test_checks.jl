@@ -245,12 +245,12 @@ end
     @test_throws AssertionError run_simple_graph(em_data)
     case, model = simple_graph(em_data)
     msg = "Checking of the time profiles is deactivated:\n" *
-    "Deactivating the checks for the time profiles is strongly discouraged.\n" *
-    "While the model will still run, unexpected results can occur, as well as\n" *
+    "Deactivating the checks for the time profiles is strongly discouraged. " *
+    "While the model will still run, unexpected results can occur, as well as " *
     "inconsistent case data.\n\n" *
-    "Deactivating the checks for the timeprofiles should only be considered,\n" *
-    "when testing new components. In all other instances, it is recommended to\n" *
-    "provide the correct timeprofiles using a preprocessing routine. \n\n" *
+    "Deactivating the checks for the timeprofiles should only be considered, " *
+    "when testing new components. In all other instances, it is recommended to " *
+    "provide the correct timeprofiles using a preprocessing routine.\n\n" *
     "If timeprofiles are not checked, inconsistencies can occur."
     @test_logs (:warn, msg) create_model(case, model; check_timeprofiles=false)
     @test_logs (:warn, msg) for k ∈ [1,2] create_model(case, model; check_timeprofiles=false) end
@@ -355,12 +355,12 @@ end
     # Check that turning of the timeprofile checks leads to a warning
     case, model = simple_graph(ts, tp)
     msg = "Checking of the time profiles is deactivated:\n" *
-    "Deactivating the checks for the time profiles is strongly discouraged.\n" *
-    "While the model will still run, unexpected results can occur, as well as\n" *
+    "Deactivating the checks for the time profiles is strongly discouraged. " *
+    "While the model will still run, unexpected results can occur, as well as " *
     "inconsistent case data.\n\n" *
-    "Deactivating the checks for the timeprofiles should only be considered,\n" *
-    "when testing new components. In all other instances, it is recommended to\n" *
-    "provide the correct timeprofiles using a preprocessing routine. \n\n" *
+    "Deactivating the checks for the timeprofiles should only be considered, " *
+    "when testing new components. In all other instances, it is recommended to " *
+    "provide the correct timeprofiles using a preprocessing routine.\n\n" *
     "If timeprofiles are not checked, inconsistencies can occur."
     @test_logs (:warn, msg) create_model(case, model; check_timeprofiles=false)
 end

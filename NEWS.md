@@ -1,6 +1,6 @@
 # Release notes
 
-## Version 0.6.7 (2024-03-14)
+## Version 0.6.7 (2024-03-21)
 
 * Allow for deactivation of timeprofile checks while printing a warning in this case.
 * Fixed a bug for a too short `StrategicProfile` in the checks.
