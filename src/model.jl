@@ -1,20 +1,32 @@
 """
-    create_model(case, modeltype::EnergyModel)
+    create_model(case, modeltype::EnergyModel, m::JuMP.Model; check_timeprofiles::Bool=true)
 
-Create the model and call all required functions based on provided `modeltype`
-and case data.
+Create the model and call all required functions.
+
+## Input
+- `case` - The case dictionary requiring the keys `:T`, `:nodes`, `:links`, and `products`.
+  If the input is not provided in the correct form, the checks will identify the problem.
+- `modeltype` - Used modeltype, that is a subtype of the type `EnergyModel`.
+- `m` - the empty `JuMP.Model` instance. If it is not provided, then it is assumed that the
+  input is a standard `JuMP.Model`.
+
+## Conditional input
+- `check_timeprofiles=true` - A boolean indicator whether the time profiles of the individual
+  nodes should be checked or not. It is advised to not deactivate the check, except if you
+  are testing new components. It may lead to unexpected behaviour and potential
+  inconsistencies in the input data, if the time profiles are not checked.
 """
-function create_model(case, modeltype::EnergyModel, m::JuMP.Model)
+function create_model(case, modeltype::EnergyModel, m::JuMP.Model; check_timeprofiles::Bool=true)
     @debug "Construct model"
+
+    # Check if the case data is consistent before the model is created.
+    check_data(case, modeltype, check_timeprofiles)
 
     # WIP Data structure
     𝒯 = case[:T]
     𝒩 = case[:nodes]
     ℒ = case[:links]
     𝒫 = case[:products]
-
-    # Check if the case data is consistent before the model is created.
-    check_data(case, modeltype)
 
     # Declaration of variables for the problem
     variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
@@ -34,9 +46,9 @@ function create_model(case, modeltype::EnergyModel, m::JuMP.Model)
 
     return m
 end
-function create_model(case, modeltype::EnergyModel)
+function create_model(case, modeltype::EnergyModel; check_timeprofiles::Bool=true)
     m = JuMP.Model()
-    create_model(case, modeltype::EnergyModel, m)
+    create_model(case, modeltype, m; check_timeprofiles)
 end
 
 """
