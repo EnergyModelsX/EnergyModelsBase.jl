@@ -52,7 +52,6 @@ EMB.TEST_ENV = true
     for key ∈ keys(case)
         case_test = deepcopy(case)
         pop!(case_test, key)
-        println(case_test)
         @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
     end
 

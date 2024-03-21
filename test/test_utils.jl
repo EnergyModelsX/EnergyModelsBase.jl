@@ -63,7 +63,6 @@ end
     end
 
     function test_type_order(sorted_node_types)
-        @info sorted_node_types
         indexes = Dict(sorted_node_types .=> keys(sorted_node_types))
 
         @test indexes[EMB.Node] == 1
