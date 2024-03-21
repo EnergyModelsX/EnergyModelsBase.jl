@@ -239,7 +239,7 @@ end
     em_data = [CaptureEnergyEmissions(-1.2)]
     @test_throws AssertionError run_simple_graph(em_data)
 
-    # Test that the timeprofile check is working
+    # Test that the timeprofile check is working and only showing the warning once
     # - EMB.check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel
     em_data = [EmissionsProcess(Dict(CO2 => StrategicProfile([1])))]
     @test_throws AssertionError run_simple_graph(em_data)
@@ -253,6 +253,8 @@ end
     "provide the correct timeprofiles using a preprocessing routine. \n\n" *
     "If timeprofiles are not checked, inconsistencies can occur."
     @test_logs (:warn, msg) create_model(case, model; check_timeprofiles=false)
+    @test_logs (:warn, msg) for k ∈ [1,2] create_model(case, model; check_timeprofiles=false) end
+
 end
 
 @testset "Test checks - timeprofiles" begin

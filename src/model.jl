@@ -7,7 +7,7 @@ Create the model and call all required functions.
 - `case` - The case dictionary requiring the keys `:T`, `:nodes`, `:links`, and `products`.
   If the input is not provided in the correct form, the checks will identify the problem.
 - `modeltype` - Used modeltype, that is a subtype of the type `EnergyModel`.
-- `m` - the empthy `JuMP.Model` instance. If it is not provided, then it is assumed that the
+- `m` - the empty `JuMP.Model` instance. If it is not provided, then it is assumed that the
   input is a standard `JuMP.Model`.
 
 ## Conditional input

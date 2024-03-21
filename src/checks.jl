@@ -55,8 +55,8 @@ function check_data(case, modeltype::EnergyModel, check_timeprofiles::Bool)
         "inconsistent case data.\n\n" *
         "Deactivating the checks for the timeprofiles should only be considered,\n" *
         "when testing new components. In all other instances, it is recommended to\n" *
-        "provide the correct timeprofiles using a preprocessing routine. \n\n" *
-        "If timeprofiles are not checked, inconsistencies can occur."
+        "provide the correct timeprofiles using a preprocessing routine.\n\n" *
+        "If timeprofiles are not checked, inconsistencies can occur."  maxlog=1
     end
 
     # Check the case data. If the case data is not in the correct format, the overall check
