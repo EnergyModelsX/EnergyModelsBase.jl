@@ -319,7 +319,7 @@ function constraints_level_iterate(
         prev_pers = PrevPeriods(prev_pers.sp, prev_pers.rp, t_prev, prev_pers.last);
 
         # Extract the previous level
-        prev_level = previous_level(m, n, prev_pers, t, modeltype)
+        prev_level = previous_level(m, n, prev_pers, modeltype)
 
         # Mass balance constraint in the storage
         @constraint(
@@ -329,7 +329,7 @@ function constraints_level_iterate(
 
         # Constraint for avoiding starting below 0 if the previous operational level is
         # nothing
-        constraints_level_bounds(m, n, t, prev_pers, modeltype)
+        constraints_level_bounds(m, n, t, prev_pers.last, modeltype)
     end
 end
 
@@ -415,7 +415,7 @@ end
         m,
         n::Storage,
         t::TS.TimePeriod,
-        prev_pers::PrevPeriods,
+        prev_pers::TS.TimePeriod,
         modeltype::EnergyModel,
     )
 
@@ -428,7 +428,7 @@ function constraints_level_bounds(
     m,
     n::Storage,
     t::TS.TimePeriod,
-    prev_pers::PrevPeriods,
+    prev_pers::TS.TimePeriod,
     modeltype::EnergyModel,
 )
 
@@ -439,7 +439,7 @@ end
         m,
         n::Storage,
         t::TS.TimePeriod,
-        prev_pers::PrevPeriods{<:nt, <:nt, Nothing, <:TS.AbstractRepresentativePeriod},
+        prev_pers::TS.AbstractRepresentativePeriod,
         modeltype::EnergyModel,
     )
 
@@ -451,7 +451,7 @@ function constraints_level_bounds(
     m,
     n::Storage,
     t::TS.TimePeriod,
-    prev_pers::PrevPeriods{<:nt, <:nt, Nothing, <:TS.AbstractRepresentativePeriod},
+    prev_pers::TS.AbstractRepresentativePeriod,
     modeltype::EnergyModel,
 )
 
