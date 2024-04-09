@@ -134,7 +134,7 @@ end
     # Check that the objective value is properly calculated
     # - objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
     @test -sum((value.(m[:opex_var][n, t_inv]) + value.(m[:opex_fixed][n, t_inv])) *
-            duration(t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ) ≈
+            duration_strat(t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ) ≈
                 objective_value(m) atol=TEST_ATOL
 
     # Check that the inlet and outlet flowrates in the links are correctly calculated

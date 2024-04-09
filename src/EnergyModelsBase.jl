@@ -19,6 +19,7 @@ include(joinpath("structures", "data.jl"))
 include(joinpath("structures", "node.jl"))
 include(joinpath("structures", "link.jl"))
 include(joinpath("structures", "model.jl"))
+include(joinpath("structures", "misc.jl"))
 
 include("utils.jl")
 include("model.jl")

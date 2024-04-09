@@ -148,9 +148,6 @@ function constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
     constraints_level_aux(m, n, 𝒯, 𝒫, modeltype)
 
     # Mass/energy balance constraints for stored energy carrier.
-    # for t_inv ∈ 𝒯ᴵⁿᵛ
-    #     constraints_level_sp(m, n, t_inv, 𝒫, modeltype)
-
     for (t_inv_prev, t_inv) ∈ withprev(𝒯ᴵⁿᵛ)
         # Calculation of the operational period for the cyclic constraints
         last_per = last(collect(t_inv))
@@ -158,7 +155,7 @@ function constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
         # Creation of the iterator and call of the iterator function -
         # The representative period is initiated with the current investment period to allows
         # for dispatching on it.
-        prev_pers = PrevPeriods(t_inv_prev, t_inv,  nothing, last_per);
+        prev_pers = PrevPeriods(t_inv_prev, nothing,  nothing, last_per);
         ts = t_inv.operational
         constraints_level_iterate(m, n, prev_pers, t_inv, ts, modeltype)
     end
@@ -166,12 +163,12 @@ end
 
 
 """
-    constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫, modeltype::EnergyModel) where {S<:ResourceCarrier}
+    constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Function for creating the Δ constraint for the level of a reference storage node with a
 `ResourceCarrier` resource.
 """
-function constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫, modeltype::EnergyModel) where {S<:ResourceCarrier}
+function constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
     # Declaration of the required subsets
     p_stor = storage_resource(n)
 
@@ -211,6 +208,23 @@ function constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫, modeltype::Energ
     @constraint(m, [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ], m[:emissions_node][n, t, p_em] == 0)
 end
 
+"""
+    constraints_level_iterate(
+        m,
+        n::Storage,
+        prev_pers::PrevPeriods,
+        per,
+        ts::RepresentativePeriods,
+        modeltype::EnergyModel,
+    )
+
+Iterate through the individual time structures of a `Storage` node. This iteration function
+should in general allow for all necessary functionality for incorporating modifications.
+
+In the case of `RepresentativePeriods`, this is achieved through calling the function
+[`constraints_level_rp`](@ref) to introduce, _e.g._, cyclic constraints as it is in the
+default case.
+ """
 function constraints_level_iterate(
     m,
     n::Storage,
@@ -223,11 +237,14 @@ function constraints_level_iterate(
     𝒯ʳᵖ = repr_periods(per)
     last_per = last(𝒯ʳᵖ)
 
-    # Constraint for the cycle storage constraints when including representative periods
-    constraints_level_cyclic_rp(m, n, per, ts, modeltype)
+    # Constraint for additional, node specific constraints for representative periods
+    constraints_level_rp(m, n, per, ts, modeltype)
 
-    # Constraint that the total change has to be 0
-    @constraint(m, sum(m[:stor_level_Δ_rp][n, t_rp] for t_rp ∈ 𝒯ʳᵖ) == 0)
+    # Constraint for the total change in the level in a given representative period
+    @constraint(m, [t_rp ∈ 𝒯ʳᵖ],
+        m[:stor_level_Δ_rp][n, t_rp] ==
+            sum(m[:stor_level_Δ_op][n, t] * multiple_strat(per, t) * duration(t) for t ∈ t_rp)
+    )
 
     # Iterate through the operational structure
     for (t_rp_prev, t_rp) ∈ withprev(𝒯ʳᵖ)
@@ -236,7 +253,19 @@ function constraints_level_iterate(
         constraints_level_iterate(m, n, prev_pers, t_rp, ts, modeltype)
     end
 end
+"""
+    constraints_level_iterate(
+        m,
+        n::Storage,
+        prev_pers::PrevPeriods,
+        per,
+        ts::OperationalScenarios,
+        modeltype::EnergyModel,
+    )
 
+In the case of `OperationalScenarios`, this is achieved through calling the function
+[`constraints_level_scp`](@ref). In the default case, no constraints are added.
+"""
 function constraints_level_iterate(
     m,
     n::Storage,
@@ -248,14 +277,34 @@ function constraints_level_iterate(
     # Declaration of the required subsets
     𝒯ˢᶜ = opscenarios(per)
 
+    # Constraint for additional, node specific constraints for scenario periods
+    constraints_level_scp(m, n, per, ts, modeltype)
+
     # Iterate through the operational structure
     for t_scp ∈ 𝒯ˢᶜ
-        prev_pers = PrevPeriods(prev_pers.sp, prev_pers.rp, prev_pers.op, prev_pers.last);
         ts = t_scp.operational.operational
         constraints_level_iterate(m, n, prev_pers, t_scp, ts, modeltype)
     end
 end
 
+"""
+    constraints_level_iterate(
+        m,
+        n::Storage,
+        prev_pers::PrevPeriods,
+        per,
+        ts::SimpleTimes,
+        modeltype::EnergyModel,
+    )
+
+In the case of `SimpleTimes`, the iterator function is at its lowest level. In this
+situation,the previous level is calculated using the function [`previous_level`](@ref) and
+used for the storage balance. The the approach for calculating the  `previous_level` is
+depending on the types in the parameteric type `PrevPeriods`.
+
+In addition, additional bounds can be included on the initial level within an operational
+period.
+"""
 function constraints_level_iterate(
     m,
     n::Storage,
@@ -280,11 +329,26 @@ function constraints_level_iterate(
 
         # Constraint for avoiding starting below 0 if the previous operational level is
         # nothing
-        constraints_level_init(m, n, t, prev_pers, modeltype)
+        constraints_level_bounds(m, n, t, prev_pers, modeltype)
     end
 end
 
-function constraints_level_cyclic_rp(
+"""
+    constraints_level_rp(
+        m,
+        n::Storage,
+        per::TS.AbstractStrategicPeriod,
+        ts::RepresentativePeriods,
+        modeltype::EnergyModel,
+    )
+
+Provides additional contraints for representative periods.
+
+The default approach is to set the total change in all representative periods within a
+strategic period to 0. This implies that the `Storage` node cannot accumulate energy between
+individual strategic periods.
+"""
+function constraints_level_rp(
     m,
     n::Storage,
     per::TS.AbstractStrategicPeriod,
@@ -295,14 +359,22 @@ function constraints_level_cyclic_rp(
     # Declaration of the required subsets
     𝒯ʳᵖ = repr_periods(per)
 
-    # Constraint for the total change in the level in a given representative period
-    @constraint(m, [t_rp ∈ 𝒯ʳᵖ],
-        m[:stor_level_Δ_rp][n, t_rp] ==
-            sum(m[:stor_level_Δ_op][n, t] * multiple_strat(per, t) * duration(t) for t ∈ t_rp)
-    )
+    # Constraint that the total change has to be 0 within a strategic period
+    @constraint(m, sum(m[:stor_level_Δ_rp][n, t_rp] for t_rp ∈ 𝒯ʳᵖ) == 0)
 end
+"""
+    constraints_level_rp(
+        m,
+        n::RefStorage{R},
+        per::TS.AbstractStrategicPeriod,
+        ts::RepresentativePeriods,
+        modeltype::EnergyModel,
+    ) where {R<:ResourceEmit}
 
-function constraints_level_cyclic_rp(
+When a `RefStorage{<:ResourceEmit}` is used, the cyclic constraint is not implemented as
+accumulation within a strategic period is desirable.
+"""
+function constraints_level_rp(
     m,
     n::RefStorage{R},
     per::TS.AbstractStrategicPeriod,
@@ -313,26 +385,46 @@ function constraints_level_cyclic_rp(
     return nothing
 end
 
-function constraints_level_init(
+"""
+    constraints_level_scp(
+        m,
+        n::Storage,
+        per::TS.AbstractStrategicPeriod,
+        ts::RepresentativePeriods,
+        modeltype::EnergyModel,
+    ) where {R<:ResourceEmit}
+
+Provides additional constraints for scenario periods.
+
+The default approach is to not provide any constraints.
+"""
+function constraints_level_scp(
     m,
     n::Storage,
-    t::TS.TimePeriod,
-    prev_pers::PrevPeriods{<:nt, <:nt, Nothing},
+    per::TS.AbstractStrategicPeriod,
+    ts::RepresentativePeriods,
     modeltype::EnergyModel,
 )
 
-    # Constraint to avoid starting below 0 in this operational period
-    @constraint(m,
-        m[:stor_level][n, t] -
-        m[:stor_level_Δ_op][n, t] * duration(t) ≥ 0
-    )
-    # Constraint to avoid having a level larger than the storage allows
-    @constraint(m,
-        m[:stor_level][n, t] -
-        m[:stor_level_Δ_op][n, t] * duration(t) ≤ m[:stor_cap_inst][n, t]
-    )
+    return nothing
 end
-function constraints_level_init(
+
+
+"""
+    constraints_level_bounds(
+        m,
+        n::Storage,
+        t::TS.TimePeriod,
+        prev_pers::PrevPeriods,
+        modeltype::EnergyModel,
+    )
+
+Provides bounds on the initial storage level in an operational period to account for the
+level being modelled at the end of the operational periods.
+
+The default approach is to not provide bounds.
+"""
+function constraints_level_bounds(
     m,
     n::Storage,
     t::TS.TimePeriod,
@@ -340,260 +432,41 @@ function constraints_level_init(
     modeltype::EnergyModel,
 )
 
-    # println(typeof(prev_pers))
     return nothing
 end
-
 """
-    constraints_level_sp(
+    constraints_level_bounds(
         m,
-        n::RefStorage{S},
-        t_inv::TS.StrategicPeriod{S, T, SimpleTimes{T}},
-        𝒫,
-        modeltype::EnergyModel
-    ) where {R<:ResourceCarrier, S, T}
-
-Function for creating the level constraint for a reference storage node with a
-`ResourceCarrier` resource when the operational `TimeStructure` is given as `SimpleTimes`.
-"""
-function constraints_level_sp(
-    m,
-    n::RefStorage{R},
-    t_inv::TS.StrategicPeriod{S, T, SimpleTimes{T}},
-    𝒫,
-    modeltype::EnergyModel
-) where {R<:ResourceCarrier, S, T}
-
-    # Mass/energy balance constraints for stored energy carrier.
-    for (t_prev, t) ∈ withprev(t_inv)
-        if isnothing(t_prev)
-            @constraint(m,
-                m[:stor_level][n, t] ==
-                    m[:stor_level][n, last(t_inv)] +
-                    m[:stor_level_Δ_op][n, t] * duration(t)
-            )
-        else
-            @constraint(m,
-                m[:stor_level][n, t] ==
-                    m[:stor_level][n, t_prev] +
-                    m[:stor_level_Δ_op][n, t] * duration(t)
-            )
-        end
-    end
-end
-
-"""
-    constraints_level_sp(
-        m,
-        n::RefStorage{S},
-        t_inv::TS.StrategicPeriod{S, T, RepresentativePeriods{U, T, SimpleTimes{T}}},
-        𝒫,
-        modeltype::EnergyModel
-    ) where {R<:ResourceCarrier, S, T, U}
-
-Function for creating the level constraint for a reference storage node with a
-`ResourceCarrier` resource when the operational `TimeStructure` is given as
-`RepresentativePeriods`.
-"""
-function constraints_level_sp(
-    m,
-    n::RefStorage{R},
-    t_inv::TS.StrategicPeriod{S, T, RepresentativePeriods{U, T, SimpleTimes{T}}},
-    𝒫,
-    modeltype::EnergyModel
-) where {R<:ResourceCarrier, S, T, U}
-
-    # Declaration of the required subsets
-    𝒯ʳᵖ = repr_periods(t_inv)
-
-    # Constraint for the total change in the level in a given representative period
-    @constraint(m, [t_rp ∈ 𝒯ʳᵖ],
-        m[:stor_level_Δ_rp][n, t_rp] ==
-            sum(m[:stor_level_Δ_op][n, t] * multiple_strat(t_inv, t) * duration(t) for t ∈ t_rp)
+        n::Storage,
+        t::TS.TimePeriod,
+        prev_pers::PrevPeriods{<:nt, <:nt, Nothing, <:TS.AbstractRepresentativePeriod},
+        modeltype::EnergyModel,
     )
 
-    # Constraint that the total change has to be 0
-    @constraint(m, sum(m[:stor_level_Δ_rp][n, t_rp] for t_rp ∈ 𝒯ʳᵖ) == 0)
-
-    # Mass/energy balance constraints for stored energy carrier.
-    for (t_rp_prev, t_rp) ∈ withprev(𝒯ʳᵖ), (t_prev, t) ∈ withprev(t_rp)
-        if isnothing(t_rp_prev) && isnothing(t_prev)
-
-            # Last representative period in t_inv
-            t_rp_last = last(𝒯ʳᵖ)
-
-            # Constraint for the level of the first operational period in the first
-            # representative period in a strategic period
-            # The substraction of stor_level_Δ_op[n, first(t_rp_last)] is necessary to avoid
-            # treating the first operational period differently with respect to the level
-            # as the latter is at the end of the period
-            @constraint(m,
-                m[:stor_level][n, t] ==
-                    m[:stor_level][n, first(t_rp_last)] -
-                    m[:stor_level_Δ_op][n, first(t_rp_last)] * duration(first(t_rp_last)) +
-                    m[:stor_level_Δ_rp][n, t_rp_last] +
-                    m[:stor_level_Δ_op][n, t] * duration(t)
-            )
-
-            # Constraint to avoid starting below 0 in this operational period
-            @constraint(m,
-                m[:stor_level][n, t] -
-                m[:stor_level_Δ_op][n, t] * duration(t) ≥ 0
-            )
-
-            # Constraint to avoid having a level larger than the storage allows
-            @constraint(m,
-                m[:stor_level][n, t] -
-                m[:stor_level_Δ_op][n, t] * duration(t) ≤ m[:stor_cap_inst][n, t]
-            )
-
-        elseif isnothing(t_prev)
-            # Constraint for the level of the first operational period in any following
-            # representative period
-            # The substraction of stor_level_Δ_op[n, first(t_rp_prev)] is necessary to avoid
-            # treating the first operational period differently with respect to the level
-            # as the latter is at the end of the period
-            @constraint(m,
-                m[:stor_level][n, t] ==
-                    m[:stor_level][n, first(t_rp_prev)] -
-                    m[:stor_level_Δ_op][n, first(t_rp_prev)] * duration(first(t_rp_prev)) +
-                    m[:stor_level_Δ_rp][n, t_rp_prev] +
-                    m[:stor_level_Δ_op][n, t] * duration(t)
-            )
-
-            # Constraint to avoid starting below 0 in this operational period
-            @constraint(m,
-                m[:stor_level][n, t] -
-                m[:stor_level_Δ_op][n, t] * duration(t) ≥ 0
-            )
-            # Constraint to avoid having a level larger than the storage allows
-            @constraint(m,
-                m[:stor_level][n, t] -
-                m[:stor_level_Δ_op][n, t] * duration(t) ≤ m[:stor_cap_inst][n, t]
-            )
-        else
-            # Constraint for the level of a standard operational period
-            @constraint(m,
-                m[:stor_level][n, t] ==
-                    m[:stor_level][n, t_prev] + m[:stor_level_Δ_op][n, t] * duration(t)
-            )
-        end
-    end
-end
-
+When representative periods are used and the previous opeartional period is nothing, then
+bounds are incorporated to avoid that the initial level storage level is violating the
+maximum and minimum level.
 """
-    constraints_level_sp(
-        m,
-        n::RefStorage{S},
-        t_inv::TS.StrategicPeriod{S, T, SimpleTimes{T}},
-        𝒫,
-        modeltype::EnergyModel
-    ) where {R<:ResourceEmit, S, T}
-
-Function for creating the level constraint for a reference storage node with a
-`ResourceEmit` resource when the operational TimeStructure is given as `SimpleTimes`.
-"""
-function constraints_level_sp(
+function constraints_level_bounds(
     m,
-    n::RefStorage{R},
-    t_inv::TS.StrategicPeriod{S, T, SimpleTimes{T}},
-    𝒫,
-    modeltype::EnergyModel
-) where {R<:ResourceEmit, S, T}
+    n::Storage,
+    t::TS.TimePeriod,
+    prev_pers::PrevPeriods{<:nt, <:nt, Nothing, <:TS.AbstractRepresentativePeriod},
+    modeltype::EnergyModel,
+)
 
-    # Mass/energy balance constraints for stored energy carrier.
-    for (t_prev, t) ∈ withprev(t_inv)
-        if isnothing(t_prev)
-            @constraint(m,
-                m[:stor_level][n, t] ==
-                m[:stor_level_Δ_op][n, t] * duration(t)
-            )
-        else
-            @constraint(m,
-                m[:stor_level][n, t] ==
-                    m[:stor_level][n, t_prev] +
-                    m[:stor_level_Δ_op][n, t] * duration(t)
-            )
-        end
-    end
-end
-
-"""
-    constraints_level_sp(
-        m,
-        n::RefStorage{S},
-        t_inv::TS.StrategicPeriod{S, T, RepresentativePeriods{U, T, SimpleTimes{T}}},
-        𝒫,
-        modeltype::EnergyModel
-    ) where {R<:ResourceEmit, S, T, U}
-
-Function for creating the level constraint for a reference storage node with a
-`ResourceEmit` resource when the operational TimeStructure is given as
-`RepresentativePeriods`.
-"""
-function constraints_level_sp(
-    m,
-    n::RefStorage{R},
-    t_inv::TS.StrategicPeriod{S, T, RepresentativePeriods{U, T, SimpleTimes{T}}},
-    𝒫,
-    modeltype::EnergyModel
-) where {R<:ResourceEmit, S, T, U}
-
-    # Declaration of the required subsets
-    𝒯ʳᵖ = repr_periods(t_inv)
-
-    # Constraint for the total change in the level in a given representative period
-    @constraint(m, [t_rp ∈ 𝒯ʳᵖ],
-        m[:stor_level_Δ_rp][n, t_rp] ==
-            sum(m[:stor_level_Δ_op][n, t] * multiple_strat(t_inv, t) * duration(t) for t ∈ t_rp)
+    # Constraint to avoid starting below 0 in this operational period
+    @constraint(m,
+        0 ≤
+            m[:stor_level][n, t] - m[:stor_level_Δ_op][n, t] * duration(t)
     )
 
-    # Mass/energy balance constraints for stored energy resource.
-    for (t_rp_prev, t_rp) ∈ withprev(𝒯ʳᵖ), (t_prev, t) ∈ withprev(t_rp)
-        if isnothing(t_rp_prev) && isnothing(t_prev)
-
-            # Constraint for the level of the first operational period in the first
-            # representative period in a strategic period
-            @constraint(m,
-                m[:stor_level][n, t] ==
-                    m[:stor_level_Δ_op][n, t] * duration(t)
-            )
-
-        elseif isnothing(t_prev)
-            # Constraint for the level of the first operational period in any following
-            # representative period
-            # The substraction of stor_level_Δ_op[n, first(t_rp_prev)] is necessary to avoid
-            # treating the first operational period differently with respect to the level
-            # as the latter is at the end of the period
-            @constraint(m,
-                m[:stor_level][n, t] ==
-                    m[:stor_level][n, first(t_rp_prev)] -
-                    m[:stor_level_Δ_op][n, first(t_rp_prev)] * duration(first(t_rp_prev)) +
-                    m[:stor_level_Δ_rp][n, t_rp_prev] +
-                    m[:stor_level_Δ_op][n, t] * duration(t)
-            )
-
-            # Constraint to avoid starting below 0 in this operational period
-            @constraint(m,
-                m[:stor_level][n, t] -
-                m[:stor_level_Δ_op][n, t] * duration(t) ≥ 0
-            )
-
-            # Constraint to avoid starting below 0 in this operational period
-            @constraint(m,
-                m[:stor_level][n, t] -
-                m[:stor_level_Δ_op][n, t] * duration(t) ≤ m[:stor_cap_inst][n, t]
-            )
-        else
-            # Constraint for the level of a standard operational period
-            @constraint(m,
-                m[:stor_level][n, t] ==
-                    m[:stor_level][n, t_prev] + m[:stor_level_Δ_op][n, t] * duration(t)
-            )
-        end
-    end
+    # Constraint to avoid having a level larger than the storage allows
+    @constraint(m,
+        m[:stor_cap_inst][n, t] ≥
+            m[:stor_level][n, t] - m[:stor_level_Δ_op][n, t] * duration(t)
+    )
 end
-
 
 """
     constraints_opex_fixed(m, n::Node, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)

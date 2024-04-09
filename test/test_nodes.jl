@@ -10,7 +10,7 @@
 
         resources = [Power, CO2]
         ops = SimpleTimes(5, 2)
-        op_per_strat = duration(ops)
+        op_per_strat = TS._total_duration(ops)
         T = TwoLevel(2, 2, ops; op_per_strat)
 
         nodes = [source, sink]
@@ -275,7 +275,7 @@ end
 
         resources = [NG, Power, CO2]
         ops = SimpleTimes(5, 2)
-        op_per_strat = duration(ops)
+        op_per_strat = TS._total_duration(ops)
         T = TwoLevel(2, 2, ops; op_per_strat)
 
         nodes = [source, network, sink]
@@ -632,7 +632,7 @@ end
             Dict(Power => 1),
         )
 
-        op_per_strat = duration(ops)
+        op_per_strat = TS._total_duration(ops)
         T = TwoLevel(2, 2, ops; op_per_strat)
 
         nodes = [source, aux_source, storage, sink]
@@ -931,7 +931,7 @@ end
             Dict(Power => 1),
         )
 
-        op_per_strat = duration(ops)
+        op_per_strat = TS._total_duration(ops)
         T = TwoLevel(2, 2, ops; op_per_strat)
 
         nodes = [source, network, storage, sink]
