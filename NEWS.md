@@ -1,5 +1,11 @@
 # Release notes
 
+## Unversioned
+
+* Added potential for negative emissions.
+  This change requires the user to always constrain the variable `emissions_node`, if it is defined by the user.
+  By default, this is achieved in the developed packages through `EmissionsData` or additional bounds.
+
 ## Version 0.6.7 (2024-03-21)
 
 * Allow for deactivation of timeprofile checks while printing a warning in this case.

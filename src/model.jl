@@ -127,8 +127,8 @@ function variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
     𝒫ᵉᵐ  = filter(is_resource_emit, 𝒫)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    @variable(m, emissions_node[𝒩ᵉᵐ, 𝒯, 𝒫ᵉᵐ] >= 0)
-    @variable(m, emissions_total[𝒯, 𝒫ᵉᵐ] >= 0)
+    @variable(m, emissions_node[𝒩ᵉᵐ, 𝒯, 𝒫ᵉᵐ])
+    @variable(m, emissions_total[𝒯, 𝒫ᵉᵐ])
     @variable(m, emissions_strategic[t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ] <=
                 emission_limit(modeltype, p, t_inv))
 end
