@@ -181,6 +181,11 @@ function constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫, modeltype::Energ
     p_stor = storage_resource(n)
     𝒫ᵉᵐ    = setdiff(res_sub(𝒫, ResourceEmit), [p_stor])
 
+    # Set the lower bound for the emissions in the storage node
+    for t ∈ 𝒯
+        set_lower_bound(m[:emissions_node][n, t, p_stor], 0)
+    end
+
     # Constraint for the change in the level in a given operational period
     @constraint(m, [t ∈ 𝒯],
         m[:stor_level_Δ_op][n, t] ==
