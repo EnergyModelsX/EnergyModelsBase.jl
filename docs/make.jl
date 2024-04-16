@@ -36,6 +36,7 @@ makedocs(
         "How-to" => Any[
             "Create a new node" => "how-to/create-new-node.md",
             "Utilize TimeStruct.jl" => "how-to/utilize-timestruct.md",
+            "Contribute to EnergyModelsBase.jl" => "how-to/contribute.md",
         ],
         "Library" => Any[
             "Public" => "library/public.md",

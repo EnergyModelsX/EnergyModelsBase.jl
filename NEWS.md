@@ -5,6 +5,7 @@
 * Added potential for negative emissions.
   This change requires the user to always constrain the variable `emissions_node`, if it is defined by the user.
   By default, this is achieved in the developed packages through `EmissionsData` or additional bounds.
+* Provided a contribution section in the documentation.
 
 ## Version 0.6.7 (2024-03-21)
 
