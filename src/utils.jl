@@ -105,6 +105,7 @@ end
         m,
         n::Storage,
         prev_pers::PrevPeriods,
+        cyclic_pers::CyclicPeriods,
         modeltype::EnergyModel,
     )
 
@@ -118,6 +119,7 @@ function previous_level(
     m,
     n::Storage,
     prev_pers::PrevPeriods,
+    cyclic_pers::CyclicPeriods,
     modeltype::EnergyModel,
 )
 
@@ -129,6 +131,7 @@ end
         m,
         n::Storage,
         prev_pers::PrevPeriods{<:nt, Nothing, Nothing},
+        cyclic_pers::CyclicPeriods,
         modeltype::EnergyModel,
     )
 
@@ -140,19 +143,21 @@ function previous_level(
     m,
     n::Storage,
     prev_pers::PrevPeriods{<:nt, Nothing, Nothing},
+    cyclic_pers::CyclicPeriods,
     modeltype::EnergyModel,
 )
 
-    return _previous_level_sp(m, n, prev_pers.last, modeltype)
+    return _previous_level_sp(m, n, cyclic_pers, modeltype)
 end
-function _previous_level_sp(m, n::Storage, last::TS.TimePeriod, modeltype::EnergyModel)
+function _previous_level_sp(m, n::Storage, cyclic_pers::CyclicPeriods, modeltype::EnergyModel)
     # Return the previous storage level based on cyclic constraints
-    return @expression(m, m[:stor_level][n, last])
+    t_last = last(collect(cyclic_pers.current))
+    return @expression(m, m[:stor_level][n, t_last])
 end
 function _previous_level_sp(
     m,
     n::Storage,
-    last::TS.AbstractRepresentativePeriod,
+    cyclic_pers::CyclicPeriods{<:TS.AbstractRepresentativePeriod},
     modeltype::EnergyModel,
 )
     # Return the previous storage level based on cyclic constraints when representative
@@ -160,11 +165,21 @@ function _previous_level_sp(
     return @expression(
         m,
         # Initial storage in previous representative period
-        m[:stor_level][n, first(last)] -
-        m[:stor_level_Δ_op][n, first(last)] * duration(first(last)) +
+        m[:stor_level][n, first(cyclic_pers.last)] -
+        m[:stor_level_Δ_op][n, first(cyclic_pers.last)] * duration(first(cyclic_pers.last)) +
         # Increase in previous representative period
-        m[:stor_level_Δ_rp][n, last]
+        m[:stor_level_Δ_rp][n, cyclic_pers.last]
     )
+end
+function _previous_level_sp(
+    m,
+    n::CyclicStorage,
+    cyclic_pers::CyclicPeriods{<:TS.AbstractRepresentativePeriod},
+    modeltype::EnergyModel,
+)
+    # Return the previous storage level based on cyclic constraints within the representative
+    # period
+    return @expression(m, m[:stor_level][n, last(collect(cyclic_pers.current))])
 end
 """
     previous_level(
@@ -183,8 +198,20 @@ period while accounting for the number of  repetitions of the representative per
 """
 function previous_level(
     m,
+    n::CyclicStorage,
+    prev_pers::PrevPeriods{<:nt, <:TS.AbstractRepresentativePeriod, Nothing},
+    cyclic_pers::CyclicPeriods,
+    modeltype::EnergyModel,
+)
+    # Return the previous storage level based on cyclic constraints within the representative
+    # period
+    return @expression(m, m[:stor_level][n, last(collect(cyclic_pers.current))])
+end
+function previous_level(
+    m,
     n::Storage,
     prev_pers::PrevPeriods{<:nt, <:TS.AbstractRepresentativePeriod, Nothing},
+    cyclic_pers::CyclicPeriods,
     modeltype::EnergyModel,
 )
 
@@ -214,6 +241,7 @@ function previous_level(
     m,
     n::RefStorage{R},
     prev_pers::PrevPeriods{<:nt, Nothing, Nothing},
+    cyclic_pers::CyclicPeriods,
     modeltype::EnergyModel,
 ) where {R<:ResourceEmit}
     # Return the previous storage level as 0 for the reference storage unit

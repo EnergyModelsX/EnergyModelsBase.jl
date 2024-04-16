@@ -149,15 +149,13 @@ function constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Mass/energy balance constraints for stored energy carrier.
     for (t_inv_prev, t_inv) ∈ withprev(𝒯ᴵⁿᵛ)
-        # Calculation of the operational period for the cyclic constraints
-        last_per = last(collect(t_inv))
-
         # Creation of the iterator and call of the iterator function -
         # The representative period is initiated with the current investment period to allows
         # for dispatching on it.
-        prev_pers = PrevPeriods(t_inv_prev, nothing,  nothing, last_per);
+        prev_pers = PrevPeriods(t_inv_prev, nothing,  nothing);
+        cyclic_pers = CyclicPeriods(t_inv, t_inv)
         ts = t_inv.operational
-        constraints_level_iterate(m, n, prev_pers, t_inv, ts, modeltype)
+        constraints_level_iterate(m, n, prev_pers, cyclic_pers, t_inv, ts, modeltype)
     end
 end
 
@@ -213,6 +211,7 @@ end
         m,
         n::Storage,
         prev_pers::PrevPeriods,
+        cyclic_pers::CyclicPeriods,
         per,
         ts::RepresentativePeriods,
         modeltype::EnergyModel,
@@ -229,6 +228,7 @@ function constraints_level_iterate(
     m,
     n::Storage,
     prev_pers::PrevPeriods,
+    cyclic_pers::CyclicPeriods,
     per,
     ts::RepresentativePeriods,
     modeltype::EnergyModel,
@@ -248,9 +248,10 @@ function constraints_level_iterate(
 
     # Iterate through the operational structure
     for (t_rp_prev, t_rp) ∈ withprev(𝒯ʳᵖ)
-        prev_pers = PrevPeriods(prev_pers.sp, t_rp_prev, prev_pers.op, last_per);
+        prev_pers = PrevPeriods(prev_pers.sp, t_rp_prev, prev_pers.op);
+        cyclic_pers = CyclicPeriods(last_per, t_rp)
         ts = t_rp.operational.operational
-        constraints_level_iterate(m, n, prev_pers, t_rp, ts, modeltype)
+        constraints_level_iterate(m, n, prev_pers, cyclic_pers, t_rp, ts, modeltype)
     end
 end
 """
@@ -270,6 +271,7 @@ function constraints_level_iterate(
     m,
     n::Storage,
     prev_pers::PrevPeriods,
+    cyclic_pers::CyclicPeriods,
     per,
     ts::OperationalScenarios,
     modeltype::EnergyModel,
@@ -283,7 +285,7 @@ function constraints_level_iterate(
     # Iterate through the operational structure
     for t_scp ∈ 𝒯ˢᶜ
         ts = t_scp.operational.operational
-        constraints_level_iterate(m, n, prev_pers, t_scp, ts, modeltype)
+        constraints_level_iterate(m, n, prev_pers, cyclic_pers, t_scp, ts, modeltype)
     end
 end
 
@@ -309,6 +311,7 @@ function constraints_level_iterate(
     m,
     n::Storage,
     prev_pers::PrevPeriods,
+    cyclic_pers::CyclicPeriods,
     per,
     ts::SimpleTimes,
     modeltype::EnergyModel,
@@ -316,10 +319,11 @@ function constraints_level_iterate(
 
     # Iterate through the operational structure
     for (t_prev, t) ∈ withprev(per)
-        prev_pers = PrevPeriods(prev_pers.sp, prev_pers.rp, t_prev, prev_pers.last);
+        prev_pers = PrevPeriods(prev_pers.sp, prev_pers.rp, t_prev);
+        cyclic_pers = CyclicPeriods(cyclic_pers.last, cyclic_pers.current)
 
         # Extract the previous level
-        prev_level = previous_level(m, n, prev_pers, modeltype)
+        prev_level = previous_level(m, n, prev_pers, cyclic_pers, modeltype)
 
         # Mass balance constraint in the storage
         @constraint(
@@ -329,7 +333,7 @@ function constraints_level_iterate(
 
         # Constraint for avoiding starting below 0 if the previous operational level is
         # nothing
-        constraints_level_bounds(m, n, t, prev_pers.last, modeltype)
+        constraints_level_bounds(m, n, t, cyclic_pers, modeltype)
     end
 end
 
@@ -384,7 +388,6 @@ function constraints_level_rp(
 
     return nothing
 end
-
 """
     constraints_level_scp(
         m,
@@ -408,6 +411,32 @@ function constraints_level_scp(
 
     return nothing
 end
+"""
+    constraints_level_rp(
+        m,
+        n::CyclicStorage,
+        per::TS.AbstractStrategicPeriod,
+        ts::RepresentativePeriods,
+        modeltype::EnergyModel,
+    )
+
+When a `CyclicStorage` is used, the the change in the representative period
+is constrained to 0.
+"""
+function constraints_level_rp(
+    m,
+    n::CyclicStorage,
+    per::TS.AbstractStrategicPeriod,
+    ts::RepresentativePeriods,
+    modeltype::EnergyModel,
+)
+
+    # Declaration of the required subsets
+    𝒯ʳᵖ = repr_periods(per)
+
+    # Constraint that the total change has to be 0 within a representative period
+    @constraint(m, [t_rp ∈ 𝒯ʳᵖ], m[:stor_level_Δ_rp][n, t_rp] == 0)
+end
 
 
 """
@@ -428,7 +457,7 @@ function constraints_level_bounds(
     m,
     n::Storage,
     t::TS.TimePeriod,
-    prev_pers::TS.TimePeriod,
+    cyclic_pers::CyclicPeriods{<:TS.AbstractStrategicPeriod},
     modeltype::EnergyModel,
 )
 
@@ -439,7 +468,7 @@ end
         m,
         n::Storage,
         t::TS.TimePeriod,
-        prev_pers::TS.AbstractRepresentativePeriod,
+        cyclic_pers::CyclicPeriods{<:TS.AbstractRepresentativePeriod},
         modeltype::EnergyModel,
     )
 
@@ -451,7 +480,7 @@ function constraints_level_bounds(
     m,
     n::Storage,
     t::TS.TimePeriod,
-    prev_pers::TS.AbstractRepresentativePeriod,
+    cyclic_pers::CyclicPeriods{<:TS.AbstractRepresentativePeriod},
     modeltype::EnergyModel,
 )
 

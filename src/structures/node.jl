@@ -145,6 +145,66 @@ function RefStorage(
     )
 end
 
+
+"""
+    CyclicStorage <: Storage
+
+A cyclic `Storage` node.
+
+This node is designed to store a `ResourceCarrier` and should only be relevant in the case
+of implementation of representative periods. In this situation, the storage balance is
+cyclic within a representative period.
+
+A `CyclicStorage` node behaves similar to a `RefStorage{ResourceCarrier}` node, if there are
+no representative periods.
+
+# Fields
+- **`id`** is the name/identifier of the node.\n
+- **`rate_cap::TimeProfile`** is the installed rate capacity, that is e.g. power or mass flow.\n
+- **`stor_cap::TimeProfile`** is the installed storage capacity, that is e.g. energy or mass.\n
+- **`opex_var::TimeProfile`** is the variational operational costs per energy unit stored.\n
+- **`opex_fixed::TimeProfile`** is the fixed operational costs.\n
+- **`stor_res::T`** is the stored `Resource`.\n
+- **`input::Dict{<:Resource, <:Real}`** are the input `Resource`s with conversion value `Real`.
+- **`output::Dict{<:Resource, <:Real}`** are the generated `Resource`s with conversion value `Real`. \
+Only relevant for linking and the stored `Resource`.\n
+- **`data::Vector{<:Data}`** is the additional data (e.g. for investments). The field \
+`data` is conditional through usage of a constructor.
+"""
+struct CyclicStorage <: Storage
+    id
+    rate_cap::TimeProfile
+    stor_cap::TimeProfile
+    opex_var::TimeProfile
+    opex_fixed::TimeProfile
+    stor_res::ResourceCarrier
+    input::Dict{<:Resource, <:Real}
+    output::Dict{<:Resource, <:Real}
+    data::Vector{<:Data}
+end
+function CyclicStorage(
+    id,
+    rate_cap::TimeProfile,
+    stor_cap::TimeProfile,
+    opex_var::TimeProfile,
+    opex_fixed::TimeProfile,
+    stor_res::ResourceCarrier,
+    input::Dict{<:Resource, <:Real},
+    output::Dict{<:Resource, <:Real},
+)
+    return CyclicStorage(
+        id,
+        rate_cap,
+        stor_cap,
+        opex_var,
+        opex_fixed,
+        stor_res,
+        input,
+        output,
+        Data[],
+    )
+end
+
 """ A reference `Sink` node.
 
 This node corresponds to a demand given by the field `cap`.
