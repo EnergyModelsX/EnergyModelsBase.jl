@@ -4,7 +4,7 @@ Contributing to `EnergyModelsBase` can be achieved in several different ways.
 
 ## Create new extensions
 
-The main focus of `EnergyModelsBase` is to provide an easily extendable energy system optimization modelling framework.
+The main focus of `EnergyModelsBase` is to provide an easily extensible energy system optimization modelling framework.
 Hence, a first approach to contributing to `EnergyModelsBase` is to create a new package with, _e.g._, the introduction of new node descriptions.
 
 This is explained in [_How to create a new node_](@ref create_new_node).

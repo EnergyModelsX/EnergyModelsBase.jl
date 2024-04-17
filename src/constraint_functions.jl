@@ -177,12 +177,12 @@ function constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel
 end
 
 """
-    constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫, modeltype::EnergyModel) where {S<:ResourceEmit}
+    constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Function for creating the Δ constraint for the level of a reference storage node with a
 `ResourceEmit` resource.
 """
-function constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫, modeltype::EnergyModel) where {S<:ResourceEmit}
+function constraints_level_aux(m, n::RefStorage{AccumulatingEmissions}, 𝒯, 𝒫, modeltype::EnergyModel)
     # Declaration of the required subsets
     p_stor = storage_resource(n)
     𝒫ᵉᵐ    = setdiff(res_sub(𝒫, ResourceEmit), [p_stor])
@@ -230,7 +230,7 @@ function constraints_level_iterate(
     prev_pers::PrevPeriods,
     cyclic_pers::CyclicPeriods,
     per,
-    ts::RepresentativePeriods,
+    _::RepresentativePeriods,
     modeltype::EnergyModel,
 )
     # Declaration of the required subsets
@@ -238,7 +238,7 @@ function constraints_level_iterate(
     last_per = last(𝒯ʳᵖ)
 
     # Constraint for additional, node specific constraints for representative periods
-    constraints_level_rp(m, n, per, ts, modeltype)
+    constraints_level_rp(m, n, per, modeltype)
 
     # Constraint for the total change in the level in a given representative period
     @constraint(m, [t_rp ∈ 𝒯ʳᵖ],
@@ -273,14 +273,14 @@ function constraints_level_iterate(
     prev_pers::PrevPeriods,
     cyclic_pers::CyclicPeriods,
     per,
-    ts::OperationalScenarios,
+    _::OperationalScenarios,
     modeltype::EnergyModel,
 )
     # Declaration of the required subsets
     𝒯ˢᶜ = opscenarios(per)
 
     # Constraint for additional, node specific constraints for scenario periods
-    constraints_level_scp(m, n, per, ts, modeltype)
+    constraints_level_scp(m, n, per, modeltype)
 
     # Iterate through the operational structure
     for t_scp ∈ 𝒯ˢᶜ
@@ -313,14 +313,13 @@ function constraints_level_iterate(
     prev_pers::PrevPeriods,
     cyclic_pers::CyclicPeriods,
     per,
-    ts::SimpleTimes,
+    _::SimpleTimes,
     modeltype::EnergyModel,
 )
 
     # Iterate through the operational structure
     for (t_prev, t) ∈ withprev(per)
         prev_pers = PrevPeriods(prev_pers.sp, prev_pers.rp, t_prev);
-        cyclic_pers = CyclicPeriods(cyclic_pers.last, cyclic_pers.current)
 
         # Extract the previous level
         prev_level = previous_level(m, n, prev_pers, cyclic_pers, modeltype)
@@ -341,8 +340,7 @@ end
     constraints_level_rp(
         m,
         n::Storage,
-        per::TS.AbstractStrategicPeriod,
-        ts::RepresentativePeriods,
+        per,
         modeltype::EnergyModel,
     )
 
@@ -355,11 +353,9 @@ individual strategic periods.
 function constraints_level_rp(
     m,
     n::Storage,
-    per::TS.AbstractStrategicPeriod,
-    ts::RepresentativePeriods,
+    per,
     modeltype::EnergyModel,
 )
-
     # Declaration of the required subsets
     𝒯ʳᵖ = repr_periods(per)
 
@@ -370,53 +366,26 @@ end
     constraints_level_rp(
         m,
         n::RefStorage{R},
-        per::TS.AbstractStrategicPeriod,
-        ts::RepresentativePeriods,
+        per,
         modeltype::EnergyModel,
-    ) where {R<:ResourceEmit}
+    )
 
 When a `RefStorage{<:ResourceEmit}` is used, the cyclic constraint is not implemented as
 accumulation within a strategic period is desirable.
 """
 function constraints_level_rp(
     m,
-    n::RefStorage{R},
-    per::TS.AbstractStrategicPeriod,
-    ts::RepresentativePeriods,
-    modeltype::EnergyModel,
-) where {R<:ResourceEmit}
-
-    return nothing
-end
-"""
-    constraints_level_scp(
-        m,
-        n::Storage,
-        per::TS.AbstractStrategicPeriod,
-        ts::RepresentativePeriods,
-        modeltype::EnergyModel,
-    ) where {R<:ResourceEmit}
-
-Provides additional constraints for scenario periods.
-
-The default approach is to not provide any constraints.
-"""
-function constraints_level_scp(
-    m,
-    n::Storage,
-    per::TS.AbstractStrategicPeriod,
-    ts::RepresentativePeriods,
+    n::Storage{<:Accumulating},
+    per,
     modeltype::EnergyModel,
 )
-
     return nothing
 end
 """
     constraints_level_rp(
         m,
         n::CyclicStorage,
-        per::TS.AbstractStrategicPeriod,
-        ts::RepresentativePeriods,
+        per,
         modeltype::EnergyModel,
     )
 
@@ -425,12 +394,10 @@ is constrained to 0.
 """
 function constraints_level_rp(
     m,
-    n::CyclicStorage,
-    per::TS.AbstractStrategicPeriod,
-    ts::RepresentativePeriods,
+    n::Storage{CyclicRepresentative},
+    per,
     modeltype::EnergyModel,
 )
-
     # Declaration of the required subsets
     𝒯ʳᵖ = repr_periods(per)
 
@@ -438,6 +405,27 @@ function constraints_level_rp(
     @constraint(m, [t_rp ∈ 𝒯ʳᵖ], m[:stor_level_Δ_rp][n, t_rp] == 0)
 end
 
+"""
+    constraints_level_scp(
+        m,
+        n::Storage,
+        per,
+        modeltype::EnergyModel,
+    )
+
+Provides additional constraints for scenario periods.
+
+The default approach is to not provide any constraints.
+"""
+function constraints_level_scp(
+    m,
+    n::Storage,
+    per,
+    modeltype::EnergyModel,
+)
+
+    return nothing
+end
 
 """
     constraints_level_bounds(
@@ -526,12 +514,13 @@ function constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyM
 end
 
 """
-    constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+    constraints_opex_fixed(m, n::RefStorage{AccumulatingEmissions}, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
 
-Function for creating the constraint on the fixed OPEX of a generic `Storage`.
-This function serves as fallback option if no other function is specified for a `Storage`.
+Function for creating the constraint on the fixed OPEX of a `RefStorage{AccumulatingEmissions}`
+node. In this case, the fixed OPEX are dependent on the installed storage rate and not the
+installed level.
 """
-function constraints_opex_fixed(m, n::RefStorage{T}, 𝒯ᴵⁿᵛ, modeltype::EnergyModel) where {T<:ResourceEmit}
+function constraints_opex_fixed(m, n::RefStorage{AccumulatingEmissions}, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
 
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         m[:opex_fixed][n, t_inv] ==
@@ -586,11 +575,11 @@ function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyMod
 end
 
 """
-    constraints_opex_var(m, n::RefStorage{T}, 𝒯ᴵⁿᵛ, modeltype::EnergyModel) where {T<:ResourceEmit}
+    constraints_opex_var(m, n::RefStorage{AccumulatingEmissions}, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
 
 Function for creating the constraint on the variable OPEX of a `RefStorage{ResourceEmit}`.
 """
-function constraints_opex_var(m, n::RefStorage{T}, 𝒯ᴵⁿᵛ, modeltype::EnergyModel) where {T<:ResourceEmit}
+function constraints_opex_var(m, n::Storage{AccumulatingEmissions}, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
 
     p_stor = storage_resource(n)
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],

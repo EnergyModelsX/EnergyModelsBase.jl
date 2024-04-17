@@ -614,7 +614,7 @@ end
             FixedProfile(0),
             Dict(aux => 1),
         )
-        storage = RefStorage(
+        storage = RefStorage{EMB.CyclicStrategic}(
             "storage",
             FixedProfile(10),
             FixedProfile(1e8),
@@ -719,7 +719,7 @@ end
         general_tests(m, case, model);
 
         # Test that we get the proper parameteric type
-        @test typeof(stor) <: RefStorage{<:ResourceCarrier}
+        @test typeof(stor) <: RefStorage{EMB.CyclicStrategic}
 
         # Test that the capacity is correctly limited
         # - constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
@@ -913,7 +913,7 @@ end
             Dict(Power => 1, CO2 => 0),
             [em_data]
         )
-        storage = RefStorage(
+        storage = RefStorage{EMB.AccumulatingEmissions}(
             "storage",
             FixedProfile(10),
             FixedProfile(stor_cap),
@@ -1016,7 +1016,7 @@ end
         general_tests(m, case, model);
 
         # Test that we get the proper parameteric type
-        @test typeof(stor) <: RefStorage{<:ResourceEmit}
+        @test typeof(stor) <: RefStorage{EMB.AccumulatingEmissions}
 
         # Test that the capacity is correctly limited
         # - constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)

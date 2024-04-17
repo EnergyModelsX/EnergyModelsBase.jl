@@ -672,7 +672,7 @@ end
     @testset "Test checks - Storage" begin
 
         # Test that a wrong capacities are caught by the checks.
-        storage = RefStorage(
+        storage = RefStorage{EMB.CyclicStrategic}(
             "storage",
             FixedProfile(-10),
             FixedProfile(1e8),
@@ -683,7 +683,7 @@ end
             Dict(Power => 1),
         )
         @test_throws AssertionError simple_graph(storage)
-        storage = RefStorage(
+        storage = RefStorage{EMB.CyclicStrategic}(
             "storage",
             FixedProfile(10),
             FixedProfile(-1e8),
@@ -697,7 +697,7 @@ end
 
 
         # Test that a wrong fixed OPEX is caught by the checks.
-        storage = RefStorage(
+        storage = RefStorage{EMB.CyclicStrategic}(
             "storage",
             FixedProfile(10),
             FixedProfile(1e8),
@@ -711,7 +711,7 @@ end
 
 
         # Test that a wrong input dictionary is caught by the checks.
-        storage = RefStorage(
+        storage = RefStorage{EMB.CyclicStrategic}(
             "storage",
             FixedProfile(10),
             FixedProfile(1e8),
@@ -722,7 +722,7 @@ end
             Dict(Power => 1),
         )
         @test_throws AssertionError simple_graph(storage)
-        storage = RefStorage(
+        storage = RefStorage{EMB.CyclicStrategic}(
             "storage",
             FixedProfile(10),
             FixedProfile(1e8),
@@ -735,7 +735,7 @@ end
         @test_throws AssertionError simple_graph(storage)
 
         # Test that a wrong output dictionary is caught by the checks.
-        storage = RefStorage(
+        storage = RefStorage{EMB.CyclicStrategic}(
             "storage",
             FixedProfile(10),
             FixedProfile(1e8),
@@ -748,7 +748,7 @@ end
         @test_throws AssertionError simple_graph(storage)
 
         # Test that correct input solves the model to optimality.
-        storage = RefStorage(
+        storage = RefStorage{EMB.CyclicStrategic}(
             "storage",
             FixedProfile(10),
             FixedProfile(1e8),
