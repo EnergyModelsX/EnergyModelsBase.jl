@@ -1,19 +1,20 @@
 # Release notes
 
-## Version 0.6.8 (2024-04-18)
+## Unversioned
 
 * Added potential for negative emissions.
   This change requires the user to always constrain the variable `emissions_node`, if it is defined by the user.
   By default, this is achieved in the developed packages through `EmissionsData` or the addition of additional bounds on
   the variable `:emissions_node` through the JuMP function [`set_lower_bound`](https://jump.dev/JuMP.jl/stable/api/JuMP/#set_lower_bound).
 * Provided a contribution section in the documentation.
+* Minor changes in the naming convention in the documentation.
 
 ## Version 0.6.7 (2024-03-21)
 
 * Allow for deactivation of timeprofile checks while printing a warning in this case.
 * Fixed a bug for a too short `StrategicProfile` in the checks.
 * Added checks for the case dictionary.
-* Extended checks for the modeltype
+* Extended checks for the modeltype.
 * Added functions that can be used to check whether a `TimeProfile` can be indexed over `StrategicPeriod`s, `RepresentativePeriod`s, or `OperationalScenario`s.
 
 ## Version 0.6.6 (2024-03-04)
