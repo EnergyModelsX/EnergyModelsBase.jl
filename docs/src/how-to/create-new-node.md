@@ -1,4 +1,4 @@
-# [Creating a new node](@id create_new_node)
+# [Create a new node](@id create_new_node)
 
 The energy system model is based on the *[JuMP](https://jump.dev/JuMP.jl/stable/)* optimization framework, so some basic knowledge on this Julia package is needed to implement a new technology node.
 
@@ -114,4 +114,4 @@ A more detailed explanation of the different `abstract type`s can be found in *[
 
 ## Example
 
-As an example, you can check out how *[`EnergyModelsRenewableProducers`](https://energymodelsx.github.io/EnergyModelsRenewableProducers.jl/)* introduces two new technology types, a `Source` and a `Storage`.
+As an example, you can check out how [`EnergyModelsRenewableProducers`](https://energymodelsx.github.io/EnergyModelsRenewableProducers.jl/) introduces two new technology types, a `Source` and a `Storage`.

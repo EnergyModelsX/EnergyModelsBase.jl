@@ -1,4 +1,4 @@
-# EnergyModelsBase.jl
+# EnergyModelsBase
 
 **EnergyModelsBase** is an operational, multi nodal energy system model, written in Julia.
 The model is based on the [`JuMP`](https://jump.dev/JuMP.jl/) optimization framework.
@@ -36,6 +36,17 @@ Pages = [
     "manual/constraint-functions.md",
     "manual/data-functions.md",
     "manual/simple-example.md",
+    "manual/simple-example.md",
+]
+```
+
+## How to guides
+
+```@contents
+Pages = [
+    "how-to/create-new-node.md",
+    "how-to/utilize-timestruct.md",
+    "how-to/contribute.md",
 ]
 ```
 
