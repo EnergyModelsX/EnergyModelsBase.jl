@@ -5,10 +5,12 @@ abstract type Resource end
 Base.show(io::IO, r::Resource) = print(io, "$(r.id)")
 
 """
+    ResourceEmit{T<:Real} <: Resource
+
 Resources that can can be emitted (e.g., CO₂, CH₄, NOₓ).
 
 These resources can be included as resources that are emitted, *e.g*, in the variable \
-[``\\texttt{emissions\\_strategic}``](@ref var_emission).
+[`emissions_strategic`](@ref var_emission).
 
 # Fields
 - **`id`** is the name/identifyer of the resource.\n
@@ -20,9 +22,11 @@ struct ResourceEmit{T<:Real} <: Resource
 end
 
 """
+    ResourceCarrier{T<:Real} <: Resource
+
 Resources that can be transported and converted.
 These resources cannot be included as resources that are emitted, *e.g*, in the variable \
-[``\\texttt{emissions\\_strategic}``](@ref var_emission).
+[`emissions_strategic`](@ref var_emission).
 
 # Fields
 - **`id`** is the name/identifyer of the resource.\n
