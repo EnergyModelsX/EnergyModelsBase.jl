@@ -28,7 +28,6 @@ The unit in itself is not important, but it can be either if you consider that a
 In this case, the operational periods would correspond to a full day.
 
 !!! note
-
     All operational periods are continuous. This implies that one is not allowed to have jumps in the representative periods. This affects all "dynamic" constraints, that is, constraints where the current operational period is dependent on the previous operational period. In `EnergyModesBase`, this is only the case for the level balance in `RefStorage`. Representative periods allow for jumps between operational periods, as outlined below.
 
 Note that `TimeStruct` does not require that each operational period has the same length.
@@ -71,7 +70,6 @@ It is used in all subsequent structures.
 When iterating over a `TimeStructure`, _e.g._, as `t ∈ operational_periods`, you obtain the single operational periods that are required for solving the optimal dispatch.
 
 !!! warning
-
     Energy conversion, production, or emissions of a node as well as all flows are always defined for a duration of length 1 in operational periods. You have to be careful when considering the output from the model. The same holds for capacities provided in the input file.
 
 ### [Representative periods](@id ts_rp)
@@ -140,7 +138,6 @@ Note, that we used in this example the optional keyword argument `op_per_strat` 
 If we would like to have a duration of 1 in an operational period corresponding to an hour and a duration of 1 in a strategic period to a year, we need to use the value `op_per_strat = 365*24 = 8760`.
 
 !!! warning
-
     It is important to be certain which value one should use for `op_per_strat`. When using the wrong value, one obtains wrong operational results that may affect the analysis.
 
 Similar to the `SimpleTimes` structure, it is possible to also have strategic periods of varying durations.
@@ -167,7 +164,6 @@ However, it may make the code look more complicated, when this is not required.
 It does not have any implication on the model building speed and it is up to the user, which approach to choose.
 
 !!! warning
-
     Fixed operational expenditures and emission limits provided to a model have to be provided for a duration of 1 in the strategic period.
 
 ### Summary
@@ -227,7 +223,6 @@ The example has a progressively increasing value going from 1 in the first hour 
 `OperationalProfile` is normally used for varying demand or profiles for renewable power generation.
 
 !!! warning
-
     It is possible to have an `OperationalProfile` that is shorter or longer than the profile in the time structure.
     If the profile is shorter, then the last value is repeated.
     If the profile is longer, then the last values are ommitted.
@@ -262,7 +257,6 @@ This implies that we can use both `OperationalProfile` and `FixedProfile` combin
 The only requirement is that if one is using Integer input, then the other also has to use Integer input.
 
 !!! warning
-
     It is possible to use `RepresentativeProfile` without `RepresentativePeriods`.
     In this case, the first provided profile is used.
 

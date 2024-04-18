@@ -1,4 +1,4 @@
-# [Creating a new node](@id create_new_node)
+# [Create a new node](@id create_new_node)
 
 The energy system model is based on the *[JuMP](https://jump.dev/JuMP.jl/stable/)* optimization framework, so some basic knowledge on this Julia package is needed to implement a new technology node.
 

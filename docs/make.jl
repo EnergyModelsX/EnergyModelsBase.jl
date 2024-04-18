@@ -33,7 +33,7 @@ makedocs(
             "Example" => "manual/simple-example.md",
             "Release notes" => "manual/NEWS.md",
         ],
-        "How-to" => Any[
+        "How to" => Any[
             "Create a new node" => "how-to/create-new-node.md",
             "Utilize TimeStruct" => "how-to/utilize-timestruct.md",
             "Contribute to EnergyModelsBase" => "how-to/contribute.md",

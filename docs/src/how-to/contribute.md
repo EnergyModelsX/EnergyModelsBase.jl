@@ -1,13 +1,13 @@
-# Contributing to EnergyModelsBase
+# Contribute to EnergyModelsBase
 
 Contributing to `EnergyModelsBase` can be achieved in several different ways.
 
-## Creating new extensions
+## Create new extensions
 
 The main focus of `EnergyModelsBase` is to provide an easily extendable energy system optimization modelling framework.
 Hence, a first approach to contributing to `EnergyModelsBase` is to create a new package with, _e.g._, the introduction of new node descriptions.
 
-This is explained in _[How to create a new Node](@ref create_new_node)_.
+This is explained in [_How to create a new node_](@ref create_new_node).
 
 !!! tip
     If you are uncertain how you could incorporate new nodal descriptions, take a look at [`EnergyModelsRenewableProducers`](https://github.com/EnergyModelsX/EnergyModelsRenewableProducers.jl).
