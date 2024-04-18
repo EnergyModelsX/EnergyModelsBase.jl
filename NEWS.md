@@ -1,6 +1,6 @@
 # Release notes
 
-## Unversioned
+## Version 0.6.8 (2024-04-18)
 
 * Added potential for negative emissions.
   This change requires the user to always constrain the variable `emissions_node`, if it is defined by the user.
@@ -8,6 +8,7 @@
   the variable `:emissions_node` through the JuMP function [`set_lower_bound`](https://jump.dev/JuMP.jl/stable/api/JuMP/#set_lower_bound).
 * Provided a contribution section in the documentation.
 * Minor changes in the naming convention in the documentation.
+* Removed `\texttt{}` from docstrings.
 
 ## Version 0.6.7 (2024-03-21)
 
