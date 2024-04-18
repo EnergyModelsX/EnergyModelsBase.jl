@@ -1,4 +1,4 @@
-# EnergyModelsBase.jl
+# EnergyModelsBase
 
 **EnergyModelsBase** is an operational, multi nodal energy system model, written in Julia.
 The model is based on the [`JuMP`](https://jump.dev/JuMP.jl/) optimization framework.

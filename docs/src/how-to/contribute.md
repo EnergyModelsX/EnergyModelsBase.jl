@@ -7,6 +7,8 @@ Contributing to `EnergyModelsBase` can be achieved in several different ways.
 The main focus of `EnergyModelsBase` is to provide an easily extendable energy system optimization modelling framework.
 Hence, a first approach to contributing to `EnergyModelsBase` is to create a new package with, _e.g._, the introduction of new node descriptions.
 
+This is explained in _[How to create a new Node](@ref create_new_node)_.
+
 !!! tip
     If you are uncertain how you could incorporate new nodal descriptions, take a look at [`EnergyModelsRenewableProducers`](https://github.com/EnergyModelsX/EnergyModelsRenewableProducers.jl).
     The package is maintained by the developers of `EnergyModelsBase`.
@@ -24,7 +26,7 @@ When filing a bug report, please follow the following guidelines:
       If you are certain that all links are set correctly, it is most likely a bug in `EnergyModelsBase` and should be reported.
     - If the problem occurs in model construction, it is most likely a bug in `EnergyModelsBase` and should be reported.
     - If the problem is only appearing for specific solvers, it is most likely not a bug in `EnergyModelsBase`, but instead a problem of the solver wrapper for `MathOptInterface`. In this case, please contact the developers of the corresponding solver wrapper.
-2. Label the issue as bug,
+2. Label the issue as bug, and
 3. Provide a minimum working example of a case in which the bug occurs.
 
 !!! note
@@ -44,7 +46,7 @@ Feature requests can be achieved through two approaches:
 !!! note
     `EnergyModelsBase` should not include everything.
 
-    The aim of the framework is to be lightweight and extensible by the user.
+    The aim of the framework is to be lightweight and extendable by the user.
     Hence, feature requests should only include basic requirements for the core structure, and not, _e.g._, the description of new technologies.
     These should be developed outside of `EnergyModelsBase`.
 
@@ -89,8 +91,9 @@ It is in general preferable to work on a separate branch when developing new com
 Incorporate your changes in your new branch.
 The changes should be commented to understand the thought process behind them.
 In addition, please provide new tests for the added functionality and be certain that the tests run.
+The tests should be based on a minimum working example.
 
-Some existing tests may potentially require changes when incorporating new features (within the test set `General tests`).
+Some existing tests may potentially require changes when incorporating new features (especially within the test set `General tests`).
 In this case, it is ok that they are failing and we will comment on the required changes in the pull request.
 
 !!! tip

@@ -15,7 +15,7 @@ cp("NEWS.md", news)
 DocMeta.setdocmeta!(EnergyModelsBase, :DocTestSetup, :(using EnergyModelsBase); recursive=true)
 
 makedocs(
-    sitename = "EnergyModelsBase.jl",
+    sitename = "EnergyModelsBase",
     format = Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
         edit_link="main",
@@ -35,8 +35,8 @@ makedocs(
         ],
         "How-to" => Any[
             "Create a new node" => "how-to/create-new-node.md",
-            "Utilize TimeStruct.jl" => "how-to/utilize-timestruct.md",
-            "Contribute to EnergyModelsBase.jl" => "how-to/contribute.md",
+            "Utilize TimeStruct" => "how-to/utilize-timestruct.md",
+            "Contribute to EnergyModelsBase" => "how-to/contribute.md",
         ],
         "Library" => Any[
             "Public" => "library/public.md",
