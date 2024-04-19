@@ -43,7 +43,7 @@ bibliography: paper.bib
 [EnergyModelsX](https://github.com/EnergyModelsX/) is a multi-nodal energy system modelling framework written in Julia [@bezanson2017julia], based on the mathematical programming DSL JuMP [@Lubin2023].
 The framework is designed to be flexible and easy to extend, for instance all resources, both energy carriers and materials, may be defined by the user.
 Furthermore, EnergyModelsX follows a modular design to facilitate extensions through additional packages.
-[EnergyModelsX](https://github.com/EnergyModelsX/) was developed at the Norwegian research organization [SINTEF](www.sintef.no/en) at the institutes SINTEF Energi and SINTEF Industri.
+[EnergyModelsX](https://github.com/EnergyModelsX/) was developed at the Norwegian research organization [SINTEF](https://www.sintef.no/en) at the institutes SINTEF Energi and SINTEF Industri.
 The framework consists of the package EnergyModelsBase and currently provides the following extensions: EnergyModelsGeography, EnergyModelsInvestments and EnergyModelsRenewableProducers.
 
 See @bodal2024hydrogen for an example application of `EnergyModelsX`.
@@ -96,6 +96,12 @@ The modeler has full flexibility and may combine available investment modes as b
 
 [EnergyModelsRenewableProducers](https://github.com/EnergyModelsX/EnergyModelsRenewableProducers.jl) facilitates the modelling of renewable energy generation, both from non-dispatchable technologies such as wind power and PV and for hydropower with (pumped) storage.
 It also serves as an example for introducing new technology descriptions to EnergyModelsX and how to reuse constraints of the reference nodes.
+
+# Example application
+
+To illustrate the usage of EnergyModelsX, consider the example on a North Sea Region for the development of hydrogen infrastructure. The example highlights the potential of multiple regions with different technologies as well as the implementation of different investment options, both for pipelines and technology nodes. Pipeline costs take economies of scale into account.
+
+![Example application: hydrogen infrastructure development in the North Sea region](figure_1.pdf)
 
 # Acknowledgements
 
