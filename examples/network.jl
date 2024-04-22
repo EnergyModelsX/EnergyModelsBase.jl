@@ -95,7 +95,7 @@ function generate_example_data()
             Dict(Power => 1),           # Output from the node with output ratio
             [emission_data],            # Additonal data for emissions
         ),
-        RefStorage{EMB.AccumulatingEmissions}(
+        RefStorage{AccumulatingEmissions}(
             "CO2 storage",              # Node id
             FixedProfile(60),           # Rate capacity in t/h
             FixedProfile(600),          # Storage capacity in t

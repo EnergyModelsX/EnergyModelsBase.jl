@@ -31,7 +31,7 @@ function generate_data()
                                 Dict(Power => 1),
                                 [emission_data],
             ),
-            RefStorage{EMB.AccumulatingEmissions}(6, FixedProfile(60),   FixedProfile(600), FixedProfile(9.1),
+            RefStorage{AccumulatingEmissions}(6, FixedProfile(60),   FixedProfile(600), FixedProfile(9.1),
                                 FixedProfile(0), CO2, Dict(CO2 => 1, Power => 0.02), Dict(CO2 => 1),
             ),
             RefSink(7,          OperationalProfile([20 30 40 30]),

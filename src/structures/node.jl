@@ -2,13 +2,31 @@
 abstract type Node end
 Base.show(io::IO, n::Node) = print(io, "n_$(n.id)")
 
-""" `StorageBehavior` as supertype for individual storage behaviours."""
+"""
+`StorageBehavior` as supertype for individual storage behaviours.
+
+Storage behaviour is used to identify how a storage node should behave within the individual
+`TimeStructure`s of a strategic period.
+"""
 abstract type StorageBehavior end
 
-""" `Accumulating` as supertype for an accumulating storage level."""
+"""
+`Accumulating` as supertype for an accumulating storage level.
+
+Accumulating storage behaviour implies that the change in the overall storage level in a
+strategic period can be both positive or negative.
+
+Examples for potential usage of `Accumulating` are CO₂ storages in which the CO₂ is
+permanently stored or multi year hydropower magazines.
+"""
 abstract type Accumulating <: StorageBehavior end
 
-""" `Cyclic` as supertype for a cyclic storage level."""
+"""
+`Cyclic` as supertype for a cyclic storage level.
+
+Cyclic storage behaviour implies that the change in the overall storage level in a strategic
+period behaves cyclic.
+"""
 abstract type Cyclic <: StorageBehavior end
 
 """
@@ -20,14 +38,6 @@ represent a soft constraint on storing the captured emissions.
 """
 struct AccumulatingEmissions <: Accumulating end
 
-"""
-    CyclicStrategic <: Cyclic
-
-`StorageBehavior` in which the the cyclic behaviour is achieved within a strategic period.
-This implies that the initial level in individual representative periods can be different
-when using `RepresentativePeriods`
-"""
-struct CyclicStrategic <: Cyclic end
 
 """
     CyclicRepresentative <: Cyclic
@@ -40,6 +50,15 @@ In the case of `TwoLevel{RepresentativePeriods{SimpleTimes}}`, this approach dif
 `CyclicStrategic` as the cyclic constraint is enforeced within each representative period.
 """
 struct CyclicRepresentative <: Cyclic end
+
+"""
+    CyclicStrategic <: Cyclic
+
+`StorageBehavior` in which the the cyclic behaviour is achieved within a strategic period.
+This implies that the initial level in individual representative periods can be different
+when using `RepresentativePeriods`
+"""
+struct CyclicStrategic <: Cyclic end
 
 """ `Source` node with only output."""
 abstract type Source <: Node end
@@ -135,7 +154,9 @@ GenAvailability(id, 𝒫::Vector{<:Resource}) = GenAvailability(id, 𝒫, 𝒫)
 """ A reference `Storage` node.
 
 This node is designed to store either a `ResourceCarrier` or a `ResourceEmit`.
-It is designed as a composite type to differentiate between different cyclic behaviour.
+It is designed as a parametric type to differentiate between different cyclic behaviours.
+The current implemented cyclic behaviours are [`CyclicRepresentative`](@ref),
+[`CyclicStrategic`](@ref), and [`AccumulatingEmissions`](@ref).
 
 # Fields
 - **`id`** is the name/identifier of the node.\n

@@ -59,7 +59,7 @@ Availability
 
 ### [Reference node types](@id sec_lib_public_refnodes)
 
-The following composite types are inmplemented in the `EnergyModelsBase`.
+The following composite types are implemented in the `EnergyModelsBase`.
 They can be used for describing a simple energy system without any non-linear or binary based expressions.
 Hence, there are, *e.g.*, no operation point specific efficiencies implemented.
 
@@ -70,6 +70,26 @@ RefSink
 RefStorage
 GenAvailability
 ```
+
+### Storage behaviours
+
+`EnergyModelsBase` provides several different storage behaviours for calculating the level balance of a `Storage` node.
+In general, the concrete storage behaviours are ready to use and should account for all eventualities.
+
+
+```@docs
+Accumulating
+AccumulatingEmissions
+Cyclic
+CyclicRepresentative
+CyclicStrategic
+```
+
+!!! note
+    We have not yet supported upper and lower bound constraints in the case of using `OperationalScenarios`.
+    While the calculation of the overall level balance and the operational costs is consistent, it can happen that violation of the upper and lower bound of the storage level is violated.
+
+    This impacts specifically `CyclicRepresentative`.
 
 ### [Functions for accessing fields of `Node` types](@id functions_fields_node)
 
@@ -235,10 +255,18 @@ constraints_flow_in
 constraints_flow_out
 constraints_capacity
 constraints_capacity_installed
-constraints_level
+constraints_level_aux
 constraints_opex_var
 constraints_opex_fixed
 constraints_data
+```
+
+In addition, auxiliary functions are introduced for the calculation of the previous level of storage nodes.
+These auxiliary functions provide the user with simple approaches for calculating the level balances.
+
+```@docs
+previous_level
+previous_level_sp
 ```
 
 ## [Emission data](@id sec_lib_public_emdata)

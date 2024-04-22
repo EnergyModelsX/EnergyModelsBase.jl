@@ -36,9 +36,9 @@ end
     source = RefSource("src", FixedProfile(5), FixedProfile(10), FixedProfile(5),
         dict)
     sink = RefSink( "sink", FixedProfile(20), Dict{Symbol,TimeProfile}(), dict)
-    stor = RefStorage{EMB.CyclicStrategic}("stor", FixedProfile(60), FixedProfile(1), FixedProfile(1),
+    stor = RefStorage{CyclicStrategic}("stor", FixedProfile(60), FixedProfile(1), FixedProfile(1),
         FixedProfile(0), Power, dict, dict)
-    stor_em = RefStorage{EMB.AccumulatingEmissions}("stor-em", FixedProfile(1), FixedProfile(1),
+    stor_em = RefStorage{AccumulatingEmissions}("stor-em", FixedProfile(1), FixedProfile(1),
         FixedProfile(1), FixedProfile(1), CO2, dict, dict)
     av = GenAvailability("av", vec)
 
@@ -55,10 +55,10 @@ end
             @test node_types[NetworkNode] == 2
             @test node_types[Availability] == 3
             @test node_types[GenAvailability] == 4
-            @test node_types[Storage{EMB.CyclicStrategic}] == 3
-            @test node_types[Storage{EMB.AccumulatingEmissions}] == 3
-            @test node_types[RefStorage{EMB.CyclicStrategic}] == 4
-            @test node_types[RefStorage{EMB.AccumulatingEmissions}] == 4
+            @test node_types[Storage{CyclicStrategic}] == 3
+            @test node_types[Storage{AccumulatingEmissions}] == 3
+            @test node_types[RefStorage{CyclicStrategic}] == 4
+            @test node_types[RefStorage{AccumulatingEmissions}] == 4
         end
     end
 
@@ -69,11 +69,11 @@ end
         @test indexes[Source] < indexes[RefSource]
         @test indexes[Sink] < indexes[RefSink]
         if haskey(indexes, NetworkNode)
-            @test indexes[NetworkNode] < indexes[Storage{EMB.CyclicStrategic}]
-            @test indexes[NetworkNode] < indexes[Storage{EMB.AccumulatingEmissions}]
+            @test indexes[NetworkNode] < indexes[Storage{CyclicStrategic}]
+            @test indexes[NetworkNode] < indexes[Storage{AccumulatingEmissions}]
             @test indexes[NetworkNode] < indexes[Availability]
-            @test indexes[Storage{EMB.CyclicStrategic}] < indexes[RefStorage{EMB.CyclicStrategic}]
-            @test indexes[Storage{EMB.AccumulatingEmissions}] < indexes[RefStorage{EMB.AccumulatingEmissions}]
+            @test indexes[Storage{CyclicStrategic}] < indexes[RefStorage{CyclicStrategic}]
+            @test indexes[Storage{AccumulatingEmissions}] < indexes[RefStorage{AccumulatingEmissions}]
             @test indexes[Availability] < indexes[GenAvailability]
         end
     end

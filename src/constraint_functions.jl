@@ -52,8 +52,11 @@ end
 """
     constraints_capacity_installed(m, n, 𝒯::TimeStructure, modeltype::EnergyModel)
 
-In general, it is prefered to have the capacity as a function of a variable given with a
-value of 1 in the field `n.Cap`.
+Function for limiting the the installed capacity to the available capacity.
+
+This function should only be used to dispatch on the modeltype for providing investments.
+If you create new capacity variables, it is beneficial to include as well a method for this
+function and the corresponding node types.
 """
 function constraints_capacity_installed(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
 
@@ -152,7 +155,7 @@ function constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
         # Creation of the iterator and call of the iterator function -
         # The representative period is initiated with the current investment period to allows
         # for dispatching on it.
-        prev_pers = PrevPeriods(t_inv_prev, nothing,  nothing);
+        prev_pers = PreviousPeriods(t_inv_prev, nothing,  nothing);
         cyclic_pers = CyclicPeriods(t_inv, t_inv)
         ts = t_inv.operational
         constraints_level_iterate(m, n, prev_pers, cyclic_pers, t_inv, ts, modeltype)
@@ -210,7 +213,7 @@ end
     constraints_level_iterate(
         m,
         n::Storage,
-        prev_pers::PrevPeriods,
+        prev_pers::PreviousPeriods,
         cyclic_pers::CyclicPeriods,
         per,
         ts::RepresentativePeriods,
@@ -227,7 +230,7 @@ default case.
 function constraints_level_iterate(
     m,
     n::Storage,
-    prev_pers::PrevPeriods,
+    prev_pers::PreviousPeriods,
     cyclic_pers::CyclicPeriods,
     per,
     _::RepresentativePeriods,
@@ -235,7 +238,7 @@ function constraints_level_iterate(
 )
     # Declaration of the required subsets
     𝒯ʳᵖ = repr_periods(per)
-    last_per = last(𝒯ʳᵖ)
+    last_rp = last(𝒯ʳᵖ)
 
     # Constraint for additional, node specific constraints for representative periods
     constraints_level_rp(m, n, per, modeltype)
@@ -248,8 +251,8 @@ function constraints_level_iterate(
 
     # Iterate through the operational structure
     for (t_rp_prev, t_rp) ∈ withprev(𝒯ʳᵖ)
-        prev_pers = PrevPeriods(prev_pers.sp, t_rp_prev, prev_pers.op);
-        cyclic_pers = CyclicPeriods(last_per, t_rp)
+        prev_pers = PreviousPeriods(strat_per(prev_pers), t_rp_prev, op_per(prev_pers));
+        cyclic_pers = CyclicPeriods(last_rp, t_rp)
         ts = t_rp.operational.operational
         constraints_level_iterate(m, n, prev_pers, cyclic_pers, t_rp, ts, modeltype)
     end
@@ -258,7 +261,7 @@ end
     constraints_level_iterate(
         m,
         n::Storage,
-        prev_pers::PrevPeriods,
+        prev_pers::PreviousPeriods,
         per,
         ts::OperationalScenarios,
         modeltype::EnergyModel,
@@ -270,7 +273,7 @@ In the case of `OperationalScenarios`, this is achieved through calling the func
 function constraints_level_iterate(
     m,
     n::Storage,
-    prev_pers::PrevPeriods,
+    prev_pers::PreviousPeriods,
     cyclic_pers::CyclicPeriods,
     per,
     _::OperationalScenarios,
@@ -293,7 +296,7 @@ end
     constraints_level_iterate(
         m,
         n::Storage,
-        prev_pers::PrevPeriods,
+        prev_pers::PreviousPeriods,
         per,
         ts::SimpleTimes,
         modeltype::EnergyModel,
@@ -302,7 +305,7 @@ end
 In the case of `SimpleTimes`, the iterator function is at its lowest level. In this
 situation,the previous level is calculated using the function [`previous_level`](@ref) and
 used for the storage balance. The the approach for calculating the  `previous_level` is
-depending on the types in the parameteric type `PrevPeriods`.
+depending on the types in the parameteric type `PreviousPeriods`.
 
 In addition, additional bounds can be included on the initial level within an operational
 period.
@@ -310,7 +313,7 @@ period.
 function constraints_level_iterate(
     m,
     n::Storage,
-    prev_pers::PrevPeriods,
+    prev_pers::PreviousPeriods,
     cyclic_pers::CyclicPeriods,
     per,
     _::SimpleTimes,
@@ -319,7 +322,7 @@ function constraints_level_iterate(
 
     # Iterate through the operational structure
     for (t_prev, t) ∈ withprev(per)
-        prev_pers = PrevPeriods(prev_pers.sp, prev_pers.rp, t_prev);
+        prev_pers = PreviousPeriods(strat_per(prev_pers), rep_per(prev_pers), t_prev);
 
         # Extract the previous level
         prev_level = previous_level(m, n, prev_pers, cyclic_pers, modeltype)
@@ -337,12 +340,7 @@ function constraints_level_iterate(
 end
 
 """
-    constraints_level_rp(
-        m,
-        n::Storage,
-        per,
-        modeltype::EnergyModel,
-    )
+    constraints_level_rp(m, n::Storage, per, modeltype::EnergyModel)
 
 Provides additional contraints for representative periods.
 
@@ -350,12 +348,7 @@ The default approach is to set the total change in all representative periods wi
 strategic period to 0. This implies that the `Storage` node cannot accumulate energy between
 individual strategic periods.
 """
-function constraints_level_rp(
-    m,
-    n::Storage,
-    per,
-    modeltype::EnergyModel,
-)
+function constraints_level_rp(m, n::Storage, per, modeltype::EnergyModel)
     # Declaration of the required subsets
     𝒯ʳᵖ = repr_periods(per)
 
@@ -363,41 +356,21 @@ function constraints_level_rp(
     @constraint(m, sum(m[:stor_level_Δ_rp][n, t_rp] for t_rp ∈ 𝒯ʳᵖ) == 0)
 end
 """
-    constraints_level_rp(
-        m,
-        n::RefStorage{R},
-        per,
-        modeltype::EnergyModel,
-    )
+    constraints_level_rp(m, n::Storage{<:Accumulating}, per, modeltype::EnergyModel)
 
-When a `RefStorage{<:ResourceEmit}` is used, the cyclic constraint is not implemented as
+When a `Storage{<:Accumulating}` is used, the cyclic constraint is not implemented as
 accumulation within a strategic period is desirable.
 """
-function constraints_level_rp(
-    m,
-    n::Storage{<:Accumulating},
-    per,
-    modeltype::EnergyModel,
-)
+function constraints_level_rp(m, n::Storage{<:Accumulating}, per, modeltype::EnergyModel)
     return nothing
 end
 """
-    constraints_level_rp(
-        m,
-        n::CyclicStorage,
-        per,
-        modeltype::EnergyModel,
-    )
+    constraints_level_rp(m, n::Storage{CyclicRepresentative}, per, modeltype::EnergyModel)
 
 When a `CyclicStorage` is used, the the change in the representative period
 is constrained to 0.
 """
-function constraints_level_rp(
-    m,
-    n::Storage{CyclicRepresentative},
-    per,
-    modeltype::EnergyModel,
-)
+function constraints_level_rp(m, n::Storage{CyclicRepresentative}, per, modeltype::EnergyModel)
     # Declaration of the required subsets
     𝒯ʳᵖ = repr_periods(per)
 
@@ -406,24 +379,13 @@ function constraints_level_rp(
 end
 
 """
-    constraints_level_scp(
-        m,
-        n::Storage,
-        per,
-        modeltype::EnergyModel,
-    )
+    constraints_level_scp(m, n::Storage, per, modeltype::EnergyModel)
 
 Provides additional constraints for scenario periods.
 
 The default approach is to not provide any constraints.
 """
-function constraints_level_scp(
-    m,
-    n::Storage,
-    per,
-    modeltype::EnergyModel,
-)
-
+function constraints_level_scp(m, n::Storage, per, modeltype::EnergyModel)
     return nothing
 end
 

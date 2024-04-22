@@ -39,6 +39,10 @@ export Resource, ResourceCarrier, ResourceEmit
 export Source, NetworkNode, Sink, Storage, Availability
 export GenAvailability, RefSource, RefNetworkNode, RefSink, RefStorage
 
+# Export the storage behaviour types
+export Accumulating, AccumulatingEmissions
+export Cyclic, CyclicRepresentative, CyclicStrategic
+
 # Export the data types
 export Data, EmptyData, EmissionsData, CaptureData
 export CaptureProcessEnergyEmissions, CaptureProcessEmissions, CaptureEnergyEmissions
@@ -56,8 +60,9 @@ export create_model, run_model
 export variables_node, create_node
 export constraints_capacity, constraints_capacity_installed
 export constraints_flow_in, constraints_flow_out
-export constraints_level
+export constraints_level_aux
 export constraints_opex_fixed, constraints_opex_var
+export previous_level, previous_level_sp
 
 export constraints_data
 

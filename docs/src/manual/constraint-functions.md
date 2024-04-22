@@ -80,25 +80,25 @@ constraints_level_aux(m, n, 𝒯, 𝒫, modeltype::EnergyModel)
 and
 
 ```julia
-constraints_level_sp(m, n, t_inv, 𝒫, modeltype::EnergyModel)
+constraints_level_iterate(m, n::Storage, prev_pers, cyclic_pers, t_inv, ts, modeltype::EnergyModel)
 ```
 
 The first function, `constraints_level_aux`, is used to calculate additional properties of a `Storage` node.
-These properties are independent of the chosen `TimeStructure`, but dependent on the stored `Resource` type.
+These properties are independent of the chosen `TimeStructure`, but dependent on the stored `Resource` type and the storage type.
 General properties are the calculation of the change in storage level in an operational period, as described in *[Capacity variables](@ref var_cap)* as well as bounds on variables.
-It is implemented for the cases when the stored resource is either a `ResourceEmit`  or a `ResourceCarrier`.
-Storing a `ResourceEmit` in a `RefStorage` node limits the variable ``\texttt{stor\_level\_}\Delta\texttt{\_op}[n, t, p] \geq 0`` as well as introduces emission variables.
+It is implemented for a generic `Storage` node as well for a `RefStorage{AccumulatingEmissions}` node.
+Using the `AccumulatingEmissions` requires that the stored resource is a `ResourceEmit` and limits the variable ``\texttt{stor\_level\_}\Delta\texttt{\_op}[n, t, p] \geq 0`` as well as introduces emission variables.
 
-The second function, `constraints_level_sp`, declares the level balance of the `RefStorage` node within a strategic period.
-The difference betwen storing a `ResourceCarrier` and a `ResourceEmit` is given by how the level at the first operational period in a strategic period is treated.
-While a `ResourceCarrier` uses circular constraints, that is, the first operational period in a strategic period is dependent on the last operational period in a strategic period, storing a `ResourceEmit` uses a value of 0 for the first operational period of a strategic period.
+The second function, `constraints_level_iterate`, iterates through the time strucutre and eventually declares the level balance of the `Storage` node within a strategic period.
+It automatically deduces the type of the time structure, _i.e._, whether representative periods and/or operational scenarios are included, and subsequently calculates the corresponding previous period used in the level balance through calling the function [`previous_level`](@ref).
 
-In addition, `RepresentativePeriods` can be handled through scaling of the change in the level in a representative period.
+`RepresentativePeriods` are handled through scaling of the change in the level in a representative period.
 This requires that the `RepresentativePeriods` are sequential.
 
 !!! warning
-    Both `constraints_level_aux` and `constraints_level_sp` dispatch on `RefStorage` as they behave differently when a `ResourceEmit` or `ResourceCarrier` is stored.
-    This implies that developing a new `Storage` node requires creating a new level balance.
+    If you want to introduce a new storage behaviour, it is best to modify the functions [`previous_level`](@ref) (for changing the behahaviour how previous storage levels should be calculated), [`previous_level_sp`](@ref) (for changing the behaviour of the first operational period (in the first representative period) within a strategic period) as well as potentially [`EMB.constraints_level_rp`](@ref) (for inclusion of constraints on the variable [``\texttt{stor\_level\_Δ\_rp}[n, t_{rp}]``](@ref var_cap)) and [`EMB.constraints_level_scp`](@ref) (for inclusion of constraints related to operational scenarios)..
+
+    The exact implementation is not straight forward and care has to be taken if you want to dispatch on these functions to avoid method ambiguities.
 
 ## Operational expenditure constraints
 
