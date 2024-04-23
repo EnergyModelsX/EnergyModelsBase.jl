@@ -367,7 +367,7 @@ end
 """
     constraints_level_rp(m, n::Storage{CyclicRepresentative}, per, modeltype::EnergyModel)
 
-When a `CyclicStorage` is used, the the change in the representative period
+When a `Storage{CyclicRepresentative}` is used, the change in the representative period
 is constrained to 0.
 """
 function constraints_level_rp(m, n::Storage{CyclicRepresentative}, per, modeltype::EnergyModel)
@@ -387,6 +387,23 @@ The default approach is to not provide any constraints.
 """
 function constraints_level_scp(m, n::Storage, per, modeltype::EnergyModel)
     return nothing
+end
+"""
+    constraints_level_scp(m, n::Storage{CyclicRepresentative}, per, modeltype::EnergyModel)
+
+When a Storage{CyclicRepresentative} is used, the final level in an operational scenario is
+constrained to be the same in all operational scenarios.
+"""
+function constraints_level_scp(m, n::Storage{CyclicRepresentative}, per, modeltype::EnergyModel)
+    # Declaration of the required subsets
+    𝒯ˢᶜ = opscenarios(per)
+    last_scp = [last(t_scp) for t_scp ∈ 𝒯ˢᶜ]
+
+    # Constraint that level is similar to the level in the first scenario
+    for t ∈ last_scp[2:end]
+        @constraint(m, m[:stor_level][n, t] == m[:stor_level][n, first(last_scp)])
+    end
+
 end
 
 """

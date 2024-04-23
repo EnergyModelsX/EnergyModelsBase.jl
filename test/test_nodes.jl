@@ -1049,7 +1049,6 @@ end
                 for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
                 length(𝒯ᴵⁿᵛ) atol=TEST_ATOL
     end
-
     @testset "SimpleTimes with storage" begin
 
         # Run the model and extract the data
@@ -1094,7 +1093,75 @@ end
         # Test that the level is 0 exactly 4 times
         @test sum(value.(m[:stor_level][stor, t]) ≈ 0 for t ∈ 𝒯, atol=TEST_ATOL) == 4
     end
+    @testset "OperationalScenarios with storage" begin
 
+        # Run the model and extract the data
+        op_profile_1 = OperationalProfile([15, 5, 15, 5, 15, 5, 15, 5, 15, 5])
+        op_profile_2 = OperationalProfile([20, 20, 0, 0, 20, 0, 20, 0, 20, 0])
+        demand = ScenarioProfile([op_profile_1, op_profile_2])
+
+        op_1 = SimpleTimes(10, 2)
+        op_2 = SimpleTimes(10, 2)
+
+        ops = OperationalScenarios(2, [op_1, op_2], [.5, .5])
+
+        m, case, model = simple_graph(ops=ops, demand=demand)
+
+        𝒯    = case[:T]
+        𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+        𝒯ˢᶜ = opscenarios(𝒯)
+        𝒩    = case[:nodes]
+        stor = 𝒩[3]
+        cap = EMB.capacity(stor)
+
+        # Run the general tests
+        general_tests(m, case, model);
+
+        # All the tests following are for the function, its individual methods, and the
+        # caleed functions within the function.
+        # function constraints_level_iterate(
+        #     m,
+        #     n::Storage,
+        #     prev_pers::PreviousPeriods,
+        #     cyclic_pers::CyclicPeriods,
+        #     per,
+        #     _::,
+        #     modeltype::EnergyModel,
+        # )
+
+        # Test that the level for starting an operational scenario is required to be the
+        # same in the different operational scenarios
+        first_scp = [first(t_scp) for t_scp ∈ 𝒯ˢᶜ]
+        @test sum(
+            value.(m[:stor_level][stor, t]) -
+            value.(m[:stor_level_Δ_op][stor, t]) * duration(t) ≈ 40
+            for t ∈ first_scp, atol = TEST_ATOL) ≈
+                length(first_scp)  atol = TEST_ATOL
+
+
+        for t_inv ∈ 𝒯ᴵⁿᵛ
+            𝒯ʳᵖ = repr_periods(t_inv)
+            for (t_rp_prev, t_rp) ∈ withprev(𝒯ʳᵖ), (t_prev, t) ∈ withprev(t_rp)
+
+                if isnothing(t_prev)
+                    # Test for the linking between the first and the last operational period
+                    @test value.(m[:stor_level][stor, t]) ≈
+                            value.(m[:stor_level][stor, last(collect(t_rp))]) +
+                            value.(m[:stor_level_Δ_op][stor, t]) * duration(t) atol=TEST_ATOL
+                end
+            end
+        end
+        # Test for the correct accounting in all other operational periods
+        @test sum(value.(m[:stor_level][stor, t]) ≈
+                value.(m[:stor_level][stor, t_prev]) +
+                value.(m[:stor_level_Δ_op][stor, t]) * duration(t)
+                for (t_prev, t) ∈ withprev(𝒯), atol = TEST_ATOL if !isnothing(t_prev)) ≈
+                    length(𝒯) - length(𝒯ᴵⁿᵛ) * ops.len atol = TEST_ATOL
+
+
+        # Check that the level is 0 exactly 2 times
+        @test sum(value.(m[:stor_level][stor, t]) ≈ 0 for t ∈ 𝒯) ≈ 2 atol = TEST_ATOL
+    end
     @testset "RepresentativePeriods with storage" begin
 
         # Run the model and extract the data
@@ -1171,6 +1238,94 @@ end
                 for (t_prev, t) ∈ withprev(𝒯), atol = TEST_ATOL if !isnothing(t_prev)) ≈
                     length(𝒯) - length(𝒯ᴵⁿᵛ) * ops.len atol = TEST_ATOL
 
+    end
+    @testset "OperationalScenarios and RepresentativePeriods with storage" begin
+
+        # Run the model and extract the data
+        op_profile_11 = OperationalProfile([15, 5, 15, 5, 10])
+        op_profile_12 = OperationalProfile([20, 20, 0, 0, 10])
+        op_profile_21 = OperationalProfile([5, 15, 5, 15, 5])
+        op_profile_22 = OperationalProfile([0, 20, 0, 20, 0])
+        scen_profile_1 = ScenarioProfile([op_profile_11, op_profile_12])
+        scen_profile_2 = ScenarioProfile([op_profile_21, op_profile_22])
+        demand = RepresentativeProfile([scen_profile_1, scen_profile_2])
+
+        op = SimpleTimes(5, 2)
+        scps = OperationalScenarios(2, [op, op], [.5, .5])
+        ops = RepresentativePeriods(2, 8760, [.5, .5], [scps, scps])
+
+        m, case, model = simple_graph(ops=ops, demand=demand)
+
+        𝒯    = case[:T]
+        𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+        𝒯ʳᵖ = repr_periods(𝒯)
+        𝒯ˢᶜ = opscenarios(𝒯)
+        𝒩    = case[:nodes]
+        stor = 𝒩[3]
+        cap = EMB.capacity(stor)
+
+        # Run the general tests
+        general_tests(m, case, model);
+
+        # All the tests following are for the function, its individual methods, and the
+        # caleed functions within the function.
+        # function constraints_level_iterate(
+        #     m,
+        #     n::Storage,
+        #     prev_pers::PreviousPeriods,
+        #     cyclic_pers::CyclicPeriods,
+        #     per,
+        #     _::,
+        #     modeltype::EnergyModel,
+        # )
+
+        # Test that the level for starting an operational scenario is required to be the
+        # same in the different operational scenarios
+        for t_rp ∈ 𝒯ʳᵖ
+            first_scp = [first(t_scp) for t_scp ∈ opscenarios(t_rp)]
+            @test value.(m[:stor_level][stor, first_scp[1]]) -
+                value.(m[:stor_level_Δ_op][stor, first_scp[1]]) * duration(first_scp[1]) ≈
+                    value.(m[:stor_level][stor, first_scp[2]]) -
+                    value.(m[:stor_level_Δ_op][stor, first_scp[2]]) * duration(first_scp[2])
+                    atol = TEST_ATOL
+        end
+
+        # Test that the level for starting a representative period is not required to be the
+        # same in the different representative periods
+        first_rp = [first(t_rp) for t_rp ∈ 𝒯ʳᵖ]
+        @test sum(
+            value.(m[:stor_level][stor, t]) -
+            value.(m[:stor_level_Δ_op][stor, t]) * duration(t) ≈ 20
+            for t ∈ first_rp, atol = TEST_ATOL) ≈
+                length(𝒯ᴵⁿᵛ)  atol = TEST_ATOL
+        @test sum(
+            value.(m[:stor_level][stor, t]) -
+            value.(m[:stor_level_Δ_op][stor, t]) * duration(t) ≈ 40
+            for t ∈ first_rp, atol = TEST_ATOL) ≈
+                length(𝒯ᴵⁿᵛ)  atol = TEST_ATOL
+
+        for t_inv ∈ 𝒯ᴵⁿᵛ
+            𝒯ʳᵖ = repr_periods(t_inv)
+            for (t_rp_prev, t_rp) ∈ withprev(𝒯ʳᵖ), (t_prev, t) ∈ withprev(t_rp)
+
+                if isnothing(t_prev)
+                    # Test for the linking between the first and the last operational period
+                    @test value.(m[:stor_level][stor, t]) ≈
+                            value.(m[:stor_level][stor, last(collect(t_rp))]) +
+                            value.(m[:stor_level_Δ_op][stor, t]) * duration(t) atol=TEST_ATOL
+                end
+            end
+        end
+        # Test for the correct accounting in all other operational periods
+        @test sum(value.(m[:stor_level][stor, t]) ≈
+                value.(m[:stor_level][stor, t_prev]) +
+                value.(m[:stor_level_Δ_op][stor, t]) * duration(t)
+                for (t_prev, t) ∈ withprev(𝒯), atol = TEST_ATOL if !isnothing(t_prev)) ≈
+                    length(𝒯) - length(𝒯ᴵⁿᵛ) * ops.len * scps.len atol = TEST_ATOL
+
+
+        # Check that the level is 0 exactly 2 times
+        @test sum(value.(m[:stor_level][stor, t]) ≈ 0 for t ∈ 𝒯) ≈ 6 atol = TEST_ATOL
     end
 end
 
