@@ -99,7 +99,7 @@ It also serves as an example for introducing new technology descriptions to Ener
 
 # Example application
 
-To illustrate the usage of EnergyModelsX, consider the example on a North Sea Region for the development of hydrogen infrastructure. The example highlights the potential of multiple regions with different technologies as well as the implementation of different investment options, both for pipelines and technology nodes. Pipeline costs take economies of scale into account.
+To illustrate the usage of EnergyModelsX, consider the example on a North Sea Region for the development of hydrogen infrastructure. The example highlights the potential of multiple regions with different technologies as well as the implementation of different investment options, both for pipelines and technology nodes. Pipeline costs take economies of scale into account. See also @bodal2024hydrogen for a similar example.
 
 ![Example application: hydrogen infrastructure development in the North Sea region](figure_1.pdf)
 
