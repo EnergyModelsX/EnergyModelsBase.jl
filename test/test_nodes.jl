@@ -1424,8 +1424,9 @@ end
                         length(𝒯) atol=TEST_ATOL
 
         # Test that the design for rate usage is correct
-        # - constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
-        @test sum(value.(m[:flow_in][stor, t, CO2]) ≈ value.(m[:stor_rate_use][stor, t])
+        # - constraints_flow_in(m, n::Storage{AccumulatingEmissions}, 𝒯::TimeStructure, modeltype::EnergyModel)
+        @test sum(value.(m[:flow_in][stor, t, CO2]) ≈
+                    value.(m[:stor_rate_use][stor, t]) + value.(m[:emissions_node][stor, t, CO2])
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
 
@@ -1446,7 +1447,7 @@ end
 
     @testset "SimpleTimes without storage" begin
         # This test set is related to the approach of emissions in the storage node.
-        # In practice, a RefStorage{<:ResourceEmit} is also designed to act as an emission source
+        # In practice, a RefStorage{AccumulatingEmissions} is also designed to act as an emission source
         # This is currently not well implemented, but will be adjusted in a later stage,
 
         # Run the model and extract the data

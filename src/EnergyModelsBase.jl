@@ -60,7 +60,7 @@ export create_model, run_model
 export variables_node, create_node
 export constraints_capacity, constraints_capacity_installed
 export constraints_flow_in, constraints_flow_out
-export constraints_level_aux
+export constraints_level, constraints_level_aux
 export constraints_opex_fixed, constraints_opex_var
 export previous_level, previous_level_sp
 

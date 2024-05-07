@@ -118,6 +118,34 @@ function constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::Ener
     )
 
 end
+"""
+    constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
+
+Function for creating the constraint on the inlet flow to a generic `Storage`.
+This function serves as fallback option if no other function is specified for a `Storage`.
+"""
+function constraints_flow_in(
+    m,
+    n::Storage{AccumulatingEmissions},
+    𝒯::TimeStructure,
+    modeltype::EnergyModel,
+)
+    # Declaration of the required subsets
+    p_stor = storage_resource(n)
+    𝒫ᵃᵈᵈ   = setdiff(inputs(n), [p_stor])
+
+    # Constraint for additional required input
+    @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵃᵈᵈ],
+        m[:flow_in][n, t, p] == m[:flow_in][n, t, p_stor] * inputs(n, p)
+    )
+
+    # Constraint for storage rate use
+    @constraint(m, [t ∈ 𝒯],
+        m[:stor_rate_use][n, t] ==
+            m[:flow_in][n, t, p_stor] - m[:emissions_node][n, t, p_stor]
+    )
+
+end
 
 
 """
