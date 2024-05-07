@@ -84,4 +84,7 @@ export formulation
 # Export commonly used functions for extracting fields in `EnergyModel`
 export emission_limit, emission_price, co2_instance
 
+# Export commonly used functions for extracting fields in `PreviousPeriods` and `CyclicPeriods`
+export strat_per, rep_per, op_per, last_per, current_per
+
 end # module
