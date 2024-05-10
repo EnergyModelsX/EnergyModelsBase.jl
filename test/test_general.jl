@@ -34,7 +34,7 @@ function generate_data()
             RefStorage{AccumulatingEmissions}(6, FixedProfile(60),   FixedProfile(600), FixedProfile(9.1),
                                 FixedProfile(0), CO2, Dict(CO2 => 1, Power => 0.02), Dict(CO2 => 1),
             ),
-            RefSink(7,          OperationalProfile([20 30 40 30]),
+            RefSink(7,          OperationalProfile([20, 30, 40, 30]),
                                 Dict(:surplus => FixedProfile(0), :deficit => FixedProfile(1e6)),
                                 Dict(Power => 1),
             ),
