@@ -89,7 +89,7 @@ function constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, mode
     end
     if isa(par_discharge, UnionCapacity)
         @constraint(m, [t ∈ 𝒯],
-            m[:stor_charge_inst][n, t] == capacity(par_discharge, t)
+            m[:stor_discharge_inst][n, t] == capacity(par_discharge, t)
         )
     end
 end
@@ -109,8 +109,6 @@ function constraints_flow_in(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyM
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ⁱⁿ],
         m[:flow_in][n, t, p] == m[:cap_use][n, t] * inputs(n, p)
     )
-
-
 end
 
 """

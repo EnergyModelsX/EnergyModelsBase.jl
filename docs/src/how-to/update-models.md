@@ -9,7 +9,7 @@ We will as well implement information regarding the adjustment of extension pack
 
 ### Key changes for nodal descriptions
 
-Version 0.7 introduced both _[storage behaviors](@ref sec_lib_public_storbehav)_ resulting in a rework of the individual approach for calculating the level balance as well as the potential to have charge and discharge capacities through _[storage parameters](@ref sec_lib_public_storpar)_.
+Version 0.7 introduced both *[storage behaviors](@ref sec_lib_public_storbehav)* resulting in a rework of the individual approach for calculating the level balance as well as the potential to have charge and discharge capacities through _[storage parameters](@ref sec_lib_public_storpar)_.
 
 !!! note
     The legacy constructors for calls of the composite type of version 0.6 will be included at least until version 0.8.
@@ -45,7 +45,7 @@ RefStorage{CyclicStrategic}(
     stor_res,
     input,
     output,
-    Data[],
+    data,
 )
 ```
 
@@ -73,7 +73,7 @@ RefStorage{AccumulatingEmissions}(
     stor_res,
     input,
     output,
-    Data[],
+    data,
 )
 ```
 
@@ -182,7 +182,7 @@ RefStorage{CyclicStrategic}(
     stor_res,
     input,
     output,
-    Data[],
+    data,
 )
 ```
 
@@ -210,7 +210,7 @@ RefStorage{AccumulatingEmissions}(
     stor_res,
     input,
     output,
-    Data[],
+    data,
 )
 ```
 
