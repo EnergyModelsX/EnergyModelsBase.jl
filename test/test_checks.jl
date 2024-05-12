@@ -674,10 +674,8 @@ end
         # Test that a wrong capacities are caught by the checks.
         storage = RefStorage{CyclicStrategic}(
             "storage",
-            FixedProfile(-10),
-            FixedProfile(1e8),
-            FixedProfile(10),
-            FixedProfile(2),
+            StorCapOpexVar(FixedProfile(-10), FixedProfile(10)),
+            StorCapOpexFixed(FixedProfile(1e8), FixedProfile(2)),
             Power,
             Dict(Power => 1, aux => 0.05),
             Dict(Power => 1),
@@ -685,10 +683,8 @@ end
         @test_throws AssertionError simple_graph(storage)
         storage = RefStorage{CyclicStrategic}(
             "storage",
-            FixedProfile(10),
-            FixedProfile(-1e8),
-            FixedProfile(10),
-            FixedProfile(2),
+            StorCapOpexVar(FixedProfile(10), FixedProfile(10)),
+            StorCapOpexFixed(FixedProfile(-1e8), FixedProfile(2)),
             Power,
             Dict(Power => 1, aux => 0.05),
             Dict(Power => 1),
@@ -699,10 +695,8 @@ end
         # Test that a wrong fixed OPEX is caught by the checks.
         storage = RefStorage{CyclicStrategic}(
             "storage",
-            FixedProfile(10),
-            FixedProfile(1e8),
-            FixedProfile(10),
-            FixedProfile(-2),
+            StorCapOpexVar(FixedProfile(10), FixedProfile(10)),
+            StorCapOpexFixed(FixedProfile(1e8), FixedProfile(-2)),
             Power,
             Dict(Power => 1, aux => 0.05),
             Dict(Power => 1),
@@ -713,10 +707,8 @@ end
         # Test that a wrong input dictionary is caught by the checks.
         storage = RefStorage{CyclicStrategic}(
             "storage",
-            FixedProfile(10),
-            FixedProfile(1e8),
-            FixedProfile(10),
-            FixedProfile(2),
+            StorCapOpexVar(FixedProfile(10), FixedProfile(10)),
+            StorCapOpexFixed(FixedProfile(1e8), FixedProfile(2)),
             Power,
             Dict(Power => -1, aux => 0.05),
             Dict(Power => 1),
@@ -724,10 +716,8 @@ end
         @test_throws AssertionError simple_graph(storage)
         storage = RefStorage{CyclicStrategic}(
             "storage",
-            FixedProfile(10),
-            FixedProfile(1e8),
-            FixedProfile(10),
-            FixedProfile(2),
+            StorCapOpexVar(FixedProfile(10), FixedProfile(10)),
+            StorCapOpexFixed(FixedProfile(1e8), FixedProfile(2)),
             Power,
             Dict(Power => 1, aux => -0.05),
             Dict(Power => 1),
@@ -737,10 +727,8 @@ end
         # Test that a wrong output dictionary is caught by the checks.
         storage = RefStorage{CyclicStrategic}(
             "storage",
-            FixedProfile(10),
-            FixedProfile(1e8),
-            FixedProfile(10),
-            FixedProfile(2),
+            StorCapOpexVar(FixedProfile(10), FixedProfile(10)),
+            StorCapOpexFixed(FixedProfile(1e8), FixedProfile(2)),
             Power,
             Dict(Power => 1, aux => 0.05),
             Dict(Power => -1),
@@ -750,10 +738,8 @@ end
         # Test that correct input solves the model to optimality.
         storage = RefStorage{CyclicStrategic}(
             "storage",
-            FixedProfile(10),
-            FixedProfile(1e8),
-            FixedProfile(10),
-            FixedProfile(2),
+            StorCapOpexVar(FixedProfile(10), FixedProfile(10)),
+            StorCapOpexFixed(FixedProfile(1e8), FixedProfile(2)),
             Power,
             Dict(Power => 1, aux => 0.05),
             Dict(Power => 1),

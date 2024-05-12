@@ -22,12 +22,19 @@ This function serves as fallback option if no other function is specified for a 
 function constraints_capacity(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
 
     @constraint(m, [t ∈ 𝒯],
-        m[:stor_level][n, t] <= m[:stor_cap_inst][n, t]
+        m[:stor_level][n, t] <= m[:stor_level_inst][n, t]
     )
 
-    @constraint(m, [t ∈ 𝒯],
-        m[:stor_rate_use][n, t] <= m[:stor_rate_inst][n, t]
-    )
+    if has_charge(n) && isa(charge(n), UnionCapacity)
+        @constraint(m, [t ∈ 𝒯],
+            m[:stor_charge_use][n, t] <= m[:stor_charge_inst][n, t]
+        )
+    end
+    if has_discharge(n) && isa(discharge(n), UnionCapacity)
+        @constraint(m, [t ∈ 𝒯],
+            m[:stor_discharge_use][n, t] <= m[:stor_discharge_inst][n, t]
+        )
+    end
 
     constraints_capacity_installed(m, n, 𝒯, modeltype)
 end
@@ -66,15 +73,25 @@ function constraints_capacity_installed(m, n::Node, 𝒯::TimeStructure, modelty
     )
 end
 function constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
+    # Extract the required fields from the composite type
+    par_charge = charge(n)
+    par_level = level(n)
+    par_discharge = discharge(n)
 
-    cap = capacity(n)
     @constraint(m, [t ∈ 𝒯],
-        m[:stor_cap_inst][n, t] == cap.level[t]
+        m[:stor_level_inst][n, t] == capacity(par_level, t)
     )
 
-    @constraint(m, [t ∈ 𝒯],
-        m[:stor_rate_inst][n, t] == cap.rate[t]
-    )
+    if isa(par_charge, UnionCapacity)
+        @constraint(m, [t ∈ 𝒯],
+            m[:stor_charge_inst][n, t] == capacity(par_charge, t)
+        )
+    end
+    if isa(par_discharge, UnionCapacity)
+        @constraint(m, [t ∈ 𝒯],
+            m[:stor_charge_inst][n, t] == capacity(par_discharge, t)
+        )
+    end
 end
 
 
@@ -112,11 +129,12 @@ function constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::Ener
         m[:flow_in][n, t, p] == m[:flow_in][n, t, p_stor] * inputs(n, p)
     )
 
-    # Constraint for storage rate use
-    @constraint(m, [t ∈ 𝒯],
-        m[:stor_rate_use][n, t] == m[:flow_in][n, t, p_stor]
-    )
-
+    # Constraint for storage rate usage for charging and discharging
+    if has_charge(n)
+        @constraint(m, [t ∈ 𝒯],
+            m[:stor_charge_use][n, t] == m[:flow_in][n, t, p_stor]
+        )
+    end
 end
 """
     constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
@@ -141,7 +159,7 @@ function constraints_flow_in(
 
     # Constraint for storage rate use
     @constraint(m, [t ∈ 𝒯],
-        m[:stor_rate_use][n, t] ==
+        m[:stor_charge_use][n, t] ==
             m[:flow_in][n, t, p_stor] - m[:emissions_node][n, t, p_stor]
     )
 
@@ -149,7 +167,7 @@ end
 
 
 """
-    constraints_flow_out(m, n, 𝒯::TimeStructure, modeltype::EnergyModel)
+    constraints_flow_out(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
 
 Function for creating the constraint on the outlet flow from a generic `Node`.
 This function serves as fallback option if no other function is specified for a `Node`.
@@ -162,6 +180,24 @@ function constraints_flow_out(m, n::Node, 𝒯::TimeStructure, modeltype::Energy
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵒᵘᵗ],
         m[:flow_out][n, t, p] == m[:cap_use][n, t] * outputs(n, p)
     )
+end
+
+"""
+    constraints_flow_out(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
+
+Function for creating the constraint on the outlet flow from a generic `Storage`.
+This function serves as fallback option if no other function is specified for a `Storage`.
+"""
+function constraints_flow_out(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
+    # Declaration of the required subsets
+    p_stor = storage_resource(n)
+
+    # Constraint for the individual output stream connections
+    if has_discharge(n)
+        @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵒᵘᵗ],
+                m[:stor_discharge_use][n, t] == m[:flow_out][n, t, p_stor]
+        )
+    end
 end
 
 
@@ -493,7 +529,7 @@ function constraints_level_bounds(
 
     # Constraint to avoid having a level larger than the storage allows
     @constraint(m,
-        m[:stor_cap_inst][n, t] ≥
+        m[:stor_level_inst][n, t] ≥
             m[:stor_level][n, t] - m[:stor_level_Δ_op][n, t] * duration(t)
     )
 end
@@ -513,31 +549,52 @@ function constraints_opex_fixed(m, n::Node, 𝒯ᴵⁿᵛ, modeltype::EnergyMode
 end
 
 """
-    constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
 
 Function for creating the constraint on the fixed OPEX of a generic `Storage`.
 This function serves as fallback option if no other function is specified for a `Storage`.
+
+
+The fallback option only includes fixed OPEX for charge and the level, while the discharge
+is excluded. Users must in this case define a separate function for the fixed OPEX.
 """
 function constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
 
+    # Extract the required fields from the composite type
+    par_charge = charge(n)
+    par_level = level(n)
+    par_discharge = discharge(n)
+
+    # Extracts the contribution from the individual components
+    if isa(par_level, UnionOpexFixed)
+        opex_fixed_level =
+            @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
+                m[:stor_level_inst][n, first(t_inv)] * opex_fixed(par_level, t_inv)
+            )
+    else
+        opex_fixed_level = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)
+    end
+    if isa(par_charge, UnionOpexFixed)
+        opex_fixed_charge =
+            @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
+                m[:stor_charge_inst][n, first(t_inv)] * opex_fixed(par_charge, t_inv)
+            )
+    else
+        opex_fixed_charge = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)
+    end
+    if isa(par_discharge, UnionOpexFixed)
+        opex_fixed_discharge =
+            @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
+                m[:stor_discharge_inst][n, first(t_inv)] * opex_fixed(par_discharge, t_inv)
+            )
+    else
+        opex_fixed_discharge = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)
+    end
+
+    # Create the overall constraint
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         m[:opex_fixed][n, t_inv] ==
-            opex_fixed(n, t_inv) * m[:stor_cap_inst][n, first(t_inv)]
-    )
-end
-
-"""
-    constraints_opex_fixed(m, n::RefStorage{AccumulatingEmissions}, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
-
-Function for creating the constraint on the fixed OPEX of a `RefStorage{AccumulatingEmissions}`
-node. In this case, the fixed OPEX are dependent on the installed storage rate and not the
-installed level.
-"""
-function constraints_opex_fixed(m, n::RefStorage{AccumulatingEmissions}, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
-
-    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        m[:opex_fixed][n, t_inv] ==
-            opex_fixed(n, t_inv) * m[:stor_rate_inst][n, first(t_inv)]
+            opex_fixed_level[t_inv] + opex_fixed_charge[t_inv] + opex_fixed_discharge[t_inv]
     )
 end
 
@@ -579,27 +636,88 @@ This function serves as fallback option if no other function is specified for a 
 """
 function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
 
+    # Extract the required fields from the composite type
     p_stor = storage_resource(n)
+    par_charge = charge(n)
+    par_level = level(n)
+    par_discharge = discharge(n)
+
+    # Extracts the contribution from the individual components
+    if isa(par_level, UnionOpexVar)
+        opex_var_level = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
+            sum(
+                m[:stor_level][n, t] * opex_var(par_level, t) * multiple(t_inv, t)
+            for t ∈ t_inv)
+        )
+    else
+        opex_var_level = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)
+    end
+    if isa(par_charge, UnionOpexVar)
+        opex_var_charge = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
+            sum(
+                m[:flow_in][n, t, p_stor] * opex_var(par_charge, t) * multiple(t_inv, t)
+            for t ∈ t_inv)
+        )
+    else
+        opex_var_charge = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)
+    end
+    if isa(par_discharge, UnionOpexVar)
+        opex_var_discharge = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
+            sum(
+                m[:flow_out][n, t, p_stor] * opex_var(par_discharge, t) * multiple(t_inv, t)
+            for t ∈ t_inv)
+        )
+    else
+        opex_var_discharge = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)
+    end
+
+    # Create the overall constraint
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         m[:opex_var][n, t_inv] ==
-            sum(m[:flow_in][n, t, p_stor] * opex_var(n, t) * multiple(t_inv, t)
-            for t ∈ t_inv)
+            opex_var_level[t_inv] + opex_var_charge[t_inv] + opex_var_discharge[t_inv]
     )
 end
 
 """
     constraints_opex_var(m, n::RefStorage{AccumulatingEmissions}, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
 
-Function for creating the constraint on the variable OPEX of a `RefStorage{ResourceEmit}`.
+Function for creating the constraint on the variable OPEX of a `RefStorage{AccumulatingEmissions}`.
+As this node type can serve as CO₂ emitter, it is necessary to only consider the stored CO₂.
 """
-function constraints_opex_var(m, n::Storage{AccumulatingEmissions}, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+function constraints_opex_var(m, n::RefStorage{AccumulatingEmissions}, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
 
+    # Extract the required fields from the composite type
     p_stor = storage_resource(n)
+    par_level = level(n)
+    par_charge = charge(n)
+
+    # Extracts the contribution from the individual components
+    if isa(par_level, UnionOpexVar)
+        opex_var_level =
+            @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
+                sum(
+                    m[:stor_level][n, t] * opex_var(par_level, t) * multiple(t_inv, t)
+                for t ∈ t_inv)
+            )
+    else
+        opex_var_level = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)
+    end
+    if isa(par_charge, UnionOpexVar)
+        opex_var_charge =
+            @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
+                sum(
+                    (m[:flow_in][n, t , p_stor] - m[:emissions_node][n, t, p_stor]) *
+                    opex_var(par_charge, t) * multiple(t_inv, t)
+                for t ∈ t_inv)
+            )
+    else
+        opex_var_charge = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)
+    end
+
+    # Create the overall constraint
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         m[:opex_var][n, t_inv] ==
-            sum((m[:flow_in][n, t , p_stor] - m[:emissions_node][n, t, p_stor]) *
-                opex_var(n, t) * multiple(t_inv, t)
-            for t ∈ t_inv)
+            opex_var_level[t_inv] + opex_var_charge[t_inv]
     )
 end
 

@@ -590,27 +590,50 @@ important that a new `Storage` type includes at least the same fields as in the
 `RefStorage` node or that a new `Storage` type receives a new method for `check_node`.
 
 ## Checks
- - The value of the field `rate_cap` is required to be non-negative.
- - The value of the field `stor_cap` is required to be non-negative.
+ - The `TimeProfile` of the field `capacity` in the type in the field `charge` is required
+   to be non-negative if the chosen composite type has the field `capacity`.
+ - The `TimeProfile` of the field `capacity` in the type in the field `level` is required
+   to be non-negative`.
+ - The `TimeProfile` of the field `capacity` in the type in the field `discharge` is required
+   to be non-negative if the chosen composite type has the field `capacity`.
+ - The `TimeProfile` of the field `fixed_opex` is required to be non-negative and
+   accessible through a `StrategicPeriod` as outlined in the function
+   `check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)` for the chosen composite type .
  - The values of the dictionary `input` are required to be non-negative.
  - The values of the dictionary `output` are required to be non-negative.
- - The value of the field `fixed_opex` is required to be non-negative and
-   accessible through a `StrategicPeriod` as outlined in the function
-   `check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`.
 """
 function check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-    cap = capacity(n)
+    par_charge = charge(n)
+    par_level = level(n)
+    par_discharge = discharge(n)
 
+    if isa(par_charge, UnionCapacity)
+        @assert_or_log(
+            sum(capacity(par_charge, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+            "The charge capacity must be non-negative."
+        )
+    end
+    if isa(par_charge, UnionOpexFixed)
+        check_fixed_opex(par_charge, 𝒯ᴵⁿᵛ, check_timeprofiles)
+    end
     @assert_or_log(
-        sum(cap.rate[t] ≥ 0 for t ∈ 𝒯) == length(𝒯),
-        "The rate capacity must be non-negative."
-    )
-    @assert_or_log(
-        sum(cap.level[t] ≥ 0 for t ∈ 𝒯) == length(𝒯),
+        sum(capacity(par_level, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
         "The level capacity must be non-negative."
     )
+    if isa(par_level, UnionOpexFixed)
+        check_fixed_opex(par_level, 𝒯ᴵⁿᵛ, check_timeprofiles)
+    end
+    if isa(par_discharge, UnionCapacity)
+        @assert_or_log(
+            sum(capacity(par_discharge, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+            "The charge capacity must be non-negative."
+        )
+    end
+    if isa(par_discharge, UnionOpexFixed)
+        check_fixed_opex(par_discharge, 𝒯ᴵⁿᵛ, check_timeprofiles)
+    end
     @assert_or_log(
         sum(inputs(n, p) ≥ 0 for p ∈ inputs(n)) == length(inputs(n)),
         "The values for the Dictionary `input` must be non-negative."
@@ -619,7 +642,6 @@ function check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles
         sum(outputs(n, p) ≥ 0 for p ∈ outputs(n)) == length(outputs(n)),
         "The values for the Dictionary `output` must be non-negative."
     )
-    check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)
 end
 """
     check_node(n::Sink, 𝒯, modeltype::EnergyModel)
@@ -634,8 +656,8 @@ or that a new `Source` type receives a new method for `check_node`.
  - The field `cap` is required to be non-negative.
  - The values of the dictionary `input` are required to be non-negative.
  - The dictionary `penalty` is required to have the keys `:deficit` and `:surplus`.
- - The sum of the values `:deficit` and `:surplus` in the dictionary `penalty` has to be \
- non-negative to avoid an infeasible model.
+ - The sum of the values `:deficit` and `:surplus` in the dictionary `penalty` has to be
+   non-negative to avoid an infeasible model.
 """
 function check_node(n::Sink, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     @assert_or_log(
@@ -660,9 +682,11 @@ function check_node(n::Sink, 𝒯, modeltype::EnergyModel, check_timeprofiles::B
     end
 end
 """
-    check_fixed_opex(n::Node, 𝒯ᴵⁿᵛ, check_timeprofiles::Bool)
+    check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles::Bool)
 
-Checks that the fixed opex value follows the given TimeStructure.
+Checks that the fixed opex value follows the given `TimeStructure`.
+This check requires that a function `opex_fixed(n)` is defined for the input `n` which
+returns a `TimeProfile`.
 
 ## Checks
 - The `opex_fixed` time profile cannot have a finer granulation than `StrategicProfile`.
@@ -671,7 +695,7 @@ Checks that the fixed opex value follows the given TimeStructure.
 - The profiles in `opex_fixed` have to have the same length as the number of strategic
   periods.
 """
-function check_fixed_opex(n::Node, 𝒯ᴵⁿᵛ, check_timeprofiles::Bool)
+function check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles::Bool)
 
     if isa(opex_fixed(n), StrategicProfile) && check_timeprofiles
         @assert_or_log(

@@ -97,10 +97,12 @@ function generate_example_data()
         ),
         RefStorage{AccumulatingEmissions}(
             "CO2 storage",              # Node id
-            FixedProfile(60),           # Rate capacity in t/h
-            FixedProfile(600),          # Storage capacity in t
-            FixedProfile(9.1),          # Storage variable OPEX for the rate in EUR/t
-            FixedProfile(0),            # Storage fixed OPEX for the rate in EUR/(t/h 8h)
+            StorCapOpex(
+                FixedProfile(60),       # Charge capacity in t/h
+                FixedProfile(9.1),      # Storage variable OPEX for the charging in EUR/t
+                FixedProfile(0),        # Storage fixed OPEX for the charging in EUR/(t/h 8h)
+            ),
+            StorCap(FixedProfile(600)), # Storage capacity in t
             CO2,                        # Stored resource
             Dict(CO2 => 1, Power => 0.02), # Input resource with input ratio
             # Line above: This implies that storing CO₂ requires Power

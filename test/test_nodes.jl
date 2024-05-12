@@ -616,10 +616,8 @@ end
         )
         storage = RefStorage{CyclicStrategic}(
             "storage",
-            FixedProfile(10),
-            FixedProfile(1e8),
-            FixedProfile(10),
-            FixedProfile(2),
+            StorCapOpexVar(FixedProfile(10), FixedProfile(10)),
+            StorCapOpexFixed(FixedProfile(1e8), FixedProfile(2)),
             Power,
             Dict(Power => 1, aux => 0.05),
             Dict(Power => 1),
@@ -668,25 +666,25 @@ end
 
         # Test that the capacity is correctly limited
         # - constraints_capacity(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
-        @test sum(value.(m[:stor_level][stor, t]) - value.(m[:stor_cap_inst][stor, t])
+        @test sum(value.(m[:stor_level][stor, t]) - value.(m[:stor_level_inst][stor, t])
                      ≤ TEST_ATOL for t ∈ 𝒯) ≈
                         length(𝒯) atol=TEST_ATOL
-        @test sum(value.(m[:stor_rate_use][stor, t]) - value.(m[:stor_rate_inst][stor, t])
+        @test sum(value.(m[:stor_charge_use][stor, t]) - value.(m[:stor_charge_inst][stor, t])
                      ≤ TEST_ATOL for t ∈ 𝒯) ≈
                         length(𝒯) atol=TEST_ATOL
 
         # Test that the design for rate usage is correct
         # - constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
-        @test sum(value.(m[:flow_in][stor, t, Power]) ≈ value.(m[:stor_rate_use][stor, t])
+        @test sum(value.(m[:flow_in][stor, t, Power]) ≈ value.(m[:stor_charge_use][stor, t])
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
         @test sum(value.(m[:flow_in][stor, t, aux]) ≈
-                    value.(m[:stor_rate_use][stor, t]) * inputs(stor, aux)
+                    value.(m[:stor_charge_use][stor, t]) * inputs(stor, aux)
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
 
         # Test that the inlet flow is equivalent to the total usage of the demand
-        @test sum(value.(m[:stor_rate_use][stor, t]) * duration(t) * multiple(t) for t ∈ 𝒯) ≈
+        @test sum(value.(m[:stor_charge_use][stor, t]) * duration(t) * multiple(t) for t ∈ 𝒯) ≈
                 sum(value.(m[:cap_use][sink,t]) * duration(t) * multiple(t)  for t ∈ 𝒯) atol=TEST_ATOL
 
         # Test that the total inlet flow is equivalent to the total outlet flow rate
@@ -696,7 +694,7 @@ end
 
         # Test that the Δ in the storage level is correctly calculated
         # - constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
-        @test sum(value.(value.(m[:stor_level_Δ_op][stor, t])) ≈
+        @test sum(value.(m[:stor_level_Δ_op][stor, t]) ≈
                 value.(m[:flow_in][stor, t, Power]) - value.(m[:flow_out][stor, t, Power])
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
@@ -711,7 +709,6 @@ end
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
         𝒩    = case[:nodes]
         stor = 𝒩[3]
-        cap = EMB.capacity(stor)
 
         # Run the general tests
         general_tests(m, case, model);
@@ -721,10 +718,10 @@ end
 
         # Test that the capacity is correctly limited
         # - constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
-        @test sum(value.(m[:stor_cap_inst][stor, t]) ≈ cap.level[t]
+        @test sum(value.(m[:stor_level_inst][stor, t]) ≈ capacity(EMB.level(stor), t)
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
-        @test sum(value.(m[:stor_rate_inst][stor, t]) ≈ cap.rate[t]
+        @test sum(value.(m[:stor_charge_inst][stor, t]) ≈ capacity(EMB.charge(stor), t)
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
 
@@ -737,14 +734,14 @@ end
         # Test that the fixed OPEX is correctly calculated
         # - constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(value.(m[:opex_fixed][stor, t_inv]) ≈
-                EMB.opex_fixed(stor, t_inv) * value.(m[:stor_cap_inst][stor, first(t_inv)])
+                EMB.opex_fixed(EMB.level(stor), t_inv) * value.(m[:stor_level_inst][stor, first(t_inv)])
                     for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
                 length(𝒯ᴵⁿᵛ) atol=TEST_ATOL
 
         # Test that variable OPEX is correctly calculated
         # - constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(value.(m[:opex_var][stor, t_inv]) ≈
-                sum(EMB.opex_var(stor, t_inv) * value.(m[:flow_in][stor, t, Power]) *
+                sum(EMB.opex_var(EMB.charge(stor), t_inv) * value.(m[:flow_in][stor, t, Power]) *
                     duration(t) for t ∈ t_inv)
                 for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
                 length(𝒯ᴵⁿᵛ) atol=TEST_ATOL
@@ -758,7 +755,6 @@ end
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
         𝒩    = case[:nodes]
         stor = 𝒩[3]
-        cap = EMB.capacity(stor)
 
         # Run the general tests
         general_tests(m, case, model);
@@ -801,10 +797,10 @@ end
         op_profile_2 = FixedProfile(20)
         demand = RepresentativeProfile([op_profile_1, op_profile_2])
 
-        op_1 = SimpleTimes(100, 2)
-        op_2 = SimpleTimes(800, 2)
+        op_1 = SimpleTimes(10, 2)
+        op_2 = SimpleTimes(40, 2)
 
-        ops = RepresentativePeriods(2, 8760, [.5, .5], [op_1, op_2])
+        ops = RepresentativePeriods(2, 20, [.5, .5], [op_1, op_2])
 
         m, case, model = simple_graph(;ops, op_per_strat=8760, demand)
 
@@ -812,7 +808,6 @@ end
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
         𝒩    = case[:nodes]
         stor = 𝒩[3]
-        cap = EMB.capacity(stor)
 
         # Run the general tests
         general_tests(m, case, model);
@@ -848,7 +843,7 @@ end
 
                     @test value.(m[:stor_level][stor, t]) -
                             value.(m[:stor_level_Δ_op][stor, t]) * duration(t) ≤
-                            value.(m[:stor_cap_inst][stor, t]) + TEST_ATOL
+                            value.(m[:stor_level_inst][stor, t]) + TEST_ATOL
 
                 elseif isnothing(t_prev)
                     # Test for the correct accounting in the first operational period of the
@@ -866,7 +861,7 @@ end
 
                     @test value.(m[:stor_level][stor, t]) -
                             value.(m[:stor_level_Δ_op][stor, t]) * duration(t) ≤
-                            value.(m[:stor_cap_inst][stor, t]) + TEST_ATOL
+                            value.(m[:stor_level_inst][stor, t]) + TEST_ATOL
                 end
             end
         end
@@ -886,7 +881,6 @@ end
             length(𝒯ᴵⁿᵛ)*length(op_2)
     end
 end
-
 
 @testset "Test RefStorage{CyclicRepresentative}" begin
     # Resources used in the analysis
@@ -914,10 +908,8 @@ end
         )
         storage = RefStorage{CyclicRepresentative}(
             "storage",
-            FixedProfile(10),
-            FixedProfile(1e8),
-            FixedProfile(10),
-            FixedProfile(2),
+            StorCapOpexVar(FixedProfile(10), FixedProfile(10)),
+            StorCapOpexFixed(FixedProfile(1e8), FixedProfile(2)),
             Power,
             Dict(Power => 1, aux => 0.05),
             Dict(Power => 1),
@@ -966,25 +958,25 @@ end
 
         # Test that the capacity is correctly limited
         # - constraints_capacity(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
-        @test sum(value.(m[:stor_level][stor, t]) - value.(m[:stor_cap_inst][stor, t])
+        @test sum(value.(m[:stor_level][stor, t]) - value.(m[:stor_level_inst][stor, t])
                      ≤ TEST_ATOL for t ∈ 𝒯) ≈
                         length(𝒯) atol=TEST_ATOL
-        @test sum(value.(m[:stor_rate_use][stor, t]) - value.(m[:stor_rate_inst][stor, t])
+        @test sum(value.(m[:stor_charge_use][stor, t]) - value.(m[:stor_charge_inst][stor, t])
                      ≤ TEST_ATOL for t ∈ 𝒯) ≈
                         length(𝒯) atol=TEST_ATOL
 
         # Test that the design for rate usage is correct
         # - constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
-        @test sum(value.(m[:flow_in][stor, t, Power]) ≈ value.(m[:stor_rate_use][stor, t])
+        @test sum(value.(m[:flow_in][stor, t, Power]) ≈ value.(m[:stor_charge_use][stor, t])
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
         @test sum(value.(m[:flow_in][stor, t, aux]) ≈
-                    value.(m[:stor_rate_use][stor, t]) * inputs(stor, aux)
+                    value.(m[:stor_charge_use][stor, t]) * inputs(stor, aux)
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
 
         # Test that the inlet flow is equivalent to the total usage of the demand
-        @test sum(value.(m[:stor_rate_use][stor, t]) * duration(t) * multiple(t) for t ∈ 𝒯) ≈
+        @test sum(value.(m[:stor_charge_use][stor, t]) * duration(t) * multiple(t) for t ∈ 𝒯) ≈
                 sum(value.(m[:cap_use][sink,t]) * duration(t) * multiple(t)  for t ∈ 𝒯) atol=TEST_ATOL
 
         # Test that the total inlet flow is equivalent to the total outlet flow rate
@@ -994,7 +986,7 @@ end
 
         # Test that the Δ_op in the storage level is correctly calculated
         # - constraints_level_aux(m, n::RefStorage, 𝒯, modeltype::EnergyModel)
-        @test sum(value.(value.(m[:stor_level_Δ_op][stor, t])) ≈
+        @test sum(value.(m[:stor_level_Δ_op][stor, t]) ≈
                 value.(m[:flow_in][stor, t, Power]) - value.(m[:flow_out][stor, t, Power])
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
@@ -1009,7 +1001,6 @@ end
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
         𝒩    = case[:nodes]
         stor = 𝒩[3]
-        cap = EMB.capacity(stor)
 
         # Run the general tests
         general_tests(m, case, model);
@@ -1019,10 +1010,10 @@ end
 
         # Test that the capacity is correctly limited
         # - constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
-        @test sum(value.(m[:stor_cap_inst][stor, t]) ≈ cap.level[t]
+        @test sum(value.(m[:stor_level_inst][stor, t]) ≈ capacity(EMB.level(stor), t)
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
-        @test sum(value.(m[:stor_rate_inst][stor, t]) ≈ cap.rate[t]
+        @test sum(value.(m[:stor_charge_inst][stor, t]) ≈ capacity(EMB.charge(stor), t)
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
 
@@ -1035,14 +1026,14 @@ end
         # Test that the fixed OPEX is correctly calculated
         # - constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(value.(m[:opex_fixed][stor, t_inv]) ≈
-                EMB.opex_fixed(stor, t_inv) * value.(m[:stor_cap_inst][stor, first(t_inv)])
+                EMB.opex_fixed(EMB.level(stor), t_inv) * value.(m[:stor_level_inst][stor, first(t_inv)])
                     for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
                 length(𝒯ᴵⁿᵛ) atol=TEST_ATOL
 
         # Test that variable OPEX is correctly calculated
         # - constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(value.(m[:opex_var][stor, t_inv]) ≈
-                sum(EMB.opex_var(stor, t_inv) * value.(m[:flow_in][stor, t, Power]) *
+                sum(EMB.opex_var(EMB.charge(stor), t_inv) * value.(m[:flow_in][stor, t, Power]) *
                     duration(t) for t ∈ t_inv)
                 for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
                 length(𝒯ᴵⁿᵛ) atol=TEST_ATOL
@@ -1055,7 +1046,6 @@ end
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
         𝒩    = case[:nodes]
         stor = 𝒩[3]
-        cap = EMB.capacity(stor)
 
         # Run the general tests
         general_tests(m, case, model);
@@ -1110,7 +1100,6 @@ end
         𝒯ˢᶜ = opscenarios(𝒯)
         𝒩    = case[:nodes]
         stor = 𝒩[3]
-        cap = EMB.capacity(stor)
 
         # Run the general tests
         general_tests(m, case, model);
@@ -1179,7 +1168,6 @@ end
         𝒯ʳᵖ = repr_periods(𝒯)
         𝒩    = case[:nodes]
         stor = 𝒩[3]
-        cap = EMB.capacity(stor)
 
         # Run the general tests
         general_tests(m, case, model);
@@ -1260,8 +1248,6 @@ end
         𝒯ˢᶜ = opscenarios(𝒯)
         𝒩    = case[:nodes]
         stor = 𝒩[3]
-        cap = EMB.capacity(stor)
-
         # Run the general tests
         general_tests(m, case, model);
 
@@ -1333,7 +1319,6 @@ end
     Power = ResourceCarrier("Power", 0.0)
     CO2 = ResourceEmit("CO2", 1.0)
 
-
     # Function for setting up the system
     function simple_graph(;ops=SimpleTimes(5, 2), op_per_strat=10, em_limit=[40, 40], stor_cap=0)
 
@@ -1358,10 +1343,8 @@ end
         )
         storage = RefStorage{AccumulatingEmissions}(
             "storage",
-            FixedProfile(10),
-            FixedProfile(stor_cap),
-            FixedProfile(1),
-            FixedProfile(10),
+            StorCapOpex(FixedProfile(10), FixedProfile(1), FixedProfile(10)),
+            StorCap(FixedProfile(stor_cap)),
             CO2,
             Dict(CO2 => 1),
             Dict(CO2 => 1),
@@ -1413,30 +1396,30 @@ end
 
         # Test that the capacity is correctly limited
         # - constraints_capacity(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
-        @test sum(value.(m[:stor_level][stor, t]) <= value.(m[:stor_cap_inst][stor, t])
+        @test sum(value.(m[:stor_level][stor, t]) <= value.(m[:stor_level_inst][stor, t])
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
-        @test sum(value.(m[:stor_rate_use][stor, t]) <= value.(m[:stor_rate_inst][stor, t])
+        @test sum(value.(m[:stor_charge_use][stor, t]) <= value.(m[:stor_charge_inst][stor, t])
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
 
         # Test that the design for rate usage is correct
         # - constraints_flow_in(m, n::Storage{AccumulatingEmissions}, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(value.(m[:flow_in][stor, t, CO2]) ≈
-                    value.(m[:stor_rate_use][stor, t]) + value.(m[:emissions_node][stor, t, CO2])
+                    value.(m[:stor_charge_use][stor, t]) + value.(m[:emissions_node][stor, t, CO2])
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
 
         # Test that the Δ in the storage level is correctly calculated
         # - constraints_level_aux(m, n::RefStorage{AccumulatingEmissions}, 𝒯, 𝒫, modeltype::EnergyModel)
-        @test sum(value.(value.(m[:stor_level_Δ_op][stor, t])) ≈
+        @test sum(value.(m[:stor_level_Δ_op][stor, t]) ≈
                 value.(m[:flow_in][stor, t, CO2]) - value.(m[:emissions_node][stor, t, CO2])
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
 
         # Test that the Δ in the storage level is larger than 0
         # - constraints_level_aux(m, n::RefStorage{AccumulatingEmissions}, 𝒯, 𝒫, modeltype::EnergyModel)
-        @test sum(value.(value.(m[:stor_level_Δ_op][stor, t])) ≥ -TEST_ATOL
+        @test sum(value.(m[:stor_level_Δ_op][stor, t]) ≥ -TEST_ATOL
                 for t ∈ 𝒯) ≈
                     length(𝒯) atol=TEST_ATOL
 
@@ -1453,7 +1436,6 @@ end
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
         𝒩    = case[:nodes]
         stor = 𝒩[3]
-        cap = EMB.capacity(stor)
 
         # Run the general tests
         general_tests(m, case, model);
@@ -1463,10 +1445,10 @@ end
 
         # Test that the capacity is correctly limited
         # - constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
-        @test sum(value.(m[:stor_cap_inst][stor, t]) ≈ cap.level[t]
+        @test sum(value.(m[:stor_level_inst][stor, t]) ≈ capacity(EMB.level(stor), t)
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
-        @test sum(value.(m[:stor_rate_inst][stor, t]) ≈ cap.rate[t]
+        @test sum(value.(m[:stor_charge_inst][stor, t]) ≈ capacity(EMB.charge(stor), t)
                     for t ∈ 𝒯, atol=TEST_ATOL) ≈
                         length(𝒯) atol=TEST_ATOL
 
@@ -1479,7 +1461,7 @@ end
         # Test that the fixed OPEX is correctly calculated
         # - constraints_opex_fixed(m, n::Storage{AccumulatingEmissions}, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(value.(m[:opex_fixed][stor, t_inv]) ≈
-                EMB.opex_fixed(stor, t_inv) * value.(m[:stor_rate_inst][stor, first(t_inv)])
+                EMB.opex_fixed(EMB.charge(stor), t_inv) * value.(m[:stor_charge_inst][stor, first(t_inv)])
                     for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
                 length(𝒯ᴵⁿᵛ) atol=TEST_ATOL
 
@@ -1498,7 +1480,6 @@ end
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
         𝒩    = case[:nodes]
         stor = 𝒩[3]
-        cap = EMB.capacity(stor)
 
         # Run the general tests
         general_tests(m, case, model);
@@ -1506,7 +1487,7 @@ end
         # Test that variable OPEX is correctly calculated
         # - function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(value.(m[:opex_var][stor, t_inv]) ≈
-                sum(EMB.opex_var(stor, t_inv) *
+                sum(EMB.opex_var(EMB.charge(stor), t_inv) *
                 (value.(m[:flow_in][stor, t, CO2]) -
                  value.(m[:emissions_node][stor, t, CO2])) *
                 duration(t) for t ∈ t_inv)
@@ -1557,7 +1538,6 @@ end
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
         𝒩    = case[:nodes]
         stor = 𝒩[3]
-        cap = EMB.capacity(stor)
 
         # Run the general tests
         general_tests(m, case, model);

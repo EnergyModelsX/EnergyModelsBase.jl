@@ -66,7 +66,7 @@ Creation of different storage variables for `Storage` nodes `𝒩ˢᵗᵒʳ`. Th
   * `:stor_level_Δ_op` - storage level change in each operational period
   * `:stor_level_Δ_rp` - storage level change in each representative period
   * `:stor_rate_use` - storage rate use in each operational period
-  * `:stor_cap_inst` - installed capacity for storage in each operational period, constrained
+  * `:stor_level_inst` - installed capacity for storage in each operational period, constrained
   in the operational case to `n.stor_cap`
   * `:stor_rate_inst` - installed rate for storage, e.g. power in each operational period,
   constrained in the operational case to `n.rate_cap`
@@ -76,19 +76,23 @@ function variables_capacity(m, 𝒩, 𝒯, modeltype::EnergyModel)
 
     𝒩ⁿᵒᵗ = nodes_not_sub(𝒩, Union{Storage, Availability})
     𝒩ˢᵗᵒʳ = filter(is_storage, 𝒩)
+    𝒩ˢᵗᵒʳ⁻ᶜ = filter(has_charge, 𝒩ˢᵗᵒʳ)
+    𝒩ˢᵗᵒʳ⁻ᵈᶜ = filter(has_discharge, 𝒩ˢᵗᵒʳ)
 
     @variable(m, cap_use[𝒩ⁿᵒᵗ, 𝒯] >= 0)
     @variable(m, cap_inst[𝒩ⁿᵒᵗ, 𝒯] >= 0)
 
     @variable(m, stor_level[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
+    @variable(m, stor_level_inst[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_level_Δ_op[𝒩ˢᵗᵒʳ, 𝒯])
     if 𝒯 isa TwoLevel{S,T,U} where {S,T,U<:RepresentativePeriods}
         𝒯ʳᵖ = repr_periods(𝒯)
         @variable(m, stor_level_Δ_rp[𝒩ˢᵗᵒʳ, 𝒯ʳᵖ])
     end
-    @variable(m, stor_rate_use[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
-    @variable(m, stor_cap_inst[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
-    @variable(m, stor_rate_inst[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
+    @variable(m, stor_charge_use[𝒩ˢᵗᵒʳ⁻ᶜ, 𝒯] >= 0)
+    @variable(m, stor_charge_inst[𝒩ˢᵗᵒʳ⁻ᶜ, 𝒯] >= 0)
+    @variable(m, stor_discharge_use[𝒩ˢᵗᵒʳ⁻ᵈᶜ, 𝒯] >= 0)
+    @variable(m, stor_discharge_inst[𝒩ˢᵗᵒʳ⁻ᵈᶜ, 𝒯] >= 0)
 end
 
 """
@@ -380,8 +384,9 @@ function create_node(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
     # Mass/energy balance constraints for stored energy carrier.
     constraints_level(m, n, 𝒯, 𝒫, modeltype)
 
-    # Call of the function for the inlet flow to the `Storage` node
+    # Call of the function for the inlet flow to and outlet flow from the `Storage` node
     constraints_flow_in(m, n, 𝒯, modeltype)
+    constraints_flow_out(m, n, 𝒯, modeltype)
 
     # Call of the function for limiting the capacity to the maximum installed capacity
     constraints_capacity(m, n, 𝒯, modeltype)

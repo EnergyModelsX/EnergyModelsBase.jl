@@ -110,8 +110,8 @@ process_emissions(data::EmissionsData) = collect(keys(data.emissions))
 """
     process_emissions(data::EmissionsData{T}, p::ResourceEmit)
 Returns the the process emissions of resource `p` in the `data` as `TimeProfile`.
-If the process emissions are provided as `Float64`, it returns a FixedProfile(x).
-If there are no process emissions, it returns a FixedProfile(0).
+If the process emissions are provided as `Float64`, it returns a `FixedProfile(x)`.
+If there are no process emissions, it returns a `FixedProfile(0)`.
 """
 process_emissions(data::EmissionsData{T}, p::ResourceEmit) where {T<:Float64} =
     haskey(data.emissions, p) ? FixedProfile(data.emissions[p]) : FixedProfile(0)
