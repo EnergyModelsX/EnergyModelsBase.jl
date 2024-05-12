@@ -2,7 +2,7 @@
 
 ```julia
 julia> using EnergyModelsBase
-julia> const EMB = EnergyModelsBase 
+julia> const EMB = EnergyModelsBase
 julia> using AbstractTrees
 julia> AbstractTrees.children(x::Type) = subtypes(x)
 
@@ -16,7 +16,7 @@ Node
 │  │  └─ GenAvailability
 │  ├─ RefNetworkNode
 │  └─ Storage
-│     └─ RefStorage
+│     └─ RefStorage{T} where T<:StorageBehavior
 ├─ Sink
 │  └─ RefSink
 └─ Source

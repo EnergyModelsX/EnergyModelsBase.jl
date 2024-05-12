@@ -31,5 +31,5 @@ julia> include(joinpath(exdir, "network.jl"))
 The examples can be run from the terminal with
 
 ```shell script
-~/../energymodelsrenewableproducers.jl/examples $ julia sink_source.jl
+~/../energymodelsbase.jl/examples $ julia sink_source.jl
 ```

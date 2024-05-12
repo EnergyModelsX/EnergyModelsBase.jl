@@ -55,7 +55,7 @@ struct CyclicRepresentative <: Cyclic end
 
 `StorageBehavior` in which the the cyclic behaviour is achieved within a strategic period.
 This implies that the initial level in individual representative periods can be different
-when using `RepresentativePeriods`
+when using `RepresentativePeriods`.
 """
 struct CyclicStrategic <: Cyclic end
 
@@ -150,7 +150,6 @@ end
 
 Union for simpler dispatching for storage parameters that include fixed OPEX.
 """
-
 UnionOpexFixed = Union{StorCapOpex, StorCapOpexFixed}
 
 """
@@ -158,7 +157,6 @@ UnionOpexFixed = Union{StorCapOpex, StorCapOpexFixed}
 
 Union for simpler dispatching for storage parameters that include variable OPEX.
 """
-
 UnionOpexVar = Union{StorCapOpex, StorCapOpexVar, StorOpexVar}
 
 """
@@ -166,7 +164,6 @@ UnionOpexVar = Union{StorCapOpex, StorCapOpexVar, StorOpexVar}
 
 Union for simpler dispatching for storage parameters that include a capacity.
 """
-
 UnionCapacity = Union{StorCapOpex, StorCap, StorCapOpexVar, StorCapOpexFixed}
 
 """ `Source` node with only output."""
@@ -264,7 +261,7 @@ GenAvailability(id, 𝒫::Vector{<:Resource}) = GenAvailability(id, 𝒫, 𝒫)
 
 This node is designed to store either a `ResourceCarrier` or a `ResourceEmit`.
 It is designed as a parametric type through the type parameter `T` to differentiate between
-different cyclic behaviours. Note that the parameter T is only used for dispatching, but
+different cyclic behaviours. Note that the parameter `T` is only used for dispatching, but
 does not carry any other information. Hence, it is simple to fast switch between different
 [`StorageBehavior`](@ref)s.
 

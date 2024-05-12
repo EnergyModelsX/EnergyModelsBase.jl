@@ -46,6 +46,7 @@ Pages = [
 Pages = [
     "how-to/create-new-node.md",
     "how-to/utilize-timestruct.md",
+    "how-to/update-models.md",
     "how-to/contribute.md",
 ]
 ```

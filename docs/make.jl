@@ -20,6 +20,7 @@ makedocs(
         prettyurls=get(ENV, "CI", "false") == "true",
         edit_link="main",
         assets=String[],
+        ansicolor = true,
     ),
     modules = [EnergyModelsBase],
     pages = [
@@ -36,6 +37,7 @@ makedocs(
         "How to" => Any[
             "Create a new node" => "how-to/create-new-node.md",
             "Utilize TimeStruct" => "how-to/utilize-timestruct.md",
+            "Update models" => "how-to/update-models.md",
             "Contribute to EnergyModelsBase" => "how-to/contribute.md",
         ],
         "Library" => Any[

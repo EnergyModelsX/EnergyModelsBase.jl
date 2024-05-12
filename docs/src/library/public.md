@@ -71,7 +71,7 @@ RefStorage
 GenAvailability
 ```
 
-### Storage behaviours
+### [Storage behaviours](@id sec_lib_public_storbehav)
 
 `EnergyModelsBase` provides several different storage behaviours for calculating the level balance of a `Storage` node.
 In general, the concrete storage behaviours are ready to use and should account for all eventualities.
@@ -86,9 +86,38 @@ CyclicStrategic
 
 !!! note
     We have not yet supported upper and lower bound constraints in the case of using `OperationalScenarios`.
-    While the calculation of the overall level balance and the operational costs is consistent, it can happen that violation of the upper and lower bound of the storage level is violated.
+    While the calculation of the overall level balance and the operational costs is consistent, it can happen that the upper and lower bound of the storage level is violated.
 
-    This impacts specifically `CyclicRepresentative`.
+    This impacts specifically `CyclicStrategic`.
+
+### [Storage parameters](@id sec_lib_public_storpar)
+
+Storage parameters are used for describing different parameters for the idnividual capacities of a `Storage` node.
+In practice, `Storage` nodes can have three different capacities:
+
+1. charge, that is a capacity for charging the `Storage` node,
+2. level, that is the amount of energy/mass that can be stored, and
+3. discharge, that is a capacity for discharging the `Storage` node.
+
+In general, each of the individual capacities can have an assigned capacity, variable OPEX, and fixed OPEX.
+Furthermore, it is possible to only have a variable OPEX.
+To this end, multiple composite types are defined.
+
+```@docs
+StorCapOpex
+StorCap
+StorCapOpexVar
+StorCapOpexFixed
+StorOpexVar
+```
+
+When dispatching on the individual type, it is als possible to use the following unions:
+
+```@docs
+EMB.UnionOpexFixed
+EMB.UnionOpexVar
+EMB.UnionCapacity
+```
 
 ### [Functions for accessing fields of `Node` types](@id functions_fields_node)
 
@@ -108,6 +137,9 @@ opex_fixed
 inputs
 outputs
 node_data
+charge
+level
+discharge
 storage_resource
 surplus_penalty
 deficit_penalty
@@ -132,18 +164,8 @@ nodes_emissions
 has_input
 has_output
 has_emissions
-```
-
-### Legacy constructors
-
-The following legacy constructors are implemented to avoid changing each individual model after updates in the core structure.
-It is however uncertain, how long they will remain in the model.
-To this end, it is suggest to adjust them with the reference nodes described above.
-
-```@docs
-RefNetwork
-RefNetworkEmissions
-RefStorageEmissions
+has_charge
+has_discharge
 ```
 
 ## Links
