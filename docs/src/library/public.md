@@ -76,7 +76,6 @@ GenAvailability
 `EnergyModelsBase` provides several different storage behaviours for calculating the level balance of a `Storage` node.
 In general, the concrete storage behaviours are ready to use and should account for all eventualities.
 
-
 ```@docs
 Accumulating
 AccumulatingEmissions
@@ -255,6 +254,7 @@ constraints_flow_in
 constraints_flow_out
 constraints_capacity
 constraints_capacity_installed
+constraints_level
 constraints_level_aux
 constraints_opex_var
 constraints_opex_fixed
@@ -302,7 +302,34 @@ co2_capture
 process_emissions
 ```
 
-## Miscellaneous functions/macros
+## Miscellaneous types/functions/macros
+
+### `PreviousPeriods` and `CyclicPeriods`
+
+`PreviousPeriods` is a type used to store information from the previous periods in an iteration loop through the application of the iterator [`withprev`](https://sintefore.github.io/TimeStruct.jl/stable/reference/api/#TimeStruct.withprev) of `TimeStruct`.
+
+`CyclicPeriods` is used for storing the current and the last period.
+The periods can either be either and `AbstractStrategicPeriod` or `AbstractRepresentativePeriod`.
+In the former case, it is however not fully used as the last strategic period is not relevant for the level balances.
+
+```@docs
+PreviousPeriods
+CyclicPeriods
+```
+
+The individual fields can be accessed through the following functions:
+
+```@docs
+strat_per
+rep_per
+op_per
+last_per
+current_per
+```
+
+### Macros for checking the input data
+
+The macro `@assert_or_log` is an extension to the `@assert` macro to allow either for asserting the input data directly, or logging the errors in the input data.
 
 ```@docs
 @assert_or_log

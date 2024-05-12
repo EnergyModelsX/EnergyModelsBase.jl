@@ -51,6 +51,9 @@ export EmissionsProcess, EmissionsEnergy
 # Export the link types
 export Linear, Link, Direct
 
+# Export the miscellaneous types
+export PreviousPeriods, CyclicPeriods
+
 # Legacy data types
 export RefNetwork, RefNetworkEmissions, RefStorageEmissions
 

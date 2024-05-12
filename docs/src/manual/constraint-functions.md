@@ -74,7 +74,7 @@ corresponds to the main constraint for calculating the level balance of a `Stora
 Within this constraint, two different functions are called:
 
 ```julia
-constraints_level_aux(m, n, 𝒯, 𝒫, modeltype::EnergyModel)
+constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
 ```
 
 and
@@ -89,7 +89,7 @@ General properties are the calculation of the change in storage level in an oper
 It is implemented for a generic `Storage` node as well for a `RefStorage{AccumulatingEmissions}` node.
 Using the `AccumulatingEmissions` requires that the stored resource is a `ResourceEmit` and limits the variable ``\texttt{stor\_level\_}\Delta\texttt{\_op}[n, t, p] \geq 0`` as well as introduces emission variables.
 
-The second function, `constraints_level_iterate`, iterates through the time strucutre and eventually declares the level balance of the `Storage` node within a strategic period.
+The second function, `constraints_level_iterate`, iterates through the time structure and eventually declares the level balance of the `Storage` node within a strategic period.
 It automatically deduces the type of the time structure, _i.e._, whether representative periods and/or operational scenarios are included, and subsequently calculates the corresponding previous period used in the level balance through calling the function [`previous_level`](@ref).
 
 `RepresentativePeriods` are handled through scaling of the change in the level in a representative period.

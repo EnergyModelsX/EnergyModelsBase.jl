@@ -386,8 +386,14 @@ end
 """
     constraints_level_rp(m, n::Storage{<:Accumulating}, per, modeltype::EnergyModel)
 
-When a `Storage{<:Accumulating}` is used, the cyclic constraint is not implemented as
-accumulation within a strategic period is desirable.
+When a `Storage{<:Accumulating}` is used, the cyclic constraint for restricting the level
+change within a strategic period to 0 (through setting the sum of `:stor_level_Δ_rp` within
+a strategic period to 0) is not implemented as accumulation within a strategic period is
+desirable.
+
+This implies that [`Accumulating`](@ref) behaviors require the developer to introduce
+the function [`previous_level`](@ref) in the case of
+`prev_pers = PreviousPeriods{<:NothingPeriod, Nothing, Nothing}`.
 """
 function constraints_level_rp(m, n::Storage{<:Accumulating}, per, modeltype::EnergyModel)
     return nothing
@@ -467,7 +473,7 @@ end
         modeltype::EnergyModel,
     )
 
-When representative periods are used and the previous opeartional period is nothing, then
+When representative periods are used and the previous operational  period is `nothing`, then
 bounds are incorporated to avoid that the initial level storage level is violating the
 maximum and minimum level.
 """

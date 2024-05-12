@@ -154,7 +154,11 @@ GenAvailability(id, 𝒫::Vector{<:Resource}) = GenAvailability(id, 𝒫, 𝒫)
 """ A reference `Storage` node.
 
 This node is designed to store either a `ResourceCarrier` or a `ResourceEmit`.
-It is designed as a parametric type to differentiate between different cyclic behaviours.
+It is designed as a parametric type through the type parameter `T` to differentiate between
+different cyclic behaviours. Note that the parameter T is only used for dispatching, but
+does not carry any other information. Hence, it is simple to fast switch between different
+[`StorageBehavior`](@ref)s.
+
 The current implemented cyclic behaviours are [`CyclicRepresentative`](@ref),
 [`CyclicStrategic`](@ref), and [`AccumulatingEmissions`](@ref).
 

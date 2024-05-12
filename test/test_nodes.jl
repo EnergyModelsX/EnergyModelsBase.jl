@@ -10,7 +10,7 @@
 
         resources = [Power, CO2]
         ops = SimpleTimes(5, 2)
-        op_per_strat = TS._total_duration(ops)
+        op_per_strat = 10
         T = TwoLevel(2, 2, ops; op_per_strat)
 
         nodes = [source, sink]
@@ -275,7 +275,7 @@ end
 
         resources = [NG, Power, CO2]
         ops = SimpleTimes(5, 2)
-        op_per_strat = TS._total_duration(ops)
+        op_per_strat = 10
         T = TwoLevel(2, 2, ops; op_per_strat)
 
         nodes = [source, network, sink]
@@ -597,7 +597,7 @@ end
     CO2 = ResourceEmit("CO2", 1.0)
 
     # Function for setting up the system
-    function simple_graph(;ops=SimpleTimes(5, 2), demand=FixedProfile(10))
+    function simple_graph(;ops=SimpleTimes(5, 2), op_per_strat=10, demand=FixedProfile(10))
 
         # Used source, network, and sink
         source = RefSource(
@@ -632,7 +632,6 @@ end
             Dict(Power => 1),
         )
 
-        op_per_strat = TS._total_duration(ops)
         T = TwoLevel(2, 2, ops; op_per_strat)
 
         nodes = [source, aux_source, storage, sink]
@@ -754,7 +753,7 @@ end
     @testset "SimpleTimes with storage" begin
 
         # Run the model and extract the data
-        m, case, model = simple_graph(demand=OperationalProfile([10, 15, 5, 15, 5]))
+        m, case, model = simple_graph(;demand=OperationalProfile([10, 15, 5, 15, 5]))
         𝒯    = case[:T]
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
         𝒩    = case[:nodes]
@@ -807,7 +806,7 @@ end
 
         ops = RepresentativePeriods(2, 8760, [.5, .5], [op_1, op_2])
 
-        m, case, model = simple_graph(ops=ops, demand=demand)
+        m, case, model = simple_graph(;ops, op_per_strat=8760, demand)
 
         𝒯    = case[:T]
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -896,7 +895,7 @@ end
     CO2 = ResourceEmit("CO2", 1.0)
 
     # Function for setting up the system
-    function simple_graph(;ops=SimpleTimes(5, 2), demand=FixedProfile(10))
+    function simple_graph(;ops=SimpleTimes(5, 2), op_per_strat=10, demand=FixedProfile(10))
 
         # Used source, network, and sink
         source = RefSource(
@@ -931,7 +930,6 @@ end
             Dict(Power => 1),
         )
 
-        op_per_strat = TS._total_duration(ops)
         T = TwoLevel(2, 2, ops; op_per_strat)
 
         nodes = [source, aux_source, storage, sink]
@@ -1052,7 +1050,7 @@ end
     @testset "SimpleTimes with storage" begin
 
         # Run the model and extract the data
-        m, case, model = simple_graph(demand=OperationalProfile([10, 15, 5, 15, 5]))
+        m, case, model = simple_graph(;demand=OperationalProfile([10, 15, 5, 15, 5]))
         𝒯    = case[:T]
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
         𝒩    = case[:nodes]
@@ -1105,7 +1103,7 @@ end
 
         ops = OperationalScenarios(2, [op_1, op_2], [.5, .5])
 
-        m, case, model = simple_graph(ops=ops, demand=demand)
+        m, case, model = simple_graph(;ops, op_per_strat=20, demand)
 
         𝒯    = case[:T]
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -1174,7 +1172,7 @@ end
 
         ops = RepresentativePeriods(2, 8760, [.5, .5], [op_1, op_2])
 
-        m, case, model = simple_graph(ops=ops, demand=demand)
+        m, case, model = simple_graph(;ops, op_per_strat=8760, demand)
 
         𝒯    = case[:T]
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -1254,7 +1252,7 @@ end
         scps = OperationalScenarios(2, [op, op], [.5, .5])
         ops = RepresentativePeriods(2, 8760, [.5, .5], [scps, scps])
 
-        m, case, model = simple_graph(ops=ops, demand=demand)
+        m, case, model = simple_graph(;ops, op_per_strat=8760, demand)
 
         𝒯    = case[:T]
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -1337,7 +1335,7 @@ end
 
 
     # Function for setting up the system
-    function simple_graph(;ops=SimpleTimes(5, 2) , em_limit=[40, 40], stor_cap=0)
+    function simple_graph(;ops=SimpleTimes(5, 2), op_per_strat=10, em_limit=[40, 40], stor_cap=0)
 
         em_data = CaptureEnergyEmissions(0.9)
 
@@ -1376,7 +1374,6 @@ end
             Dict(Power => 1),
         )
 
-        op_per_strat = TS._total_duration(ops)
         T = TwoLevel(2, 2, ops; op_per_strat)
 
         nodes = [source, network, storage, sink]
@@ -1496,7 +1493,7 @@ end
     @testset "SimpleTimes with storage" begin
 
         # Run the model and extract the data
-        m, case, model = simple_graph(stor_cap=100, em_limit=[100, 4])
+        m, case, model = simple_graph(;stor_cap=100, em_limit=[100, 4])
         𝒯    = case[:T]
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
         𝒩    = case[:nodes]
@@ -1555,7 +1552,7 @@ end
         op_2 = SimpleTimes(2, 2)
         ops = RepresentativePeriods(2, 60, [.5, .5], [op_1, op_2])
 
-        m, case, model = simple_graph(ops=ops, stor_cap=1e6)
+        m, case, model = simple_graph(;ops, op_per_strat=60, stor_cap=1e6)
         𝒯    = case[:T]
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
         𝒩    = case[:nodes]
