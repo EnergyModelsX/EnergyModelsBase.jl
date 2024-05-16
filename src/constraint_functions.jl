@@ -66,11 +66,10 @@ If you create new capacity variables, it is beneficial to include as well a meth
 function and the corresponding node types.
 """
 function constraints_capacity_installed(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
-
-    cap = capacity(n)
-    @constraint(m, [t ∈ 𝒯],
-        m[:cap_inst][n, t] == cap[t]
-    )
+    # Fix the installed capacity to the upper bound
+   for t ∈ 𝒯
+        fix(m[:cap_inst][n, t], capacity(n, t); force=true)
+   end
 end
 function constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
     # Extract the required fields from the composite type
@@ -78,19 +77,19 @@ function constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, mode
     par_level = level(n)
     par_discharge = discharge(n)
 
-    @constraint(m, [t ∈ 𝒯],
-        m[:stor_level_inst][n, t] == capacity(par_level, t)
-    )
-
+    # Fix the installed capacity to the upper bound
+    for t ∈ 𝒯
+        fix(m[:stor_level_inst][n, t], capacity(par_level, t); force=true)
+    end
     if isa(par_charge, UnionCapacity)
-        @constraint(m, [t ∈ 𝒯],
-            m[:stor_charge_inst][n, t] == capacity(par_charge, t)
-        )
+        for t ∈ 𝒯
+            fix(m[:stor_charge_inst][n, t], capacity(par_charge, t); force=true)
+        end
     end
     if isa(par_discharge, UnionCapacity)
-        @constraint(m, [t ∈ 𝒯],
-            m[:stor_discharge_inst][n, t] == capacity(par_discharge, t)
-        )
+        for t ∈ 𝒯
+            fix(m[:stor_discharge_inst][n, t], capacity(par_discharge, t); force=true)
+        end
     end
 end
 
@@ -252,10 +251,6 @@ function constraints_level_aux(m, n::RefStorage{AccumulatingEmissions}, 𝒯, �
     p_stor = storage_resource(n)
     𝒫ᵉᵐ    = setdiff(res_sub(𝒫, ResourceEmit), [p_stor])
 
-    # Set the lower bound for the emissions in the storage node
-    for t ∈ 𝒯
-        set_lower_bound(m[:emissions_node][n, t, p_stor], 0)
-    end
 
     # Constraint for the change in the level in a given operational period
     @constraint(m, [t ∈ 𝒯],
@@ -263,12 +258,16 @@ function constraints_level_aux(m, n::RefStorage{AccumulatingEmissions}, 𝒯, �
             m[:flow_in][n, t, p_stor] - m[:emissions_node][n, t, p_stor]
     )
 
-    # Constraint to avoid that the emissions are larger than the flow into the storage
-    @constraint(m, [t ∈ 𝒯], m[:stor_level_Δ_op][n, t] ≥ 0)
-
-
-    # Constraint for the emissions to avoid problems with unconstrained variables.
-    @constraint(m, [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ], m[:emissions_node][n, t, p_em] == 0)
+    # Set the lower bound for the emissions in the storage node (:emissions_node) and to
+    # avoid that emissions larger than the flow into the storage.
+    # Fix all other emissions to a value of 0
+    for t ∈ 𝒯
+        set_lower_bound(m[:emissions_node][n, t, p_stor], 0)
+        set_lower_bound(m[:stor_level_Δ_op][n, t], 0)
+        for p_em ∈ 𝒫ᵉᵐ
+            fix(m[:emissions_node][n, t, p_em], 0,; force=true)
+        end
+    end
 end
 
 """
@@ -442,8 +441,10 @@ function constraints_level_rp(m, n::Storage{CyclicRepresentative}, per, modeltyp
     # Declaration of the required subsets
     𝒯ʳᵖ = repr_periods(per)
 
-    # Constraint that the total change has to be 0 within a representative period
-    @constraint(m, [t_rp ∈ 𝒯ʳᵖ], m[:stor_level_Δ_rp][n, t_rp] == 0)
+    # Fix the total change to 0 within a representative period
+    for t_rp ∈ 𝒯ʳᵖ
+        fix(m[:stor_level_Δ_rp][n, t_rp], 0; force=true)
+    end
 end
 
 """
@@ -604,9 +605,10 @@ This function serves as fallback option if no other function is specified for a 
 """
 function constraints_opex_fixed(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
 
-    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        m[:opex_fixed][n, t_inv] == 0
-    )
+    # Fix the fixed OPEX
+    for t_inv ∈ 𝒯ᴵⁿᵛ
+        fix(m[:opex_fixed][n, t_inv], 0,; force=true)
+    end
 end
 
 
