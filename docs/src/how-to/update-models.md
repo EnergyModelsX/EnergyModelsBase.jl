@@ -9,7 +9,7 @@ We will as well implement information regarding the adjustment of extension pack
 
 ### Key changes for nodal descriptions
 
-Version 0.7 introduced both *[storage behaviors](@ref sec_lib_public_storbehav)* resulting in a rework of the individual approach for calculating the level balance as well as the potential to have charge and discharge capacities through _[storage parameters](@ref sec_lib_public_storpar)_.
+Version 0.7 introduced both *[storage behaviours](@ref sec_lib_public_storbehav)* resulting in a rework of the individual approach for calculating the level balance as well as the potential to have charge and discharge capacities through _[storage parameters](@ref sec_lib_public_storpar)_.
 
 !!! note
     The legacy constructors for calls of the composite type of version 0.6 will be included at least until version 0.8.
@@ -84,7 +84,7 @@ RefStorage{AccumulatingEmissions}(
 Version 0.6 introduced [`EmissionsData`](@ref) for providing the user with more flexibility (and less input demand) for incorporating different types of emissions to the model. Hence, the `Node` types were adjusted.
 In addition, version 0.6 simplified the [`GenAvailability`](@ref) node and added emissions prices to the [`OperationalModel`](@ref).
 
-Version 0.7 introduced both _[storage behaviors](@ref sec_lib_public_storbehav)_ resulting in a rework of the individual approach for calculating the level balance as well as the potential to have charge and discharge capacities through _[storage parameters](@ref sec_lib_public_storpar)_.
+Version 0.7 introduced both *[storage behaviours](@ref sec_lib_public_storbehav)* resulting in a rework of the individual approach for calculating the level balance as well as the potential to have charge and discharge capacities through *[storage parameters](@ref sec_lib_public_storpar)*.
 
 !!! warning
     The legacy constructors for calls of the composite type of version 0.5 were removed in version 0.7.

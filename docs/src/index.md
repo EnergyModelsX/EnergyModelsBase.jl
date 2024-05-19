@@ -38,6 +38,7 @@ Pages = [
     "manual/simple-example.md",
     "manual/simple-example.md",
 ]
+Depth = 1
 ```
 
 ## How to guides
@@ -49,6 +50,7 @@ Pages = [
     "how-to/update-models.md",
     "how-to/contribute.md",
 ]
+Depth = 1
 ```
 
 ## Library outline
@@ -58,4 +60,5 @@ Pages = [
     "library/public.md",
     "library/internals/reference.md",
 ]
+Depth = 1
 ```

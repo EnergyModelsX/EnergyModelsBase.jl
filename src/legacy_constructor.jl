@@ -1,13 +1,23 @@
 """
+    RefStorage(
+        id,
+        rate_cap::TimeProfile,
+        stor_cap::TimeProfile,
+        opex_var::TimeProfile,
+        opex_fixed::TimeProfile,
+        stor_res::ResourceEmit,
+        input::Dict{<:Resource,<:Real},
+        output::Dict{<:Resource,<:Real},
+        data::Vector,
+    )
+
 Legacy constructor for a `RefStorage{ResourceEmit}`.
 This version will be discontinued in the near future and replaced with the new version of
 `RefStorage{StorageBehavior}` in which the parametric input defines the behaviour of the
 storage.
 
-See the documentation for further information. In this case, the key difference is that we
-changed the parameteric descriptions from the stored `Resource` to the behaviour of the
-`Storage` node as well as allowing for variable and fixed OPEX for both the level and the
-charge rate as well as introducing a discharge rate capacity.
+See the _[documentation](https://energymodelsx.github.io/EnergyModelsBase.jl/stable/how-to/update-models.html)_
+for further information regarding how you can translate your existing model to the new model.
 """
 function RefStorage(
     id,
@@ -31,7 +41,8 @@ function RefStorage(
         "instead of `RefStorage` and \n 2. the application of `StorCapOpex(rate_cap, opex_var, opex_fixed)` " *
         "as 2ⁿᵈ field as well as `StorCap(stor_cap)` as 3ʳᵈ field instead of using " *
         "`rate_cap`, `stor_cap`, `opex_var`, and `opex_fixed` as 2ⁿᵈ-5ᵗʰ fields.\n" *
-        "It is recommended to update the existing implementation to the new version."
+        "It is recommended to update the existing implementation to the new version.",
+        maxlog = 1
     )
 
     tmp = RefStorage{AccumulatingEmissions}(
@@ -66,7 +77,8 @@ function RefStorage(
         "instead of `RefStorage` and \n 2. the application of `StorCapOpex(rate_cap, opex_var, opex_fixed)` " *
         "as 2ⁿᵈ field as well as `StorCap(stor_cap)` as 3ʳᵈ field instead of using " *
         "`rate_cap`, `stor_cap`, `opex_var`, and `opex_fixed` as 2ⁿᵈ-5ᵗʰ fields.\n" *
-        "It is recommended to update the existing implementation to the new version."
+        "It is recommended to update the existing implementation to the new version.",
+        maxlog = 1
     )
 
     tmp = RefStorage{AccumulatingEmissions}(
@@ -82,15 +94,25 @@ function RefStorage(
 end
 
 """
+    RefStorage(
+        id,
+        rate_cap::TimeProfile,
+        stor_cap::TimeProfile,
+        opex_var::TimeProfile,
+        opex_fixed::TimeProfile,
+        stor_res::ResourceCarrier,
+        input::Dict{<:Resource,<:Real},
+        output::Dict{<:Resource,<:Real},
+        data::Vector,
+    )
+
 Legacy constructor for a `RefStorage{ResourceCarrier}`.
 This version will be discontinued in the near future and replaced with the new version of
 `RefStorage{StorageBehavior}` in which the parametric input defines the behaviour of the
 storage.
 
-See the documentation for further information. In this case, the key difference is that we
-changed the parameteric descriptions from the stored `Resource` to the behaviour of the
-`Storage` node as well as allowing for variable and fixed OPEX for both the level and the
-charge rate as well as introducing a discharge rate capacity.
+See the _[documentation](https://energymodelsx.github.io/EnergyModelsBase.jl/stable/how-to/update-models.html)_
+for further information regarding how you can translate your existing model to the new model.
 """
 function RefStorage(
     id,
@@ -115,7 +137,8 @@ function RefStorage(
         "as 2ⁿᵈ field as well as `StorCapOpexFixed(stor_cap, opex_var, opex_fixed)` as 3ʳᵈ " *
         "field instead of using `rate_cap`, `stor_cap`, `opex_var`, and `opex_fixed` as " *
         "2ⁿᵈ-5ᵗʰ fields.\n" *
-        "It is recommended to update the existing implementation to the new version."
+        "It is recommended to update the existing implementation to the new version.",
+        maxlog = 1
     )
 
     tmp = RefStorage{CyclicStrategic}(
@@ -151,7 +174,8 @@ function RefStorage(
         "as 2ⁿᵈ field as well as `StorCapOpexFixed(stor_cap, opex_var, opex_fixed)` as 3ʳᵈ " *
         "field instead of using `rate_cap`, `stor_cap`, `opex_var`, and `opex_fixed` as " *
         "2ⁿᵈ-5ᵗʰ fields.\n" *
-        "It is recommended to update the existing implementation to the new version."
+        "It is recommended to update the existing implementation to the new version.",
+        maxlog = 1
     )
 
     tmp = RefStorage{CyclicStrategic}(

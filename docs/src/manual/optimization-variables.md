@@ -71,13 +71,18 @@ The same holds as well for pumped hydro storage and storage of gases where there
 The differentiation leads to the following variables for `Storage` nodes:
 
 - ``\texttt{stor\_level}[n, t]``: Absolute level of energy/mass stored in a `Storage` node ``n`` at operational period ``t`` with a typical unit of GWh or t,
-- ``\texttt{stor\_level_\_inst}[n, t]``: Installed storage capacity in a `Storage` node ``n`` at operational period ``t`` , that is the upper bound for the variable ``\texttt{stor\_level}[n, t]``, with a typical unit of GWh or t,
-- ``\texttt{stor\_charge\_use}[n, t]``: Usage of the charging rate of a `Storage` node ``n`` at operational period ``t``,
-- ``\texttt{stor\_charge\_inst}[n, t]``: Maximum available charging rate of a `Storage` node ``n`` at operational period ``t``,
-- ``\texttt{stor\_discharge\_use}[n, t]``: Usage of the discharging rate of a `Storage` node ``n`` at operational period ``t``, and
-- ``\texttt{stor\_discharge\_inst}[n, t]``: Maximum available discharging rate of a `Storage` node ``n`` at operational period ``t``.
+- ``\texttt{stor\_level\_inst}[n, t]``: Installed storage capacity in a `Storage` node ``n`` at operational period ``t`` , that is the upper bound for the variable ``\texttt{stor\_level}[n, t]``, with a typical unit of GWh or t,
+- ``\texttt{stor\_charge\_use}[n, t]``: Usage of the charging rate of a `Storage` node ``n`` at operational period ``t`` with a typical unit of GW or t/h,
+- ``\texttt{stor\_charge\_inst}[n, t]``: Maximum available charging rate of a `Storage` node ``n`` at operational period ``t``, that is the upper bound for the variable ``\texttt{stor\_charge\_use}[n, t]``, with a typical unit of GW or t/h.
+- ``\texttt{stor\_discharge\_use}[n, t]``: Usage of the discharging rate of a `Storage` node ``n`` at operational period ``t`` with a typical unit of GW or t/h, and
+- ``\texttt{stor\_discharge\_inst}[n, t]``: Maximum available discharging rate of a `Storage` node ``n`` at operational period ``t``, that is the upper bound for the variable ``\texttt{stor\_discharge\_use}[n, t]``, with a typical unit of GW or t/h.
 
-The storage level is always defined for the end of an operational period.
+!!! note
+    It is not necessary that a `Storage` node has a charge and discharge capacity.
+    It is possible to not specify a capacity for charge and discharge.
+    In this instance, the variables for the intalled capacities are omitted and the charge and discharge usage is unlimited.
+
+The storage level is always defined for the end of the operational period it is indexed over.
 There are in addition two variables for the storage level that behave slightly different:
 
 - ``\texttt{stor\_level\_Δ\_op}[n, t]``: Change of the absolute level of energy/mass stored in a `Storage` node ``n`` in operational period ``t`` with a typical unit of GWh or t, and
@@ -86,7 +91,7 @@ There are in addition two variables for the storage level that behave slightly d
 These two variables are introduced to track the change in the storage level in a operational period and a representative period, respectively.
 They can be considered as helper variables to account for the duration of the operational period as well as the total change within a representative period.
 ``\texttt{stor\_level\_Δ\_rp}`` is only declared if the `TimeStructure` includes `RepresentativePeriods`.
-The application of `RepresentativePeriods` is explained in [How to use TimeStruct.jl](@ref ts_rp).
+The application of `RepresentativePeriods` is explained in *[How to use TimeStruct.jl](@ref ts_rp)*.
 
 The variables ``\texttt{cap\_inst}``, ``\texttt{stor\_charge\_inst}``, ``\texttt{stor\_level\_inst}``, and ``\texttt{stor\_discharge\_inst}`` are used in `EnergyModelsInvestment` to allow for investments in capacity of individual nodes.
 
@@ -176,10 +181,10 @@ These variables are for the individual nodes given in the subsections below.
 - [``\texttt{opex\_fixed}``](@ref var_opex)
 - [``\texttt{stor\_level}``](@ref var_cap)
 - [``\texttt{stor\_level\_inst}``](@ref var_cap)
-- [``\texttt{stor\_charge\_use}``](@ref var_cap), if the `Storage` node has a field `:charge` with the `StorageParameters` corresponding to *[capacity storage parameters](@ref sec_lib_public_storpar)*.
-- [``\texttt{stor\_charge\_inst}``](@ref var_cap), if the `Storage` node has a field `:charge` with the `StorageParameters` corresponding to *[capacity storage parameters](@ref sec_lib_public_storpar)*.
-- [``\texttt{stor\_discharge\_use}``](@ref var_cap), if the `Storage` node has a field `:discharge` with the `StorageParameters` corresponding to *[capacity storage parameters](@ref sec_lib_public_storpar)*.
-- [``\texttt{stor\_discharge\_inst}``](@ref var_cap), if the `Storage` node has a field `:discharge` with the `StorageParameters` corresponding to *[capacity storage parameters](@ref sec_lib_public_storpar)*.
+- [``\texttt{stor\_charge\_use}``](@ref var_cap)
+- [``\texttt{stor\_charge\_inst}``](@ref var_cap), if the `Storage` node has a field `:charge` with the `StorageParameters` corresponding to *[capacity storage parameters](@ref sec_lib_public_storpar)*
+- [``\texttt{stor\_discharge\_use}``](@ref var_cap)
+- [``\texttt{stor\_discharge\_inst}``](@ref var_cap), if the `Storage` node has a field `:discharge` with the `StorageParameters` corresponding to *[capacity storage parameters](@ref sec_lib_public_storpar)*
 - [``\texttt{stor\_level\_Δ\_op}``](@ref var_cap)
 - [``\texttt{stor\_level\_Δ\_rp}``](@ref var_cap) if the `TimeStruct` includes `RepresentativePeriods`
 - [``\texttt{flow\_in}``](@ref var_flow)
