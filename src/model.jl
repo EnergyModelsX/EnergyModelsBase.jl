@@ -54,23 +54,32 @@ end
 """
     variables_capacity(m, 𝒩, 𝒯, modeltype::EnergyModel)
 
-Creation of different capacity variables for nodes `𝒩ⁿᵒᵗ` that are neither `Storage`
-nor `Availability` nodes. These variables are:
-* `:cap_use` - use of a technology node in each operational period
+Declaration of different capacity variables for nodes `𝒩ⁿᵒᵗ` that are neither `Storage`
+nor `Availability` nodes.
+These variables are:
+* `:cap_use` - use of a technology node in each operational period and
 * `:cap_inst` - installed capacity in each operational period in terms of either `:flow_in`
-or `:flow_out` (depending on node `n ∈ 𝒩`)
+  or `:flow_out` (depending on node `n ∈ 𝒩`)
 
-Creation of different storage variables for `Storage` nodes `𝒩ˢᵗᵒʳ`. These variables are:
+Declaration of different storage variables for `Storage` nodes `𝒩ˢᵗᵒʳ`.
+These variables are:
 
-  * `:stor_level` - storage level at the end of each operational period
-  * `:stor_level_Δ_op` - storage level change in each operational period
-  * `:stor_level_Δ_rp` - storage level change in each representative period
-  * `:stor_rate_use` - storage rate use in each operational period
-  * `:stor_level_inst` - installed capacity for storage in each operational period, constrained
-  in the operational case to `n.stor_cap`
-  * `:stor_rate_inst` - installed rate for storage, e.g. power in each operational period,
-  constrained in the operational case to `n.rate_cap`
-
+* `:stor_level` - storage level at the end of each operational period.
+* `:stor_level_Δ_op` - storage level change in each operational period.
+* `:stor_level_Δ_rp` - storage level change in each representative period.
+* `:stor_level_inst` - installed capacity for storage in each operational period, constrained
+  in the operational case to the provided capacity in the [storage parameters](@ref sec_lib_public_storpar)
+  used in the field `:level`.
+* `:stor_charge_use` - storage charging use in each operational period.
+* `:stor_charge_inst` - installed charging capacity, e.g. power, in each operational period,
+  constrained in the operational case to the provided capacity in the
+  [storage parameters](@ref sec_lib_public_storpar) used in the field `:charge`.
+  This variable is only defined if the `Storage` node has a field `charge.`
+* `:stor_discharge_use` - storage discharging use in each operational period.
+* `:stor_discharge_inst` - installed charging capacity, e.g. power, in each operational period,
+  constrained in the operational case to the provided capacity in the
+  [storage parameters](@ref sec_lib_public_storpar) used in the field `:discharge`.
+  This variable is only defined if the `Storage` node has a field `discharge.`
 """
 function variables_capacity(m, 𝒩, 𝒯, modeltype::EnergyModel)
 
@@ -89,9 +98,9 @@ function variables_capacity(m, 𝒩, 𝒯, modeltype::EnergyModel)
         𝒯ʳᵖ = repr_periods(𝒯)
         @variable(m, stor_level_Δ_rp[𝒩ˢᵗᵒʳ, 𝒯ʳᵖ])
     end
-    @variable(m, stor_charge_use[𝒩ˢᵗᵒʳ⁻ᶜ, 𝒯] >= 0)
+    @variable(m, stor_charge_use[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_charge_inst[𝒩ˢᵗᵒʳ⁻ᶜ, 𝒯] >= 0)
-    @variable(m, stor_discharge_use[𝒩ˢᵗᵒʳ⁻ᵈᶜ, 𝒯] >= 0)
+    @variable(m, stor_discharge_use[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_discharge_inst[𝒩ˢᵗᵒʳ⁻ᵈᶜ, 𝒯] >= 0)
 end
 

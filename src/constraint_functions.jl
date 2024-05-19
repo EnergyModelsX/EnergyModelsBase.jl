@@ -127,11 +127,9 @@ function constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::Ener
     )
 
     # Constraint for storage rate usage for charging and discharging
-    if has_charge(n)
-        @constraint(m, [t ∈ 𝒯],
-            m[:stor_charge_use][n, t] == m[:flow_in][n, t, p_stor]
-        )
-    end
+    @constraint(m, [t ∈ 𝒯],
+        m[:stor_charge_use][n, t] == m[:flow_in][n, t, p_stor]
+    )
 end
 """
     constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
@@ -188,13 +186,12 @@ This function serves as fallback option if no other function is specified for a 
 function constraints_flow_out(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
     # Declaration of the required subsets
     p_stor = storage_resource(n)
+    𝒫ᵒᵘᵗ = res_not(outputs(n), co2_instance(modeltype))
 
     # Constraint for the individual output stream connections
-    if has_discharge(n)
-        @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵒᵘᵗ],
-                m[:stor_discharge_use][n, t] == m[:flow_out][n, t, p_stor]
-        )
-    end
+    @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵒᵘᵗ],
+            m[:stor_discharge_use][n, t] == m[:flow_out][n, t, p_stor]
+    )
 end
 
 
@@ -214,8 +211,8 @@ function constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
     # Mass/energy balance constraints for stored energy carrier.
     for (t_inv_prev, t_inv) ∈ withprev(𝒯ᴵⁿᵛ)
         # Creation of the iterator and call of the iterator function -
-        # The representative period is initiated with the current investment period to allows
-        # for dispatching on it.
+        # The representative period is initiated with the current investment period to allow
+        # dispatching on it.
         prev_pers = PreviousPeriods(t_inv_prev, nothing,  nothing);
         cyclic_pers = CyclicPeriods(t_inv, t_inv)
         ts = t_inv.operational
@@ -424,7 +421,7 @@ change within a strategic period to 0 (through setting the sum of `:stor_level_�
 a strategic period to 0) is not implemented as accumulation within a strategic period is
 desirable.
 
-This implies that [`Accumulating`](@ref) behaviors require the developer to introduce
+This implies that [`Accumulating`](@ref) behaviours require the developer to introduce
 the function [`previous_level`](@ref) in the case of
 `prev_pers = PreviousPeriods{<:NothingPeriod, Nothing, Nothing}`.
 """
@@ -637,7 +634,6 @@ This function serves as fallback option if no other function is specified for a 
 function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
 
     # Extract the required fields from the composite type
-    p_stor = storage_resource(n)
     par_charge = charge(n)
     par_level = level(n)
     par_discharge = discharge(n)
@@ -655,7 +651,7 @@ function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyMod
     if isa(par_charge, UnionOpexVar)
         opex_var_charge = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
             sum(
-                m[:flow_in][n, t, p_stor] * opex_var(par_charge, t) * multiple(t_inv, t)
+                m[:stor_charge_use][n, t] * opex_var(par_charge, t) * multiple(t_inv, t)
             for t ∈ t_inv)
         )
     else
@@ -664,7 +660,7 @@ function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyMod
     if isa(par_discharge, UnionOpexVar)
         opex_var_discharge = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
             sum(
-                m[:flow_out][n, t, p_stor] * opex_var(par_discharge, t) * multiple(t_inv, t)
+                m[:stor_discharge_use][n, t] * opex_var(par_discharge, t) * multiple(t_inv, t)
             for t ∈ t_inv)
         )
     else
@@ -675,49 +671,6 @@ function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyMod
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         m[:opex_var][n, t_inv] ==
             opex_var_level[t_inv] + opex_var_charge[t_inv] + opex_var_discharge[t_inv]
-    )
-end
-
-"""
-    constraints_opex_var(m, n::RefStorage{AccumulatingEmissions}, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
-
-Function for creating the constraint on the variable OPEX of a `RefStorage{AccumulatingEmissions}`.
-As this node type can serve as CO₂ emitter, it is necessary to only consider the stored CO₂.
-"""
-function constraints_opex_var(m, n::RefStorage{AccumulatingEmissions}, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
-
-    # Extract the required fields from the composite type
-    p_stor = storage_resource(n)
-    par_level = level(n)
-    par_charge = charge(n)
-
-    # Extracts the contribution from the individual components
-    if isa(par_level, UnionOpexVar)
-        opex_var_level =
-            @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-                sum(
-                    m[:stor_level][n, t] * opex_var(par_level, t) * multiple(t_inv, t)
-                for t ∈ t_inv)
-            )
-    else
-        opex_var_level = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)
-    end
-    if isa(par_charge, UnionOpexVar)
-        opex_var_charge =
-            @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-                sum(
-                    (m[:flow_in][n, t , p_stor] - m[:emissions_node][n, t, p_stor]) *
-                    opex_var(par_charge, t) * multiple(t_inv, t)
-                for t ∈ t_inv)
-            )
-    else
-        opex_var_charge = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)
-    end
-
-    # Create the overall constraint
-    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        m[:opex_var][n, t_inv] ==
-            opex_var_level[t_inv] + opex_var_charge[t_inv]
     )
 end
 
