@@ -52,7 +52,7 @@ end
 """
     constraints_capacity_installed(m, n, 𝒯::TimeStructure, modeltype::EnergyModel)
 
-Function for limiting the the installed capacity to the available capacity.
+Constrain the installed capacity to the available capacity.
 
 This function should only be used to dispatch on the modeltype for providing investments.
 If you create new capacity variables, it is beneficial to include as well a method for this
@@ -121,7 +121,7 @@ end
 """
     constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
 
-Function for creating the constraint on the inlet flow to a generic `Storage`.
+Create the constraint on the inlet flow to a generic `Storage`.
 This function serves as fallback option if no other function is specified for a `Storage`.
 """
 function constraints_flow_in(
@@ -194,7 +194,7 @@ end
 """
     constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
 
-Function for creating the Δ constraint for the level of a reference storage node with a
+Create the Δ constraint for the level of a reference storage node with a
 `ResourceCarrier` resource.
 """
 function constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
