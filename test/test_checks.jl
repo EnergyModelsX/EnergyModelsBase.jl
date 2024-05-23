@@ -326,23 +326,13 @@ end
     tp = OperationalProfile(ones(30))
     @test_throws AssertionError run_simple_graph(ts, tp)
 
-    # Test that there is warning when using OperationalProfile with RepresentativePeriods
-    # - EMB.check_profile(fieldname, value::RepresentativeProfile, ts::SimpleTimes, sp)
-    ts = TwoLevel(2, 1, RepresentativePeriods(3, 8760, ones(3)/3, [day, day, day]))
-    tp = OperationalProfile(ones(24))
-    msg = "Field cap: Using `OperionalProfile` with \
-    `RepresentativePeriods` is dangerous, as it may lead to unexpected behaviour. \
-    It only works reasonable if all representative periods have an operational \
-    time structure of the same length. Otherwise, the last value is repeated. \
-    The system is tested for the all representative periods."
-    @test_logs (:warn, msg) run_simple_graph(ts, tp)
-
     # Test that there is warning when using RepresentativeProfile without RepresentativePeriods
     # - EMB.check_profile(fieldname, value::RepresentativeProfile, ts::SimpleTimes, sp)
-    ts = TwoLevel(2, 1, day)
+    ts = TwoLevel(1, 1, day)
     tp = RepresentativeProfile([FixedProfile(5), FixedProfile(10)])
-    msg = "Field cap: Using `RepresentativeProfile` with `SimpleTimes` is dangerous, as it \
-    may lead to unexpected behaviour. In this case, only the first profile is used and tested."
+    msg = "Using `RepresentativeProfile` with `SimpleTimes` is dangerous, as it may " *
+        "lead to unexpected behaviour. " *
+        "In this case, only the first profile is used in the model and tested."
     @test_logs (:warn, msg) run_simple_graph(ts, tp)
 
     # Test that there is an error when `RepresentativeProfile` have a different length than

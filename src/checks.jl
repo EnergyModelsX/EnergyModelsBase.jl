@@ -49,14 +49,16 @@ function check_data(case, modeltype::EnergyModel, check_timeprofiles::Bool)
 
 
     if !check_timeprofiles
-        @warn "Checking of the time profiles is deactivated:\n" *
-        "Deactivating the checks for the time profiles is strongly discouraged. " *
-        "While the model will still run, unexpected results can occur, as well as " *
-        "inconsistent case data.\n\n" *
-        "Deactivating the checks for the timeprofiles should only be considered, " *
-        "when testing new components. In all other instances, it is recommended to " *
-        "provide the correct timeprofiles using a preprocessing routine.\n\n" *
-        "If timeprofiles are not checked, inconsistencies can occur."  maxlog=1
+        @warn(
+            "Checking of the time profiles is deactivated:\n" *
+            "Deactivating the checks for the time profiles is strongly discouraged. " *
+            "While the model will still run, unexpected results can occur, as well as " *
+            "inconsistent case data.\n\n" *
+            "Deactivating the checks for the timeprofiles should only be considered, " *
+            "when testing new components. In all other instances, it is recommended to " *
+            "provide the correct timeprofiles using a preprocessing routine.\n\n" *
+            "If timeprofiles are not checked, inconsistencies can occur.",  maxlog=1
+        )
     end
 
     # Check the case data. If the case data is not in the correct format, the overall check
@@ -253,7 +255,7 @@ end
     check_profile(fieldname, value::TimeProfile, 𝒯)
 
 Check that an individual `TimeProfile` corresponds to the time structure `𝒯`.
-It currently does not include support for identifying `OperationalProfile`s.
+It currently does not include support for identifying `OperationalScenarios`.
 """
 function check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -288,7 +290,9 @@ end
     check_profile(fieldname, value::TimeProfile, ts::TimeStructure, sp)
 
 Check that an individual `TimeProfile` corresponds to the time structure `ts` in strategic
-period sp. The function flow is designed to provide errors in all situations
+period sp. The function flow is designed to provide warning in all situations in which the
+
+
 It currently does not include support for identifying `OperationalProfile`s.
 """
 function check_profile(
@@ -300,12 +304,13 @@ function check_profile(
     len_vals = length(value.vals)
     len_simp = length(ts)
     if len_vals > len_simp
-        message = "' in strategic period $(sp)  is longer than the operational time  \
-        structure. Its last $(len_vals - len_simp) value(s) will be omitted."
+        message = "' in strategic period $(sp) is longer " *
+            "than the operational time structure. " *
+            "Its last $(len_vals - len_simp) value(s) will be omitted."
     elseif len_vals < len_simp
-        message = "' in strategic period $(sp) is shorter than the operational \
-        time structure. It will use the last value for the last $(len_simp - len_vals) \
-        operational period(s)."
+        message =  "' in strategic period $(sp) is shorter " *
+        "than the operational time structure. It will use the last value for the last " *
+        "$(len_simp - len_vals + 1) operational period(s)."
     end
     @assert_or_log len_vals == len_simp "Field '" * string(fieldname) * message
 end
@@ -315,13 +320,6 @@ function check_profile(
     ts::RepresentativePeriods,
     sp
     )
-    if sp == 1
-        @warn "Field " * string(fieldname) * ": Using `OperionalProfile` with \
-            `RepresentativePeriods` is dangerous, as it may lead to unexpected behaviour. \
-            It only works reasonable if all representative periods have an operational \
-            time structure of the same length. Otherwise, the last value is repeated. \
-            The system is tested for the all representative periods."
-    end
     for t_rp ∈ repr_periods(ts)
         check_profile(fieldname, value, t_rp.operational, sp)
     end
@@ -334,9 +332,11 @@ function check_profile(
     sp
     )
     if sp == 1
-        @warn "Field " * string(fieldname) * ": Using `RepresentativeProfile` \
-            with `SimpleTimes` is dangerous, as it may lead to unexpected behaviour. \
-            In this case, only the first profile is used and tested."
+        @warn(
+            "Using `RepresentativeProfile` with `SimpleTimes` is dangerous, as it may " *
+            "lead to unexpected behaviour. " *
+            "In this case, only the first profile is used in the model and tested."
+        )
     end
     check_profile(fieldname, value.vals[1], ts, sp)
 end
@@ -350,16 +350,16 @@ function check_profile(
     len_vals = length(value.vals)
     len_simp = length(repr_periods(ts))
     if len_vals > len_simp
-        message = "' is longer than the representative time structure in strategic period \
-        $(sp). Its last values $(len_vals - len_simp) will be omitted."
+        message = "' in strategic period $(sp) is longer " *
+            "than the representative time structure in strategic period $(sp). " *
+            "Its last values $(len_vals - len_simp) will be omitted."
     elseif len_vals < len_simp
-        message = "' is shorter than the representative time structure in strategic period \
-        $(sp). It will use the last value for the last $(len_simp - len_vals) \
-        operational periods."
+        message = "' in strategic period $(sp) is longer " *
+            "than the representative time structure in strategic period $(sp). " *
+            "It will use the last value for the last $(len_simp - len_vals + 1) " *
+            "representative period(s)."
     end
-    @assert_or_log len_vals == len_simp "Field '\
-    " * string(fieldname) * "' in strategic period $(sp) does not match \
-    the corresponding representative structure."
+    @assert_or_log len_vals == len_simp "Field '" * string(fieldname) * message
     for t_rp ∈ repr_periods(ts)
         check_profile(
             fieldname,
