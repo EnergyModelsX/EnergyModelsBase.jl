@@ -96,13 +96,13 @@ function RefStorageEmissions(
     data::Vector,
 )
 
-    @warn("The implementation of a `RefStorageEmissions` will be discontinued in \
-    the near future. See the documentation for the new implementation using a parametric \
-    type. In practice, the only thing changing is to use `RefStorage` instead of \
-    `RefStorageEmissions`. It is recommended to update the existing version to the new \
-    version.")
+    @warn("The implementation of a `RefStorageEmissions` will be discontinued in the near future. \
+    See the documentation for the new implementation using a parametric type describing the
+    storage behaviour. In practice, the only thing changing is to use \
+    `RefStorage{AccumulatingEmissions}()` instead of `RefStorage`. It is recommended to \
+    update the existing version to the new version.")
 
-    tmp = RefStorage(
+    tmp = RefStorage{AccumulatingEmissions}(
         id,
         rate_cap,
         stor_cap,
@@ -112,6 +112,150 @@ function RefStorageEmissions(
         input,
         output,
         Vector{Data}(data),
+    )
+    return tmp
+end
+
+"""
+Legacy constructor for a `RefStorage{ResourceEmit}`.
+This version will be discontinued in the near future and replaced with the new version of
+`RefStorage{StorageBehavior}` in which the parametric input defines the behaviour of the
+storage.
+
+See the documentation for further information. In this case, the key difference is that we
+changed the parameteric descriptions from the stored `Resource` to the behaviour of the
+`Storage` node
+"""
+function RefStorage(
+    id,
+    rate_cap::TimeProfile,
+    stor_cap::TimeProfile,
+    opex_var::TimeProfile,
+    opex_fixed::TimeProfile,
+    stor_res::ResourceEmit,
+    input::Dict{<:Resource,<:Real},
+    output::Dict{<:Resource,<:Real},
+    data::Vector,
+)
+
+    @warn("The implementation of a `RefStorage` will be discontinued in the near future. \
+    See the documentation for the new implementation using a parametric type describing \
+    the storage behaviour. In practice, the only thing changing is to use \
+    `RefStorage{AccumulatingEmissions}()` instead of `RefStorage`. It is recommended to \
+    update the existing version to the new version.")
+
+    tmp = RefStorage{AccumulatingEmissions}(
+        id,
+        rate_cap,
+        stor_cap,
+        opex_var,
+        opex_fixed,
+        stor_res,
+        input,
+        output,
+        Vector{Data}(data),
+    )
+    return tmp
+end
+function RefStorage(
+    id,
+    rate_cap::TimeProfile,
+    stor_cap::TimeProfile,
+    opex_var::TimeProfile,
+    opex_fixed::TimeProfile,
+    stor_res::ResourceEmit,
+    input::Dict{<:Resource,<:Real},
+    output::Dict{<:Resource,<:Real},
+)
+
+    @warn("The implementation of a `RefStorage` will be discontinued in the near future. \
+    See the documentation for the new implementation using a parametric type describing \
+    the storage behaviour. In practice, the only thing changing is to use \
+    `RefStorage{AccumulatingEmissions}()` instead of `RefStorage`. It is recommended to \
+    update the existing version to the new version.")
+
+    tmp = RefStorage{AccumulatingEmissions}(
+        id,
+        rate_cap,
+        stor_cap,
+        opex_var,
+        opex_fixed,
+        stor_res,
+        input,
+        output,
+        Data[],
+    )
+    return tmp
+end
+
+"""
+Legacy constructor for a `RefStorage{ResourceCarrier}`.
+This version will be discontinued in the near future and replaced with the new version of
+`RefStorage{StorageBehavior}` in which the parametric input defines the behaviour of the
+storage.
+
+See the documentation for further information. In this case, the key difference is that we
+changed the parameteric descriptions from the stored `Resource` to the behaviour of the
+`Storage` node
+"""
+function RefStorage(
+    id,
+    rate_cap::TimeProfile,
+    stor_cap::TimeProfile,
+    opex_var::TimeProfile,
+    opex_fixed::TimeProfile,
+    stor_res::ResourceCarrier,
+    input::Dict{<:Resource,<:Real},
+    output::Dict{<:Resource,<:Real},
+    data::Vector,
+)
+
+    @warn("The implementation of a `RefStorage` will be discontinued in the near future. \
+    See the documentation for the new implementation using a parametric type describing \
+    the storage behaviour. In practice, the only thing changing is to use \
+    `RefStorage{CyclicStrategic}()` instead of `RefStorage`. It is recommended to \
+    update the existing version to the new version.")
+
+    tmp = RefStorage{CyclicStrategic}(
+        id,
+        rate_cap,
+        stor_cap,
+        opex_var,
+        opex_fixed,
+        stor_res,
+        input,
+        output,
+        Vector{Data}(data),
+    )
+    return tmp
+end
+function RefStorage(
+    id,
+    rate_cap::TimeProfile,
+    stor_cap::TimeProfile,
+    opex_var::TimeProfile,
+    opex_fixed::TimeProfile,
+    stor_res::ResourceCarrier,
+    input::Dict{<:Resource,<:Real},
+    output::Dict{<:Resource,<:Real},
+)
+
+    @warn("The implementation of a `RefStorage` will be discontinued in the near future. \
+    See the documentation for the new implementation using a parametric type describing \
+    the storage behaviour. In practice, the only thing changing is to use \
+    `RefStorage{CyclicStrategic}()` instead of `RefStorage`. It is recommended to \
+    update the existing version to the new version.")
+
+    tmp = RefStorage{CyclicStrategic}(
+        id,
+        rate_cap,
+        stor_cap,
+        opex_var,
+        opex_fixed,
+        stor_res,
+        input,
+        output,
+        Data[],
     )
     return tmp
 end

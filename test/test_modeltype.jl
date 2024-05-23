@@ -25,7 +25,7 @@
 
         resources = [Power, CO2]
         ops = SimpleTimes(5, 2)
-        T = TwoLevel(2, 2, ops; op_per_strat=duration(ops))
+        T = TwoLevel(2, 2, ops; op_per_strat=10)
 
         nodes = [source, sink]
         links = [Direct(12, source, sink)]

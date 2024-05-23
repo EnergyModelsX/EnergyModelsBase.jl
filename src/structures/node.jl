@@ -2,6 +2,64 @@
 abstract type Node end
 Base.show(io::IO, n::Node) = print(io, "n_$(n.id)")
 
+"""
+`StorageBehavior` as supertype for individual storage behaviours.
+
+Storage behaviour is used to identify how a storage node should behave within the individual
+`TimeStructure`s of a strategic period.
+"""
+abstract type StorageBehavior end
+
+"""
+`Accumulating` as supertype for an accumulating storage level.
+
+Accumulating storage behaviour implies that the change in the overall storage level in a
+strategic period can be both positive or negative.
+
+Examples for potential usage of `Accumulating` are CO₂ storages in which the CO₂ is
+permanently stored or multi year hydropower magazines.
+"""
+abstract type Accumulating <: StorageBehavior end
+
+"""
+`Cyclic` as supertype for a cyclic storage level.
+
+Cyclic storage behaviour implies that the change in the overall storage level in a strategic
+period behaves cyclic.
+"""
+abstract type Cyclic <: StorageBehavior end
+
+"""
+    AccumulatingEmissions <: Accumulating
+
+`StorageBehavior` which accumulates all inflow witin a strategic period.
+`AccumulatingEmissions` allows as well to serve as a `ResourceEmit` emission point to
+represent a soft constraint on storing the captured emissions.
+"""
+struct AccumulatingEmissions <: Accumulating end
+
+
+"""
+    CyclicRepresentative <: Cyclic
+
+`StorageBehavior` in which cyclic behaviour is achieved within the lowest time structure
+excluding operational times.
+
+In the case of `TwoLevel{SimpleTimes}`, this approach is similar to `CyclicStrategic`.\n
+In the case of `TwoLevel{RepresentativePeriods{SimpleTimes}}`, this approach differs from
+`CyclicStrategic` as the cyclic constraint is enforeced within each representative period.
+"""
+struct CyclicRepresentative <: Cyclic end
+
+"""
+    CyclicStrategic <: Cyclic
+
+`StorageBehavior` in which the the cyclic behaviour is achieved within a strategic period.
+This implies that the initial level in individual representative periods can be different
+when using `RepresentativePeriods`
+"""
+struct CyclicStrategic <: Cyclic end
+
 """ `Source` node with only output."""
 abstract type Source <: Node end
 """ `NetworkNode` node with both input and output."""
@@ -9,7 +67,7 @@ abstract type NetworkNode <: Node end
 """ `Sink` node with only input."""
 abstract type Sink <: Node end
 """ `Storage` node with level."""
-abstract type Storage <: NetworkNode end
+abstract type Storage{T<:StorageBehavior} <: NetworkNode end
 """ `Availability` node as routing node."""
 abstract type Availability <: NetworkNode end
 
@@ -96,7 +154,13 @@ GenAvailability(id, 𝒫::Vector{<:Resource}) = GenAvailability(id, 𝒫, 𝒫)
 """ A reference `Storage` node.
 
 This node is designed to store either a `ResourceCarrier` or a `ResourceEmit`.
-It is designed as a composite type to automatically distinguish between these two.
+It is designed as a parametric type through the type parameter `T` to differentiate between
+different cyclic behaviours. Note that the parameter T is only used for dispatching, but
+does not carry any other information. Hence, it is simple to fast switch between different
+[`StorageBehavior`](@ref)s.
+
+The current implemented cyclic behaviours are [`CyclicRepresentative`](@ref),
+[`CyclicStrategic`](@ref), and [`AccumulatingEmissions`](@ref).
 
 # Fields
 - **`id`** is the name/identifier of the node.\n
@@ -104,35 +168,35 @@ It is designed as a composite type to automatically distinguish between these tw
 - **`stor_cap::TimeProfile`** is the installed storage capacity, that is e.g. energy or mass.\n
 - **`opex_var::TimeProfile`** is the variational operational costs per energy unit stored.\n
 - **`opex_fixed::TimeProfile`** is the fixed operational costs.\n
-- **`stor_res::T`** is the stored `Resource`.\n
+- **`stor_res::Resource`** is the stored `Resource`.\n
 - **`input::Dict{<:Resource, <:Real}`** are the input `Resource`s with conversion value `Real`.
 - **`output::Dict{<:Resource, <:Real}`** are the generated `Resource`s with conversion value `Real`. \
 Only relevant for linking and the stored `Resource`.\n
 - **`data::Vector{<:Data}`** is the additional data (e.g. for investments). The field \
 `data` is conditional through usage of a constructor.
 """
-struct RefStorage{T<:Resource} <: Storage
+struct RefStorage{T} <: Storage{T}
     id
     rate_cap::TimeProfile
     stor_cap::TimeProfile
     opex_var::TimeProfile
     opex_fixed::TimeProfile
-    stor_res::T
+    stor_res::Resource
     input::Dict{<:Resource, <:Real}
     output::Dict{<:Resource, <:Real}
     data::Vector{<:Data}
 end
-function RefStorage(
+function RefStorage{T}(
     id,
     rate_cap::TimeProfile,
     stor_cap::TimeProfile,
     opex_var::TimeProfile,
     opex_fixed::TimeProfile,
-    stor_res::T,
+    stor_res::Resource,
     input::Dict{<:Resource, <:Real},
     output::Dict{<:Resource, <:Real},
-) where {T<:Resource}
-    return RefStorage(
+) where {T<:StorageBehavior}
+    return RefStorage{T}(
         id,
         rate_cap,
         stor_cap,
@@ -215,7 +279,7 @@ Checks whether the Node `n` has emissions.
 """
 has_emissions(n::Node) = any(typeof(data) <: EmissionsData for data ∈ n.data)
 has_emissions(n::Availability) = false
-has_emissions(n::RefStorage{<:ResourceEmit}) = true
+has_emissions(n::RefStorage{AccumulatingEmissions}) = true
 
 """
     has_emissions(𝒩::Array{<:Node})

@@ -31,10 +31,10 @@ function generate_data()
                                 Dict(Power => 1),
                                 [emission_data],
             ),
-            RefStorage(6, FixedProfile(60),   FixedProfile(600), FixedProfile(9.1),
+            RefStorage{AccumulatingEmissions}(6, FixedProfile(60),   FixedProfile(600), FixedProfile(9.1),
                                 FixedProfile(0), CO2, Dict(CO2 => 1, Power => 0.02), Dict(CO2 => 1),
             ),
-            RefSink(7,          OperationalProfile([20 30 40 30]),
+            RefSink(7,          OperationalProfile([20, 30, 40, 30]),
                                 Dict(:surplus => FixedProfile(0), :deficit => FixedProfile(1e6)),
                                 Dict(Power => 1),
             ),
@@ -134,7 +134,7 @@ end
     # Check that the objective value is properly calculated
     # - objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
     @test -sum((value.(m[:opex_var][n, t_inv]) + value.(m[:opex_fixed][n, t_inv])) *
-            duration(t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ) ≈
+            duration_strat(t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ) ≈
                 objective_value(m) atol=TEST_ATOL
 
     # Check that the inlet and outlet flowrates in the links are correctly calculated

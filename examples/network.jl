@@ -95,7 +95,7 @@ function generate_example_data()
             Dict(Power => 1),           # Output from the node with output ratio
             [emission_data],            # Additonal data for emissions
         ),
-        RefStorage(
+        RefStorage{AccumulatingEmissions}(
             "CO2 storage",              # Node id
             FixedProfile(60),           # Rate capacity in t/h
             FixedProfile(600),          # Storage capacity in t
@@ -109,7 +109,7 @@ function generate_example_data()
         ),
         RefSink(
             "electricity demand",       # Node id
-            OperationalProfile([20 30 40 30]), # Demand in MW
+            OperationalProfile([20, 30, 40, 30]), # Demand in MW
             Dict(:surplus => FixedProfile(0), :deficit => FixedProfile(1e6)),
             # Line above: Surplus and deficit penalty for the node in EUR/MWh
             Dict(Power => 1),           # Energy demand and corresponding ratio

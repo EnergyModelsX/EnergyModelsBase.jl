@@ -59,7 +59,7 @@ Availability
 
 ### [Reference node types](@id sec_lib_public_refnodes)
 
-The following composite types are inmplemented in the `EnergyModelsBase`.
+The following composite types are implemented in the `EnergyModelsBase`.
 They can be used for describing a simple energy system without any non-linear or binary based expressions.
 Hence, there are, *e.g.*, no operation point specific efficiencies implemented.
 
@@ -70,6 +70,25 @@ RefSink
 RefStorage
 GenAvailability
 ```
+
+### Storage behaviours
+
+`EnergyModelsBase` provides several different storage behaviours for calculating the level balance of a `Storage` node.
+In general, the concrete storage behaviours are ready to use and should account for all eventualities.
+
+```@docs
+Accumulating
+AccumulatingEmissions
+Cyclic
+CyclicRepresentative
+CyclicStrategic
+```
+
+!!! note
+    We have not yet supported upper and lower bound constraints in the case of using `OperationalScenarios`.
+    While the calculation of the overall level balance and the operational costs is consistent, it can happen that violation of the upper and lower bound of the storage level is violated.
+
+    This impacts specifically `CyclicRepresentative`.
 
 ### [Functions for accessing fields of `Node` types](@id functions_fields_node)
 
@@ -236,9 +255,18 @@ constraints_flow_out
 constraints_capacity
 constraints_capacity_installed
 constraints_level
+constraints_level_aux
 constraints_opex_var
 constraints_opex_fixed
 constraints_data
+```
+
+In addition, auxiliary functions are introduced for the calculation of the previous level of storage nodes.
+These auxiliary functions provide the user with simple approaches for calculating the level balances.
+
+```@docs
+previous_level
+previous_level_sp
 ```
 
 ## [Emission data](@id sec_lib_public_emdata)
@@ -274,7 +302,34 @@ co2_capture
 process_emissions
 ```
 
-## Miscellaneous functions/macros
+## Miscellaneous types/functions/macros
+
+### `PreviousPeriods` and `CyclicPeriods`
+
+`PreviousPeriods` is a type used to store information from the previous periods in an iteration loop through the application of the iterator [`withprev`](https://sintefore.github.io/TimeStruct.jl/stable/reference/api/#TimeStruct.withprev) of `TimeStruct`.
+
+`CyclicPeriods` is used for storing the current and the last period.
+The periods can either be either and `AbstractStrategicPeriod` or `AbstractRepresentativePeriod`.
+In the former case, it is however not fully used as the last strategic period is not relevant for the level balances.
+
+```@docs
+PreviousPeriods
+CyclicPeriods
+```
+
+The individual fields can be accessed through the following functions:
+
+```@docs
+strat_per
+rep_per
+op_per
+last_per
+current_per
+```
+
+### Macros for checking the input data
+
+The macro `@assert_or_log` is an extension to the `@assert` macro to allow either for asserting the input data directly, or logging the errors in the input data.
 
 ```@docs
 @assert_or_log

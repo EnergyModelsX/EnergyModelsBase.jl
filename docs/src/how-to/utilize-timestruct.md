@@ -47,7 +47,7 @@ The night has a reduced time resolution of 4 hours.
 However, we still model a full 24 hours as can be seen by the command
 
 ```jldoctest test_label; setup = :(using TimeStruct)
-duration(operational_periods)
+TimeStruct._total_duration(operational_periods)
 
 # output
 24
