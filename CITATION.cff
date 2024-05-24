@@ -1,0 +1,56 @@
+cff-version: "1.2.0"
+authors:
+- family-names: Hellemo
+  given-names: Lars
+  orcid: "https://orcid.org/0000-0001-5958-9794"
+- family-names: Bødal
+  given-names: Espen Flo
+  orcid: "https://orcid.org/0000-0001-6970-9315"
+- family-names: Holm
+  given-names: Sigmund Eggen
+  orcid: "https://orcid.org/0009-0007-1782-6326"
+- family-names: Pinel
+  given-names: Dimitri
+  orcid: "https://orcid.org/0000-0001-9393-0036"
+- family-names: Straus
+  given-names: Julian
+  orcid: "https://orcid.org/0000-0001-8622-1936"
+contact:
+- family-names: Hellemo
+  given-names: Lars
+  orcid: "https://orcid.org/0000-0001-5958-9794"
+doi: 10.5281/zenodo.11164518
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+preferred-citation:
+  authors:
+  - family-names: Hellemo
+    given-names: Lars
+    orcid: "https://orcid.org/0000-0001-5958-9794"
+  - family-names: Bødal
+    given-names: Espen Flo
+    orcid: "https://orcid.org/0000-0001-6970-9315"
+  - family-names: Holm
+    given-names: Sigmund Eggen
+    orcid: "https://orcid.org/0009-0007-1782-6326"
+  - family-names: Pinel
+    given-names: Dimitri
+    orcid: "https://orcid.org/0000-0001-9393-0036"
+  - family-names: Straus
+    given-names: Julian
+    orcid: "https://orcid.org/0000-0001-8622-1936"
+  date-published: 2024-05-17
+  doi: 10.21105/joss.06619
+  issn: 2475-9066
+  issue: 97
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 6619
+  title: "EnergyModelsX: Flexible Energy Systems Modelling with Multiple
+    Dispatch"
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.06619"
+  volume: 9
+title: "EnergyModelsX: Flexible Energy Systems Modelling with Multiple
+  Dispatch"
