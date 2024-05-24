@@ -25,12 +25,12 @@ function constraints_capacity(m, n::Storage, 𝒯::TimeStructure, modeltype::Ene
         m[:stor_level][n, t] <= m[:stor_level_inst][n, t]
     )
 
-    if has_charge(n) && isa(charge(n), UnionCapacity)
+    if has_charge_cap(n)
         @constraint(m, [t ∈ 𝒯],
             m[:stor_charge_use][n, t] <= m[:stor_charge_inst][n, t]
         )
     end
-    if has_discharge(n) && isa(discharge(n), UnionCapacity)
+    if has_discharge_cap(n)
         @constraint(m, [t ∈ 𝒯],
             m[:stor_discharge_use][n, t] <= m[:stor_discharge_inst][n, t]
         )
@@ -72,23 +72,19 @@ function constraints_capacity_installed(m, n::Node, 𝒯::TimeStructure, modelty
    end
 end
 function constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
-    # Extract the required fields from the composite type
-    par_charge = charge(n)
-    par_level = level(n)
-    par_discharge = discharge(n)
 
     # Fix the installed capacity to the upper bound
     for t ∈ 𝒯
-        fix(m[:stor_level_inst][n, t], capacity(par_level, t); force=true)
+        fix(m[:stor_level_inst][n, t], capacity(level(n), t); force=true)
     end
-    if isa(par_charge, UnionCapacity)
+    if has_charge_cap(n)
         for t ∈ 𝒯
-            fix(m[:stor_charge_inst][n, t], capacity(par_charge, t); force=true)
+            fix(m[:stor_charge_inst][n, t], capacity(charge(n), t); force=true)
         end
     end
-    if isa(par_discharge, UnionCapacity)
+    if has_discharge_cap(n)
         for t ∈ 𝒯
-            fix(m[:stor_discharge_inst][n, t], capacity(par_discharge, t); force=true)
+            fix(m[:stor_discharge_inst][n, t], capacity(discharge(n), t); force=true)
         end
     end
 end
@@ -550,38 +546,33 @@ constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
 Function for creating the constraint on the fixed OPEX of a generic `Storage`.
 This function serves as fallback option if no other function is specified for a `Storage`.
 
-
-The fallback option only includes fixed OPEX for charge and the level, while the discharge
-is excluded. Users must in this case define a separate function for the fixed OPEX.
+The fallback option includes fixed OPEX for `charge`, `level`, and `discharge`.
+The individual contributions are in all situations calculated based on the installed
+capacities.
 """
 function constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
 
-    # Extract the required fields from the composite type
-    par_charge = charge(n)
-    par_level = level(n)
-    par_discharge = discharge(n)
-
     # Extracts the contribution from the individual components
-    if isa(par_level, UnionOpexFixed)
+    if has_level_OPEX_fixed(n)
         opex_fixed_level =
             @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-                m[:stor_level_inst][n, first(t_inv)] * opex_fixed(par_level, t_inv)
+                m[:stor_level_inst][n, first(t_inv)] * opex_fixed(level(n), t_inv)
             )
     else
         opex_fixed_level = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)
     end
-    if isa(par_charge, UnionOpexFixed)
+    if has_charge_OPEX_fixed(n)
         opex_fixed_charge =
             @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-                m[:stor_charge_inst][n, first(t_inv)] * opex_fixed(par_charge, t_inv)
+                m[:stor_charge_inst][n, first(t_inv)] * opex_fixed(charge(n), t_inv)
             )
     else
         opex_fixed_charge = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)
     end
-    if isa(par_discharge, UnionOpexFixed)
+    if has_discharge_OPEX_fixed(n)
         opex_fixed_discharge =
             @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-                m[:stor_discharge_inst][n, first(t_inv)] * opex_fixed(par_discharge, t_inv)
+                m[:stor_discharge_inst][n, first(t_inv)] * opex_fixed(discharge(n), t_inv)
             )
     else
         opex_fixed_discharge = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)
@@ -633,34 +624,29 @@ This function serves as fallback option if no other function is specified for a 
 """
 function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
 
-    # Extract the required fields from the composite type
-    par_charge = charge(n)
-    par_level = level(n)
-    par_discharge = discharge(n)
-
     # Extracts the contribution from the individual components
-    if isa(par_level, UnionOpexVar)
+    if has_level_OPEX_var(n)
         opex_var_level = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
             sum(
-                m[:stor_level][n, t] * opex_var(par_level, t) * multiple(t_inv, t)
+                m[:stor_level][n, t] * opex_var(level(n), t) * multiple(t_inv, t)
             for t ∈ t_inv)
         )
     else
         opex_var_level = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)
     end
-    if isa(par_charge, UnionOpexVar)
+    if has_charge_OPEX_var(n)
         opex_var_charge = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
             sum(
-                m[:stor_charge_use][n, t] * opex_var(par_charge, t) * multiple(t_inv, t)
+                m[:stor_charge_use][n, t] * opex_var(charge(n), t) * multiple(t_inv, t)
             for t ∈ t_inv)
         )
     else
         opex_var_charge = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)
     end
-    if isa(par_discharge, UnionOpexVar)
+    if has_discharge_OPEX_var(n)
         opex_var_discharge = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
             sum(
-                m[:stor_discharge_use][n, t] * opex_var(par_discharge, t) * multiple(t_inv, t)
+                m[:stor_discharge_use][n, t] * opex_var(discharge(n), t) * multiple(t_inv, t)
             for t ∈ t_inv)
         )
     else

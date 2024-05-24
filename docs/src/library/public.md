@@ -111,7 +111,7 @@ StorCapOpexFixed
 StorOpexVar
 ```
 
-When dispatching on the individual type, it is als possible to use the following unions:
+When dispatching on the individual type, it is also possible to use the following unions:
 
 ```@docs
 EMB.UnionOpexFixed

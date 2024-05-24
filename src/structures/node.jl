@@ -76,9 +76,9 @@ A storage parameter type for including a capacity as well as variable and fixed 
 expenditures.
 
 # Fields
-- **`capacity::TimeProfile`** is the is the installed capacity.
-- **`opex_var::TimeProfile`** is the variational operational costs per energy unit.
-- **`opex_fixed::TimeProfile`** is the fixed operational costs.
+- **`capacity::TimeProfile`** is the installed capacity.
+- **`opex_var::TimeProfile`** is the variable operating expense per energy unit.
+- **`opex_fixed::TimeProfile`** is the fixed operating expense.
 """
 struct StorCapOpex <: AbstractStorageParameters
     capacity::TimeProfile
@@ -93,7 +93,7 @@ A storage parameter type for including only a capacity. This implies that neithe
 of the `Storage`, nor the installed capacity have a direct impact on the objective function.
 
 # Fields
-- **`capacity::TimeProfile`** is the is the installed capacity.
+- **`capacity::TimeProfile`** is the installed capacity.
 """
 struct StorCap <: AbstractStorageParameters
     capacity::TimeProfile
@@ -106,8 +106,8 @@ A storage parameter type for including a capacity and variable operational expen
 This implies that the installed capacity has no direct impact on the objective function.
 
 # Fields
-- **`capacity::TimeProfile`** is the is the installed capacity.
-- **`opex_var::TimeProfile`** is the variational operational costs per energy unit.
+- **`capacity::TimeProfile`** is the installed capacity.
+- **`opex_var::TimeProfile`** is the variable operating expense per energy unit.
 """
 struct StorCapOpexVar <: AbstractStorageParameters
     capacity::TimeProfile
@@ -121,8 +121,8 @@ A storage parameter type for including a capacity and fixed operational expendit
 This implies that the installed capacity has no direct impact on the objective function.
 
 # Fields
-- **`capacity::TimeProfile`** is the is the installed capacity.
-- **`opex_fixed::TimeProfile`** is the fixed operational costs.
+- **`capacity::TimeProfile`** is the installed capacity.
+- **`opex_fixed::TimeProfile`** is the fixed operating expense.
 """
 struct StorCapOpexFixed <: AbstractStorageParameters
     capacity::TimeProfile
@@ -139,7 +139,7 @@ level can be used within a single `TimePeriod`.
 This type can only be used for the fields `charge` and `discharge`.
 
 # Fields
-- **`opex_var::TimeProfile`** is the variational operational costs per energy unit.
+- **`opex_var::TimeProfile`** is the variable operating expense per energy unit.
 """
 struct StorOpexVar <: AbstractStorageParameters
     opex_var::TimeProfile
@@ -182,8 +182,8 @@ abstract type Availability <: NetworkNode end
 # Fields
 - **`id`** is the name/identifier of the node.\n
 - **`cap::TimeProfile`** is the installed capacity.\n
-- **`opex_var::TimeProfile`** is the variational operational costs per energy unit produced.\n
-- **`opex_fixed::TimeProfile`** is the fixed operational costs.\n
+- **`opex_var::TimeProfile`** is the variable operating expense per energy unit produced.\n
+- **`opex_fixed::TimeProfile`** is the fixed operating expense.\n
 - **`output::Dict{<:Resource, <:Real}`** are the generated `Resource`s with conversion value `Real`.\n
 - **`data::Vector{Data}`** is the additional data (e.g. for investments). The field \
 `data` is conditional through usage of a constructor.
@@ -212,8 +212,8 @@ end
 # Fields
 - **`id`** is the name/identifier of the node.\n
 - **`cap::TimeProfile`** is the installed capacity.\n
-- **`opex_var::TimeProfile`** is the variational operational costs per energy unit produced.\n
-- **`opex_fixed::TimeProfile`** is the fixed operational costs.\n
+- **`opex_var::TimeProfile`** is the variable operating expense per energy unit produced.\n
+- **`opex_fixed::TimeProfile`** is the fixed operating expense.\n
 - **`input::Dict{<:Resource, <:Real}`** are the input `Resource`s with conversion value `Real`.\n
 - **`output::Dict{<:Resource, <:Real}`** are the generated `Resource`s with conversion value `Real`.\n
 - **`data::Vector{Data}`** is the additional data (e.g. for investments). The field \
@@ -271,7 +271,7 @@ The current implemented cyclic behaviours are [`CyclicRepresentative`](@ref),
 # Fields
 - **`id`** is the name/identifier of the node.\n
 - **`charge::AbstractStorageParameters`** are the charging parameters of the `Storage` node.
-  Depending on the chosen type, the charge parameters can include variable OPEX, fixed OPEX
+  Depending on the chosen type, the charge parameters can include variable OPEX, fixed OPEX,
   and/or a capacity.
 - **`level::AbstractStorageParameters`** are the level parameters of the `Storage` node.
   Depending on the chosen type, the charge parameters can include variable OPEX and/or fixed OPEX.
@@ -384,42 +384,42 @@ has_emissions(n::RefStorage{AccumulatingEmissions}) = true
 """
     has_emissions(𝒩::Array{<:Node})
 
-Return nodes that have emission data for a given Array `::Array{<:Node}`.
+Returns nodes that have emission data for a given Array `::Array{<:Node}`.
 """
 nodes_emissions(𝒩::Array{<:Node}) = filter(has_emissions, 𝒩)
 
 """
     nodes_sub(𝒩::Array{<:Node}, sub)
 
-Return nodes that are of type `sub` for a given Array `𝒩::Array{<:Node}`.
+Returns nodes that are of type `sub` for a given Array `𝒩::Array{<:Node}`.
 """
 nodes_sub(𝒩::Array{<:Node}, sub = NetworkNode) = filter(x -> isa(x, sub), 𝒩)
 
 """
     nodes_not_sub(𝒩::Array{<:Node}, sub)
 
-Return nodes that are not of type `sub` for a given Array `𝒩::Array{<:Node}`.
+Returns nodes that are not of type `sub` for a given Array `𝒩::Array{<:Node}`.
 """
 nodes_not_sub(𝒩::Array{<:Node}, sub = NetworkNode) = filter(x -> ~isa(x, sub), 𝒩)
 
 """
     nodes_not_av(𝒩::Array{<:Node})
 
-Return nodes that are not `Availability` nodes for a given Array `𝒩::Array{<:Node}`.
+Returns nodes that are not `Availability` nodes for a given Array `𝒩::Array{<:Node}`.
 """
 nodes_not_av(𝒩::Array{<:Node}) = filter(x -> ~isa(x, Availability), 𝒩)
 
 """
     nodes_input(𝒩::Array{<:Node}, sub)
 
-Return nodes that have an input, i.e., `Sink` and `NetworkNode` nodes.
+Returns nodes that have an input, i.e., `Sink` and `NetworkNode` nodes.
 """
 nodes_input(𝒩::Array{<:Node}) = filter(has_input, 𝒩)
 
 """
     has_input(n::Node)
 
-Return logic whether the node is an input node, i.e., `Sink` and `NetworkNode` nodes.
+Returns logic whether the node is an input node, i.e., `Sink` and `NetworkNode` nodes.
 """
 has_input(n::Node) = true
 has_input(n::Source) = false
@@ -427,42 +427,97 @@ has_input(n::Source) = false
 """
     nodes_output(𝒩::Array{<:Node})
 
-Return nodes that have an output, i.e., `Source` and `NetworkNode` nodes.
+Returns nodes that have an output, i.e., `Source` and `NetworkNode` nodes.
 """
 nodes_output(𝒩::Array{<:Node}) = filter(has_output, 𝒩)
 
 """
     has_output(n::Node)
 
-Return logic whether the node is an output node, i.e., `Source` and `NetworkNode` nodes.
+Returns logic whether the node is an output node, i.e., `Source` and `NetworkNode` nodes.
 """
 has_output(n::Node) = true
 has_output(n::Sink) = false
 
-
 """
     has_charge(n::Storage)
 
-Return logic whether the node has a `charge` field allowing for restrictions and/or costs
+Returns logic whether the node has a `charge` field allowing for restrictions and/or costs
 on the (installed) charging rate.
 """
 has_charge(n::Storage) = hasfield(typeof(n), :charge)
 
 """
+    charge(n::Storage)
+
+Returns the parameter type of the `charge` field of the node. If the node has no field
+`charge`, it returns `nothing`.
+"""
+charge(n::Storage) = has_charge(n) ? n.charge : nothing
+
+"""
+    has_charge_cap(n::Storage)
+
+Returns logic whether the node has a `charge` capacity.
+"""
+has_charge_cap(n::Storage) =
+    hasfield(typeof(n), :charge) && isa(charge(n), UnionCapacity)
+
+"""
+    has_charge_OPEX_fixed(n::Storage)
+
+Returns logic whether the node has a `charge` fixed OPEX contribution.
+"""
+has_charge_OPEX_fixed(n::Storage) =
+    hasfield(typeof(n), :charge) && isa(charge(n), UnionOpexFixed)
+
+"""
+    has_charge_OPEX_var(n::Storage)
+
+Returns logic whether the node has a `charge` variable OPEX contribution.
+"""
+has_charge_OPEX_var(n::Storage) =
+    hasfield(typeof(n), :charge) && isa(charge(n), UnionOpexVar)
+
+"""
     has_discharge(n::Storage)
 
-Return logic whether the node has a `discharge` field allowing for restrictions and/or costs
+Returns logic whether the node has a `discharge` field allowing for restrictions and/or costs
 on the (installed) discharging rate.
 """
 has_discharge(n::Storage) = hasfield(typeof(n), :discharge)
 
 """
-    charge(n::Storage)
+    discharge(n::Storage)
 
-Returns the parameter type of the `charge` field of the node. If the node has no `charge`
-field, it returns `nothing`.
+Returns the parameter type of the `discharge` field of the node. If the node has no field
+`discharge`, it returns `nothing`.
 """
-charge(n::Storage) = has_charge(n) ? n.charge : nothing
+discharge(n::Storage) = has_discharge(n) ? n.discharge : nothing
+
+"""
+    has_discharge_cap(n::Storage)
+
+Returns logic whether the node has a `discharge` capacity.
+"""
+has_discharge_cap(n::Storage) =
+    hasfield(typeof(n), :discharge) && isa(discharge(n), UnionCapacity)
+
+"""
+    has_discharge_OPEX_fixed(n::Storage)
+
+Returns logic whether the node has a `discharge` fixed OPEX contribution.
+"""
+has_discharge_OPEX_fixed(n::Storage) =
+    hasfield(typeof(n), :discharge) && isa(discharge(n), UnionOpexFixed)
+
+"""
+    has_discharge_OPEX_var(n::Storage)
+
+Returns logic whether the node has a `discharge` variable OPEX contribution.
+"""
+has_discharge_OPEX_var(n::Storage) =
+    hasfield(typeof(n), :discharge) && isa(discharge(n), UnionOpexVar)
 
 """
     level(n::Storage)
@@ -472,12 +527,18 @@ Returns the parameter type of the `level` field of the node.
 level(n::Storage) = n.level
 
 """
-    discharge(n::Storage)
+    has_level_OPEX_fixed(n::Storage)
 
-Returns the parameter type of the `discharge` field of the node. If the node has no `discharge`
-field, it returns `nothing`.
+Returns logic whether the node has a `level` fixed OPEX contribution.
 """
-discharge(n::Storage) = has_discharge(n) ? n.discharge : nothing
+has_level_OPEX_fixed(n::Storage) = isa(level(n), UnionOpexFixed)
+
+"""
+    has_level_OPEX_var(n::Storage)
+
+Returns logic whether the node has a `level` variable OPEX contribution.
+"""
+has_level_OPEX_var(n::Storage) = isa(level(n), UnionOpexVar)
 
 """
     capacity(n::Node)

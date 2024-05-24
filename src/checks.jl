@@ -290,8 +290,24 @@ end
     check_profile(fieldname, value::TimeProfile, ts::TimeStructure, sp)
 
 Check that an individual `TimeProfile` corresponds to the time structure `ts` in strategic
-period sp. The function flow is designed to provide warning in all situations in which the
+period `sp`. The function flow is designed to provide errors in all situations in which the
+the `TimeProfile` does not correspond to the chosen `TimeStructure` through the application
+of the `@assert_or_log` macro.
 
+Examples for inconsistent combinations:
+
+```julia
+ts = SimpleTimes(3, 1)
+
+# A too long OperationalProfile resulting in omitting the last 2 values
+value = OperationalProfile([1, 2, 3, 4, 5])
+
+# A too short OperationalProfile resulting in repetition of the last value once
+value = OperationalProfile([1, 2])
+```
+
+If you use a more detailed TimeProfile than the TimeStructure, it will you provide you with
+a warning, e.g., using `RepresentativeProfile` without `RepresentativePeriods`.
 
 It currently does not include support for identifying `OperationalProfile`s.
 """
