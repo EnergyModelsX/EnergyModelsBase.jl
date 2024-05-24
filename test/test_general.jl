@@ -31,8 +31,10 @@ function generate_data()
                                 Dict(Power => 1),
                                 [emission_data],
             ),
-            RefStorage{AccumulatingEmissions}(6, FixedProfile(60),   FixedProfile(600), FixedProfile(9.1),
-                                FixedProfile(0), CO2, Dict(CO2 => 1, Power => 0.02), Dict(CO2 => 1),
+            RefStorage{AccumulatingEmissions}(6,
+                                StorCapOpex(FixedProfile(60), FixedProfile(9.1), FixedProfile(0)),
+                                StorCap(FixedProfile(600)),
+                                CO2, Dict(CO2 => 1, Power => 0.02), Dict(CO2 => 1),
             ),
             RefSink(7,          OperationalProfile([20, 30, 40, 30]),
                                 Dict(:surplus => FixedProfile(0), :deficit => FixedProfile(1e6)),
@@ -101,14 +103,12 @@ end
     ℒ    = case[:links]
 
     # Check for the objective value
-    # (-1500 compared to 0.5.x to include fixed OPEX)
     # (*2 compared to 0.6.0 due to change in strategic period duration)
     @test objective_value(m) ≈ -88983.386
 
     # Check for the total number of variables
-    # (-128 compared to 0.5.x as only defined for technologies with EmissionData)
-    # (+ 16 compared to 0.5.x as increase in storage variables)
-    @test size(all_variables(m))[1] == 1112
+    # (+ 16 compared to 0.6.x as increase in storage variables)
+    @test size(all_variables(m))[1] == 1128
 
     # Check that total emissions of both methane and CO2 are within the constraint
     # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)

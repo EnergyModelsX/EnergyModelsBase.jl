@@ -26,7 +26,7 @@ Within this function, the function
 constraints_capacity_installed(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
 ```
 
-is called to limit the variable ``\texttt{cap\_inst}`` (or ``\texttt{stor\_cap\_inst}`` and ``\texttt{stor\_rate\_inst}`` for `Storage` nodes) of a technology node ``n``.
+is called to limit the variable ``\texttt{cap\_inst}`` (or ``\texttt{stor\_charge_\_inst}``, ``\texttt{stor\_level\_inst}`` and ``\texttt{stor\_discharge_\_inst}`` for `Storage` nodes) of a technology node ``n``.
 This functions is also used to subsequently dispatch on model type for the introduction of investments.
 
 !!! warning
@@ -64,7 +64,7 @@ The outflow of a `Storage` node is instead specified through the storage level b
 
 ## Storage level constraints
 
-Storage level constraints are required to provide flexibility on how the level of a `Storage` node has to be calculated.
+Storage level constraints are required to provide flexibility on how the level of a `Storage` node should be calculated depending on the chosen [`StorageBehavior`](@ref sec_lib_public_storbehav).
 
 ```julia
 constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
@@ -95,10 +95,35 @@ It automatically deduces the type of the time structure, _i.e._, whether represe
 `RepresentativePeriods` are handled through scaling of the change in the level in a representative period.
 This requires that the `RepresentativePeriods` are sequential.
 
-!!! warning
-    If you want to introduce a new storage behaviour, it is best to modify the functions [`previous_level`](@ref) (for changing the behahaviour how previous storage levels should be calculated), [`previous_level_sp`](@ref) (for changing the behaviour of the first operational period (in the first representative period) within a strategic period) as well as potentially [`EMB.constraints_level_rp`](@ref) (for inclusion of constraints on the variable [``\texttt{stor\_level\_Δ\_rp}[n, t_{rp}]``](@ref var_cap)) and [`EMB.constraints_level_scp`](@ref) (for inclusion of constraints related to operational scenarios)..
+The total function call structure is given by:
+
+```
+constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
+├─ constraints_level_aux(m, n, 𝒯, 𝒫, modeltype::EnergyModel)
+└─ constraints_level_iterate(m, n, prev_pers, cyclic_pers, t_inv, ts::RepresentativePeriods, modeltype)
+   ├─ constraints_level_rp(m, n, per, modeltype)
+   └─ constraints_level_iterate(m, n, prev_pers, cyclic_pers, t_inv, ts::OperationalScenarios, modeltype)
+      ├─ constraints_level_scp(m, n, per, modeltype)
+      └─ constraints_level_iterate(m, n, prev_pers, cyclic_pers, t_inv, ts::SimpleTimes, modeltype)
+         ├─ constraints_level_bounds(m, n, t, cyclic_pers, modeltype)
+         └─ previous_level(m, n, prev_pers, cyclic_pers, modeltype)
+            └─ previous_level_sp(m, n, cyclic_pers, modeltype)
+```
+
+Not all functions are called, as the framework automatically deduces the chosen time structure.
+Hence, if the time structure is given as `TwoLevel{SimpleTimes}`, all functions related to representative epriods and scenario periods are omitted.
+
+!!! tip "Introducing new storage behaviours"
+    If you want to introduce a new *[storage behaviour](@ref sec_lib_public_storbehav)*, it is best to dispatch on the following functions.
+    It is not necessary to dispatch on all of the mentioned functions for all storage behaviours.
+
+    1. `constraints_level_rp(m, n, per, modeltype)` for inclusion of constraints on the variable [``\texttt{stor\_level\_Δ\_rp}[n, t_{rp}]``](@ref var_cap),
+    2. `constraints_level_scp(m, n, per, modeltype)` for inclusion of constraints related to operational scenarios,
+    3. `previous_level(m, n, prev_pers, cyclic_pers, modeltype)` for changing the behaviour of how previous storage levels should be calculated, and
+    4. `previous_level_sp(m, n, cyclic_pers, modeltype)` for changing the behaviour of the first operational period (in the first representative period) within a strategic period.
 
     The exact implementation is not straight forward and care has to be taken if you want to dispatch on these functions to avoid method ambiguities.
+    We plan on extending on the documentation on how you can best introduce new *[storage behaviours](@ref sec_lib_public_storbehav)* in a latter stage with an example.
 
 ## Operational expenditure constraints
 
@@ -110,12 +135,12 @@ constraints_opex_fixed(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
 ```
 
 corresponds to the constraints calculating the fixed operational costs of a technology node ``n``.
-It is implemented for `Node`, `Storage`, `RefStorage{T<:ResourceEmit}`, and `Sink` types.
+It is implemented for `Node`, `Storage`, and `Sink` types.
 The fixed OPEX is in general dependent on the installed capacity.
 
-`Storage` nodes use a different variable for describing the installed capacity.
-Hence, the fixed OPEX calculations differs.
-The fixed OPEX of a `RefStorage` node is calculated using the installed capacity ([``\texttt{stor\_cap\_inst}``](@ref var_cap)) when the stored resource is a `ResourceCarrier` and using the installed rate ([``\texttt{stor\_rate\_inst}``](@ref var_cap)) when the stored resource is a `ResourceEmit`.
+`EnergyModelsBase` provides a default approach for calculating the variable OPEX of `Storage` nodes to allow for variations in the individually chosen *[storage parameters](@ref sec_lib_public_storpar)*.
+Depending on the chosen storage parameters, the fixed OPEX can include the capacities for the charge (through the variable [``\texttt{stor\_charge\_inst}[n, t]``](@ref var_cap)), storage level (through the variable [``\texttt{stor\_level\_inst}[n, t]``](@ref var_cap)), and discharge (through the variable [``\texttt{stor\_discharge\_inst}[n, t]``](@ref var_cap)) capacities.
+Note that the fixed OPEX can only be included if a storage parameter including a capacity is chosen.
 
 `Sink` nodes use the variable [``\texttt{cap\_inst}``](@ref var_cap) for providing a demand.
 They do not have a capacity in their basic implementation.
@@ -129,9 +154,7 @@ corresponds to the constraints calculating the variable operational costs of a t
 It is implemented for `Node`, `Storage`, `RefStorage{T<:ResourceEmit}`, and `Sink` types.
 The variable OPEX is in general dependent on the capacity usage.
 
-`Storage` nodes use a different variable for describing the capacity usage.
-The variable OPEX of a `RefStorage` node is calculated using the inlet flow of the stored resource ([``\texttt{flow\_in}[n, t , p_\texttt{stor}]``](@ref var_flow)).
-Storing a `ResourceEmit` allows also for emissions of the stored resource.
-In this case, the emissions are not included in the variable OEPX calculations
+As it is the case for the constraints for the fixed OPEX,  `EnergyModelsBase` provides a default approach for calculating the variable OPEX of `Storage` nodes to allow for variations in the individually chosen *[storage parameters](@ref sec_lib_public_storpar)*.
+Depending on the chosen storage parameters, the fixed OPEX can include values for charging (through the variable [``\texttt{stor\_charge\_use}[n, t]``](@ref var_cap)), the storage level (through the variable [``\texttt{stor\_level}[n, t]``](@ref var_cap)), and discharging (through the variable [``\texttt{stor\_discharge\_use}[n, t]``](@ref var_cap)).
 
 The variable OPEX calculations of `Sink` nodes include both the potential of a penalty for the surplus and deficit as described in *[`Sink` variables](@ref var_sink)*.

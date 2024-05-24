@@ -1,5 +1,23 @@
 # Release notes
 
+## Version 0.7.0 (2024-05-24)
+
+### Introduction of `AbstractStorageParameters` type for increasing potential for `Storage` variations
+
+* Introduced a `:discharge` capacity for `Storage` nodes in addition to the existing capacities.
+* `AbstractStorageParameters` type allows for `Storage` capacities (`:charge`, `:level`, and `:discharge`) to include a capacity, variable OPEX, and or fixed OPEX.
+* This increases the flexibility for `Storage` node utilization.
+
+### Introduction of `StorageBehavior` type for reusability of level balances
+
+* Introduction of `CyclicRepresentative` behavior with support for `OperationalScenarios`.
+  In this `StorageBehavior`, the accumulation within a representative period is set to 0.
+* Change in `Storage{AccumulatingEmissions}` to avoid requiring a capacity when only emissions are present.
+
+### Checks
+
+* Do not print a warning, when using `OperationalProfile` with a time structure containing `RepresentativePeriods`.
+
 ## Version 0.6.8 (2024-04-18)
 
 * Added potential for negative emissions.

@@ -36,10 +36,10 @@ end
     source = RefSource("src", FixedProfile(5), FixedProfile(10), FixedProfile(5),
         dict)
     sink = RefSink( "sink", FixedProfile(20), Dict{Symbol,TimeProfile}(), dict)
-    stor = RefStorage{CyclicStrategic}("stor", FixedProfile(60), FixedProfile(1), FixedProfile(1),
-        FixedProfile(0), Power, dict, dict)
-    stor_em = RefStorage{AccumulatingEmissions}("stor-em", FixedProfile(1), FixedProfile(1),
-        FixedProfile(1), FixedProfile(1), CO2, dict, dict)
+    stor = RefStorage{CyclicStrategic}("stor", StorCapOpexVar(FixedProfile(60), FixedProfile(1)),
+        StorCapOpexFixed(FixedProfile(1), FixedProfile(0)), Power, dict, dict)
+    stor_em = RefStorage{AccumulatingEmissions}("stor-em", StorCapOpex(FixedProfile(1), FixedProfile(1),
+        FixedProfile(1)), StorCap(FixedProfile(1)), CO2, dict, dict)
     av = GenAvailability("av", vec)
 
     get_types(𝒩) = unique(map(n -> typeof(n), 𝒩))

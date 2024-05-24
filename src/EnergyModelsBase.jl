@@ -43,6 +43,9 @@ export GenAvailability, RefSource, RefNetworkNode, RefSink, RefStorage
 export Accumulating, AccumulatingEmissions
 export Cyclic, CyclicRepresentative, CyclicStrategic
 
+# Export the storage parameter types
+export StorCapOpex, StorCap, StorCapOpexVar, StorCapOpexFixed, StorOpexVar
+
 # Export the data types
 export Data, EmptyData, EmissionsData, CaptureData
 export CaptureProcessEnergyEmissions, CaptureProcessEmissions, CaptureEnergyEmissions
@@ -65,6 +68,8 @@ export constraints_capacity, constraints_capacity_installed
 export constraints_flow_in, constraints_flow_out
 export constraints_level, constraints_level_aux
 export constraints_opex_fixed, constraints_opex_var
+
+# Export functions used for level balancing modifications
 export previous_level, previous_level_sp
 
 export constraints_data
@@ -80,6 +85,10 @@ export nodes_input, nodes_output, nodes_emissions
 export has_input, has_output, has_emissions
 export capacity, inputs, outputs, opex_var, opex_fixed, surplus_penalty, deficit_penalty,
     storage_resource, node_data
+
+# Export commonly used functions for extracting fields in `AbstractStorageParameters`
+export has_charge, has_discharge
+export charge, level, discharge
 
 # Export commonly used functions for extracting fields in `Link`
 export formulation

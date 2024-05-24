@@ -49,14 +49,16 @@ function check_data(case, modeltype::EnergyModel, check_timeprofiles::Bool)
 
 
     if !check_timeprofiles
-        @warn "Checking of the time profiles is deactivated:\n" *
-        "Deactivating the checks for the time profiles is strongly discouraged. " *
-        "While the model will still run, unexpected results can occur, as well as " *
-        "inconsistent case data.\n\n" *
-        "Deactivating the checks for the timeprofiles should only be considered, " *
-        "when testing new components. In all other instances, it is recommended to " *
-        "provide the correct timeprofiles using a preprocessing routine.\n\n" *
-        "If timeprofiles are not checked, inconsistencies can occur."  maxlog=1
+        @warn(
+            "Checking of the time profiles is deactivated:\n" *
+            "Deactivating the checks for the time profiles is strongly discouraged. " *
+            "While the model will still run, unexpected results can occur, as well as " *
+            "inconsistent case data.\n\n" *
+            "Deactivating the checks for the timeprofiles should only be considered, " *
+            "when testing new components. In all other instances, it is recommended to " *
+            "provide the correct timeprofiles using a preprocessing routine.\n\n" *
+            "If timeprofiles are not checked, inconsistencies can occur.",  maxlog=1
+        )
     end
 
     # Check the case data. If the case data is not in the correct format, the overall check
@@ -253,7 +255,7 @@ end
     check_profile(fieldname, value::TimeProfile, 𝒯)
 
 Check that an individual `TimeProfile` corresponds to the time structure `𝒯`.
-It currently does not include support for identifying `OperationalProfile`s.
+It currently does not include support for identifying `OperationalScenarios`.
 """
 function check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -288,7 +290,25 @@ end
     check_profile(fieldname, value::TimeProfile, ts::TimeStructure, sp)
 
 Check that an individual `TimeProfile` corresponds to the time structure `ts` in strategic
-period sp. The function flow is designed to provide errors in all situations
+period `sp`. The function flow is designed to provide errors in all situations in which the
+the `TimeProfile` does not correspond to the chosen `TimeStructure` through the application
+of the `@assert_or_log` macro.
+
+Examples for inconsistent combinations:
+
+```julia
+ts = SimpleTimes(3, 1)
+
+# A too long OperationalProfile resulting in omitting the last 2 values
+value = OperationalProfile([1, 2, 3, 4, 5])
+
+# A too short OperationalProfile resulting in repetition of the last value once
+value = OperationalProfile([1, 2])
+```
+
+If you use a more detailed TimeProfile than the TimeStructure, it will you provide you with
+a warning, e.g., using `RepresentativeProfile` without `RepresentativePeriods`.
+
 It currently does not include support for identifying `OperationalProfile`s.
 """
 function check_profile(
@@ -300,12 +320,13 @@ function check_profile(
     len_vals = length(value.vals)
     len_simp = length(ts)
     if len_vals > len_simp
-        message = "' in strategic period $(sp)  is longer than the operational time  \
-        structure. Its last $(len_vals - len_simp) value(s) will be omitted."
+        message = "' in strategic period $(sp) is longer " *
+            "than the operational time structure. " *
+            "Its last $(len_vals - len_simp) value(s) will be omitted."
     elseif len_vals < len_simp
-        message = "' in strategic period $(sp) is shorter than the operational \
-        time structure. It will use the last value for the last $(len_simp - len_vals) \
-        operational period(s)."
+        message =  "' in strategic period $(sp) is shorter " *
+        "than the operational time structure. It will use the last value for the last " *
+        "$(len_simp - len_vals + 1) operational period(s)."
     end
     @assert_or_log len_vals == len_simp "Field '" * string(fieldname) * message
 end
@@ -315,13 +336,6 @@ function check_profile(
     ts::RepresentativePeriods,
     sp
     )
-    if sp == 1
-        @warn "Field " * string(fieldname) * ": Using `OperionalProfile` with \
-            `RepresentativePeriods` is dangerous, as it may lead to unexpected behaviour. \
-            It only works reasonable if all representative periods have an operational \
-            time structure of the same length. Otherwise, the last value is repeated. \
-            The system is tested for the all representative periods."
-    end
     for t_rp ∈ repr_periods(ts)
         check_profile(fieldname, value, t_rp.operational, sp)
     end
@@ -334,9 +348,11 @@ function check_profile(
     sp
     )
     if sp == 1
-        @warn "Field " * string(fieldname) * ": Using `RepresentativeProfile` \
-            with `SimpleTimes` is dangerous, as it may lead to unexpected behaviour. \
-            In this case, only the first profile is used and tested."
+        @warn(
+            "Using `RepresentativeProfile` with `SimpleTimes` is dangerous, as it may " *
+            "lead to unexpected behaviour. " *
+            "In this case, only the first profile is used in the model and tested."
+        )
     end
     check_profile(fieldname, value.vals[1], ts, sp)
 end
@@ -350,16 +366,16 @@ function check_profile(
     len_vals = length(value.vals)
     len_simp = length(repr_periods(ts))
     if len_vals > len_simp
-        message = "' is longer than the representative time structure in strategic period \
-        $(sp). Its last values $(len_vals - len_simp) will be omitted."
+        message = "' in strategic period $(sp) is longer " *
+            "than the representative time structure in strategic period $(sp). " *
+            "Its last values $(len_vals - len_simp) will be omitted."
     elseif len_vals < len_simp
-        message = "' is shorter than the representative time structure in strategic period \
-        $(sp). It will use the last value for the last $(len_simp - len_vals) \
-        operational periods."
+        message = "' in strategic period $(sp) is longer " *
+            "than the representative time structure in strategic period $(sp). " *
+            "It will use the last value for the last $(len_simp - len_vals + 1) " *
+            "representative period(s)."
     end
-    @assert_or_log len_vals == len_simp "Field '\
-    " * string(fieldname) * "' in strategic period $(sp) does not match \
-    the corresponding representative structure."
+    @assert_or_log len_vals == len_simp "Field '" * string(fieldname) * message
     for t_rp ∈ repr_periods(ts)
         check_profile(
             fieldname,
@@ -590,27 +606,50 @@ important that a new `Storage` type includes at least the same fields as in the
 `RefStorage` node or that a new `Storage` type receives a new method for `check_node`.
 
 ## Checks
- - The value of the field `rate_cap` is required to be non-negative.
- - The value of the field `stor_cap` is required to be non-negative.
+ - The `TimeProfile` of the field `capacity` in the type in the field `charge` is required
+   to be non-negative if the chosen composite type has the field `capacity`.
+ - The `TimeProfile` of the field `capacity` in the type in the field `level` is required
+   to be non-negative`.
+ - The `TimeProfile` of the field `capacity` in the type in the field `discharge` is required
+   to be non-negative if the chosen composite type has the field `capacity`.
+ - The `TimeProfile` of the field `fixed_opex` is required to be non-negative and
+   accessible through a `StrategicPeriod` as outlined in the function
+   `check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)` for the chosen composite type .
  - The values of the dictionary `input` are required to be non-negative.
  - The values of the dictionary `output` are required to be non-negative.
- - The value of the field `fixed_opex` is required to be non-negative and
-   accessible through a `StrategicPeriod` as outlined in the function
-   `check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`.
 """
 function check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-    cap = capacity(n)
+    par_charge = charge(n)
+    par_level = level(n)
+    par_discharge = discharge(n)
 
+    if isa(par_charge, UnionCapacity)
+        @assert_or_log(
+            sum(capacity(par_charge, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+            "The charge capacity must be non-negative."
+        )
+    end
+    if isa(par_charge, UnionOpexFixed)
+        check_fixed_opex(par_charge, 𝒯ᴵⁿᵛ, check_timeprofiles)
+    end
     @assert_or_log(
-        sum(cap.rate[t] ≥ 0 for t ∈ 𝒯) == length(𝒯),
-        "The rate capacity must be non-negative."
-    )
-    @assert_or_log(
-        sum(cap.level[t] ≥ 0 for t ∈ 𝒯) == length(𝒯),
+        sum(capacity(par_level, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
         "The level capacity must be non-negative."
     )
+    if isa(par_level, UnionOpexFixed)
+        check_fixed_opex(par_level, 𝒯ᴵⁿᵛ, check_timeprofiles)
+    end
+    if isa(par_discharge, UnionCapacity)
+        @assert_or_log(
+            sum(capacity(par_discharge, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+            "The charge capacity must be non-negative."
+        )
+    end
+    if isa(par_discharge, UnionOpexFixed)
+        check_fixed_opex(par_discharge, 𝒯ᴵⁿᵛ, check_timeprofiles)
+    end
     @assert_or_log(
         sum(inputs(n, p) ≥ 0 for p ∈ inputs(n)) == length(inputs(n)),
         "The values for the Dictionary `input` must be non-negative."
@@ -619,7 +658,6 @@ function check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles
         sum(outputs(n, p) ≥ 0 for p ∈ outputs(n)) == length(outputs(n)),
         "The values for the Dictionary `output` must be non-negative."
     )
-    check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)
 end
 """
     check_node(n::Sink, 𝒯, modeltype::EnergyModel)
@@ -634,8 +672,8 @@ or that a new `Source` type receives a new method for `check_node`.
  - The field `cap` is required to be non-negative.
  - The values of the dictionary `input` are required to be non-negative.
  - The dictionary `penalty` is required to have the keys `:deficit` and `:surplus`.
- - The sum of the values `:deficit` and `:surplus` in the dictionary `penalty` has to be \
- non-negative to avoid an infeasible model.
+ - The sum of the values `:deficit` and `:surplus` in the dictionary `penalty` has to be
+   non-negative to avoid an infeasible model.
 """
 function check_node(n::Sink, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     @assert_or_log(
@@ -660,9 +698,11 @@ function check_node(n::Sink, 𝒯, modeltype::EnergyModel, check_timeprofiles::B
     end
 end
 """
-    check_fixed_opex(n::Node, 𝒯ᴵⁿᵛ, check_timeprofiles::Bool)
+    check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles::Bool)
 
-Checks that the fixed opex value follows the given TimeStructure.
+Checks that the fixed opex value follows the given `TimeStructure`.
+This check requires that a function `opex_fixed(n)` is defined for the input `n` which
+returns a `TimeProfile`.
 
 ## Checks
 - The `opex_fixed` time profile cannot have a finer granulation than `StrategicProfile`.
@@ -671,7 +711,7 @@ Checks that the fixed opex value follows the given TimeStructure.
 - The profiles in `opex_fixed` have to have the same length as the number of strategic
   periods.
 """
-function check_fixed_opex(n::Node, 𝒯ᴵⁿᵛ, check_timeprofiles::Bool)
+function check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles::Bool)
 
     if isa(opex_fixed(n), StrategicProfile) && check_timeprofiles
         @assert_or_log(
