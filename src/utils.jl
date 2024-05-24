@@ -229,7 +229,7 @@ function previous_level(
 )
     # Return the previous storage level based on cyclic constraints within the representative
     # period
-    return @expression(m, m[:stor_level][n, last(collect(current_per(cyclic_pers)))])
+    return @expression(m, m[:stor_level][n, last(current_per(cyclic_pers))])
 end
 """
     previous_level_sp(
@@ -252,7 +252,7 @@ function previous_level_sp(
     modeltype::EnergyModel
 )
     # Return the previous storage level based on cyclic constraints
-    last_op = last(collect(current_per(cyclic_pers)))
+    last_op = last(current_per(cyclic_pers))
     return @expression(m, m[:stor_level][n, last_op])
 end
 """
@@ -308,7 +308,7 @@ function previous_level_sp(
 )
     # Extract the last operational period in the representative period from the type
     # `CyclicPeriods`
-    last_op = last(collect(current_per(cyclic_pers)))
+    last_op = last(current_per(cyclic_pers))
 
     # Return the previous storage level based on cyclic constraints within the representative
     # period

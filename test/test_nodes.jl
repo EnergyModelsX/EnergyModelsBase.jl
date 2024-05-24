@@ -780,7 +780,7 @@ end
 
         # Test that the level balance is correct in the first period (2 times)
         @test sum(sum(value.(m[:stor_level][stor, t]) ≈
-                    value.(m[:stor_level][stor, last(collect(t_inv))]) +
+                    value.(m[:stor_level][stor, last(t_inv)]) +
                     value.(m[:stor_level_Δ_op][stor, t]) * duration(t)
                     for (t_prev, t) ∈ withprev(t_inv) if isnothing(t_prev))
                     for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
@@ -1072,7 +1072,7 @@ end
 
         # Test that the level balance is correct in the first period (2 times)
         @test sum(sum(value.(m[:stor_level][stor, t]) ≈
-                    value.(m[:stor_level][stor, last(collect(t_inv))]) +
+                    value.(m[:stor_level][stor, last(t_inv)]) +
                     value.(m[:stor_level_Δ_op][stor, t]) * duration(t)
                     for (t_prev, t) ∈ withprev(t_inv) if isnothing(t_prev))
                     for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
@@ -1133,7 +1133,7 @@ end
                 if isnothing(t_prev)
                     # Test for the linking between the first and the last operational period
                     @test value.(m[:stor_level][stor, t]) ≈
-                            value.(m[:stor_level][stor, last(collect(t_rp))]) +
+                            value.(m[:stor_level][stor, last(t_rp)]) +
                             value.(m[:stor_level_Δ_op][stor, t]) * duration(t) atol=TEST_ATOL
                 end
             end
@@ -1212,7 +1212,7 @@ end
                 if isnothing(t_prev)
                     # Test for the linking between the first and the last operational period
                     @test value.(m[:stor_level][stor, t]) ≈
-                            value.(m[:stor_level][stor, last(collect(t_rp))]) +
+                            value.(m[:stor_level][stor, last(t_rp)]) +
                             value.(m[:stor_level_Δ_op][stor, t]) * duration(t) atol=TEST_ATOL
                 end
             end
@@ -1295,7 +1295,7 @@ end
                 if isnothing(t_prev)
                     # Test for the linking between the first and the last operational period
                     @test value.(m[:stor_level][stor, t]) ≈
-                            value.(m[:stor_level][stor, last(collect(t_rp))]) +
+                            value.(m[:stor_level][stor, last(t_rp)]) +
                             value.(m[:stor_level_Δ_op][stor, t]) * duration(t) atol=TEST_ATOL
                 end
             end
