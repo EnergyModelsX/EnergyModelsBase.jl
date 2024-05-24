@@ -9,11 +9,11 @@ Base.show(io::IO, r::Resource) = print(io, "$(r.id)")
 
 Resources that can can be emitted (e.g., CO₂, CH₄, NOₓ).
 
-These resources can be included as resources that are emitted, *e.g*, in the variable \
+These resources can be included as resources that are emitted, *e.g*, in the variable
 [`emissions_strategic`](@ref var_emission).
 
 # Fields
-- **`id`** is the name/identifyer of the resource.\n
+- **`id`** is the name/identifyer of the resource.
 - **`co2_int::T`** is the the CO₂ intensity, *e.g.*, t/MWh.
 """
 struct ResourceEmit{T<:Real} <: Resource
@@ -25,11 +25,11 @@ end
     ResourceCarrier{T<:Real} <: Resource
 
 Resources that can be transported and converted.
-These resources cannot be included as resources that are emitted, *e.g*, in the variable \
+These resources cannot be included as resources that are emitted, *e.g*, in the variable
 [`emissions_strategic`](@ref var_emission).
 
 # Fields
-- **`id`** is the name/identifyer of the resource.\n
+- **`id`** is the name/identifyer of the resource.
 - **`co2_int::T`** is the the CO₂ intensity, *e.g.*, t/MWh.
 """
 struct ResourceCarrier{T<:Real} <: Resource
@@ -63,10 +63,10 @@ res_sub(𝒫::Array{<:Resource}, sub = ResourceEmit) = filter(x -> isa(x, sub), 
     res_not(𝒩::Array{<:Resource}, res_inst)
 
 Return all resources that are not `res_inst` for
- - a given array `::Array{<:Resource}`.\
- The output is in this case an `Array{<:Resource}`
- - a given dictionary `::Dict`.\
-The output is in this case a dictionary `Dict` with the correct fields
+- a given array `::Array{<:Resource}`.
+  The output is in this case an `Array{<:Resource}`
+- a given dictionary `::Dict`.
+  The output is in this case a dictionary `Dict` with the correct fields
 """
 res_not(𝒫::Array{<:Resource}, res_inst::Resource) = filter(x -> x!=res_inst, 𝒫)
 res_not(𝒫::Dict, res_inst::Resource) =  Dict(k => v for (k,v) ∈ 𝒫 if k != res_inst)
@@ -75,10 +75,10 @@ res_not(𝒫::Dict, res_inst::Resource) =  Dict(k => v for (k,v) ∈ 𝒫 if k !
     res_em(𝒫::Array{<:Resource})
 
 Returns all emission resources for a
-- a given array `::Array{<:Resource}`.\
-The output is in this case an `Array{<:Resource}`
-- a given dictionary `::Dict`.\
-The output is in this case a dictionary `Dict` with the correct fields
+- a given array `::Array{<:Resource}`.
+  The output is in this case an `Array{<:Resource}`
+- a given dictionary `::Dict`.
+  The output is in this case a dictionary `Dict` with the correct fields
 """
 res_em(𝒫::Array{<:Resource}) = filter(is_resource_emit, 𝒫)
 res_em(𝒫::Dict) =  filter(p -> is_resource_emit(first(p)), 𝒫)

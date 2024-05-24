@@ -13,11 +13,11 @@ Base.show(io::IO, l::Link) = print(io, "l_$(l.from)-$(l.to)")
 A direct link between two nodes.
 
 # Fields
-- **`id`** is the name/identifier of the link.\n
-- **`from::Node`** is node from which there is flow into the link.\n
-- **`to::Node`** is node to which there is flow out of the link.\n
-- **`formulation::Formulation`** is the used formulation of links. If not specified, \
-a `Linear` link is assumed.\n
+- **`id`** is the name/identifier of the link.
+- **`from::Node`** is node from which there is flow into the link.
+- **`to::Node`** is node to which there is flow out of the link.
+- **`formulation::Formulation`** is the used formulation of links. If not specified, a
+  `Linear` link is assumed.
 
 """
 struct Direct <: Link

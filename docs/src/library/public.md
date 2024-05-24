@@ -334,9 +334,12 @@ process_emissions
 The periods can either be either and `AbstractStrategicPeriod` or `AbstractRepresentativePeriod`.
 In the former case, it is however not fully used as the last strategic period is not relevant for the level balances.
 
+Both composite types allow only `EMB.NothingPeriod` types as input to the individual fields.
+
 ```@docs
 PreviousPeriods
 CyclicPeriods
+EMB.NothingPeriod
 ```
 
 The individual fields can be accessed through the following functions:

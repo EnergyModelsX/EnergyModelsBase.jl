@@ -33,7 +33,7 @@ abstract type Cyclic <: StorageBehavior end
     AccumulatingEmissions <: Accumulating
 
 `StorageBehavior` which accumulates all inflow witin a strategic period.
-`AccumulatingEmissions` allows as well to serve as a `ResourceEmit` emission point to
+`AccumulatingEmissions` allows as well to serve as a [`ResourceEmit`](@ref) emission point to
 represent a soft constraint on storing the captured emissions.
 """
 struct AccumulatingEmissions <: Accumulating end
@@ -44,7 +44,7 @@ struct AccumulatingEmissions <: Accumulating end
 `StorageBehavior` in which cyclic behaviour is achieved within the lowest time structure
 excluding operational times.
 
-In the case of `TwoLevel{SimpleTimes}`, this approach is similar to `CyclicStrategic`.\n
+In the case of `TwoLevel{SimpleTimes}`, this approach is similar to `CyclicStrategic`.
 In the case of `TwoLevel{RepresentativePeriods{SimpleTimes}}`, this approach differs from
 `CyclicStrategic` as the cyclic constraint is enforeced within each representative period.
 """
@@ -177,17 +177,24 @@ abstract type Storage{T<:StorageBehavior} <: NetworkNode end
 """ `Availability` node as routing node."""
 abstract type Availability <: NetworkNode end
 
-""" A reference `Source` node.
+"""
+    RefSource <: Source
+
+A reference `Source` node.
+The reference `Source` node allows for a time varying capacity which is normalized to a
+conversion value of 1 in the field `input`.
+Note, that if you include investments, you can only use as `TimeProfile` a `FixedProfile`
+or `StrategicProfile`.
 
 # Fields
-- **`id`** is the name/identifier of the node.\n
-- **`cap::TimeProfile`** is the installed capacity.\n
-- **`opex_var::TimeProfile`** is the variable operating expense per energy unit produced.\n
-- **`opex_fixed::TimeProfile`** is the fixed operating expense.\n
-- **`output::Dict{<:Resource, <:Real}`** are the generated `Resource`s with conversion value `Real`.\n
-- **`data::Vector{Data}`** is the additional data (e.g. for investments). The field \
-`data` is conditional through usage of a constructor.
-
+- **`id`** is the name/identifier of the node.
+- **`cap::TimeProfile`** is the installed capacity.
+- **`opex_var::TimeProfile`** is the variable operating expense per energy unit produced.
+- **`opex_fixed::TimeProfile`** is the fixed operating expense.
+- **`output::Dict{<:Resource, <:Real}`** are the generated [`Resource`](@ref)s with
+  conversion value `Real`.
+- **`data::Vector{Data}`** is the additional data (e.g. for investments). The field `data`
+  is conditional through usage of a constructor.
 """
 struct RefSource <: Source
     id
@@ -207,17 +214,26 @@ function RefSource(
     return RefSource(id, cap, opex_var, opex_fixed, output, Data[])
 end
 
-""" A reference `NetworkNode` node.
+"""
+    RefNetworkNode <: NetworkNode
+
+A reference `NetworkNode` node.
+The `RefNetworkNode` utilizes a linear, time independent conversion rate of the `input`
+[`Resource`](@ref)s to the output [`Resource`](@ref)s, subject to the available capacity.
+The capacity is hereby normalized to a conversion value of 1 in the fields `input` and
+`output`.
 
 # Fields
-- **`id`** is the name/identifier of the node.\n
-- **`cap::TimeProfile`** is the installed capacity.\n
-- **`opex_var::TimeProfile`** is the variable operating expense per energy unit produced.\n
-- **`opex_fixed::TimeProfile`** is the fixed operating expense.\n
-- **`input::Dict{<:Resource, <:Real}`** are the input `Resource`s with conversion value `Real`.\n
-- **`output::Dict{<:Resource, <:Real}`** are the generated `Resource`s with conversion value `Real`.\n
-- **`data::Vector{Data}`** is the additional data (e.g. for investments). The field \
-`data` is conditional through usage of a constructor.
+- **`id`** is the name/identifier of the node.
+- **`cap::TimeProfile`** is the installed capacity.
+- **`opex_var::TimeProfile`** is the variable operating expense per energy unit produced.
+- **`opex_fixed::TimeProfile`** is the fixed operating expense.
+- **`input::Dict{<:Resource, <:Real}`** are the input [`Resource`](@ref)s with conversion
+  value `Real`.
+- **`output::Dict{<:Resource, <:Real}`** are the generated [`Resource`](@ref)s with
+  conversion value `Real`.
+- **`data::Vector{Data}`** is the additional data (e.g. for investments). The field `data`
+  is conditional through usage of a constructor.
 """
 struct RefNetworkNode <: NetworkNode
     id
@@ -239,16 +255,20 @@ function RefNetworkNode(
     return RefNetworkNode(id, cap, opex_var, opex_fixed, input, output, Data[])
 end
 
-""" A reference `Availability` node.
+"""
+    GenAvailability <: Availability
+
+A reference `Availability` node.
+The reference `Availability` node solves the energy balance for all connected flows.
 
 # Fields
-- **`id`** is the name/identifier of the node.\n
-- **`inputs::Vector{<:Resource}`** are the input `Resource`s.\n
-- **`output::Vector{<:Resource}`** are the output `Resource`s.\n
+- **`id`** is the name/identifier of the node.
+- **`inputs::Vector{<:Resource}`** are the input [`Resource`](@ref)s.
+- **`output::Vector{<:Resource}`** are the output [`Resource`](@ref)s.
 
 A constructor is provided so that only a single array can be provided with the fields:
-- **`id`** is the name/identifier of the node.\n
-- **`𝒫::Vector{<:Resource}`** are the `Resource`s.\n
+- **`id`** is the name/identifier of the node.
+- **`𝒫::Vector{<:Resource}`** are the `[`Resource`](@ref)s.
 """
 struct GenAvailability <: Availability
     id
@@ -257,9 +277,12 @@ struct GenAvailability <: Availability
 end
 GenAvailability(id, 𝒫::Vector{<:Resource}) = GenAvailability(id, 𝒫, 𝒫)
 
-""" A reference `Storage` node.
+"""
+    RefStorage{T} <: Storage{T}
 
-This node is designed to store either a `ResourceCarrier` or a `ResourceEmit`.
+A reference `Storage` node.
+
+This node is designed to store either a [`ResourceCarrier`](@ref) or a [`ResourceEmit`](@ref).
 It is designed as a parametric type through the type parameter `T` to differentiate between
 different cyclic behaviours. Note that the parameter `T` is only used for dispatching, but
 does not carry any other information. Hence, it is simple to fast switch between different
@@ -269,18 +292,20 @@ The current implemented cyclic behaviours are [`CyclicRepresentative`](@ref),
 [`CyclicStrategic`](@ref), and [`AccumulatingEmissions`](@ref).
 
 # Fields
-- **`id`** is the name/identifier of the node.\n
+- **`id`** is the name/identifier of the node.
 - **`charge::AbstractStorageParameters`** are the charging parameters of the `Storage` node.
   Depending on the chosen type, the charge parameters can include variable OPEX, fixed OPEX,
   and/or a capacity.
 - **`level::AbstractStorageParameters`** are the level parameters of the `Storage` node.
   Depending on the chosen type, the charge parameters can include variable OPEX and/or fixed OPEX.
-- **`stor_res::Resource`** is the stored `Resource`.\n
-- **`input::Dict{<:Resource, <:Real}`** are the input `Resource`s with conversion value `Real`.
-- **`output::Dict{<:Resource, <:Real}`** are the generated `Resource`s with conversion value `Real`. \
-Only relevant for linking and the stored `Resource`.\n
-- **`data::Vector{<:Data}`** is the additional data (e.g. for investments). The field \
-`data` is conditional through usage of a constructor.
+- **`stor_res::Resource`** is the stored [`Resource`](@ref).
+- **`input::Dict{<:Resource, <:Real}`** are the input [`Resource`](@ref)s with conversion
+  value `Real`.
+- **`output::Dict{<:Resource, <:Real}`** are the generated [`Resource`](@ref)s with conversion
+  value `Real`. Only relevant for linking and the stored [`Resource`](@ref) as the output
+  value is not utilized in the calculations.
+- **`data::Vector{<:Data}`** is the additional data (e.g. for investments). The field `data`
+  is conditional through usage of a constructor.
 """
 struct RefStorage{T} <: Storage{T}
     id
@@ -311,18 +336,21 @@ function RefStorage{T}(
     )
 end
 
-""" A reference `Sink` node.
+"""
+    RefSink <: Sink
 
-This node corresponds to a demand given by the field `cap`.
+A reference `Sink` node. This node corresponds to a demand given by the field `cap`.
+The penalties introduced in the field `penalty` affect the variable OPEX for both a surplus
+and deficit.
 
 # Fields
-- **`id`** is the name/identifier of the node.\n
-- **`cap::TimeProfile`** is the Demand.\n
-- **`penalty::Dict{Any, TimeProfile}`** are penalties for surplus or deficits. \
-Requires the fields `:surplus` and `:deficit`.\n
-- **`input::Dict{<:Resource, <:Real}`** are the input `Resource`s with conversion value `Real`.\n
-- **`data::Vector{Data}`** is the additional data (e.g. for investments). The field \
-`data` is conditional through usage of a constructor.
+- **`id`** is the name/identifier of the node.
+- **`cap::TimeProfile`** is the Demand.
+- **`penalty::Dict{Any, TimeProfile}`** are penalties for surplus or deficits. Requires the
+  fields `:surplus` and `:deficit`.
+- **`input::Dict{<:Resource, <:Real}`** are the input [`Resource`](@ref)s with conversion value `Real`.
+- **`data::Vector{Data}`** is the additional data (e.g. for investments). The field `data`
+  is conditional through usage of a constructor.
 """
 struct RefSink <: Sink
     id
