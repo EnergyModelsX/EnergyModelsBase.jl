@@ -106,7 +106,7 @@ end
         n::Storage,
         prev_pers::PreviousPeriods,
         cyclic_pers::CyclicPeriods,
-        modeltype::EnergyModel,
+        modeltype,
     )
 
 Returns the level used as previous level of a `Storage` node depending on the type of
@@ -120,7 +120,7 @@ function previous_level(
     n::Storage,
     prev_pers::PreviousPeriods,
     cyclic_pers::CyclicPeriods,
-    modeltype::EnergyModel,
+    modeltype,
 )
 
     # Previous storage level, as there are no changes
@@ -132,7 +132,7 @@ end
         n::Storage,
         prev_pers::PreviousPeriods{<:NothingPeriod, Nothing, Nothing},
         cyclic_pers::CyclicPeriods,
-        modeltype::EnergyModel,
+        modeltype,
     )
 
 When the previous operational and representative period are `Nothing`, the function
@@ -144,7 +144,7 @@ function previous_level(
     n::Storage,
     prev_pers::PreviousPeriods{<:NothingPeriod, Nothing, Nothing},
     cyclic_pers::CyclicPeriods,
-    modeltype::EnergyModel,
+    modeltype,
 )
 
     return previous_level_sp(m, n, cyclic_pers, modeltype)
@@ -155,7 +155,7 @@ end
         n::Storage,
         prev_pers::PreviousPeriods{<:NothingPeriod, Nothing, Nothing},
         cyclic_pers::CyclicPeriods,
-        modeltype::EnergyModel,
+        modeltype,
     )
 
 When the previous operational and representative period are `Nothing` and the storage node
@@ -166,7 +166,7 @@ function previous_level(
     n::Storage{AccumulatingEmissions},
     prev_pers::PreviousPeriods{<:NothingPeriod, Nothing, Nothing},
     cyclic_pers::CyclicPeriods,
-    modeltype::EnergyModel,
+    modeltype,
 )
     # Return the previous storage level as 0 for the reference storage unit
     return @expression(m, 0)
@@ -177,7 +177,7 @@ end
         n::Storage,
         prev_pers::PreviousPeriods{<:NothingPeriod, <:TS.AbstractRepresentativePeriod, Nothing},
         cyclic_pers::CyclicPeriods,
-        modeltype::EnergyModel,
+        modeltype,
     )
 
 When the previous operational period is `Nothing`, the previous representative period an
@@ -192,7 +192,7 @@ function previous_level(
     n::Storage,
     prev_pers::PreviousPeriods{<:NothingPeriod, <:TS.AbstractRepresentativePeriod, Nothing},
     cyclic_pers::CyclicPeriods,
-    modeltype::EnergyModel,
+    modeltype,
 )
 
     # Return the previous storage level with the increase in the representative period
@@ -211,7 +211,7 @@ end
         n::Storage{CyclicRepresentative},
         prev_pers::PreviousPeriods{<:NothingPeriod, <:TS.AbstractRepresentativePeriod, Nothing},
         cyclic_pers::CyclicPeriods,
-        modeltype::EnergyModel,
+        modeltype,
     )
 
 When the previous operational period is `Nothing` and the previous representative period an
@@ -225,7 +225,7 @@ function previous_level(
     n::Storage{CyclicRepresentative},
     prev_pers::PreviousPeriods{<:NothingPeriod, <:TS.AbstractRepresentativePeriod, Nothing},
     cyclic_pers::CyclicPeriods,
-    modeltype::EnergyModel,
+    modeltype,
 )
     # Return the previous storage level based on cyclic constraints within the representative
     # period
@@ -236,7 +236,7 @@ end
         m,
         n::Storage{<:Cyclic},
         cyclic_pers::CyclicPeriods,
-        modeltype::EnergyModel
+        modeltype
     )
 
 Returns the previous period in the case of the first operational period (in the first
@@ -249,7 +249,7 @@ function previous_level_sp(
     m,
     n::Storage{<:Cyclic},
     cyclic_pers::CyclicPeriods,
-    modeltype::EnergyModel
+    modeltype
 )
     # Return the previous storage level based on cyclic constraints
     last_op = last(current_per(cyclic_pers))
@@ -260,7 +260,7 @@ end
         m,
         n::Storage{CyclicStrategic},
         cyclic_pers::CyclicPeriods{<:TS.AbstractRepresentativePeriod},
-        modeltype::EnergyModel,
+        modeltype,
     )
 
 When a [`CyclicStrategic`](@ref) `Storage` node is coupled with a `TimeStructure` containing
@@ -272,7 +272,7 @@ function previous_level_sp(
     m,
     n::Storage{CyclicStrategic},
     cyclic_pers::CyclicPeriods{<:TS.AbstractRepresentativePeriod},
-    modeltype::EnergyModel,
+    modeltype,
 )
     # Extract the last representative period from the type CyclicPeriods
     last_rp = last_per(cyclic_pers)
@@ -293,7 +293,7 @@ end
         m,
         n::Storage{CyclicRepresentative},
         cyclic_pers::CyclicPeriods{<:TS.AbstractRepresentativePeriod},
-        modeltype::EnergyModel,
+        modeltype,
     )
 
 When a [`CyclicRepresentative`](@ref) `Storage` node is coupled with a `TimeStructure` containing
@@ -304,7 +304,7 @@ function previous_level_sp(
     m,
     n::Storage{CyclicRepresentative},
     cyclic_pers::CyclicPeriods{<:TS.AbstractRepresentativePeriod},
-    modeltype::EnergyModel,
+    modeltype,
 )
     # Extract the last operational period in the representative period from the type
     # `CyclicPeriods`

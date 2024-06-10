@@ -111,7 +111,7 @@ end
     @test size(all_variables(m))[1] == 1128
 
     # Check that total emissions of both methane and CO2 are within the constraint
-    # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+    # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype)
     @test sum(value.(m[:emissions_strategic])[t_inv, CO2]
             <=
             EMB.emission_limit(model, CO2, t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ)
@@ -121,7 +121,7 @@ end
 
 
     # Check that the total and strategic emissions are correctly calculated
-    # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+    # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype)
     @test sum(value.(m[:emissions_strategic][t_inv, CO2]) ≈
             sum(value.(m[:emissions_total][t, CO2]) * EMB.multiple(t_inv, t)
             for t ∈ t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ, atol=TEST_ATOL) ≈
@@ -132,14 +132,14 @@ end
                 length(𝒯)
 
     # Check that the objective value is properly calculated
-    # - objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+    # - objective(m, 𝒩, 𝒯, 𝒫, modeltype)
     @test -sum((value.(m[:opex_var][n, t_inv]) + value.(m[:opex_fixed][n, t_inv])) *
             duration_strat(t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ) ≈
                 objective_value(m) atol=TEST_ATOL
 
     # Check that the inlet and outlet flowrates in the links are correctly calculated
     # based on the inlet and outlet flowrats of the nodes
-    # - constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
+    # - constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     for n ∈ 𝒩
         ℒᶠʳᵒᵐ, ℒᵗᵒ = EMB.link_sub(ℒ, n)
         # Constraint for output flowrate and input links.
@@ -160,7 +160,7 @@ end
 
     # Check that the total energy balances are fulfilled in the availability node for
     # each resource
-    # - create_node(m, n::Availability, 𝒯, 𝒫, modeltype::EnergyModel)
+    # - create_node(m, n::Availability, 𝒯, 𝒫, modeltype)
     @test sum(value.(m[:flow_in][avail, t, p]) ≈
             value.(m[:flow_out][avail, t, p]) for t ∈ 𝒯, p ∈ 𝒫, atol=TEST_ATOL) ≈
                 length(𝒯) * length(𝒫)

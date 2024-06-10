@@ -38,7 +38,7 @@ end
 Check if the case data is consistent. Use the `@assert_or_log` macro when testing.
 Currently only checking node data.
 """
-function check_data(case, modeltype::EnergyModel, check_timeprofiles::Bool)
+function check_data(case, modeltype, check_timeprofiles::Bool)
     # TODO would it be useful to create an actual type for case, instead of using a Dict with
     # naming conventions? Could be implemented as a mutable in energymodelsbase.jl maybe?
 
@@ -172,7 +172,7 @@ function check_case_data(case)
 end
 
 """
-    check_model(case, modeltype::EnergyModel, check_timeprofiles::Bool)
+    check_model(case, modeltype, check_timeprofiles::Bool)
 
 Checks the `modeltype` .
 
@@ -187,7 +187,7 @@ Checks the `modeltype` .
 - The profiles in `emission_price` have to have the same length as the number of strategic
 periods.
 """
-function check_model(case, modeltype::EnergyModel, check_timeprofiles::Bool)
+function check_model(case, modeltype, check_timeprofiles::Bool)
 
     𝒯ᴵⁿᵛ = strategic_periods(case[:T])
 
@@ -517,22 +517,22 @@ function check_scenario_profile(time_profile::TimeProfile, message::String)
 end
 
 """
-    check_node(n::Node, 𝒯, modeltype::EnergyModel)
+    check_node(n::Node, 𝒯, modeltype)
 
 Check that the fields of a `Node` corresponds to required structure.
 """
-function check_node(n::Node, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+function check_node(n::Node, 𝒯, modeltype, check_timeprofiles::Bool)
 end
 """
-    check_node(n::Availability, 𝒯, modeltype::EnergyModel)
+    check_node(n::Availability, 𝒯, modeltype)
 
 This method checks that an `Availability` node is valid. By default, that does not include
 any checks.
 """
-function check_node(n::Availability, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+function check_node(n::Availability, 𝒯, modeltype, check_timeprofiles::Bool)
 end
 """
-    check_node(n::Source, 𝒯, modeltype::EnergyModel)
+    check_node(n::Source, 𝒯, modeltype)
 
 This method checks that a `Source` node is valid.
 
@@ -547,7 +547,7 @@ node or that a new `Source` type receives a new method for `check_node`.
    accessible through a `StrategicPeriod` as outlined in the function
    `check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`.
 """
-function check_node(n::Source, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+function check_node(n::Source, 𝒯, modeltype, check_timeprofiles::Bool)
 
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
@@ -562,7 +562,7 @@ function check_node(n::Source, 𝒯, modeltype::EnergyModel, check_timeprofiles:
     check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)
 end
 """
-    check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel)
+    check_node(n::NetworkNode, 𝒯, modeltype)
 
 This method checks that a `NetworkNode` node is valid.
 
@@ -578,7 +578,7 @@ important that a new `NetworkNode` type includes at least the same fields as in 
    accessible through a `StrategicPeriod` as outlined in the function
    `check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`.
 """
-function check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+function check_node(n::NetworkNode, 𝒯, modeltype, check_timeprofiles::Bool)
 
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
@@ -597,7 +597,7 @@ function check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel, check_timeprof
     check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)
 end
 """
-    check_node(n::Storage, 𝒯, modeltype::EnergyModel)
+    check_node(n::Storage, 𝒯, modeltype)
 
 This method checks that a `Storage` node is valid.
 
@@ -618,7 +618,7 @@ important that a new `Storage` type includes at least the same fields as in the
  - The values of the dictionary `input` are required to be non-negative.
  - The values of the dictionary `output` are required to be non-negative.
 """
-function check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+function check_node(n::Storage, 𝒯, modeltype, check_timeprofiles::Bool)
 
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
     par_charge = charge(n)
@@ -660,7 +660,7 @@ function check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles
     )
 end
 """
-    check_node(n::Sink, 𝒯, modeltype::EnergyModel)
+    check_node(n::Sink, 𝒯, modeltype)
 
 This method checks that a `Sink` node is valid.
 
@@ -675,7 +675,7 @@ or that a new `Source` type receives a new method for `check_node`.
  - The sum of the values `:deficit` and `:surplus` in the dictionary `penalty` has to be
    non-negative to avoid an infeasible model.
 """
-function check_node(n::Sink, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+function check_node(n::Sink, 𝒯, modeltype, check_timeprofiles::Bool)
     @assert_or_log(
         sum(capacity(n, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
         "The capacity must be non-negative."
@@ -735,17 +735,17 @@ function check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles::Bool)
 end
 
 """
-    check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+    check_node_data(n::Node, data::Data, 𝒯, modeltype, check_timeprofiles::Bool)
 
 Check that the included `Data` types of a `Node` corresponds to required structure.
 This function will always result in a multiple error message, if several instances of the
 same supertype is loaded.
 """
-check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) = nothing
+check_node_data(n::Node, data::Data, 𝒯, modeltype, check_timeprofiles::Bool) = nothing
 
 
 """
-    check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+    check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype, check_timeprofiles::Bool)
 
 Check that the included `Data` types of a `Node` corresponds to required structure.
 This function will always result in a multiple error message, if several instances of the
@@ -757,7 +757,7 @@ same supertype is loaded.
 - The value of the field `co2_capture` is required to be in the range ``[0, 1]``, if \
 [`CaptureData`](@ref) is used.
 """
-function check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+function check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype, check_timeprofiles::Bool)
 
     em_data = filter(data -> typeof(data) <: EmissionsData, node_data(n))
     @assert_or_log(
@@ -775,7 +775,7 @@ function check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyMo
         check_profile(string(p)*" process emissions", value, 𝒯)
     end
 end
-function check_node_data(n::Node, data::CaptureData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+function check_node_data(n::Node, data::CaptureData, 𝒯, modeltype, check_timeprofiles::Bool)
 
     em_data = filter(data -> typeof(data) <: EmissionsData, node_data(n))
     @assert_or_log(

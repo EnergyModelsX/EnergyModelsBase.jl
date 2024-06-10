@@ -202,7 +202,7 @@ struct RefSource <: Source
     opex_var::TimeProfile
     opex_fixed::TimeProfile
     output::Dict{<:Resource, <:Real}
-    data::Vector{Data}
+    data::Vector
 end
 function RefSource(
     id,
@@ -242,7 +242,7 @@ struct RefNetworkNode <: NetworkNode
     opex_fixed::TimeProfile
     input::Dict{<:Resource, <:Real}
     output::Dict{<:Resource, <:Real}
-    data::Vector{Data}
+    data::Vector
 end
 function RefNetworkNode(
     id,
@@ -314,7 +314,7 @@ struct RefStorage{T} <: Storage{T}
     stor_res::Resource
     input::Dict{<:Resource, <:Real}
     output::Dict{<:Resource, <:Real}
-    data::Vector{<:Data}
+    data::Vector
 end
 
 function RefStorage{T}(
@@ -357,7 +357,7 @@ struct RefSink <: Sink
     cap::TimeProfile
     penalty::Dict{Symbol, <:TimeProfile}
     input::Dict{<:Resource, <:Real}
-    data::Vector{Data}
+    data::Vector
 end
 function RefSink(
     id,

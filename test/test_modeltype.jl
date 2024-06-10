@@ -73,7 +73,7 @@
         general_tests(m, case)
 
         # Test that the strategic emission limits hold
-        # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+        # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype
         @test sum(value.(m[:emissions_strategic][t_inv, CO2]) ≈ cap for t_inv ∈ 𝒯ᴵⁿᵛ,
                 atol=TEST_ATOL) == length(𝒯ᴵⁿᵛ)
         # Test that the deficit is hence larger than 0 in a strategic period

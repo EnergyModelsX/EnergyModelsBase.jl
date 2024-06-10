@@ -1,10 +1,10 @@
 """
-    constraints_capacity(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
+    constraints_capacity(m, n::Node, 𝒯::TimeStructure, modeltype)
 
 Function for creating the constraint on the maximum capacity of a generic `Node`.
 This function serves as fallback option if no other function is specified for a `Node`.
 """
-function constraints_capacity(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
+function constraints_capacity(m, n::Node, 𝒯::TimeStructure, modeltype)
 
     @constraint(m, [t ∈ 𝒯],
         m[:cap_use][n, t] <= m[:cap_inst][n, t]
@@ -14,12 +14,12 @@ function constraints_capacity(m, n::Node, 𝒯::TimeStructure, modeltype::Energy
 end
 
 """
-    constraints_capacity(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
+    constraints_capacity(m, n::Storage, 𝒯::TimeStructure, modeltype)
 
 Function for creating the constraint on the maximum level of a generic `Storage`.
 This function serves as fallback option if no other function is specified for a `Storage`.
 """
-function constraints_capacity(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
+function constraints_capacity(m, n::Storage, 𝒯::TimeStructure, modeltype)
 
     @constraint(m, [t ∈ 𝒯],
         m[:stor_level][n, t] <= m[:stor_level_inst][n, t]
@@ -40,12 +40,12 @@ function constraints_capacity(m, n::Storage, 𝒯::TimeStructure, modeltype::Ene
 end
 
 """
-    constraints_capacity(m, n::Sink, 𝒯::TimeStructure, modeltype::EnergyModel)
+    constraints_capacity(m, n::Sink, 𝒯::TimeStructure, modeltype)
 
 Function for creating the constraint on the maximum capacity of a generic `Sink`.
 This function serves as fallback option if no other function is specified for a `Sink`.
 """
-function constraints_capacity(m, n::Sink, 𝒯::TimeStructure, modeltype::EnergyModel)
+function constraints_capacity(m, n::Sink, 𝒯::TimeStructure, modeltype)
 
     @constraint(m, [t ∈ 𝒯],
         m[:cap_use][n, t] + m[:sink_deficit][n,t] ==
@@ -57,7 +57,7 @@ end
 
 
 """
-    constraints_capacity_installed(m, n, 𝒯::TimeStructure, modeltype::EnergyModel)
+    constraints_capacity_installed(m, n, 𝒯::TimeStructure, modeltype)
 
 Constrain the installed capacity to the available capacity.
 
@@ -65,13 +65,13 @@ This function should only be used to dispatch on the modeltype for providing inv
 If you create new capacity variables, it is beneficial to include as well a method for this
 function and the corresponding node types.
 """
-function constraints_capacity_installed(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
+function constraints_capacity_installed(m, n::Node, 𝒯::TimeStructure, modeltype)
     # Fix the installed capacity to the upper bound
    for t ∈ 𝒯
         fix(m[:cap_inst][n, t], capacity(n, t); force=true)
    end
 end
-function constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
+function constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype)
 
     # Fix the installed capacity to the upper bound
     for t ∈ 𝒯
@@ -91,12 +91,12 @@ end
 
 
 """
-    constraints_flow_in(m, n, 𝒯::TimeStructure, modeltype::EnergyModel)
+    constraints_flow_in(m, n, 𝒯::TimeStructure, modeltype)
 
 Function for creating the constraint on the inlet flow to a generic `Node`.
 This function serves as fallback option if no other function is specified for a `Node`.
 """
-function constraints_flow_in(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
+function constraints_flow_in(m, n::Node, 𝒯::TimeStructure, modeltype)
     # Declaration of the required subsets
     𝒫ⁱⁿ  = inputs(n)
 
@@ -107,12 +107,12 @@ function constraints_flow_in(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyM
 end
 
 """
-    constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
+    constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype)
 
 Function for creating the constraint on the inlet flow to a generic `Storage`.
 This function serves as fallback option if no other function is specified for a `Storage`.
 """
-function constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
+function constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype)
     # Declaration of the required subsets
     p_stor = storage_resource(n)
     𝒫ᵃᵈᵈ   = setdiff(inputs(n), [p_stor])
@@ -128,7 +128,7 @@ function constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::Ener
     )
 end
 """
-    constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
+    constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype)
 
 Create the constraint on the inlet flow to a generic `Storage`.
 This function serves as fallback option if no other function is specified for a `Storage`.
@@ -137,7 +137,7 @@ function constraints_flow_in(
     m,
     n::Storage{AccumulatingEmissions},
     𝒯::TimeStructure,
-    modeltype::EnergyModel,
+    modeltype,
 )
     # Declaration of the required subsets
     p_stor = storage_resource(n)
@@ -158,12 +158,12 @@ end
 
 
 """
-    constraints_flow_out(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
+    constraints_flow_out(m, n::Node, 𝒯::TimeStructure, modeltype)
 
 Function for creating the constraint on the outlet flow from a generic `Node`.
 This function serves as fallback option if no other function is specified for a `Node`.
 """
-function constraints_flow_out(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
+function constraints_flow_out(m, n::Node, 𝒯::TimeStructure, modeltype)
     # Declaration of the required subsets, excluding CO2, if specified
     𝒫ᵒᵘᵗ = res_not(outputs(n), co2_instance(modeltype))
 
@@ -174,12 +174,12 @@ function constraints_flow_out(m, n::Node, 𝒯::TimeStructure, modeltype::Energy
 end
 
 """
-    constraints_flow_out(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
+    constraints_flow_out(m, n::Storage, 𝒯::TimeStructure, modeltype)
 
 Function for creating the constraint on the outlet flow from a generic `Storage`.
 This function serves as fallback option if no other function is specified for a `Storage`.
 """
-function constraints_flow_out(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
+function constraints_flow_out(m, n::Storage, 𝒯::TimeStructure, modeltype)
     # Declaration of the required subsets
     p_stor = storage_resource(n)
     𝒫ᵒᵘᵗ = res_not(outputs(n), co2_instance(modeltype))
@@ -192,12 +192,12 @@ end
 
 
 """
-    constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
+    constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype)
 
 Function for creating the level constraint for a reference storage node with a
 `ResourceCarrier` resource.
 """
-function constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
+function constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype)
     # Declaration of the required subsets
     𝒯ᴵⁿᵛ   = strategic_periods(𝒯)
 
@@ -218,12 +218,12 @@ end
 
 
 """
-    constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
+    constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype)
 
 Create the Δ constraint for the level of a reference storage node with a
 `ResourceCarrier` resource.
 """
-function constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
+function constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype)
     # Declaration of the required subsets
     p_stor = storage_resource(n)
 
@@ -234,12 +234,12 @@ function constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel
 end
 
 """
-    constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫, modeltype::EnergyModel)
+    constraints_level_aux(m, n::RefStorage{S}, 𝒯, 𝒫, modeltype)
 
 Function for creating the Δ constraint for the level of a reference storage node with a
 `ResourceEmit` resource.
 """
-function constraints_level_aux(m, n::RefStorage{AccumulatingEmissions}, 𝒯, 𝒫, modeltype::EnergyModel)
+function constraints_level_aux(m, n::RefStorage{AccumulatingEmissions}, 𝒯, 𝒫, modeltype)
     # Declaration of the required subsets
     p_stor = storage_resource(n)
     𝒫ᵉᵐ    = setdiff(res_sub(𝒫, ResourceEmit), [p_stor])
@@ -271,7 +271,7 @@ end
         cyclic_pers::CyclicPeriods,
         per,
         ts::RepresentativePeriods,
-        modeltype::EnergyModel,
+        modeltype,
     )
 
 Iterate through the individual time structures of a `Storage` node. This iteration function
@@ -288,7 +288,7 @@ function constraints_level_iterate(
     cyclic_pers::CyclicPeriods,
     per,
     _::RepresentativePeriods,
-    modeltype::EnergyModel,
+    modeltype,
 )
     # Declaration of the required subsets
     𝒯ʳᵖ = repr_periods(per)
@@ -318,7 +318,7 @@ end
         prev_pers::PreviousPeriods,
         per,
         ts::OperationalScenarios,
-        modeltype::EnergyModel,
+        modeltype,
     )
 
 In the case of `OperationalScenarios`, this is achieved through calling the function
@@ -331,7 +331,7 @@ function constraints_level_iterate(
     cyclic_pers::CyclicPeriods,
     per,
     _::OperationalScenarios,
-    modeltype::EnergyModel,
+    modeltype,
 )
     # Declaration of the required subsets
     𝒯ˢᶜ = opscenarios(per)
@@ -353,7 +353,7 @@ end
         prev_pers::PreviousPeriods,
         per,
         ts::SimpleTimes,
-        modeltype::EnergyModel,
+        modeltype,
     )
 
 In the case of `SimpleTimes`, the iterator function is at its lowest level. In this
@@ -371,7 +371,7 @@ function constraints_level_iterate(
     cyclic_pers::CyclicPeriods,
     per,
     _::SimpleTimes,
-    modeltype::EnergyModel,
+    modeltype,
 )
 
     # Iterate through the operational structure
@@ -394,7 +394,7 @@ function constraints_level_iterate(
 end
 
 """
-    constraints_level_rp(m, n::Storage, per, modeltype::EnergyModel)
+    constraints_level_rp(m, n::Storage, per, modeltype)
 
 Provides additional contraints for representative periods.
 
@@ -402,7 +402,7 @@ The default approach is to set the total change in all representative periods wi
 strategic period to 0. This implies that the `Storage` node cannot accumulate energy between
 individual strategic periods.
 """
-function constraints_level_rp(m, n::Storage, per, modeltype::EnergyModel)
+function constraints_level_rp(m, n::Storage, per, modeltype)
     # Declaration of the required subsets
     𝒯ʳᵖ = repr_periods(per)
 
@@ -410,7 +410,7 @@ function constraints_level_rp(m, n::Storage, per, modeltype::EnergyModel)
     @constraint(m, sum(m[:stor_level_Δ_rp][n, t_rp] for t_rp ∈ 𝒯ʳᵖ) == 0)
 end
 """
-    constraints_level_rp(m, n::Storage{<:Accumulating}, per, modeltype::EnergyModel)
+    constraints_level_rp(m, n::Storage{<:Accumulating}, per, modeltype)
 
 When a `Storage{<:Accumulating}` is used, the cyclic constraint for restricting the level
 change within a strategic period to 0 (through setting the sum of `:stor_level_Δ_rp` within
@@ -421,16 +421,16 @@ This implies that [`Accumulating`](@ref) behaviours require the developer to int
 the function [`previous_level`](@ref) in the case of
 `prev_pers = PreviousPeriods{<:NothingPeriod, Nothing, Nothing}`.
 """
-function constraints_level_rp(m, n::Storage{<:Accumulating}, per, modeltype::EnergyModel)
+function constraints_level_rp(m, n::Storage{<:Accumulating}, per, modeltype)
     return nothing
 end
 """
-    constraints_level_rp(m, n::Storage{CyclicRepresentative}, per, modeltype::EnergyModel)
+    constraints_level_rp(m, n::Storage{CyclicRepresentative}, per, modeltype)
 
 When a `Storage{CyclicRepresentative}` is used, the change in the representative period
 is constrained to 0.
 """
-function constraints_level_rp(m, n::Storage{CyclicRepresentative}, per, modeltype::EnergyModel)
+function constraints_level_rp(m, n::Storage{CyclicRepresentative}, per, modeltype)
     # Declaration of the required subsets
     𝒯ʳᵖ = repr_periods(per)
 
@@ -441,22 +441,22 @@ function constraints_level_rp(m, n::Storage{CyclicRepresentative}, per, modeltyp
 end
 
 """
-    constraints_level_scp(m, n::Storage, per, modeltype::EnergyModel)
+    constraints_level_scp(m, n::Storage, per, modeltype)
 
 Provides additional constraints for scenario periods.
 
 The default approach is to not provide any constraints.
 """
-function constraints_level_scp(m, n::Storage, per, modeltype::EnergyModel)
+function constraints_level_scp(m, n::Storage, per, modeltype)
     return nothing
 end
 """
-    constraints_level_scp(m, n::Storage{CyclicRepresentative}, per, modeltype::EnergyModel)
+    constraints_level_scp(m, n::Storage{CyclicRepresentative}, per, modeltype)
 
 When a Storage{CyclicRepresentative} is used, the final level in an operational scenario is
 constrained to be the same in all operational scenarios.
 """
-function constraints_level_scp(m, n::Storage{CyclicRepresentative}, per, modeltype::EnergyModel)
+function constraints_level_scp(m, n::Storage{CyclicRepresentative}, per, modeltype)
     # Declaration of the required subsets
     𝒯ˢᶜ = opscenarios(per)
     last_scp = [last(t_scp) for t_scp ∈ 𝒯ˢᶜ]
@@ -474,7 +474,7 @@ end
         n::Storage,
         t::TS.TimePeriod,
         prev_pers::TS.TimePeriod,
-        modeltype::EnergyModel,
+        modeltype,
     )
 
 Provides bounds on the initial storage level in an operational period to account for the
@@ -487,7 +487,7 @@ function constraints_level_bounds(
     n::Storage,
     t::TS.TimePeriod,
     cyclic_pers::CyclicPeriods{<:TS.AbstractStrategicPeriod},
-    modeltype::EnergyModel,
+    modeltype,
 )
 
     return nothing
@@ -498,7 +498,7 @@ end
         n::Storage,
         t::TS.TimePeriod,
         cyclic_pers::CyclicPeriods{<:TS.AbstractRepresentativePeriod},
-        modeltype::EnergyModel,
+        modeltype,
     )
 
 When representative periods are used and the previous operational  period is `nothing`, then
@@ -510,7 +510,7 @@ function constraints_level_bounds(
     n::Storage,
     t::TS.TimePeriod,
     cyclic_pers::CyclicPeriods{<:TS.AbstractRepresentativePeriod},
-    modeltype::EnergyModel,
+    modeltype,
 )
 
     # Constraint to avoid starting below 0 in this operational period
@@ -527,12 +527,12 @@ function constraints_level_bounds(
 end
 
 """
-    constraints_opex_fixed(m, n::Node, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+    constraints_opex_fixed(m, n::Node, 𝒯ᴵⁿᵛ, modeltype)
 
 Function for creating the constraint on the fixed OPEX of a generic `Node`.
 This function serves as fallback option if no other function is specified for a `Node`.
 """
-function constraints_opex_fixed(m, n::Node, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+function constraints_opex_fixed(m, n::Node, 𝒯ᴵⁿᵛ, modeltype)
 
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         m[:opex_fixed][n, t_inv] ==
@@ -541,7 +541,7 @@ function constraints_opex_fixed(m, n::Node, 𝒯ᴵⁿᵛ, modeltype::EnergyMode
 end
 
 """
-constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype)
 
 Function for creating the constraint on the fixed OPEX of a generic `Storage`.
 This function serves as fallback option if no other function is specified for a `Storage`.
@@ -550,7 +550,7 @@ The fallback option includes fixed OPEX for `charge`, `level`, and `discharge`.
 The individual contributions are in all situations calculated based on the installed
 capacities.
 """
-function constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+function constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype)
 
     # Extracts the contribution from the individual components
     if has_level_OPEX_fixed(n)
@@ -586,12 +586,12 @@ function constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyM
 end
 
 """
-    constraints_opex_fixed(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+    constraints_opex_fixed(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype)
 
 Function for creating the constraint on the fixed OPEX of a generic `Sink`.
 This function serves as fallback option if no other function is specified for a `Sink`.
 """
-function constraints_opex_fixed(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+function constraints_opex_fixed(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype)
 
     # Fix the fixed OPEX
     for t_inv ∈ 𝒯ᴵⁿᵛ
@@ -601,12 +601,12 @@ end
 
 
 """
-    constraints_opex_var(m, n::Node, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+    constraints_opex_var(m, n::Node, 𝒯ᴵⁿᵛ, modeltype)
 
 Function for creating the constraint on the variable OPEX of a generic `Node`.
 This function serves as fallback option if no other function is specified for a `Node`.
 """
-function constraints_opex_var(m, n::Node, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+function constraints_opex_var(m, n::Node, 𝒯ᴵⁿᵛ, modeltype)
 
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         m[:opex_var][n, t_inv] ==
@@ -617,12 +617,12 @@ function constraints_opex_var(m, n::Node, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
 end
 
 """
-    constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+    constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype)
 
 Function for creating the constraint on the variable OPEX of a generic `Storage`.
 This function serves as fallback option if no other function is specified for a `Storage`.
 """
-function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype)
 
     # Extracts the contribution from the individual components
     if has_level_OPEX_var(n)
@@ -661,12 +661,12 @@ function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyMod
 end
 
 """
-    constraints_opex_var(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+    constraints_opex_var(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype)
 
 Function for creating the constraint on the variable OPEX of a generic `Sink`.
 This function serves as fallback option if no other function is specified for a `Sink`.
 """
-function constraints_opex_var(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+function constraints_opex_var(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype)
 
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         m[:opex_var][n, t_inv] ==

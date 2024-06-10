@@ -21,17 +21,17 @@ function EMB.constraints_capacity_installed(
     modeltype::AbstractInvestmentModel,
 )
 
-    if has_investment(n)
+    if EMI.has_investment(n)
         # Extract the investment data, the discount rate, and the strategic periods
-        disc_rate = discount_rate(modeltype)
-        inv_data = investment_data(n, :cap)
+        disc_rate = EMI.discount_rate(modeltype)
+        inv_data = EMI.investment_data(n, :cap)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
         # Add the investment constraints
-        add_investment_constraints(m, n, inv_data, :cap, :cap, 𝒯ᴵⁿᵛ, disc_rate)
+        EMI.add_investment_constraints(m, n, inv_data, :cap, :cap, 𝒯ᴵⁿᵛ, disc_rate)
     else
         for t ∈ 𝒯
-            fix(m[:cap_inst][n, t], capacity(n, t); force=true)
+            fix(m[:cap_inst][n, t], EMB.capacity(n, t); force=true)
         end
     end
 end
@@ -52,7 +52,7 @@ constraints for each capacity.
 """
 function EMB.constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::AbstractInvestmentModel)
     # Extract the he discount rate and the strategic periods
-    disc_rate = discount_rate(modeltype)
+    disc_rate = EMI.discount_rate(modeltype)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     cap_fields = [:charge, :level, :discharge]
@@ -63,13 +63,13 @@ function EMB.constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, 
         end
         stor_par = getfield(n, cap)
         prefix = Symbol(:stor_, cap)
-        var_inst = get_var_inst(m, prefix, n)
-        if has_investment(n, cap)
+        var_inst = EMI.get_var_inst(m, prefix, n)
+        if EMI.has_investment(n, cap)
             # Extract the investment data
-            inv_data = investment_data(n, cap)
+            inv_data = EMI.investment_data(n, cap)
 
             # Add the investment constraints
-            add_investment_constraints(m, n, inv_data, cap, prefix, 𝒯ᴵⁿᵛ, disc_rate)
+            EMI.add_investment_constraints(m, n, inv_data, cap, prefix, 𝒯ᴵⁿᵛ, disc_rate)
 
         elseif isa(stor_par, EMB.UnionCapacity)
             for t ∈ 𝒯

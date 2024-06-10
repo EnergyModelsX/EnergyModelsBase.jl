@@ -12,7 +12,7 @@ Capacity constraints are constraints that limit both the capacity usage and inst
 The core function is given by
 
 ```julia
-constraints_capacity(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
+constraints_capacity(m, n::Node, 𝒯::TimeStructure, modeltype)
 ```
 
 correponding to the constraint on the usage of the capacity of a technology node ``n``.
@@ -23,7 +23,7 @@ The general implementation is limiting the capacity usage. That is, limiting the
 Within this function, the function
 
 ```julia
-constraints_capacity_installed(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
+constraints_capacity_installed(m, n::Node, 𝒯::TimeStructure, modeltype)
 ```
 
 is called to limit the variable ``\texttt{cap\_inst}`` (or ``\texttt{stor\_charge_\_inst}``, ``\texttt{stor\_level\_inst}`` and ``\texttt{stor\_discharge_\_inst}`` for `Storage` nodes) of a technology node ``n``.
@@ -33,7 +33,7 @@ This functions is also used to subsequently dispatch on model type for the intro
     As the function `constraints_capacity_installed` is used for including investments for nodes, it is important that it is also called when creating a new node.
     It is not possible to only add a function for
     ```julia
-    constraints_capacity_installed(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
+    constraints_capacity_installed(m, n::Node, 𝒯::TimeStructure, modeltype)
     ```
     without adding a function for
     ```julia
@@ -48,14 +48,14 @@ In `EnergyModelsBase`, we only consider capacity variables as internal variables
 This can however be extended through the development of new `Node`s, if desired.
 
 ```julia
-constraints_flow_in(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
+constraints_flow_in(m, n::Node, 𝒯::TimeStructure, modeltype)
 ```
 
 corresponds to the constraints calculating the required inflow to a node ``n`` for a given capacity usage.
 It is implemented for `Node` (using ``\texttt{cap\_use}[n, t]``) and `Storage` (using ``\texttt{stor\_rate\_use}[n, t]``) types.
 
 ```julia
-constraints_flow_out(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
+constraints_flow_out(m, n::Node, 𝒯::TimeStructure, modeltype)
 ```
 
 corresponds to the constraints calculating the outflow of a node ``n`` for a given capacity usage.
@@ -67,20 +67,20 @@ The outflow of a `Storage` node is instead specified through the storage level b
 Storage level constraints are required to provide flexibility on how the level of a `Storage` node should be calculated depending on the chosen [`StorageBehavior`](@ref sec_lib_public_storbehav).
 
 ```julia
-constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
+constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype)
 ```
 
 corresponds to the main constraint for calculating the level balance of a `Storage` node.
 Within this constraint, two different functions are called:
 
 ```julia
-constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
+constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype)
 ```
 
 and
 
 ```julia
-constraints_level_iterate(m, n::Storage, prev_pers, cyclic_pers, t_inv, ts, modeltype::EnergyModel)
+constraints_level_iterate(m, n::Storage, prev_pers, cyclic_pers, t_inv, ts, modeltype)
 ```
 
 The first function, `constraints_level_aux`, is used to calculate additional properties of a `Storage` node.
@@ -98,8 +98,8 @@ This requires that the `RepresentativePeriods` are sequential.
 The total function call structure is given by:
 
 ```
-constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
-├─ constraints_level_aux(m, n, 𝒯, 𝒫, modeltype::EnergyModel)
+constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype)
+├─ constraints_level_aux(m, n, 𝒯, 𝒫, modeltype)
 └─ constraints_level_iterate(m, n, prev_pers, cyclic_pers, t_inv, ts::RepresentativePeriods, modeltype)
    ├─ constraints_level_rp(m, n, per, modeltype)
    └─ constraints_level_iterate(m, n, prev_pers, cyclic_pers, t_inv, ts::OperationalScenarios, modeltype)
@@ -131,7 +131,7 @@ Operational expenditure (OPEX) constraints calculate the contribution of operati
 The constraints are declared for both the fixed and variable OPEX.
 
 ```julia
-constraints_opex_fixed(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
+constraints_opex_fixed(m, n::Node, 𝒯::TimeStructure, modeltype)
 ```
 
 corresponds to the constraints calculating the fixed operational costs of a technology node ``n``.
@@ -147,7 +147,7 @@ They do not have a capacity in their basic implementation.
 Hence, no fixed OPEX is calculated.
 
 ```julia
-constraints_opex_var(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
+constraints_opex_var(m, n::Node, 𝒯::TimeStructure, modeltype)
 ```
 
 corresponds to the constraints calculating the variable operational costs of a technology node ``n``.

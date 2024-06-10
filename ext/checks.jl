@@ -28,7 +28,7 @@ function EMB.check_node_data(
         "Only one `InvestmentData` can be added to each node."
     )
 
-    check_inv_data(investment_data(data), capacity(n), 𝒯, "", check_timeprofiles)
+    check_inv_data(EMI.investment_data(data), EMB.capacity(n), 𝒯, "", check_timeprofiles)
 end
 """
     EMB.check_node_data(
@@ -77,7 +77,7 @@ function EMB.check_node_data(
         isnothing(sub_data) && continue
         check_inv_data(
             sub_data,
-            capacity(getproperty(n, cap_fields)),
+            EMB.capacity(getproperty(n, cap_fields)),
             𝒯,
             " of field `" * String(cap_fields) * "`",
             check_timeprofiles
@@ -157,7 +157,7 @@ function check_inv_data(
     # Check on the initial capacity in the first strategic period
     if isa(inv_data, StartInvData)
             @assert_or_log(
-                inv_data.initial <= max_installed(inv_data, t_inv_1),
+                inv_data.initial <= EMI.max_installed(inv_data, t_inv_1),
                 "The starting value in the investment data " * message *
                 " can not be larger than the maximum installed constraint."
             )
@@ -167,7 +167,7 @@ function check_inv_data(
         EMB.check_strategic_profile(capacity_profile, message)
 
         @assert_or_log(
-            capacity_profile[t_inv_1] <= max_installed(inv_data, t_inv_1),
+            capacity_profile[t_inv_1] <= EMI.max_installed(inv_data, t_inv_1),
             "The existing capacity can not be larger than the maximum installed value in " *
             " the first strategic period for the capacity coupled to the investment data" *
             message * "."
@@ -175,9 +175,9 @@ function check_inv_data(
     end
 
     # Check on the minmimum and maximum added capacities
-    if isa(investment_mode(inv_data), Union{ContinuousInvestment, SemiContiInvestment})
+    if isa(EMI.investment_mode(inv_data), Union{ContinuousInvestment, SemiContiInvestment})
         @assert_or_log(
-            sum(min_add(inv_data, t) ≤ max_add(inv_data, t) for t ∈ 𝒯) == length(𝒯),
+            sum(EMI.min_add(inv_data, t) ≤ EMI.max_add(inv_data, t) for t ∈ 𝒯) == length(𝒯),
             "`min_add` has to be less than `max_add` in the investment data" *
             message * "."
         )

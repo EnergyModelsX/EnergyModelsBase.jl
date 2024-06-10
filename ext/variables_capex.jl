@@ -30,11 +30,11 @@ Additional variables for investment in storage:
 """
 function EMB.variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype::AbstractInvestmentModel)
 
-    𝒩ᴵⁿᵛ = filter(has_investment, filter(!EMB.is_storage, 𝒩))
+    𝒩ᴵⁿᵛ = filter(EMI.has_investment, filter(!EMB.is_storage, 𝒩))
     𝒩ˢᵗᵒʳ = filter(EMB.is_storage, 𝒩)
-    𝒩ˡᵉᵛᵉˡ = filter(n -> has_investment(n, :level), 𝒩ˢᵗᵒʳ)
-    𝒩ᶜʰᵃʳᵍᵉ = filter(n -> has_investment(n, :charge), 𝒩ˢᵗᵒʳ)
-    𝒩ᵈⁱˢᶜʰᵃʳᵍᵉ = filter(n -> has_investment(n, :discharge), 𝒩ˢᵗᵒʳ)
+    𝒩ˡᵉᵛᵉˡ = filter(n -> EMI.has_investment(n, :level), 𝒩ˢᵗᵒʳ)
+    𝒩ᶜʰᵃʳᵍᵉ = filter(n -> EMI.has_investment(n, :charge), 𝒩ˢᵗᵒʳ)
+    𝒩ᵈⁱˢᶜʰᵃʳᵍᵉ = filter(n -> EMI.has_investment(n, :discharge), 𝒩ˢᵗᵒʳ)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Add investment variables for reference nodes for each strategic period:

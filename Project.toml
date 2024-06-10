@@ -5,6 +5,7 @@ version = "0.8.0"
 
 [deps]
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
+SparseVariables = "2749762c-80ed-4b14-8f33-f0736679b02b"
 TimeStruct = "f9ed5ce0-9f41-4eaa-96da-f38ab8df101c"
 
 [weakdeps]
@@ -14,7 +15,8 @@ EnergyModelsInvestments = "fca3f8eb-b383-437d-8e7b-aac76bb2004f"
 EMIExt = "EnergyModelsInvestments"
 
 [compat]
-JuMP = "^0.23, 1"
-julia = "^1.6"
-TimeStruct = "^0.8"
 EnergyModelsInvestments = "0.7"
+JuMP = "1"
+SparseVariables = "0.7.3"
+TimeStruct = "^0.8"
+julia = "^1.6"
