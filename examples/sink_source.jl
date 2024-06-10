@@ -1,6 +1,8 @@
 using Pkg
 # Activate the local environment including EnergyModelsBase, HiGHS, PrettyTables
 Pkg.activate(@__DIR__)
+# Use dev version if code checked out
+contains(@__DIR__, "EnergyModelsBase.jl") && Pkg.develop(path=joinpath(@__DIR__,".."))
 # Install the dependencies.
 Pkg.instantiate()
 
