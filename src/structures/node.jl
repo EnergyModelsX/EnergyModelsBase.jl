@@ -150,21 +150,21 @@ end
 
 Union for simpler dispatching for storage parameters that include fixed OPEX.
 """
-UnionOpexFixed = Union{StorCapOpex, StorCapOpexFixed}
+UnionOpexFixed = Union{StorCapOpex,StorCapOpexFixed}
 
 """
     UnionOpexVar
 
 Union for simpler dispatching for storage parameters that include variable OPEX.
 """
-UnionOpexVar = Union{StorCapOpex, StorCapOpexVar, StorOpexVar}
+UnionOpexVar = Union{StorCapOpex,StorCapOpexVar,StorOpexVar}
 
 """
     UnionCapacity
 
 Union for simpler dispatching for storage parameters that include a capacity.
 """
-UnionCapacity = Union{StorCapOpex, StorCap, StorCapOpexVar, StorCapOpexFixed}
+UnionCapacity = Union{StorCapOpex,StorCap,StorCapOpexVar,StorCapOpexFixed}
 
 """ `Source` node with only output."""
 abstract type Source <: Node end
@@ -197,11 +197,11 @@ or `StrategicProfile`.
   is conditional through usage of a constructor.
 """
 struct RefSource <: Source
-    id
+    id::Any
     cap::TimeProfile
     opex_var::TimeProfile
     opex_fixed::TimeProfile
-    output::Dict{<:Resource, <:Real}
+    output::Dict{<:Resource,<:Real}
     data::Vector
 end
 function RefSource(
@@ -236,12 +236,12 @@ The capacity is hereby normalized to a conversion value of 1 in the fields `inpu
   is conditional through usage of a constructor.
 """
 struct RefNetworkNode <: NetworkNode
-    id
+    id::Any
     cap::TimeProfile
     opex_var::TimeProfile
     opex_fixed::TimeProfile
-    input::Dict{<:Resource, <:Real}
-    output::Dict{<:Resource, <:Real}
+    input::Dict{<:Resource,<:Real}
+    output::Dict{<:Resource,<:Real}
     data::Vector
 end
 function RefNetworkNode(
@@ -249,8 +249,8 @@ function RefNetworkNode(
     cap::TimeProfile,
     opex_var::TimeProfile,
     opex_fixed::TimeProfile,
-    input::Dict{<:Resource, <:Real},
-    output::Dict{<:Resource, <:Real},
+    input::Dict{<:Resource,<:Real},
+    output::Dict{<:Resource,<:Real},
 )
     return RefNetworkNode(id, cap, opex_var, opex_fixed, input, output, Data[])
 end
@@ -271,7 +271,7 @@ A constructor is provided so that only a single array can be provided with the f
 - **`𝒫::Vector{<:Resource}`** are the `[`Resource`](@ref)s.
 """
 struct GenAvailability <: Availability
-    id
+    id::Any
     input::Vector{<:Resource}
     output::Vector{<:Resource}
 end
@@ -308,12 +308,12 @@ The current implemented cyclic behaviours are [`CyclicRepresentative`](@ref),
   is conditional through usage of a constructor.
 """
 struct RefStorage{T} <: Storage{T}
-    id
+    id::Any
     charge::AbstractStorageParameters
     level::UnionCapacity
     stor_res::Resource
-    input::Dict{<:Resource, <:Real}
-    output::Dict{<:Resource, <:Real}
+    input::Dict{<:Resource,<:Real}
+    output::Dict{<:Resource,<:Real}
     data::Vector
 end
 
@@ -322,18 +322,10 @@ function RefStorage{T}(
     charge::AbstractStorageParameters,
     level::UnionCapacity,
     stor_res::Resource,
-    input::Dict{<:Resource, <:Real},
-    output::Dict{<:Resource, <:Real},
+    input::Dict{<:Resource,<:Real},
+    output::Dict{<:Resource,<:Real},
 ) where {T<:StorageBehavior}
-    return RefStorage{T}(
-        id,
-        charge,
-        level,
-        stor_res,
-        input,
-        output,
-        Data[],
-    )
+    return RefStorage{T}(id, charge, level, stor_res, input, output, Data[])
 end
 
 """
@@ -353,10 +345,10 @@ and deficit.
   is conditional through usage of a constructor.
 """
 struct RefSink <: Sink
-    id
+    id::Any
     cap::TimeProfile
-    penalty::Dict{Symbol, <:TimeProfile}
-    input::Dict{<:Resource, <:Real}
+    penalty::Dict{Symbol,<:TimeProfile}
+    input::Dict{<:Resource,<:Real}
     data::Vector
 end
 function RefSink(
@@ -488,8 +480,7 @@ charge(n::Storage) = has_charge(n) ? n.charge : nothing
 
 Returns logic whether the node has a `charge` capacity.
 """
-has_charge_cap(n::Storage) =
-    hasfield(typeof(n), :charge) && isa(charge(n), UnionCapacity)
+has_charge_cap(n::Storage) = hasfield(typeof(n), :charge) && isa(charge(n), UnionCapacity)
 
 """
     has_charge_OPEX_fixed(n::Storage)

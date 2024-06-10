@@ -24,13 +24,12 @@ function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsEner
     @constraint(
         m,
         [t ∈ 𝒯],
-        m[:emissions_node][n, t, CO2] ==
-        sum(co2_int(p) * m[:flow_in][n, t, p] for p ∈ 𝒫ⁱⁿ)
+        m[:emissions_node][n, t, CO2] == sum(co2_int(p) * m[:flow_in][n, t, p] for p ∈ 𝒫ⁱⁿ)
     )
 
     # Fix the other emissions to 0 to avoid problems with unconstrained variables
     for t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ
-        fix(m[:emissions_node][n, t, p_em], 0,; force=true)
+        fix(m[:emissions_node][n, t, p_em], 0, ; force = true)
     end
 end
 function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsProcess)
@@ -53,7 +52,8 @@ function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsProc
     @constraint(
         m,
         [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
-        m[:emissions_node][n, t, p_em] == m[:cap_use][n, t] * process_emissions(data, p_em, t)
+        m[:emissions_node][n, t, p_em] ==
+        m[:cap_use][n, t] * process_emissions(data, p_em, t)
     )
 end
 function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
@@ -79,7 +79,8 @@ function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergy
     @constraint(
         m,
         [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
-        m[:emissions_node][n, t, p_em] == m[:cap_use][n, t] * process_emissions(data, p_em, t)
+        m[:emissions_node][n, t, p_em] ==
+        m[:cap_use][n, t] * process_emissions(data, p_em, t)
     )
 
     # Constraint for the outlet of the CO2
@@ -100,14 +101,16 @@ function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureProces
         m,
         [t ∈ 𝒯],
         m[:emissions_node][n, t, CO2] ==
-        (1 - co2_capture(data)) * CO2_tot[t] + sum(co2_int(p) * m[:flow_in][n, t, p] for p ∈ 𝒫ⁱⁿ)
+        (1 - co2_capture(data)) * CO2_tot[t] +
+        sum(co2_int(p) * m[:flow_in][n, t, p] for p ∈ 𝒫ⁱⁿ)
     )
 
     # Constraint for the other emissions to avoid problems with unconstrained variables.
     @constraint(
         m,
         [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
-        m[:emissions_node][n, t, p_em] == m[:cap_use][n, t] * process_emissions(data, p_em, t)
+        m[:emissions_node][n, t, p_em] ==
+        m[:cap_use][n, t] * process_emissions(data, p_em, t)
     )
 
     # Constraint for the outlet of the CO2
@@ -139,7 +142,8 @@ function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureProces
     @constraint(
         m,
         [t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ],
-        m[:emissions_node][n, t, p_em] == m[:cap_use][n, t] * process_emissions(data, p_em, t)
+        m[:emissions_node][n, t, p_em] ==
+        m[:cap_use][n, t] * process_emissions(data, p_em, t)
     )
 
     # Constraint for the outlet of the CO2

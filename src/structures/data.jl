@@ -76,7 +76,7 @@ struct CaptureEnergyEmissions{T} <: CaptureData{T}
     co2_capture::Float64
 end
 CaptureEnergyEmissions(co2_capture::Float64) =
-    CaptureEnergyEmissions(Dict{ResourceEmit, Float64}(), co2_capture)
+    CaptureEnergyEmissions(Dict{ResourceEmit,Float64}(), co2_capture)
 
 """
     EmissionsProcess{T} <: EmissionsData{T}
@@ -90,8 +90,9 @@ but accepts it and will ignore it, if provided.
 struct EmissionsProcess{T} <: EmissionsData{T}
     emissions::Dict{<:ResourceEmit,T}
 end
-EmissionsProcess(emissions::Dict{<:ResourceEmit,T}, _) where {T} = EmissionsProcess(emissions)
-EmissionsProcess() = EmissionsProcess(Dict{ResourceEmit, Float64}())
+EmissionsProcess(emissions::Dict{<:ResourceEmit,T}, _) where {T} =
+    EmissionsProcess(emissions)
+EmissionsProcess() = EmissionsProcess(Dict{ResourceEmit,Float64}())
 
 """
     EmissionsEnergy{T} <: EmissionsData{T}
@@ -99,8 +100,7 @@ EmissionsProcess() = EmissionsProcess(Dict{ResourceEmit, Float64}())
 No capture, no process emissions are present. Does not require `co2_capture` or `emissions`
 as input, but accepts it and will ignore it, if provided.
 """
-struct EmissionsEnergy{T} <: EmissionsData{T}
-end
+struct EmissionsEnergy{T} <: EmissionsData{T} end
 EmissionsEnergy(_, _) = EmissionsEnergy{Float64}()
 EmissionsEnergy(_) = EmissionsEnergy{Float64}()
 EmissionsEnergy() = EmissionsEnergy{Float64}()

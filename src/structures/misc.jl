@@ -16,7 +16,7 @@ application of the `with_prev` iterator developed in `TimeStruct`.
 - **`rp::T`** the previous representative period.
 - **`op::U`** the previous operational period.
 """
-struct PreviousPeriods{S<:NothingPeriod, T<:NothingPeriod, U<:NothingPeriod}
+struct PreviousPeriods{S<:NothingPeriod,T<:NothingPeriod,U<:NothingPeriod}
     sp::S
     rp::T
     op::U

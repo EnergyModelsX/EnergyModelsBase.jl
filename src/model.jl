@@ -16,7 +16,7 @@ Create the model and call all required functions.
   are testing new components. It may lead to unexpected behaviour and potential
   inconsistencies in the input data, if the time profiles are not checked.
 """
-function create_model(case, modeltype, m::JuMP.Model; check_timeprofiles::Bool=true)
+function create_model(case, modeltype, m::JuMP.Model; check_timeprofiles::Bool = true)
     @debug "Construct model"
 
     # Check if the case data is consistent before the model is created.
@@ -46,7 +46,7 @@ function create_model(case, modeltype, m::JuMP.Model; check_timeprofiles::Bool=t
 
     return m
 end
-function create_model(case, modeltype; check_timeprofiles::Bool=true)
+function create_model(case, modeltype; check_timeprofiles::Bool = true)
     m = JuMP.Model()
     create_model(case, modeltype, m; check_timeprofiles)
 end
@@ -83,7 +83,7 @@ These variables are:
 """
 function variables_capacity(m, 𝒩, 𝒯, modeltype)
 
-    𝒩ⁿᵒᵗ = nodes_not_sub(𝒩, Union{Storage, Availability})
+    𝒩ⁿᵒᵗ = nodes_not_sub(𝒩, Union{Storage,Availability})
     𝒩ˢᵗᵒʳ = filter(is_storage, 𝒩)
     𝒩ˢᵗᵒʳ⁻ᶜ = filter(has_charge, 𝒩ˢᵗᵒʳ)
     𝒩ˢᵗᵒʳ⁻ᵈᶜ = filter(has_discharge, 𝒩ˢᵗᵒʳ)
@@ -112,13 +112,13 @@ each technological node `n ∈ 𝒩` and link `l ∈ ℒ` (`:link_in` and `:link
 """
 function variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
 
-    𝒩ⁱⁿ  = filter(has_input, 𝒩)
+    𝒩ⁱⁿ = filter(has_input, 𝒩)
     𝒩ᵒᵘᵗ = filter(has_output, 𝒩)
 
-    @variable(m, flow_in[n_in ∈ 𝒩ⁱⁿ,    𝒯, inputs(n_in)] >= 0)
+    @variable(m, flow_in[n_in ∈ 𝒩ⁱⁿ, 𝒯, inputs(n_in)] >= 0)
     @variable(m, flow_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯, outputs(n_out)] >= 0)
 
-    @variable(m, link_in[l ∈ ℒ,  𝒯, link_res(l)] >= 0)
+    @variable(m, link_in[l ∈ ℒ, 𝒯, link_res(l)] >= 0)
     @variable(m, link_out[l ∈ ℒ, 𝒯, link_res(l)] >= 0)
 end
 
@@ -137,13 +137,15 @@ The emission variables are differentiated in:
 function variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype)
 
     𝒩ᵉᵐ = filter(has_emissions, 𝒩)
-    𝒫ᵉᵐ  = filter(is_resource_emit, 𝒫)
+    𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     @variable(m, emissions_node[𝒩ᵉᵐ, 𝒯, 𝒫ᵉᵐ])
     @variable(m, emissions_total[𝒯, 𝒫ᵉᵐ])
-    @variable(m, emissions_strategic[t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ] <=
-                emission_limit(modeltype, p, t_inv))
+    @variable(
+        m,
+        emissions_strategic[t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ] <= emission_limit(modeltype, p, t_inv)
+    )
 end
 
 """
@@ -167,8 +169,7 @@ end
 Declaration of the CAPEX variables of the model for each investment period `𝒯ᴵⁿᵛ ∈ 𝒯`.
 Empty for operational models but required for multiple dispatch in investment model.
 """
-function variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype)
-end
+function variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype) end
 
 
 """
@@ -218,8 +219,7 @@ end
 
 Default fallback method when no function is defined for a node type.
 """
-function variables_node(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, modeltype)
-end
+function variables_node(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, modeltype) end
 
 
 """
@@ -249,13 +249,21 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
         ℒᶠʳᵒᵐ, ℒᵗᵒ = link_sub(ℒ, n)
         # Constraint for output flowrate and input links.
         if has_output(n)
-            @constraint(m, [t ∈ 𝒯, p ∈ outputs(n)],
-                m[:flow_out][n, t, p] == sum(m[:link_in][l, t, p] for l in ℒᶠʳᵒᵐ if p ∈ inputs(l.to)))
+            @constraint(
+                m,
+                [t ∈ 𝒯, p ∈ outputs(n)],
+                m[:flow_out][n, t, p] ==
+                sum(m[:link_in][l, t, p] for l in ℒᶠʳᵒᵐ if p ∈ inputs(l.to))
+            )
         end
         # Constraint for input flowrate and output links.
         if has_input(n)
-            @constraint(m, [t ∈ 𝒯, p ∈ inputs(n)],
-                m[:flow_in][n, t, p] == sum(m[:link_out][l, t, p] for l in ℒᵗᵒ if p ∈ outputs(l.from)))
+            @constraint(
+                m,
+                [t ∈ 𝒯, p ∈ inputs(n)],
+                m[:flow_in][n, t, p] ==
+                sum(m[:link_out][l, t, p] for l in ℒᵗᵒ if p ∈ outputs(l.from))
+            )
         end
         # Call of function for individual node constraints.
         create_node(m, n, 𝒯, 𝒫, modeltype)
@@ -271,18 +279,20 @@ Create constraints for the emissions accounting for both operational and strateg
 function constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype)
 
     𝒩ᵉᵐ = filter(has_emissions, 𝒩)
-    𝒫ᵉᵐ  = filter(is_resource_emit, 𝒫)
+    𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Creation of the individual constraints.
-    @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
-        m[:emissions_total][t, p] ==
-            sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ᵉᵐ)
+    @constraint(
+        m,
+        [t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
+        m[:emissions_total][t, p] == sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ᵉᵐ)
     )
-    @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ],
+    @constraint(
+        m,
+        [t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ],
         m[:emissions_strategic][t_inv, p] ==
-            sum(m[:emissions_total][t, p] * multiple(t_inv, t)
-            for t ∈ t_inv)
+        sum(m[:emissions_total][t, p] * multiple(t_inv, t) for t ∈ t_inv)
     )
 end
 
@@ -295,19 +305,28 @@ function objective(m, 𝒩, 𝒯, 𝒫, modeltype)
 
     # Declaration of the required subsets.
     𝒩ⁿᵒᵗ = nodes_not_av(𝒩)
-    𝒫ᵉᵐ  = filter(is_resource_emit, 𝒫)
+    𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    opex = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
+    opex = @expression(
+        m,
+        [t_inv ∈ 𝒯ᴵⁿᵛ],
         sum((m[:opex_var][n, t_inv] + m[:opex_fixed][n, t_inv]) for n ∈ 𝒩ⁿᵒᵗ)
     )
 
-    emissions = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        sum(m[:emissions_strategic][t_inv, p] * emission_price(modeltype, p, t_inv) for p ∈ 𝒫ᵉᵐ)
+    emissions = @expression(
+        m,
+        [t_inv ∈ 𝒯ᴵⁿᵛ],
+        sum(
+            m[:emissions_strategic][t_inv, p] * emission_price(modeltype, p, t_inv) for
+            p ∈ 𝒫ᵉᵐ
+        )
     )
 
     # Calculation of the objective function.
-    @objective(m, Max,
+    @objective(
+        m,
+        Max,
         -sum((opex[t_inv] + emissions[t_inv]) * duration_strat(t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ)
     )
 end
@@ -388,7 +407,7 @@ subtypes of `Storage`.
 function create_node(m, n::Storage, 𝒯, 𝒫, modeltype)
 
     # Declaration of the required subsets.
-    𝒯ᴵⁿᵛ   = strategic_periods(𝒯)
+    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Mass/energy balance constraints for stored energy carrier.
     constraints_level(m, n, 𝒯, 𝒫, modeltype)
@@ -445,8 +464,7 @@ available node except if one wants to include as well transport between differen
 function create_node(m, n::Availability, 𝒯, 𝒫, modeltype)
 
     # Mass/energy balance constraints for an availability node.
-    @constraint(m, [t ∈ 𝒯, p ∈ inputs(n)],
-        m[:flow_in][n, t, p] == m[:flow_out][n, t, p])
+    @constraint(m, [t ∈ 𝒯, p ∈ inputs(n)], m[:flow_in][n, t, p] == m[:flow_out][n, t, p])
 end
 
 """
@@ -457,7 +475,6 @@ all unspecified subtypes of `Link`.
 """
 function create_link(m, 𝒯, 𝒫, l, formulation::Formulation)
 
-	# Generic link in which each output corresponds to the input
-    @constraint(m, [t ∈ 𝒯, p ∈ link_res(l)],
-        m[:link_out][l, t, p] == m[:link_in][l, t, p])
+    # Generic link in which each output corresponds to the input
+    @constraint(m, [t ∈ 𝒯, p ∈ link_res(l)], m[:link_out][l, t, p] == m[:link_in][l, t, p])
 end

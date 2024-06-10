@@ -14,8 +14,8 @@ Operational Energy Model without investments.
 - **`co2_instance`** is a [`ResourceEmit`](@ref) and corresponds to the type used for CO₂.
 """
 struct OperationalModel <: EnergyModel
-    emission_limit::Dict{<:ResourceEmit, <:TimeProfile}
-    emission_price::Dict{<:ResourceEmit, <:TimeProfile}
+    emission_limit::Dict{<:ResourceEmit,<:TimeProfile}
+    emission_price::Dict{<:ResourceEmit,<:TimeProfile}
     co2_instance::ResourceEmit
 end
 

@@ -10,8 +10,8 @@ The dictionary requires the keys:
  - `:products::Vector{Resource}`
  - `:T::TimeStructure`
 """
-function run_model(case::Dict, model::EnergyModel, optimizer; check_timeprofiles=true)
-   @debug "Run model" optimizer
+function run_model(case::Dict, model::EnergyModel, optimizer; check_timeprofiles = true)
+    @debug "Run model" optimizer
 
     m = create_model(case, model; check_timeprofiles)
 
@@ -52,7 +52,7 @@ function collect_types(types_list)
         end
 
         # If the parent is already added to the list, we can skip it.
-        if  parent ∉ types_list
+        if parent ∉ types_list
             ancestors = collect_types([parent])
             # Increase the rank of the current node by adding the rank of the ancestor with
             # highes rank.
@@ -92,7 +92,7 @@ function sort_types(types_list::Dict)
 
     # We sort the vector of numbers `num` from largest to smallest value, and get the
     # indexes of the sorted order.
-    sorted_idx = sortperm(num, rev=true)
+    sorted_idx = sortperm(num, rev = true)
     # Get the types from the dictionary as a vector.
     types = [n for n in keys(types_list)]
     # Use the indexes of the sorted order to sort the order of the types.
@@ -142,7 +142,7 @@ subfunction [`previous_level_sp`](@ref) to avoid method ambiguities.
 function previous_level(
     m,
     n::Storage,
-    prev_pers::PreviousPeriods{<:NothingPeriod, Nothing, Nothing},
+    prev_pers::PreviousPeriods{<:NothingPeriod,Nothing,Nothing},
     cyclic_pers::CyclicPeriods,
     modeltype,
 )
@@ -164,7 +164,7 @@ is an [`AccumulatingEmissions`](@ref) storage node, the function returns a value
 function previous_level(
     m,
     n::Storage{AccumulatingEmissions},
-    prev_pers::PreviousPeriods{<:NothingPeriod, Nothing, Nothing},
+    prev_pers::PreviousPeriods{<:NothingPeriod,Nothing,Nothing},
     cyclic_pers::CyclicPeriods,
     modeltype,
 )
@@ -190,7 +190,7 @@ period while accounting for the number of  repetitions of the representative per
 function previous_level(
     m,
     n::Storage,
-    prev_pers::PreviousPeriods{<:NothingPeriod, <:TS.AbstractRepresentativePeriod, Nothing},
+    prev_pers::PreviousPeriods{<:NothingPeriod,<:TS.AbstractRepresentativePeriod,Nothing},
     cyclic_pers::CyclicPeriods,
     modeltype,
 )
@@ -200,7 +200,8 @@ function previous_level(
         m,
         # Initial storage in previous rp
         m[:stor_level][n, first(rep_per(prev_pers))] -
-        m[:stor_level_Δ_op][n, first(rep_per(prev_pers))] * duration(first(rep_per(prev_pers))) +
+        m[:stor_level_Δ_op][n, first(rep_per(prev_pers))] *
+        duration(first(rep_per(prev_pers))) +
         # Increase in previous representative period
         m[:stor_level_Δ_rp][n, rep_per(prev_pers)]
     )
@@ -223,7 +224,7 @@ the end of the *current* representative period.
 function previous_level(
     m,
     n::Storage{CyclicRepresentative},
-    prev_pers::PreviousPeriods{<:NothingPeriod, <:TS.AbstractRepresentativePeriod, Nothing},
+    prev_pers::PreviousPeriods{<:NothingPeriod,<:TS.AbstractRepresentativePeriod,Nothing},
     cyclic_pers::CyclicPeriods,
     modeltype,
 )
@@ -245,12 +246,7 @@ representative period) of a strategic period.
 The default functionality in the case of a [`Cyclic`](@ref) storage node in a `TimeStructure`
 without `RepresentativePeriods` returns the last operational period in the strategic period.
 """
-function previous_level_sp(
-    m,
-    n::Storage{<:Cyclic},
-    cyclic_pers::CyclicPeriods,
-    modeltype
-)
+function previous_level_sp(m, n::Storage{<:Cyclic}, cyclic_pers::CyclicPeriods, modeltype)
     # Return the previous storage level based on cyclic constraints
     last_op = last(current_per(cyclic_pers))
     return @expression(m, m[:stor_level][n, last_op])

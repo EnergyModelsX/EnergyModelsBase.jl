@@ -11,7 +11,7 @@ EMB.TEST_ENV = true
 
         resources = [Power, CO2]
         ops = SimpleTimes(5, 2)
-        T = TwoLevel(2, 2, ops; op_per_strat=10)
+        T = TwoLevel(2, 2, ops; op_per_strat = 10)
 
         source = RefSource(
             "source_emit",
@@ -28,21 +28,16 @@ EMB.TEST_ENV = true
         )
 
         ops = SimpleTimes(5, 2)
-        T = TwoLevel(2, 2, ops; op_per_strat=10)
+        T = TwoLevel(2, 2, ops; op_per_strat = 10)
 
         nodes = [source, sink]
         links = [Direct(12, source, sink)]
         model = OperationalModel(
             Dict(CO2 => FixedProfile(100)),
             Dict(CO2 => FixedProfile(0)),
-            CO2
+            CO2,
         )
-        case = Dict(
-                    :T => T,
-                    :nodes => nodes,
-                    :links => links,
-                    :products => resources,
-        )
+        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
         return case, model
     end
 
@@ -81,7 +76,7 @@ end
 
         resources = [Power, CO2]
         ops = SimpleTimes(5, 2)
-        T = TwoLevel(2, 2, ops; op_per_strat=10)
+        T = TwoLevel(2, 2, ops; op_per_strat = 10)
 
         source = RefSource(
             "source_emit",
@@ -98,37 +93,25 @@ end
         )
 
         ops = SimpleTimes(5, 2)
-        T = TwoLevel(2, 2, ops; op_per_strat=10)
+        T = TwoLevel(2, 2, ops; op_per_strat = 10)
 
         nodes = [source, sink]
         links = [Direct(12, source, sink)]
-        case = Dict(
-                    :T => T,
-                    :nodes => nodes,
-                    :links => links,
-                    :products => resources,
-        )
+        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
         return case
     end
 
     # Create a function for running the simple graph
     function run_simple_graph(co2_limit::TS.TimeProfile)
         case = simple_graph()
-        model = OperationalModel(
-            Dict(CO2 => co2_limit),
-            Dict(CO2 => FixedProfile(0)),
-            CO2
-        )
+        model = OperationalModel(Dict(CO2 => co2_limit), Dict(CO2 => FixedProfile(0)), CO2)
         return create_model(case, model), case, model
     end
 
     # Extract the default values
     case = simple_graph()
-    model = OperationalModel(
-        Dict(CO2 => FixedProfile(100)),
-        Dict(CO2 => FixedProfile(0)),
-        CO2
-    )
+    model =
+        OperationalModel(Dict(CO2 => FixedProfile(100)), Dict(CO2 => FixedProfile(0)), CO2)
 
     # Check that all resources present in the case data are included in the emission limit
     # - EMB.check_model(case, modeltype, check_timeprofiles)
@@ -141,13 +124,13 @@ end
     model = OperationalModel(
         Dict(CO2 => StrategicProfile([100])),
         Dict(CO2 => FixedProfile(0)),
-        CO2
+        CO2,
     )
     @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
     model = OperationalModel(
         Dict(CO2 => FixedProfile(0)),
         Dict(CO2 => StrategicProfile([100])),
-        CO2
+        CO2,
     )
     @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
 
@@ -184,7 +167,7 @@ end
 
         resources = [Power, CO2]
         ops = SimpleTimes(5, 2)
-        T = TwoLevel(2, 2, ops; op_per_strat=10)
+        T = TwoLevel(2, 2, ops; op_per_strat = 10)
 
         source = RefSource(
             "source_emit",
@@ -202,21 +185,16 @@ end
         )
 
         ops = SimpleTimes(5, 2)
-        T = TwoLevel(2, 2, ops; op_per_strat=10)
+        T = TwoLevel(2, 2, ops; op_per_strat = 10)
 
         nodes = [source, sink]
         links = [Direct(12, source, sink)]
         model = OperationalModel(
             Dict(CO2 => FixedProfile(100)),
             Dict(CO2 => FixedProfile(0)),
-            CO2
+            CO2,
         )
-        case = Dict(
-                    :T => T,
-                    :nodes => nodes,
-                    :links => links,
-                    :products => resources,
-        )
+        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
         return case, model
     end
 
@@ -243,16 +221,19 @@ end
     em_data = [EmissionsProcess(Dict(CO2 => StrategicProfile([1])))]
     @test_throws AssertionError run_simple_graph(em_data)
     case, model = simple_graph(em_data)
-    msg = "Checking of the time profiles is deactivated:\n" *
-    "Deactivating the checks for the time profiles is strongly discouraged. " *
-    "While the model will still run, unexpected results can occur, as well as " *
-    "inconsistent case data.\n\n" *
-    "Deactivating the checks for the timeprofiles should only be considered, " *
-    "when testing new components. In all other instances, it is recommended to " *
-    "provide the correct timeprofiles using a preprocessing routine.\n\n" *
-    "If timeprofiles are not checked, inconsistencies can occur."
-    @test_logs (:warn, msg) create_model(case, model; check_timeprofiles=false)
-    @test_logs (:warn, msg) for k ∈ [1,2] create_model(case, model; check_timeprofiles=false) end
+    msg =
+        "Checking of the time profiles is deactivated:\n" *
+        "Deactivating the checks for the time profiles is strongly discouraged. " *
+        "While the model will still run, unexpected results can occur, as well as " *
+        "inconsistent case data.\n\n" *
+        "Deactivating the checks for the timeprofiles should only be considered, " *
+        "when testing new components. In all other instances, it is recommended to " *
+        "provide the correct timeprofiles using a preprocessing routine.\n\n" *
+        "If timeprofiles are not checked, inconsistencies can occur."
+    @test_logs (:warn, msg) create_model(case, model; check_timeprofiles = false)
+    @test_logs (:warn, msg) for k ∈ [1, 2]
+        create_model(case, model; check_timeprofiles = false)
+    end
 
 end
 
@@ -284,7 +265,7 @@ end
         modeltype = OperationalModel(
             Dict(CO2 => FixedProfile(100)),
             Dict(CO2 => FixedProfile(0)),
-            CO2
+            CO2,
         )
 
         nodes = [source, sink]
@@ -292,14 +273,9 @@ end
         model = OperationalModel(
             Dict(CO2 => FixedProfile(100)),
             Dict(CO2 => FixedProfile(0)),
-            CO2
+            CO2,
         )
-        case = Dict(
-                    :T => T,
-                    :nodes => nodes,
-                    :links => links,
-                    :products => resources,
-        )
+        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
         return case, model
     end
 
@@ -330,7 +306,8 @@ end
     # - EMB.check_profile(fieldname, value::RepresentativeProfile, ts::SimpleTimes, sp)
     ts = TwoLevel(1, 1, day)
     tp = RepresentativeProfile([FixedProfile(5), FixedProfile(10)])
-    msg = "Using `RepresentativeProfile` with `SimpleTimes` is dangerous, as it may " *
+    msg =
+        "Using `RepresentativeProfile` with `SimpleTimes` is dangerous, as it may " *
         "lead to unexpected behaviour. " *
         "In this case, only the first profile is used in the model and tested."
     @test_logs (:warn, msg) run_simple_graph(ts, tp)
@@ -338,20 +315,21 @@ end
     # Test that there is an error when `RepresentativeProfile` have a different length than
     # the corresponding `RepresentativePeriods`
     # - EMB.check_profile(fieldname, value::RepresentativeProfile, ts::SimpleTimes, sp)
-    ts = TwoLevel(2, 1, RepresentativePeriods(3, 8760, ones(3)/3, [day, day, day]))
+    ts = TwoLevel(2, 1, RepresentativePeriods(3, 8760, ones(3) / 3, [day, day, day]))
     @test_throws AssertionError run_simple_graph(ts, tp)
 
     # Check that turning of the timeprofile checks leads to a warning
     case, model = simple_graph(ts, tp)
-    msg = "Checking of the time profiles is deactivated:\n" *
-    "Deactivating the checks for the time profiles is strongly discouraged. " *
-    "While the model will still run, unexpected results can occur, as well as " *
-    "inconsistent case data.\n\n" *
-    "Deactivating the checks for the timeprofiles should only be considered, " *
-    "when testing new components. In all other instances, it is recommended to " *
-    "provide the correct timeprofiles using a preprocessing routine.\n\n" *
-    "If timeprofiles are not checked, inconsistencies can occur."
-    @test_logs (:warn, msg) create_model(case, model; check_timeprofiles=false)
+    msg =
+        "Checking of the time profiles is deactivated:\n" *
+        "Deactivating the checks for the time profiles is strongly discouraged. " *
+        "While the model will still run, unexpected results can occur, as well as " *
+        "inconsistent case data.\n\n" *
+        "Deactivating the checks for the timeprofiles should only be considered, " *
+        "when testing new components. In all other instances, it is recommended to " *
+        "provide the correct timeprofiles using a preprocessing routine.\n\n" *
+        "If timeprofiles are not checked, inconsistencies can occur."
+    @test_logs (:warn, msg) create_model(case, model; check_timeprofiles = false)
 end
 
 @testset "Test checks - Nodes" begin
@@ -366,21 +344,16 @@ end
     function simple_graph(source::Source, sink::Sink)
         resources = [Power, CO2]
         ops = SimpleTimes(5, 2)
-        T = TwoLevel(2, 2, ops; op_per_strat=10)
+        T = TwoLevel(2, 2, ops; op_per_strat = 10)
 
         nodes = [source, sink]
         links = [Direct(12, source, sink)]
         model = OperationalModel(
             Dict(CO2 => FixedProfile(100)),
             Dict(CO2 => FixedProfile(0)),
-            CO2
+            CO2,
         )
-        case = Dict(
-                    :T => T,
-                    :nodes => nodes,
-                    :links => links,
-                    :products => resources,
-        )
+        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
         return create_model(case, model), case, model
     end
 
@@ -522,25 +495,20 @@ end
 
         resources = [NG, Power, CO2]
         ops = SimpleTimes(5, 2)
-        T = TwoLevel(2, 2, ops; op_per_strat=10)
+        T = TwoLevel(2, 2, ops; op_per_strat = 10)
 
         nodes = [source, network, sink]
         links = [
             Direct(12, source, network)
             Direct(23, network, sink)
-            ]
+        ]
 
         model = OperationalModel(
             Dict(CO2 => FixedProfile(100), NG => FixedProfile(100)),
             Dict(CO2 => FixedProfile(0), NG => FixedProfile(0)),
-            CO2
+            CO2,
         )
-        case = Dict(
-                    :T => T,
-                    :nodes => nodes,
-                    :links => links,
-                    :products => resources,
-        )
+        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
         return create_model(case, model), case, model
     end
 
@@ -633,27 +601,22 @@ end
             Dict(Power => 1),
         )
 
-        T = TwoLevel(2, 2, SimpleTimes(5, 2); op_per_strat=10)
+        T = TwoLevel(2, 2, SimpleTimes(5, 2); op_per_strat = 10)
 
         nodes = [source, aux_source, storage, sink]
         links = [
             Direct(13, source, storage)
             Direct(23, aux_source, storage)
             Direct(34, storage, sink)
-            ]
+        ]
         resources = [Power, aux, CO2]
 
         model = OperationalModel(
             Dict(CO2 => FixedProfile(100)),
             Dict(CO2 => FixedProfile(0)),
-            CO2
+            CO2,
         )
-        case = Dict(
-                    :T => T,
-                    :nodes => nodes,
-                    :links => links,
-                    :products => resources,
-        )
+        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
         return create_model(case, model), case, model
     end
 

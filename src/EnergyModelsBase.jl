@@ -11,7 +11,8 @@ You can find the exported types and functions below or on the pages \
 module EnergyModelsBase
 
 using JuMP
-using TimeStruct; const TS = TimeStruct
+using TimeStruct
+const TS = TimeStruct
 
 # Different introduced types
 include(joinpath("structures", "resource.jl"))
@@ -83,8 +84,15 @@ export co2_capture, process_emissions
 # Export commonly used functions for extracting fields in `Node`
 export nodes_input, nodes_output, nodes_emissions
 export has_input, has_output, has_emissions
-export capacity, inputs, outputs, opex_var, opex_fixed, surplus_penalty, deficit_penalty,
-    storage_resource, node_data
+export capacity,
+    inputs,
+    outputs,
+    opex_var,
+    opex_fixed,
+    surplus_penalty,
+    deficit_penalty,
+    storage_resource,
+    node_data
 
 # Export commonly used functions for extracting fields in `AbstractStorageParameters`
 export has_charge, has_discharge

@@ -17,7 +17,7 @@ These resources can be included as resources that are emitted, *e.g*, in the var
 - **`co2_int::T`** is the the CO₂ intensity, *e.g.*, t/MWh.
 """
 struct ResourceEmit{T<:Real} <: Resource
-    id
+    id::Any
     co2_int::T
 end
 
@@ -33,7 +33,7 @@ These resources cannot be included as resources that are emitted, *e.g*, in the 
 - **`co2_int::T`** is the the CO₂ intensity, *e.g.*, t/MWh.
 """
 struct ResourceCarrier{T<:Real} <: Resource
-    id
+    id::Any
     co2_int::T
 end
 
@@ -68,8 +68,8 @@ Return all resources that are not `res_inst` for
 - a given dictionary `::Dict`.
   The output is in this case a dictionary `Dict` with the correct fields
 """
-res_not(𝒫::Array{<:Resource}, res_inst::Resource) = filter(x -> x!=res_inst, 𝒫)
-res_not(𝒫::Dict, res_inst::Resource) =  Dict(k => v for (k,v) ∈ 𝒫 if k != res_inst)
+res_not(𝒫::Array{<:Resource}, res_inst::Resource) = filter(x -> x != res_inst, 𝒫)
+res_not(𝒫::Dict, res_inst::Resource) = Dict(k => v for (k, v) ∈ 𝒫 if k != res_inst)
 
 """
     res_em(𝒫::Array{<:Resource})
@@ -81,4 +81,4 @@ Returns all emission resources for a
   The output is in this case a dictionary `Dict` with the correct fields
 """
 res_em(𝒫::Array{<:Resource}) = filter(is_resource_emit, 𝒫)
-res_em(𝒫::Dict) =  filter(p -> is_resource_emit(first(p)), 𝒫)
+res_em(𝒫::Dict) = filter(p -> is_resource_emit(first(p)), 𝒫)

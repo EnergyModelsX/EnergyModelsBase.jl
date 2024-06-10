@@ -57,7 +57,8 @@ function check_data(case, modeltype, check_timeprofiles::Bool)
             "Deactivating the checks for the timeprofiles should only be considered, " *
             "when testing new components. In all other instances, it is recommended to " *
             "provide the correct timeprofiles using a preprocessing routine.\n\n" *
-            "If timeprofiles are not checked, inconsistencies can occur.",  maxlog=1
+            "If timeprofiles are not checked, inconsistencies can occur.",
+            maxlog = 1
         )
     end
 
@@ -158,13 +159,17 @@ function check_case_data(case)
     for key ∈ case_keys
         @assert_or_log(
             haskey(case, key),
-            "The `case` dictionary requires the key `:" * string(key) * "` which is " *
+            "The `case` dictionary requires the key `:" *
+            string(key) *
+            "` which is " *
             "not included."
         )
         if haskey(case, key)
             @assert_or_log(
                 isa(case[key], key_map[key]),
-                "The key `" * string(key) * "` in the `case` dictionary contains " *
+                "The key `" *
+                string(key) *
+                "` in the `case` dictionary contains " *
                 "other types than the allowed."
             )
         end
@@ -208,13 +213,18 @@ function check_model(case, modeltype, check_timeprofiles::Bool)
         if isa(em_limit, StrategicProfile) && check_timeprofiles
             @assert_or_log(
                 length(em_limit.vals) == length(𝒯ᴵⁿᵛ),
-                "The timeprofile provided for resource `" * string(p) * "` in the field " *
+                "The timeprofile provided for resource `" *
+                string(p) *
+                "` in the field " *
                 "`emission_limit` does not match the strategic structure."
             )
         end
 
         # Check for potential indexing problems
-        message = "are not allowed for the resource: " * string(p) * " in the Dictionary " *
+        message =
+            "are not allowed for the resource: " *
+            string(p) *
+            " in the Dictionary " *
             "`emission_limit`."
         check_strategic_profile(em_limit, message)
     end
@@ -225,13 +235,18 @@ function check_model(case, modeltype, check_timeprofiles::Bool)
         if isa(em_limit, StrategicProfile) && check_timeprofiles
             @assert_or_log(
                 length(em_limit.vals) == length(𝒯ᴵⁿᵛ),
-                "The timeprofile provided for resource `" * string(p) * "` in the field " *
+                "The timeprofile provided for resource `" *
+                string(p) *
+                "` in the field " *
                 "`emission_price` does not match the strategic structure."
             )
         end
 
         # Check for potential indexing problems
-        message = "are not allowed for the resource: " * string(p) * " in the Dictionary " *
+        message =
+            "are not allowed for the resource: " *
+            string(p) *
+            " in the Dictionary " *
             "`emission_price`."
         check_strategic_profile(em_limit, message)
     end
@@ -311,42 +326,29 @@ a warning, e.g., using `RepresentativeProfile` without `RepresentativePeriods`.
 
 It currently does not include support for identifying `OperationalProfile`s.
 """
-function check_profile(
-    fieldname,
-    value::OperationalProfile,
-    ts::SimpleTimes,
-    sp
-    )
+function check_profile(fieldname, value::OperationalProfile, ts::SimpleTimes, sp)
     len_vals = length(value.vals)
     len_simp = length(ts)
     if len_vals > len_simp
-        message = "' in strategic period $(sp) is longer " *
+        message =
+            "' in strategic period $(sp) is longer " *
             "than the operational time structure. " *
             "Its last $(len_vals - len_simp) value(s) will be omitted."
     elseif len_vals < len_simp
-        message =  "' in strategic period $(sp) is shorter " *
-        "than the operational time structure. It will use the last value for the last " *
-        "$(len_simp - len_vals + 1) operational period(s)."
+        message =
+            "' in strategic period $(sp) is shorter " *
+            "than the operational time structure. It will use the last value for the last " *
+            "$(len_simp - len_vals + 1) operational period(s)."
     end
     @assert_or_log len_vals == len_simp "Field '" * string(fieldname) * message
 end
-function check_profile(
-    fieldname,
-    value::OperationalProfile,
-    ts::RepresentativePeriods,
-    sp
-    )
+function check_profile(fieldname, value::OperationalProfile, ts::RepresentativePeriods, sp)
     for t_rp ∈ repr_periods(ts)
         check_profile(fieldname, value, t_rp.operational, sp)
     end
 end
 
-function check_profile(
-    fieldname,
-    value::RepresentativeProfile,
-    ts::SimpleTimes,
-    sp
-    )
+function check_profile(fieldname, value::RepresentativeProfile, ts::SimpleTimes, sp)
     if sp == 1
         @warn(
             "Using `RepresentativeProfile` with `SimpleTimes` is dangerous, as it may " *
@@ -360,17 +362,19 @@ function check_profile(
     fieldname,
     value::RepresentativeProfile,
     ts::RepresentativePeriods,
-    sp
-    )
+    sp,
+)
 
     len_vals = length(value.vals)
     len_simp = length(repr_periods(ts))
     if len_vals > len_simp
-        message = "' in strategic period $(sp) is longer " *
+        message =
+            "' in strategic period $(sp) is longer " *
             "than the representative time structure in strategic period $(sp). " *
             "Its last values $(len_vals - len_simp) will be omitted."
     elseif len_vals < len_simp
-        message = "' in strategic period $(sp) is longer " *
+        message =
+            "' in strategic period $(sp) is longer " *
             "than the representative time structure in strategic period $(sp). " *
             "It will use the last value for the last $(len_simp - len_vals + 1) " *
             "representative period(s)."
@@ -404,18 +408,16 @@ function check_strategic_profile(time_profile::TimeProfile, message::String)
         !isa(time_profile, OperationalProfile),
         "Operational profiles " * message
     )
-    @assert_or_log(
-        !isa(time_profile, ScenarioProfile),
-        "Scenario profiles " * message
-    )
+    @assert_or_log(!isa(time_profile, ScenarioProfile), "Scenario profiles " * message)
     @assert_or_log(
         !isa(time_profile, RepresentativeProfile),
         "Representative profiles " * message
     )
 
-    bool_sp = !isa(time_profile, OperationalProfile) *
-        !isa(time_profile, ScenarioProfile) *
-        !isa(time_profile, RepresentativeProfile)
+    bool_sp =
+        !isa(time_profile, OperationalProfile) * ! isa
+        (time_profile, ScenarioProfile) * ! isa
+        (time_profile, RepresentativeProfile)
 
     if isa(time_profile, StrategicProfile)
         @assert_or_log(
@@ -431,9 +433,10 @@ function check_strategic_profile(time_profile::TimeProfile, message::String)
             "Representative profiles in strategic profiles " * message
         )
 
-        bool_sp *= !isa(time_profile.vals, Vector{<:OperationalProfile}) *
-            !isa(time_profile.vals, Vector{<:ScenarioProfile}) *
-            !isa(time_profile.vals, Vector{<:RepresentativeProfile})
+        bool_sp *=
+            !isa(time_profile.vals, Vector{<:OperationalProfile}) * ! isa
+            (time_profile.vals, Vector{<:ScenarioProfile}) * ! isa
+            (time_profile.vals, Vector{<:RepresentativeProfile})
     end
 
     return bool_sp
@@ -459,13 +462,9 @@ function check_representative_profile(time_profile::TimeProfile, message::String
         !isa(time_profile, OperationalProfile),
         "Operational profiles " * message
     )
-    @assert_or_log(
-        !isa(time_profile, ScenarioProfile),
-        "Scenario profiles " * message
-    )
+    @assert_or_log(!isa(time_profile, ScenarioProfile), "Scenario profiles " * message)
 
-    bool_rp = !isa(time_profile, OperationalProfile) *
-        !isa(time_profile, ScenarioProfile)
+    bool_rp = !isa(time_profile, OperationalProfile) * ! isa (time_profile, ScenarioProfile)
 
 
     if isa(time_profile, StrategicProfile)
@@ -478,8 +477,9 @@ function check_representative_profile(time_profile::TimeProfile, message::String
             "Scenario profiles in strategic profiles " * message
         )
 
-        bool_rp *= !isa(time_profile.vals, Vector{<:OperationalProfile}) *
-            !isa(time_profile.vals, Vector{<:ScenarioProfile})
+        bool_rp *=
+            !isa(time_profile.vals, Vector{<:OperationalProfile}) * ! isa
+            (time_profile.vals, Vector{<:ScenarioProfile})
     end
 
     return bool_rp
@@ -521,16 +521,14 @@ end
 
 Check that the fields of a `Node` corresponds to required structure.
 """
-function check_node(n::Node, 𝒯, modeltype, check_timeprofiles::Bool)
-end
+function check_node(n::Node, 𝒯, modeltype, check_timeprofiles::Bool) end
 """
     check_node(n::Availability, 𝒯, modeltype)
 
 This method checks that an `Availability` node is valid. By default, that does not include
 any checks.
 """
-function check_node(n::Availability, 𝒯, modeltype, check_timeprofiles::Bool)
-end
+function check_node(n::Availability, 𝒯, modeltype, check_timeprofiles::Bool) end
 """
     check_node(n::Source, 𝒯, modeltype)
 
@@ -757,7 +755,13 @@ same supertype is loaded.
 - The value of the field `co2_capture` is required to be in the range ``[0, 1]``, if \
 [`CaptureData`](@ref) is used.
 """
-function check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype, check_timeprofiles::Bool)
+function check_node_data(
+    n::Node,
+    data::EmissionsData,
+    𝒯,
+    modeltype,
+    check_timeprofiles::Bool,
+)
 
     em_data = filter(data -> typeof(data) <: EmissionsData, node_data(n))
     @assert_or_log(
@@ -772,7 +776,7 @@ function check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype, check_ti
         value = process_emissions(data, p)
         !check_timeprofiles && continue
         !isa(value, TimeProfile) && continue
-        check_profile(string(p)*" process emissions", value, 𝒯)
+        check_profile(string(p) * " process emissions", value, 𝒯)
     end
 end
 function check_node_data(n::Node, data::CaptureData, 𝒯, modeltype, check_timeprofiles::Bool)
@@ -787,7 +791,7 @@ function check_node_data(n::Node, data::CaptureData, 𝒯, modeltype, check_time
         value = process_emissions(data, p)
         !check_timeprofiles && continue
         !isa(value, TimeProfile) && continue
-        check_profile(string(p)*" process emissions", value, 𝒯)
+        check_profile(string(p) * " process emissions", value, 𝒯)
     end
     @assert_or_log(
         co2_capture(data) ≤ 1,
