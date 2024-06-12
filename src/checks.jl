@@ -415,9 +415,7 @@ function check_strategic_profile(time_profile::TimeProfile, message::String)
     )
 
     bool_sp =
-        !isa(time_profile, OperationalProfile) * ! isa
-        (time_profile, ScenarioProfile) * ! isa
-        (time_profile, RepresentativeProfile)
+        !isa(time_profile, OperationalProfile) * ! isa(time_profile, ScenarioProfile) * ! isa(time_profile, RepresentativeProfile)
 
     if isa(time_profile, StrategicProfile)
         @assert_or_log(
@@ -434,9 +432,7 @@ function check_strategic_profile(time_profile::TimeProfile, message::String)
         )
 
         bool_sp *=
-            !isa(time_profile.vals, Vector{<:OperationalProfile}) * ! isa
-            (time_profile.vals, Vector{<:ScenarioProfile}) * ! isa
-            (time_profile.vals, Vector{<:RepresentativeProfile})
+            !isa(time_profile.vals, Vector{<:OperationalProfile}) * ! isa(time_profile.vals, Vector{<:ScenarioProfile}) * ! isa(time_profile.vals, Vector{<:RepresentativeProfile})
     end
 
     return bool_sp
@@ -464,7 +460,7 @@ function check_representative_profile(time_profile::TimeProfile, message::String
     )
     @assert_or_log(!isa(time_profile, ScenarioProfile), "Scenario profiles " * message)
 
-    bool_rp = !isa(time_profile, OperationalProfile) * ! isa (time_profile, ScenarioProfile)
+    bool_rp = !isa(time_profile, OperationalProfile) * ! isa(time_profile, ScenarioProfile)
 
 
     if isa(time_profile, StrategicProfile)
