@@ -21,10 +21,10 @@ function EMB.constraints_capacity_installed(
     modeltype::AbstractInvestmentModel,
 )
 
-    if EMI.has_investment(n)
+    if has_investment(n)
         # Extract the investment data, the discount rate, and the strategic periods
-        disc_rate = EMI.discount_rate(modeltype)
-        inv_data = EMI.investment_data(n, :cap)
+        disc_rate = EMB.discount_rate(modeltype)
+        inv_data = investment_data(n, :cap)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
         # Add the investment constraints
@@ -52,7 +52,7 @@ constraints for each capacity.
 """
 function EMB.constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::AbstractInvestmentModel)
     # Extract the he discount rate and the strategic periods
-    disc_rate = EMI.discount_rate(modeltype)
+    disc_rate = EMB.discount_rate(modeltype)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     cap_fields = [:charge, :level, :discharge]
@@ -64,9 +64,9 @@ function EMB.constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, 
         stor_par = getfield(n, cap)
         prefix = Symbol(:stor_, cap)
         var_inst = EMI.get_var_inst(m, prefix, n)
-        if EMI.has_investment(n, cap)
+        if has_investment(n, cap)
             # Extract the investment data
-            inv_data = EMI.investment_data(n, cap)
+            inv_data = investment_data(n, cap)
 
             # Add the investment constraints
             EMI.add_investment_constraints(m, n, inv_data, cap, prefix, 𝒯ᴵⁿᵛ, disc_rate)

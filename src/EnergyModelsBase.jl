@@ -33,7 +33,6 @@ include("legacy_constructor.jl")
 
 # Export the general classes
 export EnergyModel, OperationalModel
-
 export Resource, ResourceCarrier, ResourceEmit
 
 # Export the different node types
@@ -60,6 +59,10 @@ export PreviousPeriods, CyclicPeriods
 
 # Legacy data types
 export RefNetwork, RefNetworkEmissions, RefStorageEmissions
+
+# Export of the types for investment models
+export AbstractInvestmentModel, InvestmentModel
+export InvestmentData, SingleInvData, StorageInvData
 
 # Export commonly used functions for model generation
 export @assert_or_log

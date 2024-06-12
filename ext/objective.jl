@@ -19,15 +19,15 @@ function EMB.objective(m, 𝒩, 𝒯, 𝒫, modeltype::AbstractInvestmentModel)
     # Extraction of the individual subtypes for investments in nodes
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
     𝒩ᶜᵃᵖ = EMB.nodes_not_av(𝒩)                          # Nodes with capacity
-    𝒩ᴵⁿᵛ = filter(EMI.has_investment, filter(!EMB.is_storage, 𝒩))
+    𝒩ᴵⁿᵛ = filter(has_investment, filter(!EMB.is_storage, 𝒩))
     𝒩ˢᵗᵒʳ = filter(EMB.is_storage, 𝒩)
-    𝒩ˡᵉᵛᵉˡ = filter(n -> EMI.has_investment(n, :level), 𝒩ˢᵗᵒʳ)
-    𝒩ᶜʰᵃʳᵍᵉ = filter(n -> EMI.has_investment(n, :charge), 𝒩ˢᵗᵒʳ)
-    𝒩ᵈⁱˢᶜʰᵃʳᵍᵉ = filter(n -> EMI.has_investment(n, :discharge), 𝒩ˢᵗᵒʳ)
+    𝒩ˡᵉᵛᵉˡ = filter(n -> has_investment(n, :level), 𝒩ˢᵗᵒʳ)
+    𝒩ᶜʰᵃʳᵍᵉ = filter(n -> has_investment(n, :charge), 𝒩ˢᵗᵒʳ)
+    𝒩ᵈⁱˢᶜʰᵃʳᵍᵉ = filter(n -> has_investment(n, :discharge), 𝒩ˢᵗᵒʳ)
 
     𝒫ᵉᵐ  = filter(EMB.is_resource_emit, 𝒫)              # Emissions resources
 
-    disc = Discounter(EMI.discount_rate(modeltype), 𝒯)
+    disc = Discounter(EMB.discount_rate(modeltype), 𝒯)
 
     # Calculation of the OPEX contribution
     opex = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
