@@ -33,8 +33,9 @@ EMI.start_cap(n::Storage, t_inv, inv_data::NoStartInvData, cap) =
     EMB.capacity(getproperty(n, cap), t_inv)
 
 
-function EMB.constraints_data(m, n::EMB.Node, ts::TS.TimeStructure, ps, modeltype, ::EMI.SingleInvData)
-    @warn "TODO: constraints data for investment models"
+function EMB.constraints_data(m, n::EMB.Node, ts::TS.TimeStructure, ps, modeltype, data::EMI.SingleInvData)
+    # TODO constraints are currently added using constraints_capacity_installed which in turn extracts investment data
+    # Using the data field would be a possible alternative.
 end
 
 EMI.start_cap(element, t_inv, inv_data::NoStartInvData, cap) =
