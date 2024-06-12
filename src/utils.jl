@@ -10,7 +10,7 @@ The dictionary requires the keys:
  - `:products::Vector{Resource}`
  - `:T::TimeStructure`
 """
-function run_model(case::Dict, model::EnergyModel, optimizer; check_timeprofiles = true)
+function run_model(case::Dict, model, optimizer; check_timeprofiles = true)
     @debug "Run model" optimizer
 
     m = create_model(case, model; check_timeprofiles)
