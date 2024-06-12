@@ -1,5 +1,9 @@
 # Release notes
 
+## Unversioned
+
+* Use dev version of EMB for examples when running as part of tests (#33)
+
 ## Version 0.7.0 (2024-05-24)
 
 ### Introduction of `AbstractStorageParameters` type for increasing potential for `Storage` variations
