@@ -6,10 +6,3 @@
 >     ] add TimeStruct
 >     ] add EnergyModelsBase
 >     ```
-
-!!! note
-    If you receive the error that `EnergyModelsBase` is not yet registered, you have to add the package using the GitHub repositories through
-    ```
-    ] add https://github.com/EnergyModelsX/EnergyModelsBase.jl
-    ```
-    Once the package is registered, this is not required.
