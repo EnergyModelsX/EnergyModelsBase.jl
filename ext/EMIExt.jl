@@ -44,6 +44,29 @@ function has_investment(n::Storage, field::Symbol)
     )
 end
 
+"""
+    EMI.investment_data(n::EMB.Node)
+
+Return the investment data of the Node `n`.
+"""
+EMI.investment_data(n::EMB.Node) =
+    filter(data -> typeof(data) <: InvestmentData, node_data(n))[1]
+
+"""
+    EMI.investment_data(inv_data::SingleInvData)
+
+Return the investment data of the investment data `SingleInvData`.
+"""
+EMI.investment_data(inv_data::SingleInvData) = inv_data.cap
+
+"""
+    EMI.investment_data(element, field::Symbol)
+
+Return the investment data of the type `element` of the capacity `field`.
+"""
+EMI.investment_data(n::EMB.Node, field::Symbol) = getproperty(investment_data(n), field)
+
+
 EMI.start_cap(n::EMB.Node, t_inv, inv_data::NoStartInvData, cap) =
     capacity(n, t_inv)
 EMI.start_cap(n::Storage, t_inv, inv_data::NoStartInvData, cap) =
