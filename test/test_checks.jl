@@ -114,13 +114,13 @@ end
         OperationalModel(Dict(CO2 => FixedProfile(100)), Dict(CO2 => FixedProfile(0)), CO2)
 
     # Check that all resources present in the case data are included in the emission limit
-    # - EMB.check_model(case, modeltype, check_timeprofiles)
+    # - EMB.check_model(case, modeltype::EnergyModel, check_timeprofiles)
     case_test = deepcopy(case)
     case_test[:products] = [Power, CO2, ResourceEmit("NG", 0.06)]
     @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
 
     # Check that the timeprofiles for emission limit and price are correct
-    # - EMB.check_model(case, modeltype, check_timeprofiles)
+    # - EMB.check_model(case, modeltype::EnergyModel, check_timeprofiles)
     model = OperationalModel(
         Dict(CO2 => StrategicProfile([100])),
         Dict(CO2 => FixedProfile(0)),
@@ -205,19 +205,19 @@ end
     end
 
     # Test that only a single EmissionData is allowed
-    # - EMB.check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype)
+    # - EMB.check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel)
     em_data = [EmissionsProcess(Dict(CO2 => 10.0)), EmissionsEnergy()]
     @test_throws AssertionError run_simple_graph(em_data)
 
     # Test that the capture rate is bound by 0 and 1
-    # - EMB.check_node_data(n::Node, data::CaptureData, 𝒯, modeltype)
+    # - EMB.check_node_data(n::Node, data::CaptureData, 𝒯, modeltype::EnergyModel)
     em_data = [CaptureEnergyEmissions(1.2)]
     @test_throws AssertionError run_simple_graph(em_data)
     em_data = [CaptureEnergyEmissions(-1.2)]
     @test_throws AssertionError run_simple_graph(em_data)
 
     # Test that the timeprofile check is working and only showing the warning once
-    # - EMB.check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype
+    # - EMB.check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel
     em_data = [EmissionsProcess(Dict(CO2 => StrategicProfile([1])))]
     @test_throws AssertionError run_simple_graph(em_data)
     case, model = simple_graph(em_data)
@@ -358,7 +358,7 @@ end
     end
 
     # Test that the fields of a Source are correctly checked
-    # - check_node(n::Source, 𝒯, modeltype)
+    # - check_node(n::Source, 𝒯, modeltype::EnergyModel)
     @testset "Checks Source" begin
         # Sink used in the analysis
         sink = RefSink(
@@ -423,7 +423,7 @@ end
     end
 
     # Test that the fields of a Sink are correctly checked
-    # - check_node(n::Sink, 𝒯, modeltype)
+    # - check_node(n::Sink, 𝒯, modeltype::EnergyModel)
     @testset "Checks Sink" begin
         # Source used in the analysis
         source = RefSource(
@@ -513,7 +513,7 @@ end
     end
 
     # Test that the fields of a NetworkNode are correctly checked
-    # - check_node(n::NetworkNode, 𝒯, modeltype)
+    # - check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel)
     @testset "Test checks - NetworkNode" begin
 
         # Test that a wrong capacity is caught by the checks.
@@ -621,7 +621,7 @@ end
     end
 
     # Test that the fields of a Storage are correctly checked
-    # - check_node(n::Storage, 𝒯, modeltype)
+    # - check_node(n::Storage, 𝒯, modeltype::EnergyModel)
     @testset "Test checks - Storage" begin
 
         # Test that a wrong capacities are caught by the checks.

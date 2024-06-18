@@ -1,5 +1,5 @@
 """
-    constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::DataEmissions)
+    constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::DataEmissions)
 
 Constraints functions for calculating both the emissions and amount of CO₂ captured in the
 process.
@@ -13,11 +13,11 @@ process emissions.\n
 - **`CaptureProcessEnergyEmissions`**: Capture of both process and energy usage related
 emissions.\n
 """
-function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsEnergy)
+function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsEnergy)
 
     # Declaration of the required subsets.
     𝒫ⁱⁿ = inputs(n)
-    CO2 = co2_instance(modeltype)
+    CO2 = co2_instance(modeltype::EnergyModel)
     𝒫ᵉᵐ = setdiff(res_em(𝒫), [CO2])
 
     # Constraint for the CO2 emissions
@@ -32,11 +32,11 @@ function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsEner
         fix(m[:emissions_node][n, t, p_em], 0, ; force = true)
     end
 end
-function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsProcess)
+function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
 
     # Declaration of the required subsets.
     𝒫ⁱⁿ = inputs(n)
-    CO2 = co2_instance(modeltype)
+    CO2 = co2_instance(modeltype::EnergyModel)
     𝒫ᵉᵐ = setdiff(res_em(𝒫), [CO2])
 
     # Constraint for the CO2 emissions
@@ -56,11 +56,11 @@ function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsProc
         m[:cap_use][n, t] * process_emissions(data, p_em, t)
     )
 end
-function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
+function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
 
     # Declaration of the required subsets.
     𝒫ⁱⁿ = inputs(n)
-    CO2 = co2_instance(modeltype)
+    CO2 = co2_instance(modeltype::EnergyModel)
     𝒫ᵉᵐ = setdiff(res_em(𝒫), [CO2])
 
     # Calculate the total amount of CO2 to be considered for capture
@@ -86,11 +86,11 @@ function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergy
     # Constraint for the outlet of the CO2
     @constraint(m, [t ∈ 𝒯], m[:flow_out][n, t, CO2] == CO2_tot[t] * co2_capture(data))
 end
-function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureProcessEmissions)
+function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureProcessEmissions)
 
     # Declaration of the required subsets.
     𝒫ⁱⁿ = inputs(n)
-    CO2 = co2_instance(modeltype)
+    CO2 = co2_instance(modeltype::EnergyModel)
     𝒫ᵉᵐ = setdiff(res_em(𝒫), [CO2])
 
     # Calculate the total amount of CO2 to be considered for capture
@@ -116,11 +116,11 @@ function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureProces
     # Constraint for the outlet of the CO2
     @constraint(m, [t ∈ 𝒯], m[:flow_out][n, t, CO2] == CO2_tot[t] * co2_capture(data))
 end
-function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureProcessEnergyEmissions)
+function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureProcessEnergyEmissions)
 
     # Declaration of the required subsets
     𝒫ⁱⁿ = inputs(n)
-    CO2 = co2_instance(modeltype)
+    CO2 = co2_instance(modeltype::EnergyModel)
     𝒫ᵉᵐ = setdiff(res_em(𝒫), [CO2])
 
     # Calculate the total amount of CO2 to be considered for capture
@@ -151,10 +151,10 @@ function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureProces
 end
 
 """
-    constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::Data)
+    constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::Data)
 
 Fallback option when data is specified, but it is not desired to add the constraints through
 this function. This is, e.g., the case for `EnergyModelsInvestments` as the capacity
 constraint has to be replaced
 """
-constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::Data) = nothing
+constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::Data) = nothing

@@ -65,7 +65,7 @@
         general_tests(m, case)
 
         # Test that the strategic emission limits hold
-        # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype
+        # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel
         @test sum(
             value.(m[:emissions_strategic][t_inv, CO2]) ≈ cap for t_inv ∈ 𝒯ᴵⁿᵛ,
             atol in TEST_ATOL

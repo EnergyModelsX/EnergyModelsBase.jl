@@ -45,21 +45,21 @@
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
         # Test that the capacity bound is properly set
-        # - constraints_capacity_installed(m, n::Node, 𝒯::TimeStructure, modeltype)
+        # - constraints_capacity_installed(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:cap_inst][source, t]) ≈ EMB.capacity(source)[t] for t ∈ 𝒯,
             atol in TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the capacity bound is properly utilized for a `RefSink`
-        # - constraints_capacity(m, n::Node, 𝒯::TimeStructure, modeltype)
+        # - constraints_capacity(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:cap_use][source, t]) <= value.(m[:cap_inst][source, t]) for t ∈ 𝒯,
             atol in TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the outflow is equal to the specified capacity usage
-        # - constraints_flow_out(m, n::Node, 𝒯::TimeStructure, modeltype)
+        # - constraints_flow_out(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:flow_out][source, t, Power]) ≈
             value.(m[:cap_use][source, t]) * outputs(source, Power) for t ∈ 𝒯,
@@ -68,7 +68,7 @@
 
 
         # Test that the variable OPEX values are properly calculated for RefSource
-        # - constraints_opex_var(m, n::Node, 𝒯ᴵⁿᵛ, modeltype)
+        # - constraints_opex_var(m, n::Node, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(
             value.(m[:opex_var][source, t_inv]) ≈ sum(
                 value.(m[:cap_use][source, t]) * EMB.opex_var(source, t) * duration(t) for
@@ -77,7 +77,7 @@
         ) ≈ length(𝒯ᴵⁿᵛ) atol = TEST_ATOL
 
         # Test that the fixed OPEX values are properly calculated for RefSource
-        # - constraints_opex_fixed(m, n::Node, 𝒯ᴵⁿᵛ, modeltype)
+        # - constraints_opex_fixed(m, n::Node, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(
             value.(m[:opex_fixed][source, t_inv]) ≈
             EMB.opex_fixed(source, t_inv) * value.(m[:cap_inst][source, first(t_inv)]) for
@@ -108,14 +108,14 @@
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
         # Test that the inflow is equal to the specified capacity usage
-        # - constraints_flow_in(m, n::Node, 𝒯::TimeStructure, modeltype)
+        # - constraints_flow_in(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:flow_in][sink, t, Power]) ≈
             value.(m[:cap_use][sink, t]) * inputs(sink, Power) for t ∈ 𝒯, atol in TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the mass balance is properly calculated
-        # - constraints_capacity(m, n::Sink, 𝒯::TimeStructure, modeltype)
+        # - constraints_capacity(m, n::Sink, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(value.(m[:sink_deficit][sink, t] for t ∈ 𝒯)) ≈ length(𝒯) * 4 atol =
             TEST_ATOL
         @test sum(
@@ -125,12 +125,12 @@
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the fixed OPEX is set to 0
-        # - constraints_opex_fixed(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype)
+        # - constraints_opex_fixed(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(value.(m[:opex_fixed][sink, t_inv]) ≈ 0 for t_inv ∈ 𝒯ᴵⁿᵛ) ≈ length(𝒯ᴵⁿᵛ) atol =
             TEST_ATOL
 
         # Test that the opex calculations are correct
-        # - constraints_opex_var(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype)
+        # - constraints_opex_var(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(
             value.(m[:opex_var][sink, t_inv]) ≈ sum(
                 value.(m[:sink_deficit][sink, t]) * duration(t) * deficit_penalty(sink, t)
@@ -151,7 +151,7 @@
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
         # Test that the mass balance is properly calculated
-        # - constraints_capacity(m, n::Sink, 𝒯::TimeStructure, modeltype)
+        # - constraints_capacity(m, n::Sink, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(value.(m[:sink_surplus][sink, t]) for t ∈ 𝒯) ≈ length(𝒯) * 2 atol =
             TEST_ATOL
         @test sum(
@@ -161,7 +161,7 @@
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the opex calculations are correct
-        # - constraints_opex_var(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype)
+        # - constraints_opex_var(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(
             value.(m[:opex_var][sink, t_inv]) ≈ sum(
                 value.(m[:sink_surplus][sink, t]) * duration(t) * surplus_penalty(sink, t)
@@ -194,7 +194,7 @@
         @test !any(val == sink for val ∈ axes(m[:emissions_node])[1])
 
         # Test that the emissions from a sink node with emissions are properly accounted for
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsProcess)
+        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
         em_data = EmissionsProcess(Dict(CO2 => 10.0))
         snk_emit = RefSink(
             "sink_emit",
@@ -212,7 +212,7 @@
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the emissions from a source node with emissions are properly accounted for
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsProcess)
+        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
         em_data = EmissionsProcess(Dict(CO2 => 10.0))
         src_emit = RefSource(
             "source_emit",
@@ -226,7 +226,7 @@
         𝒯 = case[:T]
         # Test that the emissions are properly calculated, although no input is present in
         # a `Source ndoe`
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsProcess)
+        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
         @test sum(
             value.(m[:cap_use][src_emit, t]) * process_emissions(em_data, CO2, t) ≈
             value.(m[:emissions_node][src_emit, t, CO2]) for t ∈ 𝒯
@@ -330,11 +330,11 @@ end
         @test sum(value.(m[:cap_use][net, t]) > 0 for t ∈ 𝒯) ≈ length(𝒯) atol = TEST_ATOL
 
         # Check that no emission variables are created without emissions
-        # - variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype)
+        # - variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
         @test size(m[:emissions_node])[1] == 0
 
         # Check that the total and strategic emissions are 0
-        # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype)
+        # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
         @test sum(
             value.(m[:emissions_strategic][t_inv, CO2]) ≈ 0 for t_inv ∈ 𝒯ᴵⁿᵛ,
             atol in TEST_ATOL
@@ -367,11 +367,11 @@ end
         @test sum(value.(m[:cap_use][net, t]) > 0 for t ∈ 𝒯) ≈ length(𝒯) atol = TEST_ATOL
 
         # Check that the # of created variables correspond to the # of nodes with emissions
-        # - variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype)
+        # - variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
         @test size(m[:emissions_node])[1] == 2
 
         # Check that the total and strategic emissions are correctly calculated
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsEnergy)
+        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsEnergy)
         @test sum(
             value.(m[:emissions_node][net, t, CO2]) ≈
             sum(value.(m[:flow_in][net, t, p]) * co2_int(p) for p ∈ inputs(net)) for t ∈ 𝒯,
@@ -402,11 +402,11 @@ end
         @test sum(value.(m[:cap_use][net, t]) > 0 for t ∈ 𝒯) ≈ length(𝒯) atol = TEST_ATOL
 
         # Check that the # of created variables correspond to the # of nodes with emissions
-        # - variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype)
+        # - variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
         @test size(m[:emissions_node])[1] == 2
 
         # Check that the total and strategic emissions are correctly calculated
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsProcess)
+        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
         @test sum(
             value.(m[:emissions_node][net, t, CO2]) ≈
             sum(value.(m[:flow_in][net, t, p]) * co2_int(p) for p ∈ inputs(net)) +
@@ -441,11 +441,11 @@ end
         @test sum(value.(m[:cap_use][net, t]) > 0 for t ∈ 𝒯) ≈ length(𝒯) atol = TEST_ATOL
 
         # Check that the # of created variables correspond to the # of nodes with emissions
-        # - variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype)
+        # - variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
         @test size(m[:emissions_node])[1] == 2
 
         # Check that the total and strategic emissions are correctly calculated
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsProcess)
+        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
         @test sum(
             value.(m[:emissions_node][net, t, CO2]) ≈
             sum(value.(m[:flow_in][net, t, p]) * co2_int(p) for p ∈ inputs(net)) +
@@ -480,11 +480,11 @@ end
         @test sum(value.(m[:cap_use][net, t]) > 0 for t ∈ 𝒯) ≈ length(𝒯) atol = TEST_ATOL
 
         # Check that the # of created variables correspond to the # of nodes with emissions
-        # - variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype)
+        # - variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
         @test size(m[:emissions_node])[1] == 2
 
         # Check that the total and strategic emissions are correctly calculated
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
+        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
         @test sum(
             value.(m[:emissions_node][net, t, CO2]) ≈
             sum(value.(m[:flow_in][net, t, p]) * co2_int(p) for p ∈ inputs(net)) *
@@ -499,7 +499,7 @@ end
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the CO2 capture is calculated correctly
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
+        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
         @test sum(
             value.(m[:flow_out][net, t, CO2]) ≈
             sum(value.(m[:flow_in][net, t, p]) * co2_int(p) for p ∈ inputs(net)) *
@@ -528,11 +528,11 @@ end
         @test sum(value.(m[:cap_use][net, t]) > 0 for t ∈ 𝒯) ≈ length(𝒯) atol = TEST_ATOL
 
         # Check that the # of created variables correspond to the # of nodes with emissions
-        # - variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype)
+        # - variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
         @test size(m[:emissions_node])[1] == 2
 
         # Check that the total and strategic emissions are correctly calculated
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
+        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
         @test sum(
             value.(m[:emissions_node][net, t, CO2]) ≈
             sum(value.(m[:flow_in][net, t, p]) * co2_int(p) for p ∈ inputs(net)) +
@@ -547,7 +547,7 @@ end
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the CO2 capture is calculated correctly
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
+        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
         @test sum(
             value.(m[:flow_out][net, t, CO2]) ≈
             value.(m[:cap_use][net, t]) *
@@ -577,11 +577,11 @@ end
         @test sum(value.(m[:cap_use][net, t]) > 0 for t ∈ 𝒯) ≈ length(𝒯) atol = TEST_ATOL
 
         # Check that the # of created variables correspond to the # of nodes with emissions
-        # - variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype)
+        # - variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
         @test size(m[:emissions_node])[1] == 2
 
         # Check that the total and strategic emissions are correctly calculated
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
+        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
         @test sum(
             value.(m[:emissions_node][net, t, CO2]) ≈
             (
@@ -596,7 +596,7 @@ end
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the CO2 capture is calculated correctly
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
+        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
         @test sum(
             value.(m[:flow_out][net, t, CO2]) ≈
             (
@@ -681,7 +681,7 @@ end
         sink = 𝒩[4]
 
         # Test that the capacity is correctly limited
-        # - constraints_capacity(m, n::Storage, 𝒯::TimeStructure, modeltype)
+        # - constraints_capacity(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:stor_level][stor, t]) - value.(m[:stor_level_inst][stor, t]) ≤
             TEST_ATOL for t ∈ 𝒯
@@ -692,7 +692,7 @@ end
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the design for rate usage is correct
-        # - constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype)
+        # - constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:flow_in][stor, t, Power]) ≈ value.(m[:stor_charge_use][stor, t]) for
             t ∈ 𝒯, atol in TEST_ATOL
@@ -718,7 +718,7 @@ end
 
 
         # Test that the Δ in the storage level is correctly calculated
-        # - constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype)
+        # - constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
         @test sum(
             value.(m[:stor_level_Δ_op][stor, t]) ≈
             value.(m[:flow_in][stor, t, Power]) - value.(m[:flow_out][stor, t, Power]) for
@@ -743,7 +743,7 @@ end
         @test typeof(stor) <: RefStorage{CyclicStrategic}
 
         # Test that the capacity is correctly limited
-        # - constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype)
+        # - constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:stor_level_inst][stor, t]) ≈ capacity(EMB.level(stor), t) for t ∈ 𝒯,
             atol in TEST_ATOL
@@ -755,12 +755,12 @@ end
 
         # Test that the input flow is equal to the output flow in the standard scenario as
         # storage does not pay off
-        # - constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype)
+        # - constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
         @test sum(value.(m[:stor_level_Δ_op][stor, t]) ≈ 0 for t ∈ 𝒯, atol in TEST_ATOL) ≈
               length(𝒯) atol = TEST_ATOL
 
         # Test that the fixed OPEX is correctly calculated
-        # - constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype)
+        # - constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(
             value.(m[:opex_fixed][stor, t_inv]) ≈
             EMB.opex_fixed(EMB.level(stor), t_inv) *
@@ -769,7 +769,7 @@ end
         ) ≈ length(𝒯ᴵⁿᵛ) atol = TEST_ATOL
 
         # Test that variable OPEX is correctly calculated
-        # - constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype)
+        # - constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(
             value.(m[:opex_var][stor, t_inv]) ≈ sum(
                 EMB.opex_var(EMB.charge(stor), t_inv) *
@@ -993,7 +993,7 @@ end
         sink = 𝒩[4]
 
         # Test that the capacity is correctly limited
-        # - constraints_capacity(m, n::Storage, 𝒯::TimeStructure, modeltype)
+        # - constraints_capacity(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:stor_level][stor, t]) - value.(m[:stor_level_inst][stor, t]) ≤
             TEST_ATOL for t ∈ 𝒯
@@ -1004,7 +1004,7 @@ end
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the design for rate usage is correct
-        # - constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype)
+        # - constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:flow_in][stor, t, Power]) ≈ value.(m[:stor_charge_use][stor, t]) for
             t ∈ 𝒯, atol in TEST_ATOL
@@ -1030,7 +1030,7 @@ end
         ) atol = TEST_ATOL
 
         # Test that the Δ_op in the storage level is correctly calculated
-        # - constraints_level_aux(m, n::RefStorage, 𝒯, modeltype)
+        # - constraints_level_aux(m, n::RefStorage, 𝒯, modeltype::EnergyModel)
         @test sum(
             value.(m[:stor_level_Δ_op][stor, t]) ≈
             value.(m[:flow_in][stor, t, Power]) - value.(m[:flow_out][stor, t, Power]) for
@@ -1055,7 +1055,7 @@ end
         @test typeof(stor) <: EMB.Storage{CyclicRepresentative}
 
         # Test that the capacity is correctly limited
-        # - constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype)
+        # - constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:stor_level_inst][stor, t]) ≈ capacity(EMB.level(stor), t) for t ∈ 𝒯,
             atol in TEST_ATOL
@@ -1067,12 +1067,12 @@ end
 
         # Test that the input flow is equal to the output flow in the standard scenario as
         # storage does not pay off
-        # - constraints_level_aux(m, n::RefStorage{T}, 𝒯, 𝒫, modeltype) where {T<:ResourceCarrier}
+        # - constraints_level_aux(m, n::RefStorage{T}, 𝒯, 𝒫, modeltype::EnergyModel) where {T<:ResourceCarrier}
         @test sum(value.(m[:stor_level_Δ_op][stor, t]) ≈ 0 for t ∈ 𝒯, atol in TEST_ATOL) ≈
               length(𝒯) atol = TEST_ATOL
 
         # Test that the fixed OPEX is correctly calculated
-        # - constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype)
+        # - constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(
             value.(m[:opex_fixed][stor, t_inv]) ≈
             EMB.opex_fixed(EMB.level(stor), t_inv) *
@@ -1081,7 +1081,7 @@ end
         ) ≈ length(𝒯ᴵⁿᵛ) atol = TEST_ATOL
 
         # Test that variable OPEX is correctly calculated
-        # - constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype
+        # - constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel
         @test sum(
             value.(m[:opex_var][stor, t_inv]) ≈ sum(
                 EMB.opex_var(EMB.charge(stor), t_inv) *
@@ -1231,7 +1231,7 @@ end
         general_tests(m, case, model)
 
         # Test that the Δ_rp in the storage level is correctly fixed to 0
-        # - constraints_level_rp(m, n::Storage, per, modeltype)
+        # - constraints_level_rp(m, n::Storage, per, modeltype::EnergyModel)
         @test sum(
             value.(value.(m[:stor_level_Δ_rp][stor, t_rp])) ≈ 0 for t_rp ∈ 𝒯ʳᵖ,
             atol in TEST_ATOL
@@ -1458,7 +1458,7 @@ end
             TEST_ATOL
 
         # Test that the capacity is correctly limited
-        # - constraints_capacity(m, n::Storage, 𝒯::TimeStructure, modeltype)
+        # - constraints_capacity(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:stor_level][stor, t]) <= value.(m[:stor_level_inst][stor, t]) for
             t ∈ 𝒯, atol in TEST_ATOL
@@ -1469,7 +1469,7 @@ end
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the design for rate usage is correct
-        # - constraints_flow_in(m, n::Storage{AccumulatingEmissions}, 𝒯::TimeStructure, modeltype)
+        # - constraints_flow_in(m, n::Storage{AccumulatingEmissions}, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:flow_in][stor, t, CO2]) ≈
             value.(m[:stor_charge_use][stor, t]) + value.(m[:emissions_node][stor, t, CO2])
@@ -1477,7 +1477,7 @@ end
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the Δ in the storage level is correctly calculated
-        # - constraints_level_aux(m, n::RefStorage{AccumulatingEmissions}, 𝒯, 𝒫, modeltype)
+        # - constraints_level_aux(m, n::RefStorage{AccumulatingEmissions}, 𝒯, 𝒫, modeltype::EnergyModel)
         @test sum(
             value.(m[:stor_level_Δ_op][stor, t]) ≈
             value.(m[:flow_in][stor, t, CO2]) - value.(m[:emissions_node][stor, t, CO2]) for
@@ -1485,7 +1485,7 @@ end
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the Δ in the storage level is larger than 0
-        # - constraints_level_aux(m, n::RefStorage{AccumulatingEmissions}, 𝒯, 𝒫, modeltype)
+        # - constraints_level_aux(m, n::RefStorage{AccumulatingEmissions}, 𝒯, 𝒫, modeltype::EnergyModel)
         @test sum(value.(m[:stor_level_Δ_op][stor, t]) ≥ -TEST_ATOL for t ∈ 𝒯) ≈ length(𝒯) atol =
             TEST_ATOL
 
@@ -1510,7 +1510,7 @@ end
         @test typeof(stor) <: RefStorage{AccumulatingEmissions}
 
         # Test that the capacity is correctly limited
-        # - constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype)
+        # - constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:stor_level_inst][stor, t]) ≈ capacity(EMB.level(stor), t) for t ∈ 𝒯,
             atol in TEST_ATOL
@@ -1521,14 +1521,14 @@ end
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the input flow is equal to the emissions as the limit allows it
-        # - constraints_level_aux(m, n::RefStorage{AccumulatingEmissions}, 𝒯, 𝒫, modeltype)
+        # - constraints_level_aux(m, n::RefStorage{AccumulatingEmissions}, 𝒯, 𝒫, modeltype::EnergyModel)
         @test sum(
             value.(m[:flow_in][stor, t, CO2]) ≈ value.(m[:emissions_node][stor, t, CO2]) for
             t ∈ 𝒯, atol in TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the fixed OPEX is correctly calculated
-        # - constraints_opex_fixed(m, n::Storage{AccumulatingEmissions}, 𝒯ᴵⁿᵛ, modeltype)
+        # - constraints_opex_fixed(m, n::Storage{AccumulatingEmissions}, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(
             value.(m[:opex_fixed][stor, t_inv]) ≈
             EMB.opex_fixed(EMB.charge(stor), t_inv) *
@@ -1537,7 +1537,7 @@ end
         ) ≈ length(𝒯ᴵⁿᵛ) atol = TEST_ATOL
 
         # Test that variable OPEX is correctly calculated
-        # - constraints_opex_var(m, n::Storage{AccumulatingEmissions}, 𝒯ᴵⁿᵛ, modeltype)
+        # - constraints_opex_var(m, n::Storage{AccumulatingEmissions}, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(
             value.(m[:opex_var][stor, t_inv]) ≈ 0 for t_inv ∈ 𝒯ᴵⁿᵛ, atol in TEST_ATOL
         ) ≈ length(𝒯ᴵⁿᵛ) atol = TEST_ATOL
@@ -1556,7 +1556,7 @@ end
         general_tests(m, case, model)
 
         # Test that variable OPEX is correctly calculated
-        # - function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype)
+        # - function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(
             value.(m[:opex_var][stor, t_inv]) ≈ sum(
                 EMB.opex_var(EMB.charge(stor), t_inv) *

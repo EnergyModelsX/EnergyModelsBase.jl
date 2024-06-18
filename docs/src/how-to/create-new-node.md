@@ -7,12 +7,12 @@ The energy system model is based on the *[JuMP](https://jump.dev/JuMP.jl/stable/
 >     `Source`, `Sink`, etc. Here, a central choice is to decide on [*what abstract node type to subtype to*](@ref howto_create_node_subtype).
 >  2. Optional: implement the method
 >     ```julia
->     variables_node(m, 𝒩ˢᵘᵇ::Vector{<:NewTechNode}, 𝒯, modeltype)
+>     variables_node(m, 𝒩ˢᵘᵇ::Vector{<:NewTechNode}, 𝒯, modeltype::EnergyModel)
 >     ```
 >     Implement this method if you want to create additional optimization variables for the new node. See *[how to create JuMP variables](https://jump.dev/JuMP.jl/stable/manual/variables/)* in the JuMP documentation.
 >  3. Implement the method
 >     ```julia
->     create_node(m, n::NewTechNode, 𝒯, 𝒫, modeltype)
+>     create_node(m, n::NewTechNode, 𝒯, 𝒫, modeltype::EnergyModel)
 >     ```
 >      In this method the constraints for the new node are created. See *[how to create JuMP constraints](https://jump.dev/JuMP.jl/stable/manual/constraints/)* in the JuMP documentation.
 
@@ -52,7 +52,7 @@ It is also possible to use the available *[constraint functions](@ref constraint
 In this case, we have to first obtain an overview over the constraint functions called in
 
 ```julia
-create_node(m, n::ParentNode, 𝒯, 𝒫, modeltype)
+create_node(m, n::ParentNode, 𝒯, 𝒫, modeltype::EnergyModel)
 ```
 
 in which `ParentNode` corresponds to the `abstract type` that is used as parent for the new `NewTechNode`.
@@ -60,7 +60,7 @@ Subsequently, we can add a method to the existing *constraint function* which is
 This *constraint function* has to dispatch on the created `NewTechNode` type.
 
 !!! warning
-    It is in general advised to create a new function *`create_node(m, n::NewTechNode, 𝒯, 𝒫, modeltype)`*.
+    It is in general advised to create a new function *`create_node(m, n::NewTechNode, 𝒯, 𝒫, modeltype::EnergyModel)`*.
     The advantage here is that the user requires less understanding of the individual constraint functions.
     This may lead to repetetive code, but is the safer choice.
 

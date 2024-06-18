@@ -20,12 +20,12 @@ struct OperationalModel <: EnergyModel
 end
 
 """
-    emission_limit(modeltype)
+    emission_limit(modeltype::EnergyModel)
 
 Returns the emission limit of EnergyModel `model` as dictionary with `TimeProfile`s for
 each [`ResourceEmit`](@ref).
 """
-emission_limit(modeltype) = modeltype.emission_limit
+emission_limit(modeltype::EnergyModel) = modeltype.emission_limit
 """
     emission_limit(modeltype, p::ResourceEmit)
 
@@ -48,7 +48,7 @@ emission_limit(modeltype, p::ResourceEmit, t_inv::TS.StrategicPeriod) =
 Returns the emission price of EnergyModel `model` as dictionary with `TimeProfile`s for
 each [`ResourceEmit`](@ref).
 """
-emission_price(modeltype) = modeltype.emission_price
+emission_price(modeltype::EnergyModel) = modeltype.emission_price
 """
     emission_price(modeltype, p::ResourceEmit)
 
@@ -68,11 +68,11 @@ emission_price(modeltype, p::ResourceEmit, t_inv::TS.StrategicPeriod) =
     haskey(modeltype.emission_price, p) ? modeltype.emission_price[p][t_inv] : 0
 
 """
-    co2_instance(modeltype)
+    co2_instance(modeltype::EnergyModel)
 
 Returns the CO₂ instance used in modelling.
 """
-co2_instance(modeltype) = modeltype.co2_instance
+co2_instance(modeltype::EnergyModel) = modeltype.co2_instance
 
 
 """ An abstract investment model type.
