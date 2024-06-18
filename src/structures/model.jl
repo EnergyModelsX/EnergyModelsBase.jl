@@ -2,14 +2,16 @@
 abstract type EnergyModel end
 
 """
+    OperationalModel <: EnergyModel
+
 Operational Energy Model without investments.
 
 # Fields
-- **`emission_limit::Dict{<:ResourceEmit, <:TimeProfile}`** is a dictionary with \
-individual emission limits as `TimeProfile` for each emission resource `ResourceEmit`.\n
-- **`emission_price::Dict{<:ResourceEmit, <:TimeProfile}`** are the prices for the \
-different emissions types considered.\n
-- **`co2_instance`** is a `ResourceEmit` and corresponds to the type used for CO₂.\n
+- **`emission_limit::Dict{<:ResourceEmit, <:TimeProfile}`** is a dictionary with
+  individual emission limits as `TimeProfile` for each emission resource [`ResourceEmit`](@ref).
+- **`emission_price::Dict{<:ResourceEmit, <:TimeProfile}`** are the prices for the
+  different emissions types considered.
+- **`co2_instance`** is a [`ResourceEmit`](@ref) and corresponds to the type used for CO₂.
 """
 struct OperationalModel <: EnergyModel
     emission_limit::Dict{<:ResourceEmit, <:TimeProfile}
@@ -21,20 +23,21 @@ end
     emission_limit(model::EnergyModel)
 
 Returns the emission limit of EnergyModel `model` as dictionary with `TimeProfile`s for
-each `ResourceEmit`.
+each [`ResourceEmit`](@ref).
 """
 emission_limit(model::EnergyModel) = model.emission_limit
 """
     emission_limit(model::EnergyModel, p::ResourceEmit)
 
-Returns the emission limit of EnergyModel `model` and ResourceEmit `p` as `TimeProfile`.
+Returns the emission limit of EnergyModel `model` and [`ResourceEmit`](@ref) `p` as
+`TimeProfile`.
 """
 emission_limit(model::EnergyModel, p::ResourceEmit) = model.emission_limit[p]
 """
     emission_limit(model::EnergyModel, p::ResourceEmit, t_inv::TS.StrategicPeriod)
 
-Returns the emission limit of EnergyModel `model` and ResourceEmit `p` in strategic period
-period `t_inv`.
+Returns the emission limit of EnergyModel `model` and [`ResourceEmit`](@ref) `p`
+in strategic period period `t_inv`.
 """
 emission_limit(model::EnergyModel, p::ResourceEmit, t_inv::TS.StrategicPeriod) =
     model.emission_limit[p][t_inv]
@@ -43,7 +46,7 @@ emission_limit(model::EnergyModel, p::ResourceEmit, t_inv::TS.StrategicPeriod) =
     emission_price(model::EnergyModel)
 
 Returns the emission price of EnergyModel `model` as dictionary with `TimeProfile`s for
-each `ResourceEmit`.
+each [`ResourceEmit`](@ref).
 """
 emission_price(model::EnergyModel) = model.emission_price
 """

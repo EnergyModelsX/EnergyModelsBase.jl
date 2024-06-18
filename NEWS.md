@@ -2,7 +2,8 @@
 
 ## Unversioned
 
-* Use dev version of EMB for examples when running as part of tests (#33)
+* Updated minor issues in the documentation (docstrings, indices, and quick start).
+* Use dev version of EMB for examples when running as part of tests, solving [Issue #17](https://github.com/EnergyModelsX/EnergyModelsBase.jl/issues/17).
 
 ## Version 0.7.0 (2024-05-24)
 

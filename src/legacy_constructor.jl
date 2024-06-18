@@ -16,7 +16,7 @@ This version will be discontinued in the near future and replaced with the new v
 `RefStorage{StorageBehavior}` in which the parametric input defines the behaviour of the
 storage.
 
-See the _[documentation](https://energymodelsx.github.io/EnergyModelsBase.jl/stable/how-to/update-models.html)_
+See the *[documentation](https://energymodelsx.github.io/EnergyModelsBase.jl/stable/how-to/update-models)*
 for further information regarding how you can translate your existing model to the new model.
 """
 function RefStorage(
@@ -35,7 +35,7 @@ function RefStorage(
         "The used implementation of a `RefStorage` will be discontinued in the near future. " *
         "See the documentation for the new implementation using a parametric type describing " *
         "the storage behaviour and the changes incorporated for level and charge through using " *
-        "the types `StorageBehavior` and `AbstractStorageParameters` in the scetion on " *
+        "the types `StorageBehavior` and `AbstractStorageParameters` in the section on " *
         "_How to update your model to the latest versions_.\n" *
         "In practice, two changes have to be incorporated: \n 1. `RefStorage{AccumulatingEmissions}()` " *
         "instead of `RefStorage` and \n 2. the application of `StorCapOpex(rate_cap, opex_var, opex_fixed)` " *
@@ -111,7 +111,7 @@ This version will be discontinued in the near future and replaced with the new v
 `RefStorage{StorageBehavior}` in which the parametric input defines the behaviour of the
 storage.
 
-See the _[documentation](https://energymodelsx.github.io/EnergyModelsBase.jl/stable/how-to/update-models.html)_
+See the *[documentation](https://energymodelsx.github.io/EnergyModelsBase.jl/stable/how-to/update-models)*
 for further information regarding how you can translate your existing model to the new model.
 """
 function RefStorage(
@@ -134,7 +134,7 @@ function RefStorage(
         "_How to update your model to the latest versions_.\n" *
         "In practice, two changes have to be incorporated: \n 1. `RefStorage{CyclicStrategic}()` " *
         "instead of `RefStorage` and \n 2. the application of `StorCapOpexVar(rate_cap, opex_var)` " *
-        "as 2ⁿᵈ field as well as `StorCapOpexFixed(stor_cap, opex_var, opex_fixed)` as 3ʳᵈ " *
+        "as 2ⁿᵈ field as well as `StorCapOpexFixed(stor_cap, opex_fixed)` as 3ʳᵈ " *
         "field instead of using `rate_cap`, `stor_cap`, `opex_var`, and `opex_fixed` as " *
         "2ⁿᵈ-5ᵗʰ fields.\n" *
         "It is recommended to update the existing implementation to the new version.",
@@ -171,7 +171,7 @@ function RefStorage(
         "_How to update your model to the latest versions_.\n" *
         "In practice, two changes have to be incorporated: \n 1. `RefStorage{CyclicStrategic}()` " *
         "instead of `RefStorage` and \n 2. the application of `StorCapOpexVar(rate_cap, opex_var)` " *
-        "as 2ⁿᵈ field as well as `StorCapOpexFixed(stor_cap, opex_var, opex_fixed)` as 3ʳᵈ " *
+        "as 2ⁿᵈ field as well as `StorCapOpexFixed(stor_cap, opex_fixed)` as 3ʳᵈ " *
         "field instead of using `rate_cap`, `stor_cap`, `opex_var`, and `opex_fixed` as " *
         "2ⁿᵈ-5ᵗʰ fields.\n" *
         "It is recommended to update the existing implementation to the new version.",

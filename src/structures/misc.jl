@@ -1,3 +1,8 @@
+"""
+Union of `Nothing`, `TS.TimePeriod`, and `TS.TimeStructure{T} where {T}` to be used for
+limiting the potential entries to the fields of [`PreviousPeriods`](@ref) and
+[`CyclicPeriods`](@ref) types.
+"""
 NothingPeriod = Union{Nothing, TS.TimePeriod, TS.TimeStructure{T}} where {T}
 
 """
@@ -30,7 +35,7 @@ Extracts the previous representative period (fields `sp`) from a [`PreviousPerio
 """
 rep_per(prev_periods::PreviousPeriods) = prev_periods.rp
 """
-    op_perop_per(prev_periods::PreviousPeriods)
+    op_per(prev_periods::PreviousPeriods)
 
 Extracts the previous operational period (fields `sp`) from a [`PreviousPeriods`](@ref) type.
 """
