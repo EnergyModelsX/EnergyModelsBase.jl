@@ -12,6 +12,7 @@ const TS = TimeStruct
 
 include(joinpath("structures", "inv_data.jl"))
 include(joinpath("structures", "model.jl"))
+include(joinpath("structures", "legacy_constructor.jl"))
 include("checks.jl")
 include("objective.jl")
 include("variables_capex.jl")

@@ -15,7 +15,7 @@ Hence, the names of the parameters have to be specified.
 - **`discharge::Union{AbstractInvData, Nothing}`** is the investment data for the
   discharge capacity.
 """
-struct StorageInvData <: EMB.StorageInvData
+struct StorageInvData <: InvestmentData
     charge::Union{AbstractInvData,Nothing}
     level::Union{AbstractInvData,Nothing}
     discharge::Union{AbstractInvData,Nothing}
@@ -56,7 +56,7 @@ When multiple inputs are provided, a constructor directly creates the correspond
   or [`RollingLife`](@ref). If `life_mode` is not specified, the model assumes an
   [`UnlimitedLife`](@ref).
 """
-struct SingleInvData <: EMB.SingleInvData
+struct SingleInvData <: InvestmentData
     cap::AbstractInvData
     function SingleInvData(cap)
         return new(cap)
