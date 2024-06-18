@@ -193,7 +193,7 @@ or `StrategicProfile`.
 - **`opex_fixed::TimeProfile`** is the fixed operating expense.
 - **`output::Dict{<:Resource, <:Real}`** are the generated [`Resource`](@ref)s with
   conversion value `Real`.
-- **`data::Vector{Data}`** is the additional data (e.g. for investments). The field `data`
+- **`data::Vector{<:Data}`** is the additional data (e.g. for investments). The field `data`
   is conditional through usage of a constructor.
 """
 struct RefSource <: Source
@@ -202,7 +202,7 @@ struct RefSource <: Source
     opex_var::TimeProfile
     opex_fixed::TimeProfile
     output::Dict{<:Resource,<:Real}
-    data::Vector
+    data::Vector{<:Data}
 end
 function RefSource(
     id,
@@ -242,7 +242,7 @@ struct RefNetworkNode <: NetworkNode
     opex_fixed::TimeProfile
     input::Dict{<:Resource,<:Real}
     output::Dict{<:Resource,<:Real}
-    data::Vector
+    data::Vector{<:Data}
 end
 function RefNetworkNode(
     id,
@@ -314,7 +314,7 @@ struct RefStorage{T} <: Storage{T}
     stor_res::Resource
     input::Dict{<:Resource,<:Real}
     output::Dict{<:Resource,<:Real}
-    data::Vector
+    data::Vector{<:Data}
 end
 
 function RefStorage{T}(
@@ -341,7 +341,7 @@ and deficit.
 - **`penalty::Dict{Any, TimeProfile}`** are penalties for surplus or deficits. Requires the
   fields `:surplus` and `:deficit`.
 - **`input::Dict{<:Resource, <:Real}`** are the input [`Resource`](@ref)s with conversion value `Real`.
-- **`data::Vector{Data}`** is the additional data (e.g. for investments). The field `data`
+- **`data::Vector{<:Data}`** is the additional data (e.g. for investments). The field `data`
   is conditional through usage of a constructor.
 """
 struct RefSink <: Sink
@@ -349,7 +349,7 @@ struct RefSink <: Sink
     cap::TimeProfile
     penalty::Dict{Symbol,<:TimeProfile}
     input::Dict{<:Resource,<:Real}
-    data::Vector
+    data::Vector{<:Data}
 end
 function RefSink(
     id,
