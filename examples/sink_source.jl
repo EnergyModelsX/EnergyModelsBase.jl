@@ -14,12 +14,12 @@ using PrettyTables
 using TimeStruct
 
 """
-    generate_example_data()
+    generate_example_data_ss()
 
 Generate the data for an example consisting of an electricity source and sink. It shows how
 the source adjusts to the demand.
 """
-function generate_example_data()
+function generate_example_data_ss()
     @info "Generate case data - Simple sink-source example"
 
     # Define the different resources and their emission intensity in tCO2/MWh
@@ -81,7 +81,7 @@ function generate_example_data()
 end
 
 # Generate the case and model data and run the model
-case, model = generate_example_data()
+case, model = generate_example_data_ss()
 optimizer = optimizer_with_attributes(HiGHS.Optimizer, MOI.Silent() => true)
 m = run_model(case, model, optimizer)
 
