@@ -34,26 +34,26 @@ function create_model(
     𝒫 = case[:products]
 
     # Declaration of variables for the problem
-    variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
-    variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
-    variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
-    variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
-    variables_capacity(m, 𝒩, 𝒯, modeltype::EnergyModel)
-    variables_nodes(m, 𝒩, 𝒯, modeltype::EnergyModel)
+    variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
+    variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype)
+    variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype)
+    variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype)
+    variables_capacity(m, 𝒩, 𝒯, modeltype)
+    variables_nodes(m, 𝒩, 𝒯, modeltype)
 
     # Construction of constraints for the problem
-    constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
-    constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
-    constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
+    constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
+    constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype)
+    constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
 
     # Construction of the objective function
-    objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+    objective(m, 𝒩, 𝒯, 𝒫, modeltype)
 
     return m
 end
 function create_model(case, modeltype::EnergyModel; check_timeprofiles::Bool = true)
     m = JuMP.Model()
-    create_model(case, modeltype::EnergyModel, m; check_timeprofiles)
+    create_model(case, modeltype, m; check_timeprofiles)
 end
 
 """
@@ -194,7 +194,7 @@ function variables_nodes(m, 𝒩, 𝒯, modeltype::EnergyModel)
         # Convert to a Vector of common-type instad of Any.
         𝒩ˢᵘᵇ = convert(Vector{node_type}, 𝒩ˢᵘᵇ)
         try
-            variables_node(m, 𝒩ˢᵘᵇ, 𝒯, modeltype::EnergyModel)
+            variables_node(m, 𝒩ˢᵘᵇ, 𝒯, modeltype)
         catch e
             # Parts of the exception message we are looking for.
             pre1 = "An object of name"
@@ -257,7 +257,7 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
             )
         end
         # Call of function for individual node constraints.
-        create_node(m, n, 𝒯, 𝒫, modeltype::EnergyModel)
+        create_node(m, n, 𝒯, 𝒫, modeltype)
     end
 end
 
@@ -334,18 +334,18 @@ function create_node(m, n::Source, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Iterate through all data and set up the constraints corresponding to the data
     for data ∈ node_data(n)
-        constraints_data(m, n, 𝒯, 𝒫, modeltype::EnergyModel, data)
+        constraints_data(m, n, 𝒯, 𝒫, modeltype, data)
     end
 
     # Call of the function for the outlet flow from the `Source` node
-    constraints_flow_out(m, n, 𝒯, modeltype::EnergyModel)
+    constraints_flow_out(m, n, 𝒯, modeltype)
 
     # Call of the function for limiting the capacity to the maximum installed capacity
-    constraints_capacity(m, n, 𝒯, modeltype::EnergyModel)
+    constraints_capacity(m, n, 𝒯, modeltype)
 
     # Call of the functions for both fixed and variable OPEX constraints introduction
-    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
-    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ, modeltype)
+    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ, modeltype)
 end
 
 """
@@ -361,19 +361,19 @@ function create_node(m, n::NetworkNode, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Iterate through all data and set up the constraints corresponding to the data
     for data ∈ node_data(n)
-        constraints_data(m, n, 𝒯, 𝒫, modeltype::EnergyModel, data)
+        constraints_data(m, n, 𝒯, 𝒫, modeltype, data)
     end
 
     # Call of the function for the inlet flow to and outlet flow from the `NetworkNode` node
-    constraints_flow_in(m, n, 𝒯, modeltype::EnergyModel)
-    constraints_flow_out(m, n, 𝒯, modeltype::EnergyModel)
+    constraints_flow_in(m, n, 𝒯, modeltype)
+    constraints_flow_out(m, n, 𝒯, modeltype)
 
     # Call of the function for limiting the capacity to the maximum installed capacity
-    constraints_capacity(m, n, 𝒯, modeltype::EnergyModel)
+    constraints_capacity(m, n, 𝒯, modeltype)
 
     # Call of the functions for both fixed and variable OPEX constraints introduction
-    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
-    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ, modeltype)
+    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ, modeltype)
 end
 
 """
@@ -388,18 +388,18 @@ function create_node(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Mass/energy balance constraints for stored energy carrier.
-    constraints_level(m, n, 𝒯, 𝒫, modeltype::EnergyModel)
+    constraints_level(m, n, 𝒯, 𝒫, modeltype)
 
     # Call of the function for the inlet flow to and outlet flow from the `Storage` node
-    constraints_flow_in(m, n, 𝒯, modeltype::EnergyModel)
-    constraints_flow_out(m, n, 𝒯, modeltype::EnergyModel)
+    constraints_flow_in(m, n, 𝒯, modeltype)
+    constraints_flow_out(m, n, 𝒯, modeltype)
 
     # Call of the function for limiting the capacity to the maximum installed capacity
-    constraints_capacity(m, n, 𝒯, modeltype::EnergyModel)
+    constraints_capacity(m, n, 𝒯, modeltype)
 
     # Call of the functions for both fixed and variable OPEX constraints introduction
-    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
-    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ, modeltype)
+    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ, modeltype)
 end
 
 """
@@ -415,18 +415,18 @@ function create_node(m, n::Sink, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Iterate through all data and set up the constraints corresponding to the data
     for data ∈ node_data(n)
-        constraints_data(m, n, 𝒯, 𝒫, modeltype::EnergyModel, data)
+        constraints_data(m, n, 𝒯, 𝒫, modeltype, data)
     end
 
     # Call of the function for the inlet flow to the `Sink` node
-    constraints_flow_in(m, n, 𝒯, modeltype::EnergyModel)
+    constraints_flow_in(m, n, 𝒯, modeltype)
 
     # Call of the function for limiting the capacity to the maximum installed capacity
-    constraints_capacity(m, n, 𝒯, modeltype::EnergyModel)
+    constraints_capacity(m, n, 𝒯, modeltype)
 
     # Call of the functions for both fixed and variable OPEX constraints introduction
-    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
-    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+    constraints_opex_fixed(m, n, 𝒯ᴵⁿᵛ, modeltype)
+    constraints_opex_var(m, n, 𝒯ᴵⁿᵛ, modeltype)
 end
 
 """
