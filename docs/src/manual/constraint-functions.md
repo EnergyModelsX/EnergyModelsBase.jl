@@ -1,7 +1,7 @@
 # [Constraint functions](@id constraint_functions)
 
 The package provides standard constraint functions that can be used for new developed nodes.
-These standard constraint functions are used exclusively in all `create_node(m, n, 𝒯, 𝒫, modeltype::EnergyModel)` functions.
+These standard constraint functions are used exclusively in all `create_node(m, n, 𝒯, 𝒫, modeltype)` functions.
 They allow for both removing repititions of code as well as dispatching only on certain aspects.
 The majority of the constraint functions are created for the `abstract type` of the `Node` dispatching, that is, the supertypes described in *[Description of Technologies](@ref sec_des_nodes)*.
 If a constraint function is not using the `abstract type` for dispatching, a warning is shown in this manual.
@@ -117,10 +117,10 @@ Hence, if the time structure is given as `TwoLevel{SimpleTimes}`, all functions 
     If you want to introduce a new *[storage behaviour](@ref sec_lib_public_storbehav)*, it is best to dispatch on the following functions.
     It is not necessary to dispatch on all of the mentioned functions for all storage behaviours.
 
-    1. `constraints_level_rp(m, n, per, modeltype::EnergyModel)` for inclusion of constraints on the variable [``\texttt{stor\_level\_Δ\_rp}[n, t_{rp}]``](@ref var_cap),
-    2. `constraints_level_scp(m, n, per, modeltype::EnergyModel)` for inclusion of constraints related to operational scenarios,
-    3. `previous_level(m, n, prev_pers, cyclic_pers, modeltype::EnergyModel)` for changing the behaviour of how previous storage levels should be calculated, and
-    4. `previous_level_sp(m, n, cyclic_pers, modeltype::EnergyModel)` for changing the behaviour of the first operational period (in the first representative period) within a strategic period.
+    1. `constraints_level_rp(m, n, per, modeltype)` for inclusion of constraints on the variable [``\texttt{stor\_level\_Δ\_rp}[n, t_{rp}]``](@ref var_cap),
+    2. `constraints_level_scp(m, n, per, modeltype)` for inclusion of constraints related to operational scenarios,
+    3. `previous_level(m, n, prev_pers, cyclic_pers, modeltype)` for changing the behaviour of how previous storage levels should be calculated, and
+    4. `previous_level_sp(m, n, cyclic_pers, modeltype)` for changing the behaviour of the first operational period (in the first representative period) within a strategic period.
 
     The exact implementation is not straight forward and care has to be taken if you want to dispatch on these functions to avoid method ambiguities.
     We plan on extending on the documentation on how you can best introduce new *[storage behaviours](@ref sec_lib_public_storbehav)* in a latter stage with an example.
