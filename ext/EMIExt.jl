@@ -23,7 +23,7 @@ include("constraints.jl")
 
 For a given Node `n`, checks that it contains the required investment data.
 """
-function has_investment(n::EMB.Node)
+function EMI.has_investment(n::EMB.Node)
     (
         hasproperty(n, :data) &&
         !isnothing(findfirst(data -> typeof(data) <: InvestmentData, node_data(n)))
@@ -36,7 +36,7 @@ end
 For a given `Storage` node, checks that it contains investments for the field
 `field`, that is `:charge`, `:level`, or `:discharge`.
 """
-function has_investment(n::Storage, field::Symbol)
+function EMI.has_investment(n::Storage, field::Symbol)
     (
         hasproperty(n, :data) &&
         !isnothing(findfirst(data->typeof(data)<:InvestmentData, node_data(n))) &&
