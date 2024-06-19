@@ -26,7 +26,6 @@
     end
 end
 
-
 @testset "Collect and sort types" begin
     Power = ResourceCarrier("Power", 0.0)
     CO2 = ResourceEmit("CO2", 0.0)

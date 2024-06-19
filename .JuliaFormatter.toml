@@ -1,0 +1,14 @@
+# Configuration file for JuliaFormatter.jl
+# For more information, see: https://domluna.github.io/JuliaFormatter.jl/stable/config/
+
+always_for_in = true
+for_in_replacement = "∈"
+always_use_return = false
+margin = 92
+remove_extra_newlines = true
+short_to_long_function_def = false
+align_assignment = true
+align_struct_field = false
+align_conditional = true
+align_pair_arrow = true
+join_lines_based_on_source = true
