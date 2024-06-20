@@ -147,7 +147,7 @@ function previous_level(
     modeltype::EnergyModel,
 )
 
-    return previous_level_sp(m, n, cyclic_pers, modeltype::EnergyModel)
+    return previous_level_sp(m, n, cyclic_pers, modeltype)
 end
 """
     previous_level(

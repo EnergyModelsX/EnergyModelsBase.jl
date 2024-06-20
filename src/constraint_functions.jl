@@ -7,7 +7,7 @@ This function serves as fallback option if no other function is specified for a 
 function constraints_capacity(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
     @constraint(m, [t ∈ 𝒯], m[:cap_use][n, t] <= m[:cap_inst][n, t])
 
-    constraints_capacity_installed(m, n, 𝒯, modeltype::EnergyModel)
+    constraints_capacity_installed(m, n, 𝒯, modeltype)
 end
 
 """
@@ -30,7 +30,7 @@ function constraints_capacity(m, n::Storage, 𝒯::TimeStructure, modeltype::Ene
         )
     end
 
-    constraints_capacity_installed(m, n, 𝒯, modeltype::EnergyModel)
+    constraints_capacity_installed(m, n, 𝒯, modeltype)
 end
 
 """
@@ -45,7 +45,7 @@ function constraints_capacity(m, n::Sink, 𝒯::TimeStructure, modeltype::Energy
         m[:cap_inst][n, t] + m[:sink_surplus][n, t]
     )
 
-    constraints_capacity_installed(m, n, 𝒯, modeltype::EnergyModel)
+    constraints_capacity_installed(m, n, 𝒯, modeltype)
 end
 
 """
@@ -162,7 +162,7 @@ This function serves as fallback option if no other function is specified for a 
 """
 function constraints_flow_out(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
     # Declaration of the required subsets, excluding CO2, if specified
-    𝒫ᵒᵘᵗ = res_not(outputs(n), co2_instance(modeltype::EnergyModel))
+    𝒫ᵒᵘᵗ = res_not(outputs(n), co2_instance(modeltype))
 
     # Constraint for the individual output stream connections
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵒᵘᵗ],
@@ -179,7 +179,7 @@ This function serves as fallback option if no other function is specified for a 
 function constraints_flow_out(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
     # Declaration of the required subsets
     p_stor = storage_resource(n)
-    𝒫ᵒᵘᵗ = res_not(outputs(n), co2_instance(modeltype::EnergyModel))
+    𝒫ᵒᵘᵗ = res_not(outputs(n), co2_instance(modeltype))
 
     # Constraint for the individual output stream connections
     @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵒᵘᵗ],
@@ -198,7 +198,7 @@ function constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Call the auxiliary function for additional constraints on the level
-    constraints_level_aux(m, n, 𝒯, 𝒫, modeltype::EnergyModel)
+    constraints_level_aux(m, n, 𝒯, 𝒫, modeltype)
 
     # Mass/energy balance constraints for stored energy carrier.
     for (t_inv_prev, t_inv) ∈ withprev(𝒯ᴵⁿᵛ)
@@ -215,7 +215,7 @@ function constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
             cyclic_pers,
             t_inv,
             ts,
-            modeltype::EnergyModel,
+            modeltype,
         )
     end
 end
@@ -279,7 +279,7 @@ end
         cyclic_pers::CyclicPeriods,
         per,
         ts::RepresentativePeriods,
-        modeltype,
+        modeltype::EnergyModel,
     )
 
 Iterate through the individual time structures of a `Storage` node. This iteration function
@@ -296,14 +296,14 @@ function constraints_level_iterate(
     cyclic_pers::CyclicPeriods,
     per,
     _::RepresentativePeriods,
-    modeltype,
+    modeltype::EnergyModel,
 )
     # Declaration of the required subsets
     𝒯ʳᵖ = repr_periods(per)
     last_rp = last(𝒯ʳᵖ)
 
     # Constraint for additional, node specific constraints for representative periods
-    constraints_level_rp(m, n, per, modeltype::EnergyModel)
+    constraints_level_rp(m, n, per, modeltype)
 
     # Constraint for the total change in the level in a given representative period
     @constraint(
@@ -325,7 +325,7 @@ function constraints_level_iterate(
             cyclic_pers,
             t_rp,
             ts,
-            modeltype::EnergyModel,
+            modeltype,
         )
     end
 end
@@ -336,7 +336,7 @@ end
         prev_pers::PreviousPeriods,
         per,
         ts::OperationalScenarios,
-        modeltype,
+        modeltype::EnergyModel,
     )
 
 In the case of `OperationalScenarios`, this is achieved through calling the function
@@ -349,13 +349,13 @@ function constraints_level_iterate(
     cyclic_pers::CyclicPeriods,
     per,
     _::OperationalScenarios,
-    modeltype,
+    modeltype::EnergyModel,
 )
     # Declaration of the required subsets
     𝒯ˢᶜ = opscenarios(per)
 
     # Constraint for additional, node specific constraints for scenario periods
-    constraints_level_scp(m, n, per, modeltype::EnergyModel)
+    constraints_level_scp(m, n, per, modeltype)
 
     # Iterate through the operational structure
     for t_scp ∈ 𝒯ˢᶜ
@@ -367,7 +367,7 @@ function constraints_level_iterate(
             cyclic_pers,
             t_scp,
             ts,
-            modeltype::EnergyModel,
+            modeltype,
         )
     end
 end
@@ -379,7 +379,7 @@ end
         prev_pers::PreviousPeriods,
         per,
         ts::SimpleTimes,
-        modeltype,
+        modeltype::EnergyModel,
     )
 
 In the case of `SimpleTimes`, the iterator function is at its lowest level. In this
@@ -397,7 +397,7 @@ function constraints_level_iterate(
     cyclic_pers::CyclicPeriods,
     per,
     _::SimpleTimes,
-    modeltype,
+    modeltype::EnergyModel,
 )
 
     # Iterate through the operational structure
@@ -405,7 +405,7 @@ function constraints_level_iterate(
         prev_pers = PreviousPeriods(strat_per(prev_pers), rep_per(prev_pers), t_prev)
 
         # Extract the previous level
-        prev_level = previous_level(m, n, prev_pers, cyclic_pers, modeltype::EnergyModel)
+        prev_level = previous_level(m, n, prev_pers, cyclic_pers, modeltype)
 
         # Mass balance constraint in the storage
         @constraint(m,
@@ -415,7 +415,7 @@ function constraints_level_iterate(
 
         # Constraint for avoiding starting below 0 if the previous operational level is
         # nothing
-        constraints_level_bounds(m, n, t, cyclic_pers, modeltype::EnergyModel)
+        constraints_level_bounds(m, n, t, cyclic_pers, modeltype)
     end
 end
 
@@ -509,7 +509,7 @@ end
         n::Storage,
         t::TS.TimePeriod,
         prev_pers::TS.TimePeriod,
-        modeltype,
+        modeltype::EnergyModel,
     )
 
 Provides bounds on the initial storage level in an operational period to account for the
@@ -522,7 +522,7 @@ function constraints_level_bounds(
     n::Storage,
     t::TS.TimePeriod,
     cyclic_pers::CyclicPeriods{<:TS.AbstractStrategicPeriod},
-    modeltype,
+    modeltype::EnergyModel,
 )
     return nothing
 end
@@ -532,7 +532,7 @@ end
         n::Storage,
         t::TS.TimePeriod,
         cyclic_pers::CyclicPeriods{<:TS.AbstractRepresentativePeriod},
-        modeltype,
+        modeltype::EnergyModel,
     )
 
 When representative periods are used and the previous operational  period is `nothing`, then
@@ -544,7 +544,7 @@ function constraints_level_bounds(
     n::Storage,
     t::TS.TimePeriod,
     cyclic_pers::CyclicPeriods{<:TS.AbstractRepresentativePeriod},
-    modeltype,
+    modeltype::EnergyModel,
 )
 
     # Constraint to avoid starting below 0 in this operational period
