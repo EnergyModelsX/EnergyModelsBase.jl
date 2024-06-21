@@ -100,14 +100,14 @@ The total function call structure is given by:
 ```
 constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
 ├─ constraints_level_aux(m, n, 𝒯, 𝒫, modeltype::EnergyModel)
-└─ constraints_level_iterate(m, n, prev_pers, cyclic_pers, t_inv, ts::RepresentativePeriods, modeltype)
-   ├─ constraints_level_rp(m, n, per, modeltype)
-   └─ constraints_level_iterate(m, n, prev_pers, cyclic_pers, t_inv, ts::OperationalScenarios, modeltype)
-      ├─ constraints_level_scp(m, n, per, modeltype)
-      └─ constraints_level_iterate(m, n, prev_pers, cyclic_pers, t_inv, ts::SimpleTimes, modeltype)
-         ├─ constraints_level_bounds(m, n, t, cyclic_pers, modeltype)
-         └─ previous_level(m, n, prev_pers, cyclic_pers, modeltype)
-            └─ previous_level_sp(m, n, cyclic_pers, modeltype)
+└─ constraints_level_iterate(m, n, prev_pers, cyclic_pers, t_inv, ts::RepresentativePeriods, modeltype::EnergyModel)
+   ├─ constraints_level_rp(m, n, per, modeltype::EnergyModel)
+   └─ constraints_level_iterate(m, n, prev_pers, cyclic_pers, t_inv, ts::OperationalScenarios, modeltype::EnergyModel)
+      ├─ constraints_level_scp(m, n, per, modeltype::EnergyModel)
+      └─ constraints_level_iterate(m, n, prev_pers, cyclic_pers, t_inv, ts::SimpleTimes, modeltype::EnergyModel)
+         ├─ constraints_level_bounds(m, n, t, cyclic_pers, modeltype::EnergyModel)
+         └─ previous_level(m, n, prev_pers, cyclic_pers, modeltype::EnergyModel)
+            └─ previous_level_sp(m, n, cyclic_pers, modeltype::EnergyModel)
 ```
 
 Not all functions are called, as the framework automatically deduces the chosen time structure.

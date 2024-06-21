@@ -203,11 +203,19 @@ formulation
 
 The type `EnergyModel` is used for creating the global parameters of a model.
 It can be as well used for extending `EnergyModelsBase` as described in the section *[Extensions to the model](@ref sec_phil_ext)*.
-`EnergyModelsBase` only provides an `OperationalModel` while `InvestmentModel` is added through the extension [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/)
+`EnergyModelsBase` provides an `OperationalModel` for analyses with given capacities.
+`OperationalModel` contains some key information for the model such as the emissions limits and penalties for each `ResourceEmit`, as well as the `ResourceEmit` instance of CO₂.
+
+Including the extension [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/) results in the declaration of the types `AbstractInvestmentModel` and `InvestmentModel` which can be used for creating models with investments
+It takes as additional input the `discount_rate`.
+The `discount_rate` is an important element of investment analysis needed to represent the present value of future cash flows.
+It is provided to the model as a value between 0 and 1 (*e.g.* a discount rate of 5 % is 0.05).
 
 ```@docs
 EnergyModel
 OperationalModel
+AbstractInvestmentModel
+InvestmentModel
 ```
 
 In addition, the following `Data` types are introduced for introducing additional parameters, variables, and constraints to the `Node`s.
@@ -227,10 +235,13 @@ The following functions are declared for accessing fields from a `EnergyModel` t
     If you want to introduce new `EnergyModel` types, it is important that the functions `emission_limit`, `emission_price`, and `co2_instance` are either functional for your new types or you have to declare corresponding functions.
     The first approach can be achieved through using the same name for the respective fields.
 
+    If you want to introduce new `AbstractInvestmentModel` types, you have to in additional consider the function `discount_rate`.
+
 ```@docs
 emission_limit
 emission_price
 co2_instance
+discount_rate
 ```
 
 ## Functions for running the model
@@ -322,6 +333,36 @@ The following functions are declared for accessing fields from a `EmissionsData`
 ```@docs
 co2_capture
 process_emissions
+```
+
+## [Investment data](@id sec_lib_public_invdata)
+
+### `InvestmentData` types
+
+`InvestmentData` subtypes are used to provide technologies introduced in `EnergyModelsX` (nodes and transmission modes) a subtype of `Data` that can be used for dispatching.
+Two different types are directly introduced, `SingleInvData` and `StorageInvData`.
+
+`SingleInvData` is providing a composite type with a single field.
+It is used for investments in technologies with a single capacity, that is all nodes except for storage nodes as well as tranmission modes.
+
+`StorageInvData` is required as `Storage` nodes behave differently compared to the other nodes.
+In `Storage` nodes, it is possible to invest both in the charge capacity for storing energy, the storage capacity, that is the level of a `Storage` node, as well as the discharge capacity, that is how fast energy can be withdrawn.
+Correspondingly, it is necessary to have individual parameters for the potential investments in each capacity, that is through the fields `:charge`, `:level`, and `:discharge`.
+
+```@docs
+InvestmentData
+SingleInvData
+StorageInvData
+```
+
+### Legacy constructors
+
+We provide a legacy constructor, `InvData` and `InvDataStorage`, that use the same input as in version 0.5.x.
+If you want to adjust your model to the latest changes, please refer to the section *Update your model to the latest version of EnergyModelsInvestments*.
+
+```@docs
+InvData
+InvDataStorage
 ```
 
 ## Miscellaneous types/functions/macros

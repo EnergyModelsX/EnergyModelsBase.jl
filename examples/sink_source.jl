@@ -2,7 +2,7 @@ using Pkg
 # Activate the local environment including EnergyModelsBase, HiGHS, PrettyTables
 Pkg.activate(@__DIR__)
 # Use dev version if run as part of tests
-haskey(ENV, "EMB_TEST") && Pkg.develop(path=joinpath(@__DIR__,".."))
+haskey(ENV, "EMB_TEST") && Pkg.develop(path = joinpath(@__DIR__, ".."))
 # Install the dependencies.
 Pkg.instantiate()
 
@@ -14,12 +14,12 @@ using PrettyTables
 using TimeStruct
 
 """
-    generate_example_data()
+    generate_example_data_ss()
 
 Generate the data for an example consisting of an electricity source and sink. It shows how
 the source adjusts to the demand.
 """
-function generate_example_data()
+function generate_example_data_ss()
     @info "Generate case data - Simple sink-source example"
 
     # Define the different resources and their emission intensity in tCO2/MWh
@@ -67,7 +67,7 @@ function generate_example_data()
 
     # Connect all nodes with the availability node for the overall energy/mass balance
     links = [
-        Direct("source-demand", nodes[1], nodes[2], Linear())
+        Direct("source-demand", nodes[1], nodes[2], Linear()),
     ]
 
     # WIP data structure
@@ -81,7 +81,7 @@ function generate_example_data()
 end
 
 # Generate the case and model data and run the model
-case, model = generate_example_data()
+case, model = generate_example_data_ss()
 optimizer = optimizer_with_attributes(HiGHS.Optimizer, MOI.Silent() => true)
 m = run_model(case, model, optimizer)
 
@@ -92,6 +92,6 @@ pretty_table(
     JuMP.Containers.rowtable(
         value,
         m[:cap_use][source, :];
-        header=[:t, :Value]
+        header = [:t, :Value],
     ),
 )

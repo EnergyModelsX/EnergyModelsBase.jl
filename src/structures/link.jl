@@ -21,13 +21,12 @@ A direct link between two nodes.
 
 """
 struct Direct <: Link
-    id
+    id::Any
     from::Node
     to::Node
     formulation::Formulation
 end
 Direct(id, from::Node, to::Node) = Direct(id, from, to, Linear())
-
 
 """
     link_sub(ℒ::Vector{<:Link}, n::Node)
@@ -36,8 +35,7 @@ Return connected links from the vector `ℒ` for a given node `n` as array.
 The first subarray corresponds to the `from` field, while the second to the `to` field.
 """
 function link_sub(ℒ::Vector{<:Link}, n::Node)
-    return [filter(x -> x.from == n, ℒ),
-            filter(x -> x.to   == n, ℒ)]
+    return [filter(x -> x.from == n, ℒ), filter(x -> x.to == n, ℒ)]
 end
 
 """

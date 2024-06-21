@@ -30,7 +30,6 @@ function RefStorage(
     output::Dict{<:Resource,<:Real},
     data::Vector,
 )
-
     @warn(
         "The used implementation of a `RefStorage` will be discontinued in the near future. " *
         "See the documentation for the new implementation using a parametric type describing " *
@@ -66,7 +65,6 @@ function RefStorage(
     input::Dict{<:Resource,<:Real},
     output::Dict{<:Resource,<:Real},
 )
-
     @warn(
         "The used implementation of a `RefStorage` will be discontinued in the near future. " *
         "See the documentation for the new implementation using a parametric type describing " *
@@ -125,7 +123,6 @@ function RefStorage(
     output::Dict{<:Resource,<:Real},
     data::Vector,
 )
-
     @warn(
         "The used implementation of a `RefStorage` will be discontinued in the near future. " *
         "See the documentation for the new implementation using a parametric type describing " *
@@ -162,7 +159,6 @@ function RefStorage(
     input::Dict{<:Resource,<:Real},
     output::Dict{<:Resource,<:Real},
 )
-
     @warn(
         "The used implementation of a `RefStorage` will be discontinued in the near future. " *
         "See the documentation for the new implementation using a parametric type describing " *

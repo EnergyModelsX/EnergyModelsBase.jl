@@ -7,7 +7,6 @@
 
     # Function for setting up the system
     function simple_graph(em_data, em_cap, em_price)
-
         source = RefSource(
             "source",
             FixedProfile(4),
@@ -25,34 +24,26 @@
 
         resources = [Power, CO2]
         ops = SimpleTimes(5, 2)
-        T = TwoLevel(2, 2, ops; op_per_strat=10)
+        T = TwoLevel(2, 2, ops; op_per_strat = 10)
 
         nodes = [source, sink]
         links = [Direct(12, source, sink)]
-        model = OperationalModel(
-            Dict(CO2 => em_cap),
-            Dict(CO2 => em_price),
-            CO2
-        )
-        case = Dict(
-                    :T => T,
-                    :nodes => nodes,
-                    :links => links,
-                    :products => resources,
-        )
+        model = OperationalModel(Dict(CO2 => em_cap), Dict(CO2 => em_price), CO2)
+        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
         return run_model(case, model, HiGHS.Optimizer), case, model
     end
 
     function general_tests(m, case)
         # Extract parameters
-        𝒯    = case[:T]
+        𝒯 = case[:T]
         sink = case[:nodes][2]
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
         # Test that the system produces
         # Test that the deficit is hence larger than 0 in a strategic period
-        @test sum(sum(value.(m[:cap_use][sink, t]) for t ∈ t_inv) > TEST_ATOL for
-                t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ)
+        @test sum(
+            sum(value.(m[:cap_use][sink, t]) for t ∈ t_inv) > TEST_ATOL for t_inv ∈ 𝒯ᴵⁿᵛ
+        ) == length(𝒯ᴵⁿᵛ)
     end
 
     @testset "Emission cap" begin
@@ -65,7 +56,7 @@
 
         # Solve the system and extract parameters
         m, case, model = simple_graph(em_data, em_cap, em_price)
-        𝒯    = case[:T]
+        𝒯 = case[:T]
         sink = case[:nodes][2]
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
@@ -73,12 +64,16 @@
         general_tests(m, case)
 
         # Test that the strategic emission limits hold
-        # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
-        @test sum(value.(m[:emissions_strategic][t_inv, CO2]) ≈ cap for t_inv ∈ 𝒯ᴵⁿᵛ,
-                atol=TEST_ATOL) == length(𝒯ᴵⁿᵛ)
+        # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel
+        @test sum(
+            value.(m[:emissions_strategic][t_inv, CO2]) ≈ cap for t_inv ∈ 𝒯ᴵⁿᵛ,
+            atol ∈ TEST_ATOL
+        ) == length(𝒯ᴵⁿᵛ)
         # Test that the deficit is hence larger than 0 in a strategic period
-        @test sum(sum(value.(m[:sink_deficit][sink, t]) for t ∈ t_inv) > TEST_ATOL for
-                t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ)
+        @test sum(
+            sum(value.(m[:sink_deficit][sink, t]) for t ∈ t_inv) > TEST_ATOL for
+            t_inv ∈ 𝒯ᴵⁿᵛ
+        ) == length(𝒯ᴵⁿᵛ)
     end
 
     @testset "Emission price" begin
@@ -91,7 +86,7 @@
         em_price = FixedProfile(price)
 
         m, case, model = simple_graph(em_data, em_cap, em_price)
-        𝒯    = case[:T]
+        𝒯 = case[:T]
         sink = case[:nodes][2]
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
@@ -101,7 +96,7 @@
         # Check that the objective value is correctly calculated
         # The multiplication with 2*2 is given through the number of strategic periods (2)
         # and the duration of a strategic period (2)
-        @test objective_value(m) ≈ -cap*price*2*2 atol=TEST_ATOL
+        @test objective_value(m) ≈ -cap * price * 2 * 2 atol = TEST_ATOL
 
         # Check that there is no deficit
         @test sum(value.(m[:sink_deficit][sink, t]) ≤ TEST_ATOL for t ∈ 𝒯) == length(𝒯)

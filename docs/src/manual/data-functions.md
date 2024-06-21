@@ -14,10 +14,10 @@ end
 There is always a fallback option if a `Data` is specified, but no functions are provided:
 
 ```julia
-constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::Data) = nothing
+constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::Data) = nothing
 ```
 
-Its application is best explained by the imlpemented functionality for emissions
+Its application is best explained by the implemented functionality for emissions
 
 ## Emissions data
 
@@ -39,8 +39,8 @@ The extension is then implemented through the functions
 function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsEnergy)
 function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsProcess)
 function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
-function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureProcessEmissions)
-function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureProcessEnergyEmissions)
+function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureProcessEmissions)
+function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureProcessEnergyEmissions)
 ```
 
 in the file `data_functions.jl`.
