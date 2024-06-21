@@ -1,6 +1,7 @@
 using Documenter
 
 using EnergyModelsBase
+using EnergyModelsInvestments
 using TimeStruct
 const EMB = EnergyModelsBase
 
@@ -26,7 +27,12 @@ makedocs(
         assets = String[],
         ansicolor = true,
     ),
-    modules = [EnergyModelsBase],
+    modules = [
+        EMB,
+        isdefined(Base, :get_extension) ?
+        Base.get_extension(EMB, :EMIExt) :
+        EMB.EMIExt
+        ],
     pages = [
         "Home" => "index.md",
         "Manual" => Any[
@@ -48,6 +54,7 @@ makedocs(
             "Public"=>"library/public.md",
             "Internals"=>Any[
                 "Reference"=>"library/internals/reference.md",
+                "Reference EMIExt"=>"library/internals/reference_EMIExt.md",
             ],
         ],
     ],

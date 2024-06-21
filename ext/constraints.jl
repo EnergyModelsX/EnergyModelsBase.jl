@@ -22,7 +22,7 @@ function EMB.constraints_capacity_installed(
 )
     if has_investment(n)
         # Extract the investment data, the discount rate, and the strategic periods
-        disc_rate = EMB.discount_rate(modeltype)
+        disc_rate = discount_rate(modeltype)
         inv_data = investment_data(n, :cap)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
@@ -56,7 +56,7 @@ function EMB.constraints_capacity_installed(
     modeltype::AbstractInvestmentModel,
 )
     # Extract the he discount rate and the strategic periods
-    disc_rate = EMB.discount_rate(modeltype)
+    disc_rate = discount_rate(modeltype)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     cap_fields = [:charge, :level, :discharge]

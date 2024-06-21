@@ -1,16 +1,8 @@
 """
-A concrete basic investment model type based on the standard `OperationalModel` as declared
-in `EnergyModelsBase`.
-The concrete basic investment model is similar to an `OperationalModel`, but allows for
-investments and additional discounting of future years.
+    InvestmentModel <: AbstractInvestmentModel
 
-# Fields
-- **`emission_limit::Dict{<:ResourceEmit, <:TimeProfile}`** are the emission caps for the
-  different emissions types considered.
-- **`emission_price::Dict{<:ResourceEmit, <:TimeProfile}`** are the prices for the
-  different emissions types considered.
-- **`co2_instance`** is a `ResourceEmit` and corresponds to the type used for CO₂.
-- **`r::Float64`** is the discount rate in the investment optimization.
+Internal type for [`InvestmentModel`](@ref EMB.InvestmentModel). The introduction of an internal type is necessary
+as extensions do not allow to export functions or types.
 """
 struct InvestmentModel <: AbstractInvestmentModel
     emission_limit::Dict{<:ResourceEmit,<:TimeProfile}

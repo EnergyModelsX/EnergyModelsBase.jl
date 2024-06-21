@@ -19,7 +19,7 @@ include("variables_capex.jl")
 include("constraints.jl")
 
 """
-    has_investment(n::EMB.Node)
+    EMI.has_investment(n::EMB.Node)
 
 For a given Node `n`, checks that it contains the required investment data.
 """
@@ -31,7 +31,7 @@ function EMI.has_investment(n::EMB.Node)
 end
 
 """
-    has_investment(n::Storage, field::Symbol)
+    EMI.has_investment(n::Storage, field::Symbol)
 
 For a given `Storage` node, checks that it contains investments for the field
 `field`, that is `:charge`, `:level`, or `:discharge`.

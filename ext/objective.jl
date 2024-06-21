@@ -27,7 +27,7 @@ function EMB.objective(m, 𝒩, 𝒯, 𝒫, modeltype::AbstractInvestmentModel)
 
     𝒫ᵉᵐ = filter(EMB.is_resource_emit, 𝒫)              # Emissions resources
 
-    disc = Discounter(EMB.discount_rate(modeltype), 𝒯)
+    disc = Discounter(discount_rate(modeltype), 𝒯)
 
     # Calculation of the OPEX contribution
     opex = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],

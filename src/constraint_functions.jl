@@ -566,7 +566,7 @@ function constraints_opex_fixed(m, n::Node, 𝒯ᴵⁿᵛ, modeltype::EnergyMode
 end
 
 """
-constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
+    constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
 
 Function for creating the constraint on the fixed OPEX of a generic `Storage`.
 This function serves as fallback option if no other function is specified for a `Storage`.

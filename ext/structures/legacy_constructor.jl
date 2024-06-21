@@ -1,28 +1,8 @@
 """
-    InvData(;
-        capex_cap::TimeProfile,
-        cap_max_inst::TimeProfile,
-        cap_max_add::TimeProfile,
-        cap_min_add::TimeProfile,
-        inv_mode::Investment = ContinuousInvestment(),
-        cap_start::Union{Real, Nothing} = nothing,
-        cap_increment::TimeProfile = FixedProfile(0),
-        life_mode::LifetimeMode = UnlimitedLife(),
-        lifetime::TimeProfile = FixedProfile(0),
-    )
+    EMB.InvData(;kwargs)
 
-Legacy constructor for a `InvData`.
-
-The new storage descriptions allows now for a reduction in functions which is used
-to make `EnergModelsInvestments` less dependent on `EnergyModelsBase`.
-
-The core changes to the existing structure is the move of the required parameters to the
-type [`Investment`](@ref) (_e.g._, the minimum and maximum added capacity is only required
-for investment mdodes that require these parameters) as well as moving the `lifetime` to the
-type [`LifetimeMode`], when required..
-
-See the _[documentation](https://energymodelsx.github.io/EnergyModelsInvestments.jl/stable/how-to/update-models)_
-for further information regarding how you can translate your existing model to the new model.
+Internal method for [`InvData`](@ref EMB.InvData). The introduction of an internal method
+is necessary as extensions do not allow to export functions or types.
 """
 function EMB.InvData(;
     capex_cap::TimeProfile,
@@ -94,30 +74,10 @@ function EMB.InvData(;
 end
 
 """
-    InvDataStorage(;
-        #Investment data related to storage power
-        capex_rate::TimeProfile,
-        rate_max_inst::TimeProfile,
-        rate_max_add::TimeProfile,
-        rate_min_add::TimeProfile,
-        capex_stor::TimeProfile,
-        stor_max_inst::TimeProfile,
-        stor_max_add::TimeProfile,
-        stor_min_add::TimeProfile,
-        inv_mode::Investment = ContinuousInvestment(),
-        rate_start::Union{Real, Nothing} = nothing,
-        stor_start::Union{Real, Nothing} = nothing,
-        rate_increment::TimeProfile = FixedProfile(0),
-        stor_increment::TimeProfile = FixedProfile(0),
-        life_mode::LifetimeMode = UnlimitedLife(),
-        lifetime::TimeProfile = FixedProfile(0),
-    )
+    InvDataStorage(;kwargs)
 
-Storage descriptions were changed in EnergyModelsBase v0.7 resulting in the requirement for
-rewriting the investment options for `Storage` nodes.
-
-See the _[documentation](https://energymodelsx.github.io/EnergyModelsInvestments.jl/stable/how-to/update-models)_
-for further information regarding how you can translate your existing model to the new model.
+Internal method for [`InvDataStorage`](@ref EMB.InvDataStorage). The introduction of an
+internal method is necessary as extensions do not allow to export functions or types.
 """
 function EMB.InvDataStorage(;
     #Investment data related to storage power

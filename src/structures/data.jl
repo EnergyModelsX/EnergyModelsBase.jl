@@ -160,7 +160,7 @@ investments can, but does not require investment data for the charge capacity of
 (**`charge`**), increasing the storage capacity (**`level`**), or the discharge capacity of
 the storage (**`discharge`**).
 
-It uses the macro `@kwdef` to use keyword arguments and default values.
+It utilizes a constructor with keyword arguments for the individual parameters.
 Hence, the names of the parameters have to be specified.
 
 # Fields
@@ -175,7 +175,7 @@ abstract type StorageInvData <: InvestmentData end
     SingleInvData <: InvestmentData
 
 Extra investment data for type investments. The extra investment data has only a single
-field in which [`AbstractInvData`](@ref) has to be added.
+field in which `AbstractInvData` has to be added.
 
 The advantage of separating `AbstractInvData` from the `InvestmentData` node is to allow
 easier separation of `EnergyModelsInvestments` and `EnergyModelsBase` and provides the user
@@ -192,15 +192,15 @@ When multiple inputs are provided, a constructor directly creates the correspond
   relative to the added capacity.
 - **`max_inst::TimeProfile`** is the maximum installed capacity in a strategic period.
 - **`initial::Real`** is the initial capacity. This results in the creation of a
-  [`SingleInvData`](@ref) type for the investment data.
+  [`SingleInvData`] type for the investment data.
 - **`inv_mode::Investment`** is the chosen investment mode for the technology. The following
-  investment modes are currently available: [`BinaryInvestment`](@ref),
-  [`DiscreteInvestment`](@ref), [`ContinuousInvestment`](@ref), [`SemiContinuousInvestment`](@ref)
-  or [`FixedInvestment`](@ref).
+  investment modes are currently available: [`BinaryInvestment`],
+  [`DiscreteInvestment`], [`ContinuousInvestment`], [`SemiContinuousInvestment`]
+  or [`FixedInvestment`].
 - **`life_mode::LifetimeMode`** is type of handling the lifetime. Several different
-  alternatives can be used: [`UnlimitedLife`](@ref), [`StudyLife`](@ref), [`PeriodLife`](@ref)
-  or [`RollingLife`](@ref). If `life_mode` is not specified, the model assumes an
-  [`UnlimitedLife`](@ref).
+  alternatives can be used: [`UnlimitedLife`], [`StudyLife`], [`PeriodLife`]
+  or [`RollingLife`]. If `life_mode` is not specified, the model assumes an
+  [`UnlimitedLife`].
 """
 abstract type SingleInvData <: InvestmentData end
 
@@ -223,9 +223,9 @@ The new storage descriptions allows now for a reduction in functions which is us
 to make `EnergModelsInvestments` less dependent on `EnergyModelsBase`.
 
 The core changes to the existing structure is the move of the required parameters to the
-type [`Investment`](@ref) (_e.g._, the minimum and maximum added capacity is only required
-for investment mdodes that require these parameters) as well as moving the `lifetime` to the
-type [`LifetimeMode`], when required..
+type `Investment` (_e.g._, the minimum and maximum added capacity is only required
+for investment modes that require these parameters) as well as moving the `lifetime` to the
+type `LifetimeMode`, when required.
 
 See the _[documentation](https://energymodelsx.github.io/EnergyModelsInvestments.jl/stable/how-to/update-models)_
 for further information regarding how you can translate your existing model to the new model.

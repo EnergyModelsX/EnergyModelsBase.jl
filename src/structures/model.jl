@@ -10,7 +10,7 @@ Operational Energy Model without investments.
 - **`emission_limit::Dict{<:ResourceEmit, <:TimeProfile}`** is a dictionary with
   individual emission limits as `TimeProfile` for each emission resource [`ResourceEmit`](@ref).
 - **`emission_price::Dict{<:ResourceEmit, <:TimeProfile}`** are the prices for the
-  different emissions types considered.
+  different considered emission resources [`ResourceEmit`](@ref).
 - **`co2_instance`** is a [`ResourceEmit`](@ref) and corresponds to the type used for CO₂.
 """
 struct OperationalModel <: EnergyModel
@@ -74,16 +74,22 @@ Returns the CO₂ instance used in modelling.
 """
 co2_instance(modeltype::EnergyModel) = modeltype.co2_instance
 
-""" An abstract investment model type.
+"""
+    AbstractInvestmentModel <: EnergyModel
 
-This abstract model type should be used when creating additional `EnergyModel` types that
-should utilize investments.
+An abstract investment model type.
+
+This abstract model type should be used when creating additional [`EnergyModel`](@ref) types
+that should utilize investments.
+
 An example for additional types is given by the inclusion of, *e.g.*, `SDDP`.
 """
 abstract type AbstractInvestmentModel <: EnergyModel end
 
 """
-A concrete basic investment model type based on the standard `OperationalModel`.
+    InvestmentModel <: AbstractInvestmentModel
+
+A concrete basic investment model type based on the standard [`OperationalModel`](@ref).
 The concrete basic investment model is similar to an `OperationalModel`, but allows for
 investments and additional discounting of future years.
 
@@ -92,7 +98,7 @@ investments and additional discounting of future years.
   different emissions types considered.
 - **`emission_price::Dict{<:ResourceEmit, <:TimeProfile}`** are the prices for the
   different emissions types considered.
-- **`co2_instance`** is a `ResourceEmit` and corresponds to the type used for CO₂.
+- **`co2_instance`** is a [`ResourceEmit`](@ref) and corresponds to the type used for CO₂.
 - **`r::Float64`** is the discount rate in the investment optimization.
 """
 abstract type InvestmentModel <: AbstractInvestmentModel end
@@ -100,6 +106,6 @@ abstract type InvestmentModel <: AbstractInvestmentModel end
 """
     discount_rate(modeltype::AbstractInvestmentModel)
 
-Returns the discount rate of `EnergyModel` modeltype
+Returns the discount rate of `AbstractInvestmentModel` modeltype.
 """
 discount_rate(modeltype::AbstractInvestmentModel) = modeltype.r
