@@ -20,7 +20,6 @@ function EMB.constraints_capacity_installed(
     𝒯::TimeStructure,
     modeltype::AbstractInvestmentModel,
 )
-
     if has_investment(n)
         # Extract the investment data, the discount rate, and the strategic periods
         disc_rate = EMB.discount_rate(modeltype)
@@ -31,7 +30,7 @@ function EMB.constraints_capacity_installed(
         EMI.add_investment_constraints(m, n, inv_data, :cap, :cap, 𝒯ᴵⁿᵛ, disc_rate)
     else
         for t ∈ 𝒯
-            fix(m[:cap_inst][n, t], EMB.capacity(n, t); force=true)
+            fix(m[:cap_inst][n, t], EMB.capacity(n, t); force = true)
         end
     end
 end
@@ -50,7 +49,12 @@ introduces the related constraints for the capacity expansions for the fields `:
 investment type, in which the investment mode and lifetime mode are used for adding
 constraints for each capacity.
 """
-function EMB.constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::AbstractInvestmentModel)
+function EMB.constraints_capacity_installed(
+    m,
+    n::Storage,
+    𝒯::TimeStructure,
+    modeltype::AbstractInvestmentModel,
+)
     # Extract the he discount rate and the strategic periods
     disc_rate = EMB.discount_rate(modeltype)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -73,7 +77,7 @@ function EMB.constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, 
 
         elseif isa(stor_par, EMB.UnionCapacity)
             for t ∈ 𝒯
-                fix(var_inst[t], capacity(stor_par, t); force=true)
+                fix(var_inst[t], capacity(stor_par, t); force = true)
             end
         end
     end

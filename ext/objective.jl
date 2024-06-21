@@ -25,7 +25,7 @@ function EMB.objective(m, 𝒩, 𝒯, 𝒫, modeltype::AbstractInvestmentModel)
     𝒩ᶜʰᵃʳᵍᵉ = filter(n -> has_investment(n, :charge), 𝒩ˢᵗᵒʳ)
     𝒩ᵈⁱˢᶜʰᵃʳᵍᵉ = filter(n -> has_investment(n, :discharge), 𝒩ˢᵗᵒʳ)
 
-    𝒫ᵉᵐ  = filter(EMB.is_resource_emit, 𝒫)              # Emissions resources
+    𝒫ᵉᵐ = filter(EMB.is_resource_emit, 𝒫)              # Emissions resources
 
     disc = Discounter(EMB.discount_rate(modeltype), 𝒯)
 
@@ -36,12 +36,15 @@ function EMB.objective(m, 𝒩, 𝒯, 𝒫, modeltype::AbstractInvestmentModel)
 
     # Calculation of the emission costs contribution
     emissions = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        sum(m[:emissions_strategic][t_inv, p] * emission_price(modeltype, p, t_inv) for p ∈ 𝒫ᵉᵐ)
+        sum(
+            m[:emissions_strategic][t_inv, p] * emission_price(modeltype, p, t_inv) for
+            p ∈ 𝒫ᵉᵐ
+        )
     )
 
     # Calculation of the capital cost contribution
     capex_cap = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        sum(m[:cap_capex][n, t_inv]  for n ∈ 𝒩ᴵⁿᵛ)
+        sum(m[:cap_capex][n, t_inv] for n ∈ 𝒩ᴵⁿᵛ)
     )
 
     # Calculation of the capital cost contribution of storage nodes
@@ -55,8 +58,8 @@ function EMB.objective(m, 𝒩, 𝒯, 𝒫, modeltype::AbstractInvestmentModel)
     @objective(m, Max,
         -sum(
             (opex[t_inv] + emissions[t_inv]) *
-                duration_strat(t_inv) * objective_weight(t_inv, disc; type="avg") +
+            duration_strat(t_inv) * objective_weight(t_inv, disc; type = "avg") +
             (capex_cap[t_inv] + capex_stor[t_inv]) * objective_weight(t_inv, disc)
-        for t_inv ∈ 𝒯ᴵⁿᵛ)
+            for t_inv ∈ 𝒯ᴵⁿᵛ)
     )
 end

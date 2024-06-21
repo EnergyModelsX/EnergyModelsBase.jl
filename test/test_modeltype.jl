@@ -7,7 +7,6 @@
 
     # Function for setting up the system
     function simple_graph(em_data, em_cap, em_price)
-
         source = RefSource(
             "source",
             FixedProfile(4),
@@ -68,7 +67,7 @@
         # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel
         @test sum(
             value.(m[:emissions_strategic][t_inv, CO2]) ≈ cap for t_inv ∈ 𝒯ᴵⁿᵛ,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) == length(𝒯ᴵⁿᵛ)
         # Test that the deficit is hence larger than 0 in a strategic period
         @test sum(

@@ -9,7 +9,6 @@ global TEST_ENV = false
 # Global vector used to gather the log messages.
 logs = []
 
-
 """
     assert_or_log(ex, msg)
 
@@ -31,7 +30,6 @@ macro assert_or_log(ex, msg)
     end
 end
 
-
 """
     check_data(case, modeltype::EnergyModel, check_timeprofiles::Bool)
 
@@ -46,7 +44,6 @@ function check_data(case, modeltype::EnergyModel, check_timeprofiles::Bool)
     #   the actual logging macros underneath instead.
     global logs = []
     log_by_element = Dict()
-
 
     if !check_timeprofiles
         @warn(
@@ -116,7 +113,7 @@ function compile_logs(case, log_by_element)
 
     log_message *= "\n"
 
-    some_error = sum(length(v) > 0 for (k, v) in log_by_element) > 0
+    some_error = sum(length(v) > 0 for (k, v) ∈ log_by_element) > 0
     if some_error
         # Only print and write the logs if not in a test environment
         if !TEST_ENV
@@ -148,7 +145,6 @@ Checks the `case` dictionary is in the correct format.
   - `:products::Vector{<:Resource}`.
 """
 function check_case_data(case)
-
     case_keys = [:T, :nodes, :links, :products]
     key_map = Dict(
         :T => TimeStructure,
@@ -193,7 +189,6 @@ Checks the `modeltype` .
 periods.
 """
 function check_model(case, modeltype::EnergyModel, check_timeprofiles::Bool)
-
     𝒯ᴵⁿᵛ = strategic_periods(case[:T])
 
     # Check for inclusion of all emission resources
@@ -364,7 +359,6 @@ function check_profile(
     ts::RepresentativePeriods,
     sp,
 )
-
     len_vals = length(value.vals)
     len_simp = length(repr_periods(ts))
     if len_vals > len_simp
@@ -403,7 +397,6 @@ strategic indexing
 on the `TimeProfile`.
 """
 function check_strategic_profile(time_profile::TimeProfile, message::String)
-
     @assert_or_log(
         !isa(time_profile, OperationalProfile),
         "Operational profiles " * message
@@ -415,7 +408,8 @@ function check_strategic_profile(time_profile::TimeProfile, message::String)
     )
 
     bool_sp =
-        !isa(time_profile, OperationalProfile) * ! isa(time_profile, ScenarioProfile) * ! isa(time_profile, RepresentativeProfile)
+        !isa(time_profile, OperationalProfile) && !isa(time_profile, ScenarioProfile) &&
+        !isa(time_profile, RepresentativeProfile)
 
     if isa(time_profile, StrategicProfile)
         @assert_or_log(
@@ -432,7 +426,9 @@ function check_strategic_profile(time_profile::TimeProfile, message::String)
         )
 
         bool_sp *=
-            !isa(time_profile.vals, Vector{<:OperationalProfile}) * ! isa(time_profile.vals, Vector{<:ScenarioProfile}) * ! isa(time_profile.vals, Vector{<:RepresentativeProfile})
+            !isa(time_profile.vals, Vector{<:OperationalProfile}) &&
+            !isa(time_profile.vals, Vector{<:ScenarioProfile}) &&
+            !isa(time_profile.vals, Vector{<:RepresentativeProfile})
     end
 
     return bool_sp
@@ -453,15 +449,13 @@ representative periods indexing
 or `ScenarioProfile` as this is not allowed through indexing on the `TimeProfile`.
 """
 function check_representative_profile(time_profile::TimeProfile, message::String)
-
     @assert_or_log(
         !isa(time_profile, OperationalProfile),
         "Operational profiles " * message
     )
     @assert_or_log(!isa(time_profile, ScenarioProfile), "Scenario profiles " * message)
 
-    bool_rp = !isa(time_profile, OperationalProfile) * ! isa(time_profile, ScenarioProfile)
-
+    bool_rp = !isa(time_profile, OperationalProfile) && !isa(time_profile, ScenarioProfile)
 
     if isa(time_profile, StrategicProfile)
         @assert_or_log(
@@ -474,8 +468,8 @@ function check_representative_profile(time_profile::TimeProfile, message::String
         )
 
         bool_rp *=
-            !isa(time_profile.vals, Vector{<:OperationalProfile}) * ! isa
-            (time_profile.vals, Vector{<:ScenarioProfile})
+            !isa(time_profile.vals, Vector{<:OperationalProfile}) &&
+            !isa(time_profile.vals, Vector{<:ScenarioProfile})
     end
 
     return bool_rp
@@ -492,7 +486,6 @@ scenario indexing
 or `ScenarioProfile` as this is not allowed through indexing on the `TimeProfile`.
 """
 function check_scenario_profile(time_profile::TimeProfile, message::String)
-
     @assert_or_log(
         !isa(time_profile, OperationalProfile),
         "Operational profiles " * message
@@ -542,7 +535,6 @@ node or that a new `Source` type receives a new method for `check_node`.
    `check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`.
 """
 function check_node(n::Source, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
-
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     @assert_or_log(
@@ -573,7 +565,6 @@ important that a new `NetworkNode` type includes at least the same fields as in 
    `check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`.
 """
 function check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
-
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     @assert_or_log(
@@ -613,7 +604,6 @@ important that a new `Storage` type includes at least the same fields as in the
  - The values of the dictionary `output` are required to be non-negative.
 """
 function check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
-
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
     par_charge = charge(n)
     par_level = level(n)
@@ -706,7 +696,6 @@ returns a `TimeProfile`.
   periods.
 """
 function check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles::Bool)
-
     if isa(opex_fixed(n), StrategicProfile) && check_timeprofiles
         @assert_or_log(
             length(opex_fixed(n).vals) == length(𝒯ᴵⁿᵛ),
@@ -735,8 +724,8 @@ Check that the included `Data` types of a `Node` corresponds to required structu
 This function will always result in a multiple error message, if several instances of the
 same supertype is loaded.
 """
-check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) = nothing
-
+check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) =
+    nothing
 
 """
     check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
@@ -758,7 +747,6 @@ function check_node_data(
     modeltype::EnergyModel,
     check_timeprofiles::Bool,
 )
-
     em_data = filter(data -> typeof(data) <: EmissionsData, node_data(n))
     @assert_or_log(
         length(em_data) ≤ 1,
@@ -775,8 +763,13 @@ function check_node_data(
         check_profile(string(p) * " process emissions", value, 𝒯)
     end
 end
-function check_node_data(n::Node, data::CaptureData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
-
+function check_node_data(
+    n::Node,
+    data::CaptureData,
+    𝒯,
+    modeltype::EnergyModel,
+    check_timeprofiles::Bool,
+)
     em_data = filter(data -> typeof(data) <: EmissionsData, node_data(n))
     @assert_or_log(
         length(em_data) ≤ 1,

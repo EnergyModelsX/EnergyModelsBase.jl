@@ -2,7 +2,7 @@ using Pkg
 # Activate the local environment including EnergyModelsBase, HiGHS, PrettyTables
 Pkg.activate(@__DIR__)
 # Use dev version if run as part of tests
-haskey(ENV, "EMB_TEST") && Pkg.develop(path=joinpath(@__DIR__,".."))
+haskey(ENV, "EMB_TEST") && Pkg.develop(path = joinpath(@__DIR__, ".."))
 # Install the dependencies.
 Pkg.instantiate()
 
@@ -46,7 +46,7 @@ function generate_example_data()
     model = OperationalModel(
         Dict(   # Emission cap for CO₂ in t/8h and for NG in MWh/8h
             CO2 => StrategicProfile([160, 140, 120, 100]),
-            NG => FixedProfile(1e6)
+            NG => FixedProfile(1e6),
         ),
         Dict(   # Emission price for CO₂ in EUR/t and for NG in EUR/MWh
             CO2 => FixedProfile(0),
@@ -102,7 +102,7 @@ function generate_example_data()
             StorCapOpex(
                 FixedProfile(60),       # Charge capacity in t/h
                 FixedProfile(9.1),      # Storage variable OPEX for the charging in EUR/t
-                FixedProfile(0),        # Storage fixed OPEX for the charging in EUR/(t/h 8h)
+                FixedProfile(0)        # Storage fixed OPEX for the charging in EUR/(t/h 8h)
             ),
             StorCap(FixedProfile(600)), # Storage capacity in t
             CO2,                        # Stored resource
@@ -149,13 +149,13 @@ optimizer = optimizer_with_attributes(HiGHS.Optimizer, MOI.Silent() => true)
 m = run_model(case, model, optimizer)
 
 # Display some results
-ng_ccs_pp, coal_pp,  = case[:nodes][[4,5]]
+ng_ccs_pp, coal_pp, = case[:nodes][[4, 5]]
 @info "Capacity usage of the coal power plant"
 pretty_table(
     JuMP.Containers.rowtable(
         value,
         m[:cap_use][coal_pp, :];
-        header=[:t, :Value]
+        header = [:t, :Value],
     ),
 )
 @info "Capacity usage of the natural gas + CCS power plant"
@@ -163,6 +163,6 @@ pretty_table(
     JuMP.Containers.rowtable(
         value,
         m[:cap_use][ng_ccs_pp, :];
-        header=[:t, :Value]
+        header = [:t, :Value],
     ),
 )

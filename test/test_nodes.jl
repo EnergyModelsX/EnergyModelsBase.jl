@@ -7,7 +7,6 @@
 
     # Function for setting up the system
     function simple_graph(source::Source, sink::Sink)
-
         resources = [Power, CO2]
         ops = SimpleTimes(5, 2)
         op_per_strat = 10
@@ -25,7 +24,6 @@
     end
 
     @testset "General tests - RefSource" begin
-
         source = RefSource(
             "source",
             FixedProfile(4),
@@ -48,14 +46,14 @@
         # - constraints_capacity_installed(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:cap_inst][source, t]) ≈ EMB.capacity(source)[t] for t ∈ 𝒯,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the capacity bound is properly utilized for a `RefSink`
         # - constraints_capacity(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:cap_use][source, t]) <= value.(m[:cap_inst][source, t]) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the outflow is equal to the specified capacity usage
@@ -63,9 +61,8 @@
         @test sum(
             value.(m[:flow_out][source, t, Power]) ≈
             value.(m[:cap_use][source, t]) * outputs(source, Power) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
-
 
         # Test that the variable OPEX values are properly calculated for RefSource
         # - constraints_opex_var(m, n::Node, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
@@ -73,7 +70,7 @@
             value.(m[:opex_var][source, t_inv]) ≈ sum(
                 value.(m[:cap_use][source, t]) * EMB.opex_var(source, t) * duration(t) for
                 t ∈ t_inv
-            ) for t_inv ∈ 𝒯ᴵⁿᵛ, atol in TEST_ATOL
+            ) for t_inv ∈ 𝒯ᴵⁿᵛ, atol ∈ TEST_ATOL
         ) ≈ length(𝒯ᴵⁿᵛ) atol = TEST_ATOL
 
         # Test that the fixed OPEX values are properly calculated for RefSource
@@ -81,7 +78,7 @@
         @test sum(
             value.(m[:opex_fixed][source, t_inv]) ≈
             EMB.opex_fixed(source, t_inv) * value.(m[:cap_inst][source, first(t_inv)]) for
-            t_inv ∈ 𝒯ᴵⁿᵛ, atol in TEST_ATOL
+            t_inv ∈ 𝒯ᴵⁿᵛ, atol ∈ TEST_ATOL
         ) ≈ length(𝒯ᴵⁿᵛ) atol = TEST_ATOL
     end
 
@@ -111,7 +108,7 @@
         # - constraints_flow_in(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:flow_in][sink, t, Power]) ≈
-            value.(m[:cap_use][sink, t]) * inputs(sink, Power) for t ∈ 𝒯, atol in TEST_ATOL
+            value.(m[:cap_use][sink, t]) * inputs(sink, Power) for t ∈ 𝒯, atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the mass balance is properly calculated
@@ -121,7 +118,7 @@
         @test sum(
             value.(m[:sink_deficit][sink, t]) + value.(m[:cap_use][sink, t]) ≈
             value.(m[:sink_surplus][sink, t]) + value.(m[:cap_inst][sink, t]) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the fixed OPEX is set to 0
@@ -157,7 +154,7 @@
         @test sum(
             value.(m[:sink_deficit][sink, t]) + value.(m[:cap_use][sink, t]) ≈
             value.(m[:sink_surplus][sink, t]) + value.(m[:cap_inst][sink, t]) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the opex calculations are correct
@@ -168,7 +165,6 @@
                 for t ∈ t_inv
             ) for t_inv ∈ 𝒯ᴵⁿᵛ
         ) == length(𝒯ᴵⁿᵛ)
-
     end
 
     @testset "Process emissions - RefSink and RefSource" begin
@@ -242,7 +238,6 @@ end
 
     # Function for setting up the system
     function simple_graph(; data_em = nothing)
-
         if typeof(data_em) <: EMB.CaptureData
             output = Dict(Power => 1, CO2 => 0)
             data_net = [data_em]
@@ -305,7 +300,6 @@ end
             append!(links, [Direct(14, source, CO2_stor), Direct(24, network, CO2_stor)])
         end
 
-
         model = OperationalModel(
             Dict(CO2 => FixedProfile(100), NG => FixedProfile(100)),
             Dict(CO2 => FixedProfile(0), NG => FixedProfile(0)),
@@ -337,15 +331,15 @@ end
         # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
         @test sum(
             value.(m[:emissions_strategic][t_inv, CO2]) ≈ 0 for t_inv ∈ 𝒯ᴵⁿᵛ,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯ᴵⁿᵛ)
-        @test sum(value.(m[:emissions_total][t, CO2]) ≈ 0 for t ∈ 𝒯, atol in TEST_ATOL) ≈
+        @test sum(value.(m[:emissions_total][t, CO2]) ≈ 0 for t ∈ 𝒯, atol ∈ TEST_ATOL) ≈
               length(𝒯)
         @test sum(
             value.(m[:emissions_strategic][t_inv, NG]) ≈ 0 for t_inv ∈ 𝒯ᴵⁿᵛ,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯ᴵⁿᵛ)
-        @test sum(value.(m[:emissions_total][t, NG]) ≈ 0 for t ∈ 𝒯, atol in TEST_ATOL) ≈
+        @test sum(value.(m[:emissions_total][t, NG]) ≈ 0 for t ∈ 𝒯, atol ∈ TEST_ATOL) ≈
               length(𝒯)
     end
 
@@ -375,9 +369,9 @@ end
         @test sum(
             value.(m[:emissions_node][net, t, CO2]) ≈
             sum(value.(m[:flow_in][net, t, p]) * co2_int(p) for p ∈ inputs(net)) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯)
-        @test sum(value.(m[:emissions_node][net, t, NG]) ≈ 0 for t ∈ 𝒯, atol in TEST_ATOL) ≈
+        @test sum(value.(m[:emissions_node][net, t, NG]) ≈ 0 for t ∈ 𝒯, atol ∈ TEST_ATOL) ≈
               length(𝒯)
     end
 
@@ -411,12 +405,12 @@ end
             value.(m[:emissions_node][net, t, CO2]) ≈
             sum(value.(m[:flow_in][net, t, p]) * co2_int(p) for p ∈ inputs(net)) +
             value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2, t) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯)
         @test sum(
             value.(m[:emissions_node][net, t, NG]) ≈
             value.(m[:cap_use][net, t]) * process_emissions(em_data, NG, t) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯)
     end
 
@@ -450,12 +444,12 @@ end
             value.(m[:emissions_node][net, t, CO2]) ≈
             sum(value.(m[:flow_in][net, t, p]) * co2_int(p) for p ∈ inputs(net)) +
             value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2, t) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯)
         @test sum(
             value.(m[:emissions_node][net, t, NG]) ≈
             value.(m[:cap_use][net, t]) * process_emissions(em_data, NG, t) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯)
     end
 
@@ -490,12 +484,12 @@ end
             sum(value.(m[:flow_in][net, t, p]) * co2_int(p) for p ∈ inputs(net)) *
             (1 - co2_capture(em_data)) +
             value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2, t) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
         @test sum(
             value.(m[:emissions_node][net, t, NG]) ≈
             value.(m[:cap_use][net, t]) * process_emissions(em_data, NG, t) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the CO2 capture is calculated correctly
@@ -503,7 +497,7 @@ end
         @test sum(
             value.(m[:flow_out][net, t, CO2]) ≈
             sum(value.(m[:flow_in][net, t, p]) * co2_int(p) for p ∈ inputs(net)) *
-            co2_capture(em_data) for t ∈ 𝒯, atol in TEST_ATOL
+            co2_capture(em_data) for t ∈ 𝒯, atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
     end
 
@@ -538,12 +532,12 @@ end
             sum(value.(m[:flow_in][net, t, p]) * co2_int(p) for p ∈ inputs(net)) +
             value.(m[:cap_use][net, t]) *
             process_emissions(em_data, CO2, t) *
-            (1 - co2_capture(em_data)) for t ∈ 𝒯, atol in TEST_ATOL
+            (1 - co2_capture(em_data)) for t ∈ 𝒯, atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
         @test sum(
             value.(m[:emissions_node][net, t, NG]) ≈
             value.(m[:cap_use][net, t]) * process_emissions(em_data, NG, t) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the CO2 capture is calculated correctly
@@ -552,7 +546,7 @@ end
             value.(m[:flow_out][net, t, CO2]) ≈
             value.(m[:cap_use][net, t]) *
             process_emissions(em_data, CO2, t) *
-            co2_capture(em_data) for t ∈ 𝒯, atol in TEST_ATOL
+            co2_capture(em_data) for t ∈ 𝒯, atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
     end
 
@@ -587,12 +581,12 @@ end
             (
                 sum(value.(m[:flow_in][net, t, p]) * co2_int(p) for p ∈ inputs(net)) +
                 value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2, t)
-            ) * (1 - co2_capture(em_data)) for t ∈ 𝒯, atol in TEST_ATOL
+            ) * (1 - co2_capture(em_data)) for t ∈ 𝒯, atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
         @test sum(
             value.(m[:emissions_node][net, t, NG]) ≈
             value.(m[:cap_use][net, t]) * process_emissions(em_data, NG, t) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the CO2 capture is calculated correctly
@@ -602,7 +596,7 @@ end
             (
                 sum(value.(m[:flow_in][net, t, p]) * co2_int(p) for p ∈ inputs(net)) +
                 value.(m[:cap_use][net, t]) * process_emissions(em_data, CO2, t)
-            ) * co2_capture(em_data) for t ∈ 𝒯, atol in TEST_ATOL
+            ) * co2_capture(em_data) for t ∈ 𝒯, atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
     end
 end
@@ -695,12 +689,12 @@ end
         # - constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:flow_in][stor, t, Power]) ≈ value.(m[:stor_charge_use][stor, t]) for
-            t ∈ 𝒯, atol in TEST_ATOL
+            t ∈ 𝒯, atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
         @test sum(
             value.(m[:flow_in][stor, t, aux]) ≈
             value.(m[:stor_charge_use][stor, t]) * inputs(stor, aux) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the inlet flow is equivalent to the total usage of the demand
@@ -716,15 +710,13 @@ end
             value.(m[:flow_out][stor, t, Power]) * duration(t) * multiple(t) for t ∈ 𝒯
         ) atol = TEST_ATOL
 
-
         # Test that the Δ in the storage level is correctly calculated
         # - constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
         @test sum(
             value.(m[:stor_level_Δ_op][stor, t]) ≈
             value.(m[:flow_in][stor, t, Power]) - value.(m[:flow_out][stor, t, Power]) for
-            t ∈ 𝒯, atol in TEST_ATOL
+            t ∈ 𝒯, atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
-
     end
 
     @testset "SimpleTimes without storage" begin
@@ -746,17 +738,18 @@ end
         # - constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:stor_level_inst][stor, t]) ≈ capacity(EMB.level(stor), t) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
         @test sum(
-            value.(m[:stor_charge_inst][stor, t]) ≈ capacity(EMB.charge(stor), t) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            value.(m[:stor_charge_inst][stor, t]) ≈ capacity(EMB.charge(stor), t) for
+            t ∈ 𝒯,
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the input flow is equal to the output flow in the standard scenario as
         # storage does not pay off
         # - constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
-        @test sum(value.(m[:stor_level_Δ_op][stor, t]) ≈ 0 for t ∈ 𝒯, atol in TEST_ATOL) ≈
+        @test sum(value.(m[:stor_level_Δ_op][stor, t]) ≈ 0 for t ∈ 𝒯, atol ∈ TEST_ATOL) ≈
               length(𝒯) atol = TEST_ATOL
 
         # Test that the fixed OPEX is correctly calculated
@@ -765,7 +758,7 @@ end
             value.(m[:opex_fixed][stor, t_inv]) ≈
             EMB.opex_fixed(EMB.level(stor), t_inv) *
             value.(m[:stor_level_inst][stor, first(t_inv)]) for t_inv ∈ 𝒯ᴵⁿᵛ,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯ᴵⁿᵛ) atol = TEST_ATOL
 
         # Test that variable OPEX is correctly calculated
@@ -775,7 +768,7 @@ end
                 EMB.opex_var(EMB.charge(stor), t_inv) *
                 value.(m[:flow_in][stor, t, Power]) *
                 duration(t) for t ∈ t_inv
-            ) for t_inv ∈ 𝒯ᴵⁿᵛ, atol in TEST_ATOL
+            ) for t_inv ∈ 𝒯ᴵⁿᵛ, atol ∈ TEST_ATOL
         ) ≈ length(𝒯ᴵⁿᵛ) atol = TEST_ATOL
     end
 
@@ -809,7 +802,7 @@ end
                 value.(m[:stor_level][stor, t_prev]) +
                 value.(m[:stor_level_Δ_op][stor, t]) * duration(t) for
                 (t_prev, t) ∈ withprev(t_inv) if !isnothing(t_prev)
-            ) for t_inv ∈ 𝒯ᴵⁿᵛ, atol in TEST_ATOL
+            ) for t_inv ∈ 𝒯ᴵⁿᵛ, atol ∈ TEST_ATOL
         ) ≈ length(𝒯) - 2 atol = TEST_ATOL
 
         # Test that the level balance is correct in the first period (2 times)
@@ -819,11 +812,11 @@ end
                 value.(m[:stor_level][stor, last(t_inv)]) +
                 value.(m[:stor_level_Δ_op][stor, t]) * duration(t) for
                 (t_prev, t) ∈ withprev(t_inv) if isnothing(t_prev)
-            ) for t_inv ∈ 𝒯ᴵⁿᵛ, atol in TEST_ATOL
+            ) for t_inv ∈ 𝒯ᴵⁿᵛ, atol ∈ TEST_ATOL
         ) ≈ 2 atol = TEST_ATOL
 
         # Test that the level is 0 exactly 4 times
-        @test sum(value.(m[:stor_level][stor, t]) ≈ 0 for t ∈ 𝒯, atol in TEST_ATOL) == 4
+        @test sum(value.(m[:stor_level][stor, t]) ≈ 0 for t ∈ 𝒯, atol ∈ TEST_ATOL) == 4
     end
 
     @testset "RepresentativePeriods with storage" begin
@@ -906,7 +899,7 @@ end
             value.(m[:stor_level][stor, t]) ≈
             value.(m[:stor_level][stor, t_prev]) +
             value.(m[:stor_level_Δ_op][stor, t]) * duration(t) for
-            (t_prev, t) ∈ withprev(𝒯), atol in TEST_ATOL if !isnothing(t_prev)
+            (t_prev, t) ∈ withprev(𝒯), atol ∈ TEST_ATOL if !isnothing(t_prev)
         ) ≈ length(𝒯) - length(𝒯ᴵⁿᵛ) * ops.len atol = TEST_ATOL
 
         # Check that there is no outflow in the first representative period of each
@@ -1007,12 +1000,12 @@ end
         # - constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:flow_in][stor, t, Power]) ≈ value.(m[:stor_charge_use][stor, t]) for
-            t ∈ 𝒯, atol in TEST_ATOL
+            t ∈ 𝒯, atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
         @test sum(
             value.(m[:flow_in][stor, t, aux]) ≈
             value.(m[:stor_charge_use][stor, t]) * inputs(stor, aux) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the inlet flow is equivalent to the total usage of the demand
@@ -1034,9 +1027,8 @@ end
         @test sum(
             value.(m[:stor_level_Δ_op][stor, t]) ≈
             value.(m[:flow_in][stor, t, Power]) - value.(m[:flow_out][stor, t, Power]) for
-            t ∈ 𝒯, atol in TEST_ATOL
+            t ∈ 𝒯, atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
-
     end
 
     @testset "SimpleTimes without storage" begin
@@ -1058,17 +1050,18 @@ end
         # - constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:stor_level_inst][stor, t]) ≈ capacity(EMB.level(stor), t) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
         @test sum(
-            value.(m[:stor_charge_inst][stor, t]) ≈ capacity(EMB.charge(stor), t) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            value.(m[:stor_charge_inst][stor, t]) ≈ capacity(EMB.charge(stor), t) for
+            t ∈ 𝒯,
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the input flow is equal to the output flow in the standard scenario as
         # storage does not pay off
         # - constraints_level_aux(m, n::RefStorage{T}, 𝒯, 𝒫, modeltype::EnergyModel) where {T<:ResourceCarrier}
-        @test sum(value.(m[:stor_level_Δ_op][stor, t]) ≈ 0 for t ∈ 𝒯, atol in TEST_ATOL) ≈
+        @test sum(value.(m[:stor_level_Δ_op][stor, t]) ≈ 0 for t ∈ 𝒯, atol ∈ TEST_ATOL) ≈
               length(𝒯) atol = TEST_ATOL
 
         # Test that the fixed OPEX is correctly calculated
@@ -1077,7 +1070,7 @@ end
             value.(m[:opex_fixed][stor, t_inv]) ≈
             EMB.opex_fixed(EMB.level(stor), t_inv) *
             value.(m[:stor_level_inst][stor, first(t_inv)]) for t_inv ∈ 𝒯ᴵⁿᵛ,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯ᴵⁿᵛ) atol = TEST_ATOL
 
         # Test that variable OPEX is correctly calculated
@@ -1087,7 +1080,7 @@ end
                 EMB.opex_var(EMB.charge(stor), t_inv) *
                 value.(m[:flow_in][stor, t, Power]) *
                 duration(t) for t ∈ t_inv
-            ) for t_inv ∈ 𝒯ᴵⁿᵛ, atol in TEST_ATOL
+            ) for t_inv ∈ 𝒯ᴵⁿᵛ, atol ∈ TEST_ATOL
         ) ≈ length(𝒯ᴵⁿᵛ) atol = TEST_ATOL
     end
     @testset "SimpleTimes with storage" begin
@@ -1121,7 +1114,7 @@ end
                 value.(m[:stor_level][stor, t_prev]) +
                 value.(m[:stor_level_Δ_op][stor, t]) * duration(t) for
                 (t_prev, t) ∈ withprev(t_inv) if !isnothing(t_prev)
-            ) for t_inv ∈ 𝒯ᴵⁿᵛ, atol in TEST_ATOL
+            ) for t_inv ∈ 𝒯ᴵⁿᵛ, atol ∈ TEST_ATOL
         ) ≈ length(𝒯) - 2 atol = TEST_ATOL
 
         # Test that the level balance is correct in the first period (2 times)
@@ -1131,11 +1124,11 @@ end
                 value.(m[:stor_level][stor, last(t_inv)]) +
                 value.(m[:stor_level_Δ_op][stor, t]) * duration(t) for
                 (t_prev, t) ∈ withprev(t_inv) if isnothing(t_prev)
-            ) for t_inv ∈ 𝒯ᴵⁿᵛ, atol in TEST_ATOL
+            ) for t_inv ∈ 𝒯ᴵⁿᵛ, atol ∈ TEST_ATOL
         ) ≈ 2 atol = TEST_ATOL
 
         # Test that the level is 0 exactly 4 times
-        @test sum(value.(m[:stor_level][stor, t]) ≈ 0 for t ∈ 𝒯, atol in TEST_ATOL) == 4
+        @test sum(value.(m[:stor_level][stor, t]) ≈ 0 for t ∈ 𝒯, atol ∈ TEST_ATOL) == 4
     end
     @testset "OperationalScenarios with storage" begin
 
@@ -1178,14 +1171,12 @@ end
         @test sum(
             value.(m[:stor_level][stor, t]) -
             value.(m[:stor_level_Δ_op][stor, t]) * duration(t) ≈ 40 for t ∈ first_scp,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(first_scp) atol = TEST_ATOL
-
 
         for t_inv ∈ 𝒯ᴵⁿᵛ
             𝒯ʳᵖ = repr_periods(t_inv)
             for (t_rp_prev, t_rp) ∈ withprev(𝒯ʳᵖ), (t_prev, t) ∈ withprev(t_rp)
-
                 if isnothing(t_prev)
                     # Test for the linking between the first and the last operational period
                     @test value.(m[:stor_level][stor, t]) ≈
@@ -1200,9 +1191,8 @@ end
             value.(m[:stor_level][stor, t]) ≈
             value.(m[:stor_level][stor, t_prev]) +
             value.(m[:stor_level_Δ_op][stor, t]) * duration(t) for
-            (t_prev, t) ∈ withprev(𝒯), atol in TEST_ATOL if !isnothing(t_prev)
+            (t_prev, t) ∈ withprev(𝒯), atol ∈ TEST_ATOL if !isnothing(t_prev)
         ) ≈ length(𝒯) - length(𝒯ᴵⁿᵛ) * ops.len atol = TEST_ATOL
-
 
         # Check that the level is 0 exactly 2 times
         @test sum(value.(m[:stor_level][stor, t]) ≈ 0 for t ∈ 𝒯) ≈ 2 atol = TEST_ATOL
@@ -1234,7 +1224,7 @@ end
         # - constraints_level_rp(m, n::Storage, per, modeltype::EnergyModel)
         @test sum(
             value.(value.(m[:stor_level_Δ_rp][stor, t_rp])) ≈ 0 for t_rp ∈ 𝒯ʳᵖ,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯ʳᵖ) atol = TEST_ATOL
 
         # All the tests following are for the function, its individual methods, and the
@@ -1255,19 +1245,17 @@ end
         @test sum(
             value.(m[:stor_level][stor, t]) -
             value.(m[:stor_level_Δ_op][stor, t]) * duration(t) ≈ 10 for t ∈ first_rp,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯ᴵⁿᵛ) atol = TEST_ATOL
         @test sum(
             value.(m[:stor_level][stor, t]) -
             value.(m[:stor_level_Δ_op][stor, t]) * duration(t) ≈ 40 for t ∈ first_rp,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯ᴵⁿᵛ) atol = TEST_ATOL
-
 
         for t_inv ∈ 𝒯ᴵⁿᵛ
             𝒯ʳᵖ = repr_periods(t_inv)
             for (t_rp_prev, t_rp) ∈ withprev(𝒯ʳᵖ), (t_prev, t) ∈ withprev(t_rp)
-
                 if isnothing(t_prev)
                     # Test for the linking between the first and the last operational period
                     @test value.(m[:stor_level][stor, t]) ≈
@@ -1282,9 +1270,8 @@ end
             value.(m[:stor_level][stor, t]) ≈
             value.(m[:stor_level][stor, t_prev]) +
             value.(m[:stor_level_Δ_op][stor, t]) * duration(t) for
-            (t_prev, t) ∈ withprev(𝒯), atol in TEST_ATOL if !isnothing(t_prev)
+            (t_prev, t) ∈ withprev(𝒯), atol ∈ TEST_ATOL if !isnothing(t_prev)
         ) ≈ length(𝒯) - length(𝒯ᴵⁿᵛ) * ops.len atol = TEST_ATOL
-
     end
     @testset "OperationalScenarios and RepresentativePeriods with storage" begin
 
@@ -1341,18 +1328,17 @@ end
         @test sum(
             value.(m[:stor_level][stor, t]) -
             value.(m[:stor_level_Δ_op][stor, t]) * duration(t) ≈ 20 for t ∈ first_rp,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯ᴵⁿᵛ) atol = TEST_ATOL
         @test sum(
             value.(m[:stor_level][stor, t]) -
             value.(m[:stor_level_Δ_op][stor, t]) * duration(t) ≈ 40 for t ∈ first_rp,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯ᴵⁿᵛ) atol = TEST_ATOL
 
         for t_inv ∈ 𝒯ᴵⁿᵛ
             𝒯ʳᵖ = repr_periods(t_inv)
             for (t_rp_prev, t_rp) ∈ withprev(𝒯ʳᵖ), (t_prev, t) ∈ withprev(t_rp)
-
                 if isnothing(t_prev)
                     # Test for the linking between the first and the last operational period
                     @test value.(m[:stor_level][stor, t]) ≈
@@ -1367,9 +1353,8 @@ end
             value.(m[:stor_level][stor, t]) ≈
             value.(m[:stor_level][stor, t_prev]) +
             value.(m[:stor_level_Δ_op][stor, t]) * duration(t) for
-            (t_prev, t) ∈ withprev(𝒯), atol in TEST_ATOL if !isnothing(t_prev)
+            (t_prev, t) ∈ withprev(𝒯), atol ∈ TEST_ATOL if !isnothing(t_prev)
         ) ≈ length(𝒯) - length(𝒯ᴵⁿᵛ) * ops.len * scps.len atol = TEST_ATOL
-
 
         # Check that the level is 0 exactly 2 times
         @test sum(value.(m[:stor_level][stor, t]) ≈ 0 for t ∈ 𝒯) ≈ 6 atol = TEST_ATOL
@@ -1389,7 +1374,6 @@ end
         em_limit = [40, 40],
         stor_cap = 0,
     )
-
         em_data = CaptureEnergyEmissions(0.9)
 
         # Used source, network, and sink
@@ -1454,18 +1438,18 @@ end
         stor = 𝒩[3]
 
         # Test that there is production
-        @test sum(value.(m[:cap_use][𝒩[2], t]) > 0 for t ∈ 𝒯, atol in TEST_ATOL) ≈ length(𝒯) atol =
+        @test sum(value.(m[:cap_use][𝒩[2], t]) > 0 for t ∈ 𝒯, atol ∈ TEST_ATOL) ≈ length(𝒯) atol =
             TEST_ATOL
 
         # Test that the capacity is correctly limited
         # - constraints_capacity(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:stor_level][stor, t]) <= value.(m[:stor_level_inst][stor, t]) for
-            t ∈ 𝒯, atol in TEST_ATOL
+            t ∈ 𝒯, atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
         @test sum(
             value.(m[:stor_charge_use][stor, t]) <= value.(m[:stor_charge_inst][stor, t])
-            for t ∈ 𝒯, atol in TEST_ATOL
+            for t ∈ 𝒯, atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the design for rate usage is correct
@@ -1473,22 +1457,22 @@ end
         @test sum(
             value.(m[:flow_in][stor, t, CO2]) ≈
             value.(m[:stor_charge_use][stor, t]) + value.(m[:emissions_node][stor, t, CO2])
-            for t ∈ 𝒯, atol in TEST_ATOL
+            for t ∈ 𝒯, atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the Δ in the storage level is correctly calculated
         # - constraints_level_aux(m, n::RefStorage{AccumulatingEmissions}, 𝒯, 𝒫, modeltype::EnergyModel)
         @test sum(
             value.(m[:stor_level_Δ_op][stor, t]) ≈
-            value.(m[:flow_in][stor, t, CO2]) - value.(m[:emissions_node][stor, t, CO2]) for
-            t ∈ 𝒯, atol in TEST_ATOL
+            value.(m[:flow_in][stor, t, CO2]) - value.(m[:emissions_node][stor, t, CO2])
+            for
+            t ∈ 𝒯, atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the Δ in the storage level is larger than 0
         # - constraints_level_aux(m, n::RefStorage{AccumulatingEmissions}, 𝒯, 𝒫, modeltype::EnergyModel)
         @test sum(value.(m[:stor_level_Δ_op][stor, t]) ≥ -TEST_ATOL for t ∈ 𝒯) ≈ length(𝒯) atol =
             TEST_ATOL
-
     end
 
     @testset "SimpleTimes without storage" begin
@@ -1513,18 +1497,20 @@ end
         # - constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
         @test sum(
             value.(m[:stor_level_inst][stor, t]) ≈ capacity(EMB.level(stor), t) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
         @test sum(
-            value.(m[:stor_charge_inst][stor, t]) ≈ capacity(EMB.charge(stor), t) for t ∈ 𝒯,
-            atol in TEST_ATOL
+            value.(m[:stor_charge_inst][stor, t]) ≈ capacity(EMB.charge(stor), t) for
+            t ∈ 𝒯,
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the input flow is equal to the emissions as the limit allows it
         # - constraints_level_aux(m, n::RefStorage{AccumulatingEmissions}, 𝒯, 𝒫, modeltype::EnergyModel)
         @test sum(
-            value.(m[:flow_in][stor, t, CO2]) ≈ value.(m[:emissions_node][stor, t, CO2]) for
-            t ∈ 𝒯, atol in TEST_ATOL
+            value.(m[:flow_in][stor, t, CO2]) ≈ value.(m[:emissions_node][stor, t, CO2])
+            for
+            t ∈ 𝒯, atol ∈ TEST_ATOL
         ) ≈ length(𝒯) atol = TEST_ATOL
 
         # Test that the fixed OPEX is correctly calculated
@@ -1533,13 +1519,13 @@ end
             value.(m[:opex_fixed][stor, t_inv]) ≈
             EMB.opex_fixed(EMB.charge(stor), t_inv) *
             value.(m[:stor_charge_inst][stor, first(t_inv)]) for t_inv ∈ 𝒯ᴵⁿᵛ,
-            atol in TEST_ATOL
+            atol ∈ TEST_ATOL
         ) ≈ length(𝒯ᴵⁿᵛ) atol = TEST_ATOL
 
         # Test that variable OPEX is correctly calculated
         # - constraints_opex_var(m, n::Storage{AccumulatingEmissions}, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
         @test sum(
-            value.(m[:opex_var][stor, t_inv]) ≈ 0 for t_inv ∈ 𝒯ᴵⁿᵛ, atol in TEST_ATOL
+            value.(m[:opex_var][stor, t_inv]) ≈ 0 for t_inv ∈ 𝒯ᴵⁿᵛ, atol ∈ TEST_ATOL
         ) ≈ length(𝒯ᴵⁿᵛ) atol = TEST_ATOL
     end
 
@@ -1565,9 +1551,8 @@ end
                     value.(m[:emissions_node][stor, t, CO2])
                 ) *
                 duration(t) for t ∈ t_inv
-            ) for t_inv ∈ 𝒯ᴵⁿᵛ, atol in TEST_ATOL
+            ) for t_inv ∈ 𝒯ᴵⁿᵛ, atol ∈ TEST_ATOL
         ) ≈ length(𝒯ᴵⁿᵛ) atol = TEST_ATOL
-
 
         # All the tests following are for the function, its individual methods, and the
         # called functions within the function.
@@ -1589,7 +1574,7 @@ end
                     value.(m[:flow_in][stor, t, CO2]) -
                     value.(m[:emissions_node][stor, t, CO2])
                 ) * duration(t) for (t_prev, t) ∈ withprev(t_inv) if !isnothing(t_prev)
-            ) for t_inv ∈ 𝒯ᴵⁿᵛ, atol in TEST_ATOL
+            ) for t_inv ∈ 𝒯ᴵⁿᵛ, atol ∈ TEST_ATOL
         ) ≈ length(𝒯) - 2 atol = TEST_ATOL
 
         # Test that the level balance is correct in the first period (2 times)
@@ -1600,7 +1585,7 @@ end
                     value.(m[:flow_in][stor, t, CO2]) -
                     value.(m[:emissions_node][stor, t, CO2])
                 ) * duration(t) for (t_prev, t) ∈ withprev(t_inv) if isnothing(t_prev)
-            ) for t_inv ∈ 𝒯ᴵⁿᵛ, atol in TEST_ATOL
+            ) for t_inv ∈ 𝒯ᴵⁿᵛ, atol ∈ TEST_ATOL
         ) ≈ 2 atol = TEST_ATOL
     end
 
@@ -1619,7 +1604,6 @@ end
 
         # Run the general tests
         general_tests(m, case, model)
-
 
         # All the tests following are for the function, its individual methods, and the
         # called functions within the function.
@@ -1666,7 +1650,7 @@ end
             value.(m[:stor_level][stor, t]) ≈
             value.(m[:stor_level][stor, t_prev]) +
             value.(m[:stor_level_Δ_op][stor, t]) * duration(t) for
-            (t_prev, t) ∈ withprev(𝒯), atol in TEST_ATOL if !isnothing(t_prev)
+            (t_prev, t) ∈ withprev(𝒯), atol ∈ TEST_ATOL if !isnothing(t_prev)
         ) ≈ length(𝒯) - length(𝒯ᴵⁿᵛ) * ops.len atol = TEST_ATOL
     end
 end

@@ -19,11 +19,11 @@ struct StorageInvData <: InvestmentData
     charge::Union{AbstractInvData,Nothing}
     level::Union{AbstractInvData,Nothing}
     discharge::Union{AbstractInvData,Nothing}
-    function StorageInvData(;charge=nothing, level=nothing, discharge=nothing)
+    function StorageInvData(; charge = nothing, level = nothing, discharge = nothing)
         return new(charge, level, discharge)
     end
 end
-EMB.StorageInvData(;args...) = StorageInvData(;args...)
+EMB.StorageInvData(; args...) = StorageInvData(; args...)
 
 """
     SingleInvData <: InvestmentData
@@ -68,7 +68,6 @@ function EMB.SingleInvData(
     trans_max_inst::TimeProfile,
     inv_mode::Investment,
 )
-
     return SingleInvData(NoStartInvData(capex_trans, trans_max_inst, inv_mode))
 end
 function EMB.SingleInvData(
@@ -77,7 +76,6 @@ function EMB.SingleInvData(
     inv_mode::Investment,
     life_mode::LifetimeMode,
 )
-
     return SingleInvData(NoStartInvData(capex_trans, trans_max_inst, inv_mode, life_mode))
 end
 function EMB.SingleInvData(
@@ -86,7 +84,6 @@ function EMB.SingleInvData(
     initial::Real,
     inv_mode::Investment,
 )
-
     return SingleInvData(StartInvData(capex_trans, trans_max_inst, initial, inv_mode))
 end
 function EMB.SingleInvData(
@@ -96,7 +93,6 @@ function EMB.SingleInvData(
     inv_mode::Investment,
     life_mode::LifetimeMode,
 )
-
     return SingleInvData(
         StartInvData(capex_trans, trans_max_inst, initial, inv_mode, life_mode),
     )

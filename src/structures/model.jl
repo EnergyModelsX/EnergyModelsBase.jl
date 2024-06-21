@@ -74,7 +74,6 @@ Returns the CO₂ instance used in modelling.
 """
 co2_instance(modeltype::EnergyModel) = modeltype.co2_instance
 
-
 """ An abstract investment model type.
 
 This abstract model type should be used when creating additional `EnergyModel` types that

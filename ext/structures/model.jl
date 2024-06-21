@@ -13,8 +13,8 @@ investments and additional discounting of future years.
 - **`r::Float64`** is the discount rate in the investment optimization.
 """
 struct InvestmentModel <: AbstractInvestmentModel
-    emission_limit::Dict{<:ResourceEmit, <:TimeProfile}
-    emission_price::Dict{<:ResourceEmit, <:TimeProfile}
+    emission_limit::Dict{<:ResourceEmit,<:TimeProfile}
+    emission_price::Dict{<:ResourceEmit,<:TimeProfile}
     co2_instance::ResourceEmit
     r::Float64
     function InvestmentModel(emission_limit, emission_price, co2_instance, r)

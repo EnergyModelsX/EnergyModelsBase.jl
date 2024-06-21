@@ -8,7 +8,6 @@ EMB.TEST_ENV = true
 
     # Function for setting up the system
     function simple_graph()
-
         resources = [Power, CO2]
         ops = SimpleTimes(5, 2)
         T = TwoLevel(2, 2, ops; op_per_strat = 10)
@@ -73,7 +72,6 @@ end
 
     # Function for setting up the system
     function simple_graph()
-
         resources = [Power, CO2]
         ops = SimpleTimes(5, 2)
         T = TwoLevel(2, 2, ops; op_per_strat = 10)
@@ -164,7 +162,6 @@ end
 
     # Function for setting up the system
     function simple_graph(em_data::Vector{<:EmissionsData})
-
         resources = [Power, CO2]
         ops = SimpleTimes(5, 2)
         T = TwoLevel(2, 2, ops; op_per_strat = 10)
@@ -234,7 +231,6 @@ end
     @test_logs (:warn, msg) for k ∈ [1, 2]
         create_model(case, model; check_timeprofiles = false)
     end
-
 end
 
 @testset "Test checks - timeprofiles" begin
@@ -245,7 +241,6 @@ end
 
     # Function for setting up the system
     function simple_graph(T::TimeStructure, tp::TimeProfile)
-
         resources = [Power, CO2]
 
         source = RefSource(
@@ -574,7 +569,6 @@ end
         @test termination_status(m) == MOI.OPTIMAL
     end
 
-
     # Function for setting up the system for testing a `Storage` node
     function simple_graph(storage::Storage)
 
@@ -644,7 +638,6 @@ end
         )
         @test_throws AssertionError simple_graph(storage)
 
-
         # Test that a wrong fixed OPEX is caught by the checks.
         storage = RefStorage{CyclicStrategic}(
             "storage",
@@ -655,7 +648,6 @@ end
             Dict(Power => 1),
         )
         @test_throws AssertionError simple_graph(storage)
-
 
         # Test that a wrong input dictionary is caught by the checks.
         storage = RefStorage{CyclicStrategic}(

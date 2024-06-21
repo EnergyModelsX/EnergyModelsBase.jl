@@ -23,9 +23,7 @@ function constraints_capacity(m, n::Storage, 𝒯::TimeStructure, modeltype::Ene
         @constraint(m, [t ∈ 𝒯], m[:stor_charge_use][n, t] <= m[:stor_charge_inst][n, t])
     end
     if has_discharge_cap(n)
-        @constraint(
-            m,
-            [t ∈ 𝒯],
+        @constraint(m, [t ∈ 𝒯],
             m[:stor_discharge_use][n, t] <= m[:stor_discharge_inst][n, t]
         )
     end
@@ -306,9 +304,7 @@ function constraints_level_iterate(
     constraints_level_rp(m, n, per, modeltype)
 
     # Constraint for the total change in the level in a given representative period
-    @constraint(
-        m,
-        [t_rp ∈ 𝒯ʳᵖ],
+    @constraint(m, [t_rp ∈ 𝒯ʳᵖ],
         m[:stor_level_Δ_rp][n, t_rp] ==
         sum(m[:stor_level_Δ_op][n, t] * multiple_strat(per, t) * duration(t) for t ∈ t_rp)
     )
@@ -583,18 +579,14 @@ function constraints_opex_fixed(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyM
 
     # Extracts the contribution from the individual components
     if has_level_OPEX_fixed(n)
-        opex_fixed_level = @expression(
-            m,
-            [t_inv ∈ 𝒯ᴵⁿᵛ],
+        opex_fixed_level = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
             m[:stor_level_inst][n, first(t_inv)] * opex_fixed(level(n), t_inv)
         )
     else
         opex_fixed_level = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)
     end
     if has_charge_OPEX_fixed(n)
-        opex_fixed_charge = @expression(
-            m,
-            [t_inv ∈ 𝒯ᴵⁿᵛ],
+        opex_fixed_charge = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
             m[:stor_charge_inst][n, first(t_inv)] * opex_fixed(charge(n), t_inv)
         )
     else

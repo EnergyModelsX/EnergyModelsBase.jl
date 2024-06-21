@@ -59,7 +59,6 @@ when using `RepresentativePeriods`.
 """
 struct CyclicStrategic <: Cyclic end
 
-
 """
 `AbstractStorageParameters` as supertype for individual parameters for `Storage` nodes.
 

@@ -18,9 +18,8 @@ function EMB.check_node_data(
     data::InvestmentData,
     𝒯,
     modeltype::AbstractInvestmentModel,
-    check_timeprofiles::Bool
+    check_timeprofiles::Bool,
 )
-
     inv_data = filter(data -> typeof(data) <: InvestmentData, node_data(n))
 
     @assert_or_log(
@@ -53,9 +52,8 @@ function EMB.check_node_data(
     data::InvestmentData,
     𝒯,
     modeltype::AbstractInvestmentModel,
-    check_timeprofiles::Bool
+    check_timeprofiles::Bool,
 )
-
     inv_data = filter(data -> typeof(data) <: InvestmentData, node_data(n))
 
     @assert_or_log(
@@ -80,7 +78,7 @@ function EMB.check_node_data(
             EMB.capacity(getproperty(n, cap_fields)),
             𝒯,
             " of field `" * String(cap_fields) * "`",
-            check_timeprofiles
+            check_timeprofiles,
         )
     end
 end
@@ -117,23 +115,24 @@ function check_inv_data(
     message::String,
     check_timeprofiles::Bool,
 )
-
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
     t_inv_1 = collect(𝒯)[1]
 
     # Check on the individual time profiles
     for field_name ∈ fieldnames(typeof(inv_data))
         time_profile = getfield(inv_data, field_name)
-        if isa(time_profile, Union{Investment, LifetimeMode})
+        if isa(time_profile, Union{Investment,LifetimeMode})
             for sub_field_name ∈ fieldnames(typeof(time_profile))
                 sub_time_profile = getfield(time_profile, sub_field_name)
-                message = "are not allowed for the field: " * String(field_name) *
+                message =
+                    "are not allowed for the field: " * String(field_name) *
                     "of the mode " * String(sub_field_name) *
                     "in the investment data" * message * "."
                 if isa(sub_time_profile, StrategicProfile) && check_timeprofiles
                     @assert_or_log(
                         length(sub_time_profile.vals) == length(𝒯ᴵⁿᵛ),
-                        "Field `" * string(sub_field_name) * "` does not match the strategic structure."
+                        "Field `" * string(sub_field_name) *
+                        "` does not match the strategic structure."
                     )
                 end
                 EMB.check_strategic_profile(sub_time_profile, message)
@@ -141,7 +140,8 @@ function check_inv_data(
         end
         !isa(time_profile, TimeProfile) && continue
         isa(time_profile, FixedProfile) && continue
-        message = "are not allowed for the field: " * String(field_name) *
+        message =
+            "are not allowed for the field: " * String(field_name) *
             "in the investment data" * message * "."
 
         if isa(time_profile, StrategicProfile) && check_timeprofiles
@@ -156,13 +156,14 @@ function check_inv_data(
 
     # Check on the initial capacity in the first strategic period
     if isa(inv_data, StartInvData)
-            @assert_or_log(
-                inv_data.initial <= EMI.max_installed(inv_data, t_inv_1),
-                "The starting value in the investment data " * message *
-                " can not be larger than the maximum installed constraint."
-            )
+        @assert_or_log(
+            inv_data.initial <= EMI.max_installed(inv_data, t_inv_1),
+            "The starting value in the investment data " * message *
+            " can not be larger than the maximum installed constraint."
+        )
     else
-        message = "are not allowed for the capacity of the investment data " * message *
+        message =
+            "are not allowed for the capacity of the investment data " * message *
             ", if investments are allowed and the chosen investment type is `NoStartInvData`."
         EMB.check_strategic_profile(capacity_profile, message)
 
@@ -175,7 +176,7 @@ function check_inv_data(
     end
 
     # Check on the minmimum and maximum added capacities
-    if isa(EMI.investment_mode(inv_data), Union{ContinuousInvestment, SemiContiInvestment})
+    if isa(EMI.investment_mode(inv_data), Union{ContinuousInvestment,SemiContiInvestment})
         @assert_or_log(
             sum(EMI.min_add(inv_data, t) ≤ EMI.max_add(inv_data, t) for t ∈ 𝒯) == length(𝒯),
             "`min_add` has to be less than `max_add` in the investment data" *

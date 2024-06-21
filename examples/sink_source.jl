@@ -2,7 +2,7 @@ using Pkg
 # Activate the local environment including EnergyModelsBase, HiGHS, PrettyTables
 Pkg.activate(@__DIR__)
 # Use dev version if run as part of tests
-haskey(ENV, "EMB_TEST") && Pkg.develop(path=joinpath(@__DIR__,".."))
+haskey(ENV, "EMB_TEST") && Pkg.develop(path = joinpath(@__DIR__, ".."))
 # Install the dependencies.
 Pkg.instantiate()
 
@@ -67,7 +67,7 @@ function generate_example_data_ss()
 
     # Connect all nodes with the availability node for the overall energy/mass balance
     links = [
-        Direct("source-demand", nodes[1], nodes[2], Linear())
+        Direct("source-demand", nodes[1], nodes[2], Linear()),
     ]
 
     # WIP data structure
@@ -92,6 +92,6 @@ pretty_table(
     JuMP.Containers.rowtable(
         value,
         m[:cap_use][source, :];
-        header=[:t, :Value]
+        header = [:t, :Value],
     ),
 )

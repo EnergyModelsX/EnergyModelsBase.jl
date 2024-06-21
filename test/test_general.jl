@@ -77,7 +77,6 @@ function generate_data()
     return case, model
 end
 
-
 @testset "General tests" begin
     case, model = generate_data()
     m = run_model(case, model, HiGHS.Optimizer)
@@ -120,17 +119,16 @@ end
         for t_inv ∈ 𝒯ᴵⁿᵛ
     ) == length(𝒯ᴵⁿᵛ)
 
-
     # Check that the total and strategic emissions are correctly calculated
     # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
     @test sum(
         value.(m[:emissions_strategic][t_inv, CO2]) ≈
         sum(value.(m[:emissions_total][t, CO2]) * EMB.multiple(t_inv, t) for t ∈ t_inv) for
-        t_inv ∈ 𝒯ᴵⁿᵛ, atol in TEST_ATOL
+        t_inv ∈ 𝒯ᴵⁿᵛ, atol ∈ TEST_ATOL
     ) ≈ length(𝒯ᴵⁿᵛ)
     @test sum(
         value.(m[:emissions_total][t, CO2]) ≈
-        sum(value.(m[:emissions_node][n, t, CO2]) for n ∈ 𝒩ᵉᵐ) for t ∈ 𝒯, atol in TEST_ATOL
+        sum(value.(m[:emissions_node][n, t, CO2]) for n ∈ 𝒩ᵉᵐ) for t ∈ 𝒯, atol ∈ TEST_ATOL
     ) ≈ length(𝒯)
 
     # Check that the objective value is properly calculated
@@ -149,16 +147,16 @@ end
         if has_output(n)
             @test sum(
                 value.(m[:flow_out][n, t, p]) ≈
-                sum(value.(m[:link_in][l, t, p]) for l in ℒᶠʳᵒᵐ if p ∈ inputs(l.to)) for
-                t ∈ 𝒯, p ∈ outputs(n), atol in TEST_ATOL
+                sum(value.(m[:link_in][l, t, p]) for l ∈ ℒᶠʳᵒᵐ if p ∈ inputs(l.to)) for
+                t ∈ 𝒯, p ∈ outputs(n), atol ∈ TEST_ATOL
             ) ≈ length(𝒯) * length(outputs(n))
         end
         # Constraint for input flowrate and output links.
         if has_input(n)
             @test sum(
                 value.(m[:flow_in][n, t, p]) ≈
-                sum(value.(m[:link_out][l, t, p]) for l in ℒᵗᵒ if p ∈ outputs(l.from)) for
-                t ∈ 𝒯, p ∈ inputs(n), atol in TEST_ATOL
+                sum(value.(m[:link_out][l, t, p]) for l ∈ ℒᵗᵒ if p ∈ outputs(l.from)) for
+                t ∈ 𝒯, p ∈ inputs(n), atol ∈ TEST_ATOL
             ) ≈ length(𝒯) * length(inputs(n))
         end
     end
@@ -168,7 +166,7 @@ end
     # - create_node(m, n::Availability, 𝒯, 𝒫, modeltype::EnergyModel)
     @test sum(
         value.(m[:flow_in][avail, t, p]) ≈ value.(m[:flow_out][avail, t, p]) for t ∈ 𝒯,
-        p ∈ 𝒫, atol in TEST_ATOL
+        p ∈ 𝒫, atol ∈ TEST_ATOL
     ) ≈ length(𝒯) * length(𝒫)
 
     # Check that the link balance is correct
@@ -176,7 +174,7 @@ end
     @test sum(
         sum(
             value.(m[:link_out][l, t, p]) ≈ value.(m[:link_in][l, t, p]) for t ∈ 𝒯,
-            p ∈ EMB.link_res(l), atol in TEST_ATOL
-        ) ≈ length(𝒯) * length(EMB.link_res(l)) for l ∈ ℒ, atol in TEST_ATOL
+            p ∈ EMB.link_res(l), atol ∈ TEST_ATOL
+        ) ≈ length(𝒯) * length(EMB.link_res(l)) for l ∈ ℒ, atol ∈ TEST_ATOL
     ) ≈ length(ℒ)
 end

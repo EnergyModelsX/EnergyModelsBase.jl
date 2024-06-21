@@ -28,7 +28,6 @@ struct Direct <: Link
 end
 Direct(id, from::Node, to::Node) = Direct(id, from, to, Linear())
 
-
 """
     link_sub(ℒ::Vector{<:Link}, n::Node)
 

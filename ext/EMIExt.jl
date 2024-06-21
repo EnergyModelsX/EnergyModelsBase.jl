@@ -39,7 +39,7 @@ For a given `Storage` node, checks that it contains investments for the field
 function EMI.has_investment(n::Storage, field::Symbol)
     (
         hasproperty(n, :data) &&
-        !isnothing(findfirst(data->typeof(data)<:InvestmentData, node_data(n))) &&
+        !isnothing(findfirst(data -> typeof(data) <: InvestmentData, node_data(n))) &&
         !isnothing(getproperty(EMI.investment_data(n), field))
     )
 end
@@ -65,7 +65,6 @@ EMI.investment_data(inv_data::SingleInvData) = inv_data.cap
 Return the investment data of the type `element` of the capacity `field`.
 """
 EMI.investment_data(n::EMB.Node, field::Symbol) = getproperty(investment_data(n), field)
-
 
 EMI.start_cap(n::EMB.Node, t_inv, inv_data::NoStartInvData, cap) =
     capacity(n, t_inv)

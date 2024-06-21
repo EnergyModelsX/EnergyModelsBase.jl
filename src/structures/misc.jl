@@ -3,7 +3,7 @@ Union of `Nothing`, `TS.TimePeriod`, and `TS.TimeStructure{T} where {T}` to be u
 limiting the potential entries to the fields of [`PreviousPeriods`](@ref) and
 [`CyclicPeriods`](@ref) types.
 """
-NothingPeriod = Union{Nothing, TS.TimePeriod, TS.TimeStructure{T}} where {T}
+NothingPeriod = Union{Nothing,TS.TimePeriod,TS.TimeStructure{T}} where {T}
 
 """
     PreviousPeriods{S<:NothingPeriod, T<:NothingPeriod, U<:NothingPeriod}

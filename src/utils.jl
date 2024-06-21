@@ -27,7 +27,6 @@ function run_model(case::Dict, model, optimizer; check_timeprofiles = true)
     return m
 end
 
-
 """
     collect_types(types_list)
 
@@ -63,7 +62,6 @@ function collect_types(types_list)
     return types
 end
 
-
 """
     sort_types(types_list::Dict)
 
@@ -94,7 +92,7 @@ function sort_types(types_list::Dict)
     # indexes of the sorted order.
     sorted_idx = sortperm(num, rev = true)
     # Get the types from the dictionary as a vector.
-    types = [n for n in keys(types_list)]
+    types = [n for n ∈ keys(types_list)]
     # Use the indexes of the sorted order to sort the order of the types.
     sorted_types_list = types[sorted_idx]
     return sorted_types_list
@@ -146,7 +144,6 @@ function previous_level(
     cyclic_pers::CyclicPeriods,
     modeltype::EnergyModel,
 )
-
     return previous_level_sp(m, n, cyclic_pers, modeltype)
 end
 """
@@ -196,8 +193,7 @@ function previous_level(
 )
 
     # Return the previous storage level with the increase in the representative period
-    return @expression(
-        m,
+    return @expression(m,
         # Initial storage in previous rp
         m[:stor_level][n, first(rep_per(prev_pers))] -
         m[:stor_level_Δ_op][n, first(rep_per(prev_pers))] *
@@ -246,7 +242,12 @@ representative period) of a strategic period.
 The default functionality in the case of a [`Cyclic`](@ref) storage node in a `TimeStructure`
 without `RepresentativePeriods` returns the last operational period in the strategic period.
 """
-function previous_level_sp(m, n::Storage{<:Cyclic}, cyclic_pers::CyclicPeriods, modeltype::EnergyModel)
+function previous_level_sp(
+    m,
+    n::Storage{<:Cyclic},
+    cyclic_pers::CyclicPeriods,
+    modeltype::EnergyModel,
+)
     # Return the previous storage level based on cyclic constraints
     last_op = last(current_per(cyclic_pers))
     return @expression(m, m[:stor_level][n, last_op])
@@ -275,8 +276,7 @@ function previous_level_sp(
 
     # Return the previous storage level based on cyclic constraints when representative
     # periods are included
-    return @expression(
-        m,
+    return @expression(m,
         # Initial storage in previous representative period
         m[:stor_level][n, first(last_rp)] -
         m[:stor_level_Δ_op][n, first(last_rp)] * duration(first(last_rp)) +
