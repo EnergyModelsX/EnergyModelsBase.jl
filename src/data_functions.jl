@@ -18,7 +18,7 @@ function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::
     # Declaration of the required subsets.
     𝒫ⁱⁿ = inputs(n)
     CO2 = co2_instance(modeltype)
-    𝒫ᵉᵐ = setdiff(res_em(𝒫), [CO2])
+    𝒫ᵉᵐ = setdiff(filter(is_resource_emit, 𝒫), [CO2])
 
     # Constraint for the CO2 emissions
     @constraint(m, [t ∈ 𝒯],
@@ -35,7 +35,7 @@ function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::
     # Declaration of the required subsets.
     𝒫ⁱⁿ = inputs(n)
     CO2 = co2_instance(modeltype)
-    𝒫ᵉᵐ = setdiff(res_em(𝒫), [CO2])
+    𝒫ᵉᵐ = setdiff(filter(is_resource_emit, 𝒫), [CO2])
 
     # Constraint for the CO2 emissions
     @constraint(m, [t ∈ 𝒯],
@@ -62,7 +62,7 @@ function constraints_data(
     # Declaration of the required subsets.
     𝒫ⁱⁿ = inputs(n)
     CO2 = co2_instance(modeltype)
-    𝒫ᵉᵐ = setdiff(res_em(𝒫), [CO2])
+    𝒫ᵉᵐ = setdiff(filter(is_resource_emit, 𝒫), [CO2])
 
     # Calculate the total amount of CO2 to be considered for capture
     CO2_tot = @expression(m, [t ∈ 𝒯],
@@ -97,7 +97,7 @@ function constraints_data(
     # Declaration of the required subsets.
     𝒫ⁱⁿ = inputs(n)
     CO2 = co2_instance(modeltype)
-    𝒫ᵉᵐ = setdiff(res_em(𝒫), [CO2])
+    𝒫ᵉᵐ = setdiff(filter(is_resource_emit, 𝒫), [CO2])
 
     # Calculate the total amount of CO2 to be considered for capture
     CO2_tot = @expression(m, [t ∈ 𝒯],
@@ -132,7 +132,7 @@ function constraints_data(
     # Declaration of the required subsets
     𝒫ⁱⁿ = inputs(n)
     CO2 = co2_instance(modeltype)
-    𝒫ᵉᵐ = setdiff(res_em(𝒫), [CO2])
+    𝒫ᵉᵐ = setdiff(filter(is_resource_emit, 𝒫), [CO2])
 
     # Calculate the total amount of CO2 to be considered for capture
     CO2_tot = @expression(m, [t ∈ 𝒯],

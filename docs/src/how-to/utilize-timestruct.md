@@ -85,7 +85,7 @@ day = SimpleTimes(24, 1)
 ```
 
 This example can represent a single day with hourly resolution.
-In pracice, when including the `day` into a `TwoLevel`, it is scaled multiple times.
+In practice, when including the `day` into a `TwoLevel`, it is scaled multiple times.
 This can lead to an underestimation of storage requirements and makes it impossible to include seasonal storage.
 
 Representative periods can be included through creating multiple instances of `SimpleTimes`.

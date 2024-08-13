@@ -17,7 +17,7 @@ There is always a fallback option if a `Data` is specified, but no functions are
 constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::Data) = nothing
 ```
 
-Its application is best explained by the implemented functionality for emissions
+Its application is best explained by the implemented functionality for emissions.
 
 ## Emissions data
 

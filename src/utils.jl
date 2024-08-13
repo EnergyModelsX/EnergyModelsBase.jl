@@ -314,7 +314,10 @@ end
 """
     multiple(t_inv, t)
 
-Provide a simplified function for returning the combination of the functions
-duration(t) * multiple_strat(t_inv, t) * probability(t)
+Provides a simplified function for returning the multiplication
+
+``duration(t) * multiple\\_strat(t\\_inv, t) * probability(t)``
+
+when operational periods are coupled with strategic periods (or representative periods).
 """
 multiple(t_inv, t) = duration(t) * multiple_strat(t_inv, t) * probability(t)

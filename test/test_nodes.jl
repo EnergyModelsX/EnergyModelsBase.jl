@@ -128,12 +128,10 @@
 
         # Test that the opex calculations are correct
         # - constraints_opex_var(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
-        @test sum(
-            value.(m[:opex_var][sink, t_inv]) ≈ sum(
-                value.(m[:sink_deficit][sink, t]) * duration(t) * deficit_penalty(sink, t)
-                for t ∈ t_inv
-            ) for t_inv ∈ 𝒯ᴵⁿᵛ
-        ) ≈ length(𝒯ᴵⁿᵛ) atol = TEST_ATOL
+        @test sum(value.(m[:opex_var][sink, t_inv]) ≈
+                sum(value.(m[:sink_deficit][sink, t]) * duration(t) * 10 for t ∈ t_inv)
+                for t_inv ∈ 𝒯ᴵⁿᵛ)  ≈
+                    length(𝒯ᴵⁿᵛ) atol=TEST_ATOL
 
         # Test that the surplus values are properly calculated and time is involved
         # in the penalty calculation
@@ -159,12 +157,11 @@
 
         # Test that the opex calculations are correct
         # - constraints_opex_var(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
-        @test sum(
-            value.(m[:opex_var][sink, t_inv]) ≈ sum(
-                value.(m[:sink_surplus][sink, t]) * duration(t) * surplus_penalty(sink, t)
-                for t ∈ t_inv
-            ) for t_inv ∈ 𝒯ᴵⁿᵛ
-        ) == length(𝒯ᴵⁿᵛ)
+        @test sum(value.(m[:opex_var][sink, t_inv]) ≈
+                sum(value.(m[:sink_surplus][sink, t]) * duration(t) * -100 for t ∈ t_inv)
+                for t_inv ∈ 𝒯ᴵⁿᵛ) ==
+                    length(𝒯ᴵⁿᵛ)
+
     end
 
     @testset "Process emissions - RefSink and RefSource" begin
@@ -389,8 +386,8 @@ end
         𝒯 = case[:T]
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-        𝒫 = case[:products]
-        𝒫ᵉᵐ = EMB.res_not(EMB.res_em(𝒫), CO2)
+        𝒫   = case[:products]
+        𝒫ᵉᵐ = setdiff(filter(EMB.is_resource_emit, 𝒫), [CO2])
 
         # Check that there is production
         @test sum(value.(m[:cap_use][net, t]) > 0 for t ∈ 𝒯) ≈ length(𝒯) atol = TEST_ATOL
@@ -428,8 +425,8 @@ end
         𝒯 = case[:T]
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-        𝒫 = case[:products]
-        𝒫ᵉᵐ = EMB.res_not(EMB.res_em(𝒫), CO2)
+        𝒫   = case[:products]
+        𝒫ᵉᵐ = setdiff(filter(EMB.is_resource_emit, 𝒫), [CO2])
 
         # Check that there is production
         @test sum(value.(m[:cap_use][net, t]) > 0 for t ∈ 𝒯) ≈ length(𝒯) atol = TEST_ATOL
@@ -467,8 +464,8 @@ end
         𝒯 = case[:T]
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-        𝒫 = case[:products]
-        𝒫ᵉᵐ = EMB.res_not(EMB.res_em(𝒫), CO2)
+        𝒫   = case[:products]
+        𝒫ᵉᵐ = setdiff(filter(EMB.is_resource_emit, 𝒫), [CO2])
 
         # Check that there is production
         @test sum(value.(m[:cap_use][net, t]) > 0 for t ∈ 𝒯) ≈ length(𝒯) atol = TEST_ATOL
@@ -515,8 +512,8 @@ end
         𝒯 = case[:T]
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-        𝒫 = case[:products]
-        𝒫ᵉᵐ = EMB.res_not(EMB.res_em(𝒫), CO2)
+        𝒫   = case[:products]
+        𝒫ᵉᵐ = setdiff(filter(EMB.is_resource_emit, 𝒫), [CO2])
 
         # Check that there is production
         @test sum(value.(m[:cap_use][net, t]) > 0 for t ∈ 𝒯) ≈ length(𝒯) atol = TEST_ATOL
@@ -564,8 +561,8 @@ end
         𝒯 = case[:T]
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-        𝒫 = case[:products]
-        𝒫ᵉᵐ = EMB.res_not(EMB.res_em(𝒫), CO2)
+        𝒫   = case[:products]
+        𝒫ᵉᵐ = setdiff(filter(EMB.is_resource_emit, 𝒫), [CO2])
 
         # Check that there is production
         @test sum(value.(m[:cap_use][net, t]) > 0 for t ∈ 𝒯) ≈ length(𝒯) atol = TEST_ATOL
@@ -1278,8 +1275,8 @@ end
         # Run the model and extract the data
         op_profile_11 = OperationalProfile([15, 5, 15, 5, 10])
         op_profile_12 = OperationalProfile([20, 20, 0, 0, 10])
-        op_profile_21 = OperationalProfile([5, 15, 5, 15, 5])
-        op_profile_22 = OperationalProfile([0, 20, 0, 20, 0])
+        op_profile_21 = OperationalProfile([5, 15, 5, 15, 10])
+        op_profile_22 = OperationalProfile([0, 20, 0, 20, 10])
         scen_profile_1 = ScenarioProfile([op_profile_11, op_profile_12])
         scen_profile_2 = ScenarioProfile([op_profile_21, op_profile_22])
         demand = RepresentativeProfile([scen_profile_1, scen_profile_2])
@@ -1327,9 +1324,9 @@ end
         first_rp = [first(t_rp) for t_rp ∈ 𝒯ʳᵖ]
         @test sum(
             value.(m[:stor_level][stor, t]) -
-            value.(m[:stor_level_Δ_op][stor, t]) * duration(t) ≈ 20 for t ∈ first_rp,
-            atol ∈ TEST_ATOL
-        ) ≈ length(𝒯ᴵⁿᵛ) atol = TEST_ATOL
+            value.(m[:stor_level_Δ_op][stor, t]) * duration(t) ≈ 0
+            for t ∈ first_rp, atol = TEST_ATOL) ≈
+                length(𝒯ᴵⁿᵛ)  atol = TEST_ATOL
         @test sum(
             value.(m[:stor_level][stor, t]) -
             value.(m[:stor_level_Δ_op][stor, t]) * duration(t) ≈ 40 for t ∈ first_rp,
@@ -1356,8 +1353,9 @@ end
             (t_prev, t) ∈ withprev(𝒯), atol ∈ TEST_ATOL if !isnothing(t_prev)
         ) ≈ length(𝒯) - length(𝒯ᴵⁿᵛ) * ops.len * scps.len atol = TEST_ATOL
 
-        # Check that the level is 0 exactly 2 times
-        @test sum(value.(m[:stor_level][stor, t]) ≈ 0 for t ∈ 𝒯) ≈ 6 atol = TEST_ATOL
+        # Check that the level is 0 exactly 14 times
+        @test sum(value.(m[:stor_level][stor, t]) ≈ 0 for t ∈ 𝒯, atol = TEST_ATOL) ≈ 14
+                atol = TEST_ATOL
     end
 end
 
