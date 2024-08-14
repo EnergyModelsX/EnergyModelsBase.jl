@@ -1,5 +1,5 @@
 """
-    StorageInvData <: InvestmentData
+    StorageInvData <: EMB.StorageInvData
 
 Internal type for [`StorageInvData`](@ref EMB.StorageInvData). The introduction of an
 internal type is necessary as extensions do not allow to export functions or types.
@@ -15,12 +15,12 @@ end
 EMB.StorageInvData(; args...) = StorageInvData(; args...)
 
 """
-    SingleInvData <: InvestmentData
+    SingleInvData <: EMB.SingleInvData
 
 Internal type for [`SingleInvData`](@ref EMB.SingleInvData). The introduction of an internal
 type is necessary as extensions do not allow to export functions or types.
 """
-struct SingleInvData <: InvestmentData
+struct SingleInvData <: EMB.SingleInvData
     cap::AbstractInvData
     function SingleInvData(cap)
         return new(cap)

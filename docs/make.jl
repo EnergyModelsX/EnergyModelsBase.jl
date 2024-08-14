@@ -1,4 +1,5 @@
 using Documenter
+using DocumenterInterLinks
 
 using EnergyModelsBase
 using EnergyModelsInvestments
@@ -6,11 +7,13 @@ using TimeStruct
 const EMB = EnergyModelsBase
 
 # Copy the NEWS.md file
-news = "docs/src/manual/NEWS.md"
-if isfile(news)
-    rm(news)
-end
-cp("NEWS.md", news)
+cp("NEWS.md", "docs/src/manual/NEWS.md"; force=true)
+
+links = InterLinks(
+    "TimeStruct" => "https://sintefore.github.io/TimeStruct.jl/stable/",
+    "EnergyModelsInvestments" => "https://energymodelsx.github.io/EnergyModelsInvestments.jl/stable/",
+)
+
 
 DocMeta.setdocmeta!(
     EnergyModelsBase,
@@ -58,6 +61,7 @@ makedocs(
             ],
         ],
     ],
+    plugins=[links],
 )
 
 deploydocs(;

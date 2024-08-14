@@ -192,15 +192,21 @@ When multiple inputs are provided, a constructor directly creates the correspond
   relative to the added capacity.
 - **`max_inst::TimeProfile`** is the maximum installed capacity in a strategic period.
 - **`initial::Real`** is the initial capacity. This results in the creation of a
-  [`SingleInvData`] type for the investment data.
+  [`StartInvData`](@extref EnergyModelsInvestments.StartInvData) type for the investment data.
 - **`inv_mode::Investment`** is the chosen investment mode for the technology. The following
-  investment modes are currently available: [`BinaryInvestment`],
-  [`DiscreteInvestment`], [`ContinuousInvestment`], [`SemiContinuousInvestment`]
-  or [`FixedInvestment`].
+  investment modes are currently available:
+  [`BinaryInvestment`](@extref EnergyModelsInvestments),
+  [`DiscreteInvestment`](@extref EnergyModelsInvestments),
+  [`ContinuousInvestment`](@extref EnergyModelsInvestments),
+  [`SemiContinuousInvestment`](@extref EnergyModelsInvestments), or
+  [`FixedInvestment`](@extref EnergyModelsInvestments).
 - **`life_mode::LifetimeMode`** is type of handling the lifetime. Several different
-  alternatives can be used: [`UnlimitedLife`], [`StudyLife`], [`PeriodLife`]
-  or [`RollingLife`]. If `life_mode` is not specified, the model assumes an
-  [`UnlimitedLife`].
+  alternatives can be used:
+  [`UnlimitedLife`](@extref EnergyModelsInvestments),
+  [`StudyLife`](@extref EnergyModelsInvestments),
+  [`PeriodLife`](@extref EnergyModelsInvestments), or
+  [`RollingLife`](@extref EnergyModelsInvestments). If `life_mode` is not specified, the
+  model assumes an [`UnlimitedLife`](@extref EnergyModelsInvestments).
 """
 abstract type SingleInvData <: InvestmentData end
 

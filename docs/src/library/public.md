@@ -358,7 +358,7 @@ StorageInvData
 ### Legacy constructors
 
 We provide a legacy constructor, `InvData` and `InvDataStorage`, that use the same input as in version 0.5.x.
-If you want to adjust your model to the latest changes, please refer to the section *Update your model to the latest version of EnergyModelsInvestments*.
+If you want to adjust your model to the latest changes, please refer to the section *[Update your model to the latest version of EnergyModelsInvestments](@extref EnergyModelsInvestments sec_how_to_update)*.
 
 ```@docs
 InvData
