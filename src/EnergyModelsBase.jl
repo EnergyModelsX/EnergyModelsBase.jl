@@ -5,8 +5,8 @@ It exports several types and associated functions for accessing fields.
 In addition, all required functions for creaeting and running the model are exported.
 
 You can find the exported types and functions below or on the pages \
-*[Constraint functions](@ref constraint_functions)* and \
-*[Data functions](@ref data_functions)*.
+*[Constraint functions](@ref man-con)* and \
+*[Data functions](@ref man-data_fun)*.
 """
 module EnergyModelsBase
 

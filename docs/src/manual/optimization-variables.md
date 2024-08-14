@@ -1,4 +1,4 @@
-# [Optimization variables](@id optimization_variables)
+# [Optimization variables](@id man-opt_var)
 
 `EnergyModelsBase` creates a variety of default variables for the individual nodes and edges.
 These default variables are in general also created when new `Node`s or `Link`s are developed.
@@ -27,7 +27,7 @@ The multiplication then leads to an energy/mass quantity in stead of an energy/m
 The coupling of strategic and operational periods can be achieved through the function `EMB.multiple(t, t_inv)`.
 This functions allows for considering the scaling of the operational periods within a strategic period.
 
-## [Operational cost variables](@id var_opex)
+## [Operational cost variables](@id man-opt_var-opex)
 
 Operational cost variables are included to account for operational expenditures (OPEX) of the model.
 These costs are pure dependent on either the use or the installed capacity of a node ``n``.
@@ -47,7 +47,7 @@ Instead, it is only dependent on the installed capacity.
 It is calculated using the function [`constraints_opex_fixed`](@ref).
 It represents fixed costs like labour cost, maintenance, as well as insurances and taxes.
 
-## [Capacity variables](@id var_cap)
+## [Capacity variables](@id man-opt_var-cap)
 
 Capacity variables focus on both the capacity usage and installed capacity.
 The capacity variables are also created for all nodes except for [`Availability`](@ref) nodes.
@@ -91,11 +91,11 @@ There are in addition two variables for the storage level that behave slightly d
 These two variables are introduced to track the change in the storage level in a operational period and a representative period, respectively.
 They can be considered as helper variables to account for the duration of the operational period as well as the total change within a representative period.
 ``\texttt{stor\_level\_Δ\_rp}`` is only declared if the `TimeStructure` includes `RepresentativePeriods`.
-The application of `RepresentativePeriods` is explained in *[How to use TimeStruct.jl](@ref ts_rp)*.
+The application of `RepresentativePeriods` is explained in *[How to use TimeStruct.jl](@ref how_to-utilize_TS-struct-rp)*.
 
 The variables ``\texttt{cap\_inst}``, ``\texttt{stor\_charge\_inst}``, ``\texttt{stor\_level\_inst}``, and ``\texttt{stor\_discharge\_inst}`` are used in `EnergyModelsInvestment` to allow for investments in capacity of individual nodes.
 
-## [Flow variables](@id var_flow)
+## [Flow variables](@id man-opt_var-flow)
 
 Flow variables correspond to the input to and output from both technology nodes and links.
 They are always positive to avoid backflow.
@@ -117,7 +117,7 @@ Mathematically, this is given as
 
 It is also possible to create a new method for this function to limit the resources a link can transport.
 
-## [Emission variables](@id var_emission)
+## [Emission variables](@id man-opt_var-emissions)
 
 Emission variables are used for accounting for emissions of the individual technologies.
 Resources that can be emitted are defined through the type [`ResourceEmit`](@ref).
@@ -135,7 +135,7 @@ In addition, `EnergyModelsBase` declares the following variables for the global 
 
 These emission variables introduce limits on the total emissions of a resource through the field `emission_limit` of an `EnergyModel` in the function [`EMB.variables_emission`](@ref).
 
-## [`Sink` variables](@id var_sink)
+## [`Sink` variables](@id man-opt_var-sink)
 
 `Sink` nodes are somehow different to the other nodes as they have additional variables associated with them.
 A key point here is to keep the overall mass balance intact while allowing for both overfulfilling and not meeting the demand.
@@ -151,53 +151,53 @@ They simplify the problem and can make certain types of formulations feasible.
 It is possible to provide penalties for both surplus and deficits.
 This is implemented through the field `penalty` in the [`RefSource`](@ref) node.
 
-## [Node types and respective variables](@id var_node)
+## [Node types and respective variables](@id man-opt_var-node)
 
 As outlined in the introduction, `EnergyModelsBase` declares different variables for each `Node`.
 These variables are for the individual nodes given in the subsections below.
 
 ### `Source`
 
-- [``\texttt{opex\_var}``](@ref var_opex)
-- [``\texttt{opex\_fixed}``](@ref var_opex)
-- [``\texttt{cap\_use}``](@ref var_cap)
-- [``\texttt{cap\_inst}``](@ref var_cap)
-- [``\texttt{flow\_out}``](@ref var_flow)
-- [``\texttt{emissions\_node}``](@ref var_emission) if `EmissionsData` is added to the field `data`
+- [``\texttt{opex\_var}``](@ref man-opt_var-opex)
+- [``\texttt{opex\_fixed}``](@ref man-opt_var-opex)
+- [``\texttt{cap\_use}``](@ref man-opt_var-cap)
+- [``\texttt{cap\_inst}``](@ref man-opt_var-cap)
+- [``\texttt{flow\_out}``](@ref man-opt_var-flow)
+- [``\texttt{emissions\_node}``](@ref man-opt_var-emissions) if `EmissionsData` is added to the field `data`
 
 ### `NetworkNode`, except for `Storage`
 
-- [``\texttt{opex\_var}``](@ref var_opex)
-- [``\texttt{opex\_fixed}``](@ref var_opex)
-- [``\texttt{cap\_use}``](@ref var_cap)
-- [``\texttt{cap\_inst}``](@ref var_cap)
-- [``\texttt{flow\_in}``](@ref var_flow)
-- [``\texttt{flow\_out}``](@ref var_flow)
-- [``\texttt{emissions\_node}``](@ref var_emission) if `EmissionsData` is added to the field `data`
+- [``\texttt{opex\_var}``](@ref man-opt_var-opex)
+- [``\texttt{opex\_fixed}``](@ref man-opt_var-opex)
+- [``\texttt{cap\_use}``](@ref man-opt_var-cap)
+- [``\texttt{cap\_inst}``](@ref man-opt_var-cap)
+- [``\texttt{flow\_in}``](@ref man-opt_var-flow)
+- [``\texttt{flow\_out}``](@ref man-opt_var-flow)
+- [``\texttt{emissions\_node}``](@ref man-opt_var-emissions) if `EmissionsData` is added to the field `data`
 
 ### `Storage`
 
-- [``\texttt{opex\_var}``](@ref var_opex)
-- [``\texttt{opex\_fixed}``](@ref var_opex)
-- [``\texttt{stor\_level}``](@ref var_cap)
-- [``\texttt{stor\_level\_inst}``](@ref var_cap)
-- [``\texttt{stor\_charge\_use}``](@ref var_cap)
-- [``\texttt{stor\_charge\_inst}``](@ref var_cap), if the `Storage` node has a field `:charge` with the `StorageParameters` corresponding to *[capacity storage parameters](@ref sec_lib_public_storpar)*
-- [``\texttt{stor\_discharge\_use}``](@ref var_cap)
-- [``\texttt{stor\_discharge\_inst}``](@ref var_cap), if the `Storage` node has a field `:discharge` with the `StorageParameters` corresponding to *[capacity storage parameters](@ref sec_lib_public_storpar)*
-- [``\texttt{stor\_level\_Δ\_op}``](@ref var_cap)
-- [``\texttt{stor\_level\_Δ\_rp}``](@ref var_cap) if the `TimeStruct` includes `RepresentativePeriods`
-- [``\texttt{flow\_in}``](@ref var_flow)
-- [``\texttt{flow\_out}``](@ref var_flow)
-- [``\texttt{emissions\_node}``](@ref var_emission) if `ResourceEmit` is stored
+- [``\texttt{opex\_var}``](@ref man-opt_var-opex)
+- [``\texttt{opex\_fixed}``](@ref man-opt_var-opex)
+- [``\texttt{stor\_level}``](@ref man-opt_var-cap)
+- [``\texttt{stor\_level\_inst}``](@ref man-opt_var-cap)
+- [``\texttt{stor\_charge\_use}``](@ref man-opt_var-cap)
+- [``\texttt{stor\_charge\_inst}``](@ref man-opt_var-cap), if the `Storage` node has a field `:charge` with the `StorageParameters` corresponding to *[capacity storage parameters](@ref lib-pub-nodes-stor_par)*
+- [``\texttt{stor\_discharge\_use}``](@ref man-opt_var-cap)
+- [``\texttt{stor\_discharge\_inst}``](@ref man-opt_var-cap), if the `Storage` node has a field `:discharge` with the `StorageParameters` corresponding to *[capacity storage parameters](@ref lib-pub-nodes-stor_par)*
+- [``\texttt{stor\_level\_Δ\_op}``](@ref man-opt_var-cap)
+- [``\texttt{stor\_level\_Δ\_rp}``](@ref man-opt_var-cap) if the `TimeStruct` includes `RepresentativePeriods`
+- [``\texttt{flow\_in}``](@ref man-opt_var-flow)
+- [``\texttt{flow\_out}``](@ref man-opt_var-flow)
+- [``\texttt{emissions\_node}``](@ref man-opt_var-emissions) if `ResourceEmit` is stored
 
 ### `Sink`
 
-- [``\texttt{opex\_var}``](@ref var_opex)
-- [[``\texttt{opex\_fixed}``](@ref var_opex)](@ref var_opex)
-- [``\texttt{cap\_use}``](@ref var_cap)
-- [``\texttt{cap\_inst}``](@ref var_cap)
-- [``\texttt{flow\_in}``](@ref var_flow)
-- [``\texttt{sink\_surplus}``](@ref var_sink)
-- [``\texttt{sink\_deficit}``](@ref var_sink)
-- [``\texttt{emissions\_node}``](@ref var_emission) if `EmissionsData` is added to the field `data`
+- [``\texttt{opex\_var}``](@ref man-opt_var-opex)
+- [[``\texttt{opex\_fixed}``](@ref man-opt_var-opex)](@ref man-opt_var-opex)
+- [``\texttt{cap\_use}``](@ref man-opt_var-cap)
+- [``\texttt{cap\_inst}``](@ref man-opt_var-cap)
+- [``\texttt{flow\_in}``](@ref man-opt_var-flow)
+- [``\texttt{sink\_surplus}``](@ref man-opt_var-sink)
+- [``\texttt{sink\_deficit}``](@ref man-opt_var-sink)
+- [``\texttt{emissions\_node}``](@ref man-opt_var-emissions) if `EmissionsData` is added to the field `data`

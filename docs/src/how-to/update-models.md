@@ -1,15 +1,15 @@
-# Update your model to the latest versions
+# [Update your model to the latest versions](@id how_to-update)
 
 `EnergyModelsBase` is still in a pre-release version.
 Hence, there are frequently breaking changes occuring, although we plan to keep backwards compatibility.
 This document is designed to provide users with information regarding how they have to adjust their models to keep compatibility to the latest changes.
 We will as well implement information regarding the adjustment of extension packages, although this is more difficult due to the vast majority of potential changes.
 
-## Adjustments from 0.6.x
+## [Adjustments from 0.6.x](@id how_to-update-06)
 
-### Key changes for nodal descriptions
+### [Key changes for nodal descriptions](@id how_to-update-06-nodes)
 
-Version 0.7 introduced both *[storage behaviours](@ref sec_lib_public_storbehav)* resulting in a rework of the individual approach for calculating the level balance as well as the potential to have charge and discharge capacities through *[storage parameters](@ref sec_lib_public_storpar)*.
+Version 0.7 introduced both *[storage behaviours](@ref lib-pub-nodes-stor_behav)* resulting in a rework of the individual approach for calculating the level balance as well as the potential to have charge and discharge capacities through *[storage parameters](@ref lib-pub-nodes-stor_par)*.
 
 !!! note
     The legacy constructors for calls of the composite type of version 0.6 will be included at least until version 0.8.
@@ -77,14 +77,14 @@ RefStorage{AccumulatingEmissions}(
 )
 ```
 
-## Adjustments from 0.5.x to 0.7.x
+## [Adjustments from 0.5.x to 0.7.x](@id how_to-update-05)
 
-### Key changes for nodal descriptions
+### [Key changes for nodal descriptions](@id how_to-update-05-nodes)
 
 Version 0.6 introduced [`EmissionsData`](@ref) for providing the user with more flexibility (and less input demand) for incorporating different types of emissions to the model. Hence, the `Node` types were adjusted.
 In addition, version 0.6 simplified the [`GenAvailability`](@ref) node and added emissions prices to the [`OperationalModel`](@ref).
 
-Version 0.7 introduced both *[storage behaviours](@ref sec_lib_public_storbehav)* resulting in a rework of the individual approach for calculating the level balance as well as the potential to have charge and discharge capacities through *[storage parameters](@ref sec_lib_public_storpar)*.
+Version 0.7 introduced both *[storage behaviours](@ref lib-pub-nodes-stor_behav)* resulting in a rework of the individual approach for calculating the level balance as well as the potential to have charge and discharge capacities through *[storage parameters](@ref lib-pub-nodes-stor_par)*.
 
 !!! warning
     The legacy constructors for calls of the composite type of version 0.5 were removed in version 0.7.

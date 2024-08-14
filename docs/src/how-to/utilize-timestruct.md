@@ -1,16 +1,16 @@
-# [Utilize `TimeStruct`](@id utilize_timestruct)
+# [Utilize `TimeStruct`](@id how_to-utilize_TS)
 
 `EnergyModelsBase` uses for the description of time the package [`TimeStruct`](https://sintefore.github.io/TimeStruct.jl/stable/).
 [`TimeStruct`](https://sintefore.github.io/TimeStruct.jl/stable/) offers a large variety of different options that can appear to be overwhelming, when first exposed to them.
 Hence, it is important to highlight how it works and which parameters you would want to analyse.
 
-## Structures for time description
+## [Structures for time description](@id how_to-utilize_TS-struct)
 
 `TimeStruct` introduces individual structures that are used for describing time.
 In the following introduction, the most important structures are explained.
 There are other structures, but these will be added once `EnergyModelsbase` supports their formulation.
 
-### Operational periods
+### [Operational periods](@id how_to-utilize_TS-struct-op)
 
 Operational periods correspond to periods in which no investments are allowed.
 In general, you can imagine operational periods to be the individual hours you want to model, although it is not limited to hours.
@@ -72,7 +72,7 @@ When iterating over a `TimeStructure`, _e.g._, as `t ∈ operational_periods`, y
 !!! warning
     Energy conversion, production, or emissions of a node as well as all flows are always defined for a duration of length 1 in operational periods. You have to be careful when considering the output from the model. The same holds for capacities provided in the input file.
 
-### [Representative periods](@id ts_rp)
+### [Representative periods](@id how_to-utilize_TS-struct-rp)
 
 Representative periods are introduced through the structure `RepresentativePeriods`.
 Representative periods correspond to a repetition of different periods.
@@ -109,7 +109,7 @@ Representative periods only affect the system if storage is included.
 In the case of storage, this scaling impacts the initial level of the storage in representative periods.
 Otherwise, the application of `SimpleTimes` suffices.
 
-### Strategic periods
+### [Strategic periods](@id how_to-utilize_TS-struct-sp)
 
 Strategic periods are introduced through the structure `TwoLevel`.
 They correspond to the periods in which changes in capacity, efficiency, or operational expenditures can occur.
@@ -166,7 +166,7 @@ It does not have any implication on the model building speed and it is up to the
 !!! warning
     Fixed operational expenditures and emission limits provided to a model have to be provided for a duration of 1 in the strategic period.
 
-### Summary
+### [Summary](@id how_to-utilize_TS-struct-sum)
 
 In the standard case, it is recommended to use **hour** as duration 1 of operational period and **year** as duration 1 of a strategic period.
 This still allows to utilize a higher resolution, like _e.g._ 15 minutes or less through specifying a duration of 0.25 for these operational periods, but it simplifies the overall design.
@@ -180,7 +180,7 @@ strategic_number = 5    # here are in total 5 strategic periods
 
 This is especially relevant for capacities and emission limits, as well as anlysing the values obtained from the model.
 
-## Profiles
+## [Profiles](@id how_to-utilize_TS-profile)
 
 Profiles are used for providing parameters to the model.
 There are in general three main profiles, that have to be considered:
@@ -190,7 +190,7 @@ There are in general three main profiles, that have to be considered:
 3. `RepresentativeProfile` represents a profile that differes in the individual representative periods, and
 4. `StrategicProfile` represents using different values in the strategic periods.
 
-### FixedProfile
+### [FixedProfile](@id how_to-utilize_TS-profile-fixed)
 
 `FixedProfile` is the simplest profile.
 It represents a constant value over the whole modelling horizon.
@@ -202,7 +202,7 @@ profile = FixedProfile(10)
 
 This would provide a value of `10` in all operational periods in all strategic periods.
 
-### OperationalProfile
+### [OperationalProfile](@id how_to-utilize_TS-profile-operational)
 
 `OperationalProfile` is used when there are operational variations.
 Consider the following example time structure, corresponding to 5 strategic periods, each with a duration of 5 years, and 24 operational periods, each with a duration of 24 hours.
@@ -230,7 +230,7 @@ The example has a progressively increasing value going from 1 in the first hour 
 
     It is hence strongly advise to use an `OperationalProfile` with the same length.
 
-### RepresentativeProfile
+### [RepresentativeProfile](@id how_to-utilize_TS-profile-representative)
 
 `RepresentativeProfile`s can be included in the case of `RepresentativePeriods`.
 Each profile in the structure corresponds to the respective representative period.
@@ -262,7 +262,7 @@ The only requirement is that if one is using Integer input, then the other also 
 
     `EnergyModelsBase` provides the user with a warning if this is the case.
 
-### StrategicProfile
+### [StrategicProfile](@id how_to-utilize_TS-profile-strategic)
 
 `StrategicProfile` is used when there are strategic variations.
 Considering the same example time structure,
