@@ -45,6 +45,7 @@ makedocs(
             "Constraint functions"=>"manual/constraint-functions.md",
             "Data functions"=>"manual/data-functions.md",
             "Example"=>"manual/simple-example.md",
+            "Investment options"=>"manual/investments.md",
             "Release notes"=>"manual/NEWS.md",
         ],
         "How to" => Any[
