@@ -12,6 +12,7 @@
 
 * Updated minor issues in the documentation (docstrings, indices, and quick start).
 * Use dev version of EMB for examples when running as part of tests, solving [Issue #17](https://github.com/EnergyModelsX/EnergyModelsBase.jl/issues/17).
+* Naming of the total emission constraint to allow for updates in the coefficients in other packages.
 
 ## Version 0.7.0 (2024-05-24)
 
