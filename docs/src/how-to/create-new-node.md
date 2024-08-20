@@ -42,7 +42,7 @@ This is however only advised if you do not need to access the value of the varia
    It is possible to also create new subtypes for `EmissionsData` as well as dispatch on the function [`constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::Data)`](@ref man-data_fun).
 3. It is in a first stage not important to include functions for handling all possible `TimeStructure`s, that is, *e.g.*, `RepresentativePeriods`.
    Instead, and error can be provided if an unsupported `TimeStructure` is chosen.
-4. The existing reference nodes and their respectvve *[constraint functions](@ref man-con)* can serve as idea generators.
+4. The existing reference nodes and their respective *[constraint functions](@ref man-con)* can serve as idea generators.
 5. It is possible to include constraints that are coupled to another `Node` by introduing a field with the `Node` as type in the `NewNodeType`, *e.g.*, a field `node::Storage` when you plan to include additional constraints including a `Storage` node.
 6. `EnergyModelsBase` utilize functions for accessing the fields of the individual nodes.
    These functions can be found in *[Functions for accessing fields of `Node` types](@ref lib-pub-nodes-fun_field)*.
