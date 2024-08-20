@@ -11,7 +11,7 @@ Hence, it is possible to use different prices for the same technology in differe
 
 We differentiate between [`SingleInvData`](@ref) and [`StorageInvData`](@ref).
 Both types inlude as fields [`AbstractInvData`](@extref EnergyModelsInvestments.AbstractInvData) which can be either in the form of [`StartInvData`](@extref EnergyModelsInvestments.StartInvData) or [`NoStartInvData`](@extref EnergyModelsInvestments.NoStartInvData).
-The exact description of the individual investment data and their fields can be found in the *[public library]* of `EnergyModelsInvestments`.
+The exact description of the individual investment data and their fields can be found in the *[public library](@extref EnergyModelsInvestments lib-pub)* of `EnergyModelsInvestments`.
 
 Investments require the application of an [`InvestmentModel`](@ref) instead of an [`OperationalModel`](@ref).
 This allows us to provide two core functions with new methods, `constraints_capacity_installed` (as described on *[Constraint functions](@ref man-con)*), `variables_capex`, a function previously not declaring any variables, and the function `objective` for declaring the objective function.
@@ -19,7 +19,7 @@ This allows us to provide two core functions with new methods, `constraints_capa
 ## [Added variables](@id man-emi-var)
 
 Investment options increase the number of variables.
-The individual variables are described in the *[documentation of `EnergyModelsInvestments`]*.
+The individual variables are described in the *[documentation of `EnergyModelsInvestments`](@extref EnergyModelsInvestments man-opt_var)*.
 
 All nodes (except `Storage` nodes) with investments use the prefix `:cap`.
 `Storage` nodes utilize the prefices `:stor_level` for level capacity investments, `:stor_charge` for storage charging capacity investments, and `:stor_discharge` for storage discharge capacity investments.
