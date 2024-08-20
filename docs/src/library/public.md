@@ -1,4 +1,4 @@
-# [Public interface](@id sec_lib_public)
+# [Public interface](@id lib-pub)
 
 ## Module
 
@@ -6,13 +6,13 @@
 EnergyModelsBase
 ```
 
-## Resources
+## [Resources](@id lib-pub-res)
 
 `Resource`s correspond to the mass/energy that is converted or transported within an energy system.
 `Resource`s are discrete, that is they do not have as default additional variables, *e.g.* pressure or temperature, associated with them.
-Instead, they are implemented through flows and levels, as explained in *[Optimization variables](@ref optimization_variables)*.
+Instead, they are implemented through flows and levels, as explained in *[Optimization variables](@ref man-opt_var)*.
 
-### `Resource` types
+### [`Resource` types](@id lib-pub-res-types)
 
 The following resources are implemented in `EnergyModelsBase`.
 `EnergyModelsBase` differentiates between `ResourceCarrier` and `ResourceEmit` resources.
@@ -28,7 +28,7 @@ ResourceCarrier
 ResourceEmit
 ```
 
-### Functions for accessing fields of `Resource` types
+### [Functions for accessing fields of `Resource` types](@id lib-pub-res-fun_field)
 
 The following functions are declared for accessing fields from a `Resource` type.
 If you want to introduce new `Resource` types, it is important that this function are either functional for your new types or you have to declare a corresponding function.
@@ -37,14 +37,14 @@ If you want to introduce new `Resource` types, it is important that this functio
 co2_int
 ```
 
-## Nodes
+## [Nodes](@id lib-pub-nodes)
 
 `Node`s are used in `EnergyModelsBase` to convert `Resource`s.
-They are coupled to the rest of the system through the *[Flow variables](@ref var_flow)*.
+They are coupled to the rest of the system through the *[Flow variables](@ref man-opt_var-flow)*.
 Nodes are the key types for extending `EnergyModelsBase` through dispatch.
-You can find an introduction of the different node types on the page *[Creating a new node](@ref create_new_node)*
+You can find an introduction of the different node types on the page *[Creating a new node](@ref how_to-create_node)*
 
-### Abstract `Node` types
+### [Abstract `Node` types](@id lib-pub-nodes-abstract)
 
 The following abstract node types are implemented in the `EnergyModelsBase`.
 These abstract types are relevant for dispatching in individual functions.
@@ -57,7 +57,7 @@ Storage
 Availability
 ```
 
-### [Reference node types](@id sec_lib_public_refnodes)
+### [Reference node types](@id lib-pub-nodes-ref)
 
 The following composite types are implemented in the `EnergyModelsBase`.
 They can be used for describing a simple energy system without any non-linear or binary based expressions.
@@ -71,7 +71,7 @@ RefStorage
 GenAvailability
 ```
 
-### [Storage behaviours](@id sec_lib_public_storbehav)
+### [Storage behaviours](@id lib-pub-nodes-stor_behav)
 
 `EnergyModelsBase` provides several different storage behaviours for calculating the level balance of a `Storage` node.
 In general, the concrete storage behaviours are ready to use and should account for all eventualities.
@@ -90,7 +90,7 @@ CyclicStrategic
 
     This impacts specifically `CyclicStrategic`.
 
-### [Storage parameters](@id sec_lib_public_storpar)
+### [Storage parameters](@id lib-pub-nodes-stor_par)
 
 Storage parameters are used for describing different parameters for the idnividual capacities of a `Storage` node.
 In practice, `Storage` nodes can have three different capacities:
@@ -119,7 +119,7 @@ EMB.UnionOpexVar
 EMB.UnionCapacity
 ```
 
-### [Functions for accessing fields of `Node` types](@id functions_fields_node)
+### [Functions for accessing fields of `Node` types](@id lib-pub-nodes-fun_field)
 
 The following functions are declared for accessing fields from a `Node` type.
 
@@ -145,7 +145,7 @@ surplus_penalty
 deficit_penalty
 ```
 
-### Functions for identifying `Node`s
+### [Functions for identifying `Node`s](@id lib-pub-nodes-fun_identify)
 
 The following functions are declared for filtering on `Node` types.
 
@@ -168,12 +168,12 @@ has_charge
 has_discharge
 ```
 
-## Links
+## [Links](@id lib-pub-links)
 
 `Link`s are connecting the individual `Node`s for the exchange of energy/mass.
 `Link`s are directional, that is transport of mass/energy is only allowed in a single direction.
 
-### `Link` types
+### [`Link` types](@id lib-pub-links-types)
 
 The following types for links are implemented in `EnergyModelsBase`.
 The thought process is to dispatch on the [`EMB.Formulation`](@ref) of a link as additional option.
@@ -185,7 +185,7 @@ Direct
 Linear
 ```
 
-### Functions for accessing fields of `Link` types
+### [Functions for accessing fields of `Link` types](@id lib-pub-fun_field)
 
 The following functions are declared for accessing fields from a `Link` type.
 
@@ -197,21 +197,29 @@ The following functions are declared for accessing fields from a `Link` type.
 formulation
 ```
 
-## Model and data
+## [Model and data](@id lib-pub-mod_data)
 
-### `EnergyModel` and `Data` types
+### [`EnergyModel` and `Data` types](@id lib-pub-mod_data-types)
 
 The type `EnergyModel` is used for creating the global parameters of a model.
-It can be as well used for extending `EnergyModelsBase` as described in the section *[Extensions to the model](@ref sec_phil_ext)*.
-`EnergyModelsBase` only provides an `OperationalModel` while `InvestmentModel` is added through the extension [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/)
+It can be as well used for extending `EnergyModelsBase` as described in the section *[Extensions to the model](@ref man-phil-ext)*.
+`EnergyModelsBase` provides an `OperationalModel` for analyses with given capacities.
+`OperationalModel` contains some key information for the model such as the emissions limits and penalties for each `ResourceEmit`, as well as the `ResourceEmit` instance of CO₂.
+
+Including the extension [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/) results in the declaration of the types `AbstractInvestmentModel` and `InvestmentModel` which can be used for creating models with investments
+It takes as additional input the `discount_rate`.
+The `discount_rate` is an important element of investment analysis needed to represent the present value of future cash flows.
+It is provided to the model as a value between 0 and 1 (*e.g.* a discount rate of 5 % is 0.05).
 
 ```@docs
 EnergyModel
 OperationalModel
+AbstractInvestmentModel
+InvestmentModel
 ```
 
 In addition, the following `Data` types are introduced for introducing additional parameters, variables, and constraints to the `Node`s.
-The approach of using the `data` field of `Node`s is explained on the page *[Data functions](@ref data_functions)*.
+The approach of using the `data` field of `Node`s is explained on the page *[Data functions](@ref man-data_fun)*.
 `EmptyData` is no longer relevant for the modelling, but it is retained for avoiding any problems with existing models.
 
 ```@docs
@@ -219,7 +227,7 @@ Data
 EmptyData
 ```
 
-### Functions for accessing fields of `EnergyModel` types
+### [Functions for accessing fields of `EnergyModel` types](@id lib-pub-fun_field_model)
 
 The following functions are declared for accessing fields from a `EnergyModel` type.
 
@@ -227,13 +235,16 @@ The following functions are declared for accessing fields from a `EnergyModel` t
     If you want to introduce new `EnergyModel` types, it is important that the functions `emission_limit`, `emission_price`, and `co2_instance` are either functional for your new types or you have to declare corresponding functions.
     The first approach can be achieved through using the same name for the respective fields.
 
+    If you want to introduce new `AbstractInvestmentModel` types, you have to in additional consider the function `discount_rate`.
+
 ```@docs
 emission_limit
 emission_price
 co2_instance
+discount_rate
 ```
 
-## Functions for running the model
+## [Functions for running the model](@id lib-pub-fun_run)
 
 The following functions are provided for both creating a model using `EnergyModelsBase` and solving said model.
 Both functions have the input `case` and `model`.
@@ -251,20 +262,20 @@ create_model
 run_model
 ```
 
-## Functions for extending the model
+## [Functions for extending the model](@id lib-pub-fun_ext)
 
 The following functions are used for developing new nodes.
-See the page *[Creating a new node](@ref create_new_node)* for a detailed explanation on how to create a new node.
+See the page *[Creating a new node](@ref how_to-create_node)* for a detailed explanation on how to create a new node.
 
 ```@docs
 variables_node
 create_node
 ```
 
-## Constraint functions
+## [Constraint functions](@id lib-pub-fun_con)
 
 The following functions can be used in new developed nodes to include constraints.
-See the pages *[Constraint functions](@ref constraint_functions)* and *[Data functions](@ref data_functions)* for a detailed explanation on their usage.
+See the pages *[Constraint functions](@ref man-con)* and *[Data functions](@ref man-data_fun)* for a detailed explanation on their usage.
 
 !!! warning
     The function `constraints_capacity_installed` should not be changed.
@@ -291,15 +302,15 @@ previous_level
 previous_level_sp
 ```
 
-## [Emission data](@id sec_lib_public_emdata)
+## [Emission data](@id lib-pub-em_data)
 
 Emission data are used to provide the individual nodes with potential emissions.
-The approach is also explained on the page *[Data functions](@ref data_functions)*.
+The approach is also explained on the page *[Data functions](@ref man-data_fun)*.
 
-### `Emission` types
+### [`Emission` types](@id lib-pub-types)
 
 The thought process with `EmissionData` is to provide the user with options for each individual node to include emissions and potentially capture or not.
-The individual types can be used for all included *[reference `Node`s](@ref sec_lib_public_refnodes)*, although capture is not possible for `Sink` nodes due to the lack of an output.
+The individual types can be used for all included *[reference `Node`s](@ref lib-pub-nodes-ref)*, although capture is not possible for `Sink` nodes due to the lack of an output.
 
 ```@docs
 EmissionsData
@@ -311,7 +322,7 @@ CaptureProcessEmissions
 CaptureProcessEnergyEmissions
 ```
 
-### Functions for accessing fields of `EmissionsData` types
+### [Functions for accessing fields of `EmissionsData` types](@id lib-pub-em_data-fun_field)
 
 The following functions are declared for accessing fields from a `EmissionsData` type.
 
@@ -324,9 +335,39 @@ co2_capture
 process_emissions
 ```
 
-## Miscellaneous types/functions/macros
+## [Investment data](@id lib-pub-inv_data)
 
-### `PreviousPeriods` and `CyclicPeriods`
+### [`InvestmentData` types](@id lib-pub-inv_data-types)
+
+`InvestmentData` subtypes are used to provide technologies introduced in `EnergyModelsX` (nodes and transmission modes) a subtype of `Data` that can be used for dispatching.
+Two different types are directly introduced, `SingleInvData` and `StorageInvData`.
+
+`SingleInvData` is providing a composite type with a single field.
+It is used for investments in technologies with a single capacity, that is all nodes except for storage nodes as well as tranmission modes.
+
+`StorageInvData` is required as `Storage` nodes behave differently compared to the other nodes.
+In `Storage` nodes, it is possible to invest both in the charge capacity for storing energy, the storage capacity, that is the level of a `Storage` node, as well as the discharge capacity, that is how fast energy can be withdrawn.
+Correspondingly, it is necessary to have individual parameters for the potential investments in each capacity, that is through the fields `:charge`, `:level`, and `:discharge`.
+
+```@docs
+InvestmentData
+SingleInvData
+StorageInvData
+```
+
+### [Legacy constructors](@id lib-pub-inv_data-leg)
+
+We provide a legacy constructor, `InvData` and `InvDataStorage`, that use the same input as in version 0.5.x.
+If you want to adjust your model to the latest changes, please refer to the section *[Update your model to the latest version of EnergyModelsInvestments](@extref EnergyModelsInvestments how_to-update-05)*.
+
+```@docs
+InvData
+InvDataStorage
+```
+
+## [Miscellaneous types/functions/macros](@id lib-pub-misc_type)
+
+### [`PreviousPeriods` and `CyclicPeriods`](@id lib-pub-misc_type-prev_cyclic)
 
 `PreviousPeriods` is a type used to store information from the previous periods in an iteration loop through the application of the iterator [`withprev`](https://sintefore.github.io/TimeStruct.jl/stable/reference/api/#TimeStruct.withprev) of `TimeStruct`.
 
@@ -352,7 +393,7 @@ last_per
 current_per
 ```
 
-### Macros for checking the input data
+### [Macros for checking the input data](@id lib-pub-misc_type-macros)
 
 The macro `@assert_or_log` is an extension to the `@assert` macro to allow either for asserting the input data directly, or logging the errors in the input data.
 

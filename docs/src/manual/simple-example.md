@@ -1,4 +1,4 @@
-# Examples
+# [Examples](@id man-exampl)
 
 For the content of the individual examples, see the *[examples](https://github.com/EnergyModelsX/EnergyModelsBase.jl/tree/main/examples)* directory in the project repository.
 

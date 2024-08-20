@@ -1,6 +1,6 @@
-# Philosophy
+# [Philosophy](@id man-phil)
 
-## General design philosophy
+## [General design philosophy](@id man-phil-gen)
 
 One key aim in the development of `EnergyModelsBase` was to create an energy system model that
 
@@ -33,7 +33,7 @@ Potential additional `Node`s can focus on, *e.g.*:
 
 to name some of potential new constraints.
 
-## [Description of technologies](@id sec_des_nodes)
+## [Description of technologies](@id man-phil-nodes)
 
 The package utilizes different `type`s that represent components in an energy system.
 These types can be summarized as:
@@ -50,13 +50,13 @@ In addition, there are two `type`s that are subtypes of `NetworkNode`:
 These `type`s are connected using `link`s that transport the energy/mass.
 
 New technologies can be introduced by defining a new composite type for the technology.
-You can find a description on how you can create a new node on the page *[Creating a new node](@ref create_new_node)*.
+You can find a description on how you can create a new node on the page *[Creating a new node](@ref how_to-create_node)*.
 
-## [Extensions to the model](@id sec_phil_ext)
+## [Extensions to the model](@id man-phil-ext)
 
 There are in general four ways to extend the model:
 
-1. Introducing new technology descriptions as described in *[Creating a new node](@ref create_new_node)*,
+1. Introducing new technology descriptions as described in *[Creating a new node](@ref how_to-create_node)*,
 2. Call of the `create_model` function with subsequent function calls for adding additional constraints,
 3. Dispatching on the type `EnergyModel`, and
 4. Use the field `data` in the individual composite types.
@@ -77,8 +77,8 @@ The `Array{Data}` field provides us with flexibility with respect to providing a
 It is implemented in `EnergyModelsBase` for including emissions (both process and energy usage related).
 In that case, it allows for flexibility through either saying whether process (or energy related emissions) are present, or not.
 In addition, it allows for capturing the CO₂ from either the individual CO₂ sources (process and energy usage related), alternatively from both sources, or not at all.
-The individual data types are explained in the Section *[Emissions data](@ref sec_lib_public_emdata)* in the public library as well as on *[Data functions](@ref data_functions)*.
+The individual data types are explained in the Section *[Emissions data](@ref lib-pub-em_data)* in the public library as well as on *[Data functions](@ref man-data_fun)*.
 In addition, it is already used in the package [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/) through the introduction of the `abstract type` `InvestmentData` as subtype of `Data`.
 The introduction of `InvestmentData` allows providing additional parameters to individual technologies.
-However, the implementation in `EnergyModelsInvestments` does not utilize the extension through the *[Data functions](@ref data_functions)*.
+However, the implementation in `EnergyModelsInvestments` does not utilize the extension through the *[Data functions](@ref man-data_fun)*.
 Instead, as outlined above, it dispatches on the type `EnergyModel`.

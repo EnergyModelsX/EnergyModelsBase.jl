@@ -36,6 +36,7 @@ Pages = [
     "manual/constraint-functions.md",
     "manual/data-functions.md",
     "manual/simple-example.md",
+    "manual/investments.md",
     "manual/NEWS.md",
 ]
 Depth = 1

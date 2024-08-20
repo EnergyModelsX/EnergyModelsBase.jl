@@ -1,6 +1,6 @@
-# [Data functions](@id data_functions)
+# [Data functions](@id man-data_fun)
 
-The package provides the wildcard [`Data`](@ref) type as outlined in the *[Extensions to the model](@ref sec_phil_ext)* section of the philosophy page.
+The package provides the wildcard [`Data`](@ref) type as outlined in the *[Extensions to the model](@ref man-phil-ext)* section of the philosophy page.
 `Data` can be utilized to extend the functionality of the model through dispatching on its type.
 The following function is included in all reference `create_node` functions, except for `Storage` types
 
@@ -14,12 +14,12 @@ end
 There is always a fallback option if a `Data` is specified, but no functions are provided:
 
 ```julia
-constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::Data) = nothing
+constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::Data) = nothing
 ```
 
-Its application is best explained by the imlpemented functionality for emissions
+Its application is best explained by the implemented functionality for emissions.
 
-## Emissions data
+## [Emissions data](@id man-data_fun-emissions)
 
 Emissions data is an application of extensions *via* the application of the wildcard `data` field in the nodes.
 It allows to consider:
@@ -31,7 +31,7 @@ It allows to consider:
 5. CO₂ capture of process emissions ([`CaptureProcessEmissions`](@ref)), and
 6. CO₂ capture of both process and energy usage related emissions ([`CaptureProcessEnergyEmissions`](@ref)).
 
-The individual fields of the different types are described in the *[Public interface](@ref sec_lib_public_emdata)*.
+The individual fields of the different types are described in the *[Public interface](@ref lib-pub-em_data)*.
 
 The extension is then implemented through the functions
 
@@ -39,8 +39,8 @@ The extension is then implemented through the functions
 function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsEnergy)
 function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsProcess)
 function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
-function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureProcessEmissions)
-function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureProcessEnergyEmissions)
+function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureProcessEmissions)
+function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureProcessEnergyEmissions)
 ```
 
 in the file `data_functions.jl`.

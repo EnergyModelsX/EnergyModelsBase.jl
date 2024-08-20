@@ -10,8 +10,8 @@ The dictionary requires the keys:
  - `:products::Vector{Resource}`
  - `:T::TimeStructure`
 """
-function run_model(case::Dict, model::EnergyModel, optimizer; check_timeprofiles=true)
-   @debug "Run model" optimizer
+function run_model(case::Dict, model, optimizer; check_timeprofiles = true)
+    @debug "Run model" optimizer
 
     m = create_model(case, model; check_timeprofiles)
 
@@ -26,7 +26,6 @@ function run_model(case::Dict, model::EnergyModel, optimizer; check_timeprofiles
     end
     return m
 end
-
 
 """
     collect_types(types_list)
@@ -52,7 +51,7 @@ function collect_types(types_list)
         end
 
         # If the parent is already added to the list, we can skip it.
-        if  parent ∉ types_list
+        if parent ∉ types_list
             ancestors = collect_types([parent])
             # Increase the rank of the current node by adding the rank of the ancestor with
             # highes rank.
@@ -62,7 +61,6 @@ function collect_types(types_list)
     end
     return types
 end
-
 
 """
     sort_types(types_list::Dict)
@@ -92,9 +90,9 @@ function sort_types(types_list::Dict)
 
     # We sort the vector of numbers `num` from largest to smallest value, and get the
     # indexes of the sorted order.
-    sorted_idx = sortperm(num, rev=true)
+    sorted_idx = sortperm(num, rev = true)
     # Get the types from the dictionary as a vector.
-    types = [n for n in keys(types_list)]
+    types = [n for n ∈ keys(types_list)]
     # Use the indexes of the sorted order to sort the order of the types.
     sorted_types_list = types[sorted_idx]
     return sorted_types_list
@@ -142,11 +140,10 @@ subfunction [`previous_level_sp`](@ref) to avoid method ambiguities.
 function previous_level(
     m,
     n::Storage,
-    prev_pers::PreviousPeriods{<:NothingPeriod, Nothing, Nothing},
+    prev_pers::PreviousPeriods{<:NothingPeriod,Nothing,Nothing},
     cyclic_pers::CyclicPeriods,
     modeltype::EnergyModel,
 )
-
     return previous_level_sp(m, n, cyclic_pers, modeltype)
 end
 """
@@ -164,7 +161,7 @@ is an [`AccumulatingEmissions`](@ref) storage node, the function returns a value
 function previous_level(
     m,
     n::Storage{AccumulatingEmissions},
-    prev_pers::PreviousPeriods{<:NothingPeriod, Nothing, Nothing},
+    prev_pers::PreviousPeriods{<:NothingPeriod,Nothing,Nothing},
     cyclic_pers::CyclicPeriods,
     modeltype::EnergyModel,
 )
@@ -190,17 +187,17 @@ period while accounting for the number of  repetitions of the representative per
 function previous_level(
     m,
     n::Storage,
-    prev_pers::PreviousPeriods{<:NothingPeriod, <:TS.AbstractRepresentativePeriod, Nothing},
+    prev_pers::PreviousPeriods{<:NothingPeriod,<:TS.AbstractRepresentativePeriod,Nothing},
     cyclic_pers::CyclicPeriods,
     modeltype::EnergyModel,
 )
 
     # Return the previous storage level with the increase in the representative period
-    return @expression(
-        m,
+    return @expression(m,
         # Initial storage in previous rp
         m[:stor_level][n, first(rep_per(prev_pers))] -
-        m[:stor_level_Δ_op][n, first(rep_per(prev_pers))] * duration(first(rep_per(prev_pers))) +
+        m[:stor_level_Δ_op][n, first(rep_per(prev_pers))] *
+        duration(first(rep_per(prev_pers))) +
         # Increase in previous representative period
         m[:stor_level_Δ_rp][n, rep_per(prev_pers)]
     )
@@ -223,7 +220,7 @@ the end of the *current* representative period.
 function previous_level(
     m,
     n::Storage{CyclicRepresentative},
-    prev_pers::PreviousPeriods{<:NothingPeriod, <:TS.AbstractRepresentativePeriod, Nothing},
+    prev_pers::PreviousPeriods{<:NothingPeriod,<:TS.AbstractRepresentativePeriod,Nothing},
     cyclic_pers::CyclicPeriods,
     modeltype::EnergyModel,
 )
@@ -236,7 +233,7 @@ end
         m,
         n::Storage{<:Cyclic},
         cyclic_pers::CyclicPeriods,
-        modeltype::EnergyModel
+        modeltype
     )
 
 Returns the previous period in the case of the first operational period (in the first
@@ -249,7 +246,7 @@ function previous_level_sp(
     m,
     n::Storage{<:Cyclic},
     cyclic_pers::CyclicPeriods,
-    modeltype::EnergyModel
+    modeltype::EnergyModel,
 )
     # Return the previous storage level based on cyclic constraints
     last_op = last(current_per(cyclic_pers))
@@ -279,8 +276,7 @@ function previous_level_sp(
 
     # Return the previous storage level based on cyclic constraints when representative
     # periods are included
-    return @expression(
-        m,
+    return @expression(m,
         # Initial storage in previous representative period
         m[:stor_level][n, first(last_rp)] -
         m[:stor_level_Δ_op][n, first(last_rp)] * duration(first(last_rp)) +
@@ -318,7 +314,10 @@ end
 """
     multiple(t_inv, t)
 
-Provide a simplified function for returning the combination of the functions
-duration(t) * multiple_strat(t_inv, t) * probability(t)
+Provides a simplified function for returning the multiplication
+
+``duration(t) * multiple\\_strat(t\\_inv, t) * probability(t)``
+
+when operational periods are coupled with strategic periods (or representative periods).
 """
 multiple(t_inv, t) = duration(t) * multiple_strat(t_inv, t) * probability(t)

@@ -76,7 +76,7 @@ struct CaptureEnergyEmissions{T} <: CaptureData{T}
     co2_capture::Float64
 end
 CaptureEnergyEmissions(co2_capture::Float64) =
-    CaptureEnergyEmissions(Dict{ResourceEmit, Float64}(), co2_capture)
+    CaptureEnergyEmissions(Dict{ResourceEmit,Float64}(), co2_capture)
 
 """
     EmissionsProcess{T} <: EmissionsData{T}
@@ -90,8 +90,9 @@ but accepts it and will ignore it, if provided.
 struct EmissionsProcess{T} <: EmissionsData{T}
     emissions::Dict{<:ResourceEmit,T}
 end
-EmissionsProcess(emissions::Dict{<:ResourceEmit,T}, _) where {T} = EmissionsProcess(emissions)
-EmissionsProcess() = EmissionsProcess(Dict{ResourceEmit, Float64}())
+EmissionsProcess(emissions::Dict{<:ResourceEmit,T}, _) where {T} =
+    EmissionsProcess(emissions)
+EmissionsProcess() = EmissionsProcess(Dict{ResourceEmit,Float64}())
 
 """
     EmissionsEnergy{T} <: EmissionsData{T}
@@ -99,8 +100,7 @@ EmissionsProcess() = EmissionsProcess(Dict{ResourceEmit, Float64}())
 No capture, no process emissions are present. Does not require `co2_capture` or `emissions`
 as input, but accepts it and will ignore it, if provided.
 """
-struct EmissionsEnergy{T} <: EmissionsData{T}
-end
+struct EmissionsEnergy{T} <: EmissionsData{T} end
 EmissionsEnergy(_, _) = EmissionsEnergy{Float64}()
 EmissionsEnergy(_) = EmissionsEnergy{Float64}()
 EmissionsEnergy() = EmissionsEnergy{Float64}()
@@ -146,3 +146,122 @@ process_emissions(data::EmissionsData{T}, p::ResourceEmit, t) where {T<:TimeProf
 process_emissions(data::EmissionsEnergy{T}, p::ResourceEmit, t) where {T} =
     @error("The type `EmissionsEnergy` should not be used in combination with calling \
     the function `process_emissions`.")
+
+"""
+Abstract type for the extra data for investing in technologies.
+"""
+abstract type InvestmentData <: Data end
+
+"""
+    StorageInvData <: InvestmentData
+
+Extra investment data for storage investments. The extra investment data for storage
+investments can, but does not require investment data for the charge capacity of the storage
+(**`charge`**), increasing the storage capacity (**`level`**), or the discharge capacity of
+the storage (**`discharge`**).
+
+It utilizes a constructor with keyword arguments for the individual parameters.
+Hence, the names of the parameters have to be specified.
+
+# Fields
+- **`charge::Union{AbstractInvData, Nothing}`** is the investment data for the charge capacity.
+- **`level::Union{AbstractInvData, Nothing}`** is the investment data for the level capacity.
+- **`discharge::Union{AbstractInvData, Nothing}`** is the investment data for the
+  discharge capacity.
+"""
+abstract type StorageInvData <: InvestmentData end
+
+"""
+    SingleInvData <: InvestmentData
+
+Extra investment data for type investments. The extra investment data has only a single
+field in which `AbstractInvData` has to be added.
+
+The advantage of separating `AbstractInvData` from the `InvestmentData` node is to allow
+easier separation of `EnergyModelsInvestments` and `EnergyModelsBase` and provides the user
+with the potential of introducing new capacities for types.
+
+# Fields
+- **`cap::AbstractInvData`** is the investment data for the capacity.
+
+When multiple inputs are provided, a constructor directly creates the corresponding
+`AbstractInvData`.
+
+# Fields
+- **`capex::TimeProfile`** is the capital costs for investing in a capacity. The value is
+  relative to the added capacity.
+- **`max_inst::TimeProfile`** is the maximum installed capacity in a strategic period.
+- **`initial::Real`** is the initial capacity. This results in the creation of a
+  [`StartInvData`](@extref EnergyModelsInvestments.StartInvData) type for the investment data.
+- **`inv_mode::Investment`** is the chosen investment mode for the technology. The following
+  investment modes are currently available:
+  [`BinaryInvestment`](@extref EnergyModelsInvestments),
+  [`DiscreteInvestment`](@extref EnergyModelsInvestments),
+  [`ContinuousInvestment`](@extref EnergyModelsInvestments),
+  [`SemiContinuousInvestment`](@extref EnergyModelsInvestments), or
+  [`FixedInvestment`](@extref EnergyModelsInvestments).
+- **`life_mode::LifetimeMode`** is type of handling the lifetime. Several different
+  alternatives can be used:
+  [`UnlimitedLife`](@extref EnergyModelsInvestments),
+  [`StudyLife`](@extref EnergyModelsInvestments),
+  [`PeriodLife`](@extref EnergyModelsInvestments), or
+  [`RollingLife`](@extref EnergyModelsInvestments). If `life_mode` is not specified, the
+  model assumes an [`UnlimitedLife`](@extref EnergyModelsInvestments).
+"""
+abstract type SingleInvData <: InvestmentData end
+
+"""
+    InvData(;
+        capex_cap::TimeProfile,
+        cap_max_inst::TimeProfile,
+        cap_max_add::TimeProfile,
+        cap_min_add::TimeProfile,
+        inv_mode::Investment = ContinuousInvestment(),
+        cap_start::Union{Real, Nothing} = nothing,
+        cap_increment::TimeProfile = FixedProfile(0),
+        life_mode::LifetimeMode = UnlimitedLife(),
+        lifetime::TimeProfile = FixedProfile(0),
+    )
+
+Legacy constructor for a `InvData`.
+
+The new storage descriptions allows now for a reduction in functions which is used
+to make `EnergModelsInvestments` less dependent on `EnergyModelsBase`.
+
+The core changes to the existing structure is the move of the required parameters to the
+type `Investment` (_e.g._, the minimum and maximum added capacity is only required
+for investment modes that require these parameters) as well as moving the `lifetime` to the
+type `LifetimeMode`, when required.
+
+See the _[documentation](https://energymodelsx.github.io/EnergyModelsInvestments.jl/stable/how-to/update-models)_
+for further information regarding how you can translate your existing model to the new model.
+"""
+InvData(nothing) = nothing
+
+"""
+    InvDataStorage(;
+        #Investment data related to storage power
+        capex_rate::TimeProfile,
+        rate_max_inst::TimeProfile,
+        rate_max_add::TimeProfile,
+        rate_min_add::TimeProfile,
+        capex_stor::TimeProfile,
+        stor_max_inst::TimeProfile,
+        stor_max_add::TimeProfile,
+        stor_min_add::TimeProfile,
+        inv_mode::Investment = ContinuousInvestment(),
+        rate_start::Union{Real, Nothing} = nothing,
+        stor_start::Union{Real, Nothing} = nothing,
+        rate_increment::TimeProfile = FixedProfile(0),
+        stor_increment::TimeProfile = FixedProfile(0),
+        life_mode::LifetimeMode = UnlimitedLife(),
+        lifetime::TimeProfile = FixedProfile(0),
+    )
+
+Storage descriptions were changed in EnergyModelsBase v0.7 resulting in the requirement for
+rewriting the investment options for `Storage` nodes.
+
+See the _[documentation](https://energymodelsx.github.io/EnergyModelsInvestments.jl/stable/how-to/update-models)_
+for further information regarding how you can translate your existing model to the new model.
+"""
+InvDataStorage(nothing) = nothing

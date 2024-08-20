@@ -1,6 +1,14 @@
 # Release notes
 
-## Unversioned
+## Version 0.8.0 (2024-08-20)
+
+### Introduced `EnergyModelsInvestments` as extension
+
+* `EnergyModelsInvestments` was switched to be an independent package in [PR #28](https://github.com/EnergyModelsX/EnergyModelsInvestments.jl/pull/28).
+* This approach required `EnergyModelsBase` to include all functions and type declarations internally.
+* An extension was introduced to handle these problems.
+
+### Minor updates
 
 * Updated minor issues in the documentation (docstrings, indices, and quick start).
 * Use dev version of EMB for examples when running as part of tests, solving [Issue #17](https://github.com/EnergyModelsX/EnergyModelsBase.jl/issues/17).

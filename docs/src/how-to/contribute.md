@@ -1,20 +1,20 @@
-# Contribute to EnergyModelsBase
+# [Contribute to EnergyModelsBase](@id how_to-con)
 
 Contributing to `EnergyModelsBase` can be achieved in several different ways.
 
-## Create new extensions
+## [Create new extensions](@id how_to-con-ext)
 
 The main focus of `EnergyModelsBase` is to provide an easily extensible energy system optimization modelling framework.
 Hence, a first approach to contributing to `EnergyModelsBase` is to create a new package with, _e.g._, the introduction of new node descriptions.
 
-This is explained in [_How to create a new node_](@ref create_new_node).
+This is explained in [_How to create a new node_](@ref how_to-create_node).
 
 !!! tip
     If you are uncertain how you could incorporate new nodal descriptions, take a look at [`EnergyModelsRenewableProducers`](https://github.com/EnergyModelsX/EnergyModelsRenewableProducers.jl).
     The package is maintained by the developers of `EnergyModelsBase`.
     Hence, it provides you with ideas on how we think it is best to develop new node descriptions.
 
-## File a bug report
+## [File a bug report](@id how_to-con-bug_rep)
 
 Another approach to contributing to `EnergyModelsBase` is through filing a bug report as an _[issue](https://github.com/EnergyModelsX/EnergyModelsBase.jl/issues/new)_ when unexpected behaviour is occuring.
 
@@ -35,7 +35,7 @@ When filing a bug report, please follow the following guidelines:
 
     In order to improve the code, we welcome any reports of potential method ambiguities to help us improving the structure of the framework.
 
-## Feature requests
+## [Feature requests](@id how_to-feat_req)
 
 Although `EnergyModelsBase` was designed with the aim of flexibility, it sometimes still requires additional features to account for potential extensions.
 Feature requests can be achieved through two approaches:
@@ -50,9 +50,9 @@ Feature requests can be achieved through two approaches:
     Hence, feature requests should only include basic requirements for the core structure, and not, _e.g._, the description of new technologies.
     These should be developed outside of `EnergyModelsBase`.
 
-### [Create an Issue](@id create_issue)
+### [Create an Issue](@id how_to-feat_req-issue)
 
-Creating a new _[issue](https://github.com/EnergyModelsX/EnergyModelsBase.jl/issues/new)_ for a feature request is our standard approach for extending `EnergyModelsBase`.
+Creating a new _[issue](https://github.com/EnergyModelsX/EnergyModelsBase.jl/issues/new) for a feature request is our standard approach for extending `EnergyModelsBase`.
 Due to the extendibility of `EnergyModelsBase`, it is not necessarily straight forward to understand how to best incorporate required features into the framework without breaking other packages.
 
 When creating a new issue as feature request, please follow the the following guidelines.
@@ -61,7 +61,7 @@ When creating a new issue as feature request, please follow the the following gu
 2. **Required outcome**: What should be the outcome when including the feature and what should be the minimum requirements of the outcome?
 3. **Potential solutions**: Describe alternatives you consider. This step is not necessarily required, but can be helpful for identifying potential solutions.
 
-### Incorporating the feature requests through a fork
+### [Incorporating the feature requests through a fork](@id how_to-feat_req-fork)
 
 !!! note
     The approach used for providing code is based on the excellent description of the [JuMP](https://jump.dev/JuMP.jl/stable/developers/contributing/#Contribute-code-to-JuMP) package.
@@ -70,23 +70,23 @@ When creating a new issue as feature request, please follow the the following gu
 If you would like to work directly in `EnergyModelsBase`, you can also incorporate your changes directly.
 In this case, it is beneficial to follow the outlined steps:
 
-#### Step 1: Create an issue
+#### [Step 1: Create an issue](@id how_to-feat_req-fork-step_1)
 
-Even if you plan to incorporate the code directly, we advise you to first follow the steps outlined in _[Create an Issue](@ref create_issue)_.
+Even if you plan to incorporate the code directly, we advise you to first follow the steps outlined in *[Create an Issue](@ref how_to-feat_req-issue)*.
 This way, it is possible for us to comment on the solution approach(es) and assess potential problems with the other core packages of the `EnergyModelsX` framework.
 
 Through creating an issue first, it is possible for us to comment directly on the proposed changes and assess, whether we consider the proposed changes to follow the philosophy of the framework.
 
-#### Step 2: Create a fork of `EnergyModelsBase`
+#### [Step 2: Create a fork of `EnergyModelsBase`](@id how_to-feat_req-fork-step_2)
 
 Contributiing code to `EnergyModelsBase` should follow the standard approach by creating a fork of the repository.
 All work on the code should occur within the fork.
 
-#### Step 3: Checkout a new branch in your local fork
+#### [Step 3: Checkout a new branch in your local fork](@id how_to-feat_req-fork-step_3)
 
 It is in general preferable to work on a separate branch when developing new components.
 
-#### Step 4: Make changes to the code base
+#### [Step 4: Make changes to the code base](@id how_to-feat_req-fork-step_4)
 
 Incorporate your changes in your new branch.
 The changes should be commented to understand the thought process behind them.
@@ -110,7 +110,7 @@ It is however a requirement to update the [`NEWS.md`](https://github.com/EnergyM
     `@constraint` macros are not following the style guide, as we personally consider the design more difficult to read.
     Please follow in that respect the used style within the package.
 
-#### Step 5: Create a pull request
+#### [Step 5: Create a pull request](@id how_to-feat_req-fork-step_5)
 
 Once you are satisified with your changes, create a pull request towards the main branch of the `EnergyModelsBase` repository.
 We will internally assign the relevant person to the pull request.
