@@ -1,5 +1,9 @@
 # Release notes
 
+## Unversioned
+
+* Included an option to deactive the checks entirely with printing a warning.
+
 ## Version 0.8.0 (2024-08-20)
 
 ### Introduced `EnergyModelsInvestments` as extension

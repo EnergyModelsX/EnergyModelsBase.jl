@@ -15,6 +15,9 @@ Create the model and call all required functions.
   nodes should be checked or not. It is advised to not deactivate the check, except if you
   are testing new components. It may lead to unexpected behaviour and potential
   inconsistencies in the input data, if the time profiles are not checked.
+- `check_any_data::Bool=true` - A boolean indicator whether the input data is checked or not.
+  It is advised to not deactivate the check, except if you are testing new features.
+  It may lead to unexpected behaviour and even infeasible models.
 """
 function create_model(
     case,
@@ -27,7 +30,15 @@ function create_model(
 
     # Check if the case data is consistent before the model is created.
     if check_any_data
-        check_data(case, modeltype::EnergyModel, check_timeprofiles)
+        check_data(case, modeltype, check_timeprofiles)
+    else
+        @warn(
+            "Checking of the input data is deactivated:\n" *
+            "Deactivating the checks for the input data is strongly discouraged. " *
+            "It can lead to an infeasible model, if the input data is wrongly specified. " *
+            "In addition, even if feasible, weird results can occur.",
+            maxlog = 1
+        )
     end
 
     # WIP Data structure
@@ -54,9 +65,14 @@ function create_model(
 
     return m
 end
-function create_model(case, modeltype::EnergyModel; check_timeprofiles::Bool = true)
+function create_model(
+    case,
+    modeltype::EnergyModel;
+    check_timeprofiles::Bool = true,
+    check_any_data::Bool = true,
+)
     m = JuMP.Model()
-    create_model(case, modeltype, m; check_timeprofiles)
+    create_model(case, modeltype, m; check_timeprofiles, check_any_data)
 end
 
 """
