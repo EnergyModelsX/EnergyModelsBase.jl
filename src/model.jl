@@ -21,11 +21,14 @@ function create_model(
     modeltype::EnergyModel,
     m::JuMP.Model;
     check_timeprofiles::Bool = true,
+    check_any_data::Bool = true,
 )
     @debug "Construct model"
 
     # Check if the case data is consistent before the model is created.
-    check_data(case, modeltype::EnergyModel, check_timeprofiles)
+    if check_any_data
+        check_data(case, modeltype::EnergyModel, check_timeprofiles)
+    end
 
     # WIP Data structure
     𝒯 = case[:T]
@@ -274,7 +277,7 @@ function constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
     # Creation of the individual constraints.
     @constraint(m, con_em_tot[t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
         m[:emissions_total][t, p] ==
-            sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ᵉᵐ)
+        sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ᵉᵐ)
     )
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ],
         m[:emissions_strategic][t_inv, p] ==
