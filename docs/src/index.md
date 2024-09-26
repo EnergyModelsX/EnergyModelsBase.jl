@@ -47,6 +47,7 @@ Depth = 1
 ```@contents
 Pages = [
     "nodes/source.md",
+    "nodes/networknode.md",
 ]
 Depth = 1
 ```
