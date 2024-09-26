@@ -479,7 +479,7 @@ charge(n::Storage) = has_charge(n) ? n.charge : nothing
 
 Returns logic whether the node has a `charge` capacity.
 """
-has_charge_cap(n::Storage) = hasfield(typeof(n), :charge) && isa(charge(n), UnionCapacity)
+has_charge_cap(n::Storage) = has_charge(n) && isa(charge(n), UnionCapacity)
 
 """
     has_charge_OPEX_fixed(n::Storage)
@@ -487,7 +487,7 @@ has_charge_cap(n::Storage) = hasfield(typeof(n), :charge) && isa(charge(n), Unio
 Returns logic whether the node has a `charge` fixed OPEX contribution.
 """
 has_charge_OPEX_fixed(n::Storage) =
-    hasfield(typeof(n), :charge) && isa(charge(n), UnionOpexFixed)
+    has_charge(n) && isa(charge(n), UnionOpexFixed)
 
 """
     has_charge_OPEX_var(n::Storage)
@@ -495,7 +495,7 @@ has_charge_OPEX_fixed(n::Storage) =
 Returns logic whether the node has a `charge` variable OPEX contribution.
 """
 has_charge_OPEX_var(n::Storage) =
-    hasfield(typeof(n), :charge) && isa(charge(n), UnionOpexVar)
+    has_charge(n) && isa(charge(n), UnionOpexVar)
 
 """
     has_discharge(n::Storage)
@@ -519,7 +519,7 @@ discharge(n::Storage) = has_discharge(n) ? n.discharge : nothing
 Returns logic whether the node has a `discharge` capacity.
 """
 has_discharge_cap(n::Storage) =
-    hasfield(typeof(n), :discharge) && isa(discharge(n), UnionCapacity)
+    has_discharge(n) && isa(discharge(n), UnionCapacity)
 
 """
     has_discharge_OPEX_fixed(n::Storage)
@@ -527,7 +527,7 @@ has_discharge_cap(n::Storage) =
 Returns logic whether the node has a `discharge` fixed OPEX contribution.
 """
 has_discharge_OPEX_fixed(n::Storage) =
-    hasfield(typeof(n), :discharge) && isa(discharge(n), UnionOpexFixed)
+    has_discharge(n) && isa(discharge(n), UnionOpexFixed)
 
 """
     has_discharge_OPEX_var(n::Storage)
@@ -535,7 +535,7 @@ has_discharge_OPEX_fixed(n::Storage) =
 Returns logic whether the node has a `discharge` variable OPEX contribution.
 """
 has_discharge_OPEX_var(n::Storage) =
-    hasfield(typeof(n), :discharge) && isa(discharge(n), UnionOpexVar)
+    has_discharge(n) && isa(discharge(n), UnionOpexVar)
 
 """
     level(n::Storage)

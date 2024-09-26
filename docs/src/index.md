@@ -42,6 +42,15 @@ Pages = [
 Depth = 1
 ```
 
+## Description of the nodes
+
+```@contents
+Pages = [
+    "nodes/source.md",
+]
+Depth = 1
+```
+
 ## How to guides
 
 ```@contents

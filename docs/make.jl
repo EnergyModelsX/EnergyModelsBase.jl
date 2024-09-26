@@ -48,6 +48,9 @@ makedocs(
             "Investment options"=>"manual/investments.md",
             "Release notes"=>"manual/NEWS.md",
         ],
+        "Nodes" => Any[
+            "Source" => "nodes/source.md",
+        ],
         "How to" => Any[
             "Create a new node"=>"how-to/create-new-node.md",
             "Utilize TimeStruct"=>"how-to/utilize-timestruct.md",
