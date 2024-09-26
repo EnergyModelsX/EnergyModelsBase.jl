@@ -410,6 +410,11 @@ function create_node(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
     # Mass/energy balance constraints for stored energy carrier.
     constraints_level(m, n, 𝒯, 𝒫, modeltype)
 
+    # Iterate through all data and set up the constraints corresponding to the data
+    for data ∈ node_data(n)
+        constraints_data(m, n, 𝒯, 𝒫, modeltype, data)
+    end
+
     # Call of the function for the inlet flow to and outlet flow from the `Storage` node
     constraints_flow_in(m, n, 𝒯, modeltype)
     constraints_flow_out(m, n, 𝒯, modeltype)

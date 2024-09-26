@@ -51,6 +51,7 @@ makedocs(
         "Nodes" => Any[
             "Source" => "nodes/source.md",
             "NetworkNode" => "nodes/networknode.md",
+            "Storage" => "nodes/storage.md",
         ],
         "How to" => Any[
             "Create a new node"=>"how-to/create-new-node.md",

@@ -125,10 +125,16 @@ function constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::Ener
     @constraint(m, [t ∈ 𝒯], m[:stor_charge_use][n, t] == m[:flow_in][n, t, p_stor])
 end
 """
-    constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
+    constraints_flow_in(
+        m,
+        n::Storage{AccumulatingEmissions},
+        𝒯::TimeStructure,
+        modeltype::EnergyModel,
+    )
 
-Create the constraint on the inlet flow to a generic `Storage`.
-This function serves as fallback option if no other function is specified for a `Storage`.
+Create the constraint on the inlet flow to a generic `Storage{AccumulatingEmissions}`.
+This function serves as fallback option if no other function is specified for a `Storage`
+given storage with [`AccumulatingEmissions`](@ref) behavior.
 """
 function constraints_flow_in(
     m,
@@ -230,7 +236,8 @@ function constraints_level_aux(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel
 
     # Constraint for the change in the level in a given operational period
     @constraint(m, [t ∈ 𝒯],
-        m[:stor_level_Δ_op][n, t] == m[:flow_in][n, t, p_stor] - m[:flow_out][n, t, p_stor]
+        m[:stor_level_Δ_op][n, t] ==
+            m[:stor_charge_use][n, t] - m[:stor_discharge_use][n, t]
     )
 end
 
@@ -250,22 +257,26 @@ function constraints_level_aux(
     # Declaration of the required subsets
     p_stor = storage_resource(n)
     𝒫ᵉᵐ = setdiff(res_sub(𝒫, ResourceEmit), [p_stor])
+    𝒫ᵒᵘᵗ = outputs(n)
 
     # Constraint for the change in the level in a given operational period
-    @constraint(m, [t ∈ 𝒯],
-        m[:stor_level_Δ_op][n, t] ==
-        m[:flow_in][n, t, p_stor] - m[:emissions_node][n, t, p_stor]
-    )
+    @constraint(m, [t ∈ 𝒯], m[:stor_level_Δ_op][n, t] == m[:stor_charge_use][n, t])
 
     # Set the lower bound for the emissions in the storage node (:emissions_node) and to
     # avoid that emissions larger than the flow into the storage.
     # Fix all other emissions to a value of 0
+    # Fix the variables :stor_discharge_use and :flow_out to 0
     for t ∈ 𝒯
         set_lower_bound(m[:emissions_node][n, t, p_stor], 0)
         set_lower_bound(m[:stor_level_Δ_op][n, t], 0)
         for p_em ∈ 𝒫ᵉᵐ
             fix(m[:emissions_node][n, t, p_em], 0, ; force = true)
         end
+        fix(m[:stor_discharge_use][n, t], 0)
+        for p ∈ 𝒫ᵒᵘᵗ
+            fix(m[:flow_out][n, t, p], 0)
+        end
+
     end
 end
 

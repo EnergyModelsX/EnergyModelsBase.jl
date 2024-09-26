@@ -48,6 +48,7 @@ Depth = 1
 Pages = [
     "nodes/source.md",
     "nodes/networknode.md",
+    "nodes/storage.md",
 ]
 Depth = 1
 ```
