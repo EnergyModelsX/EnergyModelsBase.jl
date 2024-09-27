@@ -95,12 +95,12 @@ These variables are:
   in the operational case to the provided capacity in the [storage parameters](@ref lib-pub-nodes-stor_par)
   used in the field `:level`.
 * `:stor_charge_use` - storage charging use in each operational period.
-* `:stor_charge_inst` - installed charging capacity, e.g. power, in each operational period,
+* `:stor_charge_inst` - installed charging capacity, *e.g.*, power, in each operational period,
   constrained in the operational case to the provided capacity in the
   [storage parameters](@ref lib-pub-nodes-stor_par) used in the field `:charge`.
   This variable is only defined if the `Storage` node has a field `charge.`
 * `:stor_discharge_use` - storage discharging use in each operational period.
-* `:stor_discharge_inst` - installed discharging capacity, e.g. power, in each operational period,
+* `:stor_discharge_inst` - installed discharging capacity, *e.g.*, power, in each operational period,
   constrained in the operational case to the provided capacity in the
   [storage parameters](@ref lib-pub-nodes-stor_par) used in the field `:discharge`.
   This variable is only defined if the `Storage` node has a field `discharge.`

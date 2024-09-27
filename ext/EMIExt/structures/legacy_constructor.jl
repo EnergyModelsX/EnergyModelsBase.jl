@@ -21,14 +21,14 @@ function EMB.InvData(;
         @error(
             "BinaryInvestment() cannot use the constructor as it is not possible to " *
             "deduce the capacity for the investment. You have to instead use the new " *
-            "types as outlined in the documentation (https://energymodelsx.github.io/EnergyModelsInvestments.jl/stable/how-to/update-models)"
+            "types as outlined in the documentation (https://energymodelsx.github.io/EnergyModelsInvestments.jl/how-to/update-models)"
         )
         return
     elseif isa(inv_mode, FixedInvestment)
         @error(
             "FixedInvestment() cannot use the constructor as it is not possible to " *
             "deduce the capacity for the investment. You have to instead use the new " *
-            "types as outlined in the documentation (https://energymodelsx.github.io/EnergyModelsInvestments.jl/stable/how-to/update-models)"
+            "types as outlined in the documentation (https://energymodelsx.github.io/EnergyModelsInvestments.jl/how-to/update-models)"
         )
         return
     elseif isa(inv_mode, DiscreteInvestment)
@@ -103,14 +103,14 @@ function EMB.InvDataStorage(;
         @error(
             "BinaryInvestment() cannot use the constructor as it is not possible to " *
             "deduce the capacity for the investment. You have to instead use the new " *
-            "types as outlined in the documentation (https://energymodelsx.github.io/EnergyModelsInvestments.jl/stable/how-to/update-models)"
+            "types as outlined in the documentation (https://energymodelsx.github.io/EnergyModelsInvestments.jl/how-to/update-models)"
         )
         return
     elseif isa(inv_mode, FixedInvestment)
         @error(
             "FixedInvestment() cannot use the constructor as it is not possible to " *
             "deduce the capacity for the investment. You have to instead use the new " *
-            "types as outlined in the documentation (https://energymodelsx.github.io/EnergyModelsInvestments.jl/stable/how-to/update-models)"
+            "types as outlined in the documentation (https://energymodelsx.github.io/EnergyModelsInvestments.jl/how-to/update-models)"
         )
         return
     elseif isa(inv_mode, DiscreteInvestment)

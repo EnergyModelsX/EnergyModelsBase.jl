@@ -11,9 +11,9 @@ Abstract type for `EmissionsData` can be used to dispatch on different types of
 capture configurations.
 
 In general, the different types require the following input:
-- **`emissions::Dict{ResourceEmit, T}`**: Emissions per unit produced. It allows for
-  an input as `TimeProfile` or `Float64`.
-- **`co2_capture::Float64`**: CO₂ capture rate.
+- **`emissions::Dict{ResourceEmit, T}`** are the process emissions per unit produced. It
+  allows for an input as `TimeProfile` or `Float64`.
+- **`co2_capture::Float64`** is the CO₂ capture rate.
 
 # Types
 - **`CaptureProcessEnergyEmissions`**: Capture both the process emissions and the
@@ -229,11 +229,11 @@ The new storage descriptions allows now for a reduction in functions which is us
 to make `EnergModelsInvestments` less dependent on `EnergyModelsBase`.
 
 The core changes to the existing structure is the move of the required parameters to the
-type `Investment` (_e.g._, the minimum and maximum added capacity is only required
+type `Investment` (*e.g.*, the minimum and maximum added capacity is only required
 for investment modes that require these parameters) as well as moving the `lifetime` to the
 type `LifetimeMode`, when required.
 
-See the _[documentation](https://energymodelsx.github.io/EnergyModelsInvestments.jl/stable/how-to/update-models)_
+See the _[documentation](https://energymodelsx.github.io/EnergyModelsInvestments.jl/how-to/update-models)_
 for further information regarding how you can translate your existing model to the new model.
 """
 InvData(nothing) = nothing
@@ -261,7 +261,7 @@ InvData(nothing) = nothing
 Storage descriptions were changed in EnergyModelsBase v0.7 resulting in the requirement for
 rewriting the investment options for `Storage` nodes.
 
-See the _[documentation](https://energymodelsx.github.io/EnergyModelsInvestments.jl/stable/how-to/update-models)_
+See the _[documentation](https://energymodelsx.github.io/EnergyModelsInvestments.jl/how-to/update-models)_
 for further information regarding how you can translate your existing model to the new model.
 """
 InvDataStorage(nothing) = nothing

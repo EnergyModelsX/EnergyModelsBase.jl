@@ -66,7 +66,7 @@ It is normally constrained by the variable ``\texttt{cap\_inst}`` of the individ
 
 The capacity variables for `Storage` nodes differentiate between storage capacity (stored energy in the `Storage` node) and rate of storage (storage rate of a `Storage` node).
 The latter is furthermore differentiated between charging and discharging a `Storage` node.
-A key reasoning for this approach is that it is in general possible to invest both in the storage rate (_e.g._, the AC-DC transformer required in battery storage) as well as the storage capacity (_e.g._ the number of cells in battery storage).
+A key reasoning for this approach is that it is in general possible to invest both in the storage rate (*e.g.*, the AC-DC transformer required in battery storage) as well as the storage capacity (*e.g.* the number of cells in battery storage).
 The same holds as well for pumped hydro storage and storage of gases where there is a further differentiation between the maximum charging and discharging rates.
 The differentiation leads to the following variables for `Storage` nodes:
 

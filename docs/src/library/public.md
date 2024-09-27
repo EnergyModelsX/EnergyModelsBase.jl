@@ -369,7 +369,7 @@ InvDataStorage
 
 ### [`PreviousPeriods` and `CyclicPeriods`](@id lib-pub-misc_type-prev_cyclic)
 
-`PreviousPeriods` is a type used to store information from the previous periods in an iteration loop through the application of the iterator [`withprev`](https://sintefore.github.io/TimeStruct.jl/stable/reference/api/#TimeStruct.withprev) of `TimeStruct`.
+`PreviousPeriods` is a type used to store information from the previous periods in an iteration loop through the application of the iterator [`withprev`](@extref TimeStruct.withprev) of `TimeStruct`.
 
 `CyclicPeriods` is used for storing the current and the last period.
 The periods can either be either and `AbstractStrategicPeriod` or `AbstractRepresentativePeriod`.

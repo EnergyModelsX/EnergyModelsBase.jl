@@ -270,11 +270,11 @@ function constraints_level_aux(
         set_lower_bound(m[:emissions_node][n, t, p_stor], 0)
         set_lower_bound(m[:stor_level_Δ_op][n, t], 0)
         for p_em ∈ 𝒫ᵉᵐ
-            fix(m[:emissions_node][n, t, p_em], 0, ; force = true)
+            fix(m[:emissions_node][n, t, p_em], 0; force = true)
         end
-        fix(m[:stor_discharge_use][n, t], 0)
+        fix(m[:stor_discharge_use][n, t], 0; force = true)
         for p ∈ 𝒫ᵒᵘᵗ
-            fix(m[:flow_out][n, t, p], 0)
+            fix(m[:flow_out][n, t, p], 0; force = true)
         end
 
     end
@@ -295,7 +295,7 @@ Iterate through the individual time structures of a `Storage` node. This iterati
 should in general allow for all necessary functionality for incorporating modifications.
 
 In the case of `RepresentativePeriods`, this is achieved through calling the function
-[`constraints_level_rp`](@ref) to introduce, _e.g._, cyclic constraints as it is in the
+[`constraints_level_rp`](@ref) to introduce, *e.g.*, cyclic constraints as it is in the
 default case.
  """
 function constraints_level_iterate(

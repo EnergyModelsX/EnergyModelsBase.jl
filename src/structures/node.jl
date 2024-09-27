@@ -60,7 +60,7 @@ when using `RepresentativePeriods`.
 struct CyclicStrategic <: Cyclic end
 
 """
-`AbstractStorageParameters` as supertype for individual parameters for `Storage` nodes.
+`AbstractStorageParameters` as supertype for individual parameters for [`Storage`](@ref) nodes.
 
 Storage parameters are used to provide the user the flexibility to include or not include
 capacities and variable and fixed OPEX parameters for charging, the storage level, and
@@ -89,7 +89,7 @@ end
     StorCap <: AbstractStorageParameters
 
 A storage parameter type for including only a capacity. This implies that neither the usage
-of the `Storage`, nor the installed capacity have a direct impact on the objective function.
+of the [`Storage`](@ref), nor the installed capacity have a direct impact on the objective function.
 
 # Fields
 - **`capacity::TimeProfile`** is the installed capacity.
@@ -132,7 +132,7 @@ end
     StorCap <: AbstractStorageParameters
 
 A storage parameter type for including variable operational expenditures.
-This implies that the charge or discharge rate do not have a capacity and the `Storage`
+This implies that the charge or discharge rate do not have a capacity and the [`Storage`](@ref)
 level can be used within a single `TimePeriod`.
 
 This type can only be used for the fields `charge` and `discharge`.
@@ -179,8 +179,8 @@ abstract type Availability <: NetworkNode end
 """
     RefSource <: Source
 
-A reference `Source` node.
-The reference `Source` node allows for a time varying capacity which is normalized to a
+A reference [`Source`](@ref) node.
+The reference [`Source`](@ref) node allows for a time varying capacity which is normalized to a
 conversion value of 1 in the field `input`.
 Note, that if you include investments, you can only use as `TimeProfile` a `FixedProfile`
 or `StrategicProfile`.
@@ -190,9 +190,9 @@ or `StrategicProfile`.
 - **`cap::TimeProfile`** is the installed capacity.
 - **`opex_var::TimeProfile`** is the variable operating expense per energy unit produced.
 - **`opex_fixed::TimeProfile`** is the fixed operating expense.
-- **`output::Dict{<:Resource, <:Real}`** are the generated [`Resource`](@ref)s with
+- **`output::Dict{<:Resource,<:Real}`** are the generated [`Resource`](@ref)s with
   conversion value `Real`.
-- **`data::Vector{<:Data}`** is the additional data (e.g. for investments). The field `data`
+- **`data::Vector{<:Data}`** is the additional data (*e.g.*, for investments). The field `data`
   is conditional through usage of a constructor.
 """
 struct RefSource <: Source
@@ -216,7 +216,7 @@ end
 """
     RefNetworkNode <: NetworkNode
 
-A reference `NetworkNode` node.
+A reference [`NetworkNode`](@ref) node.
 The `RefNetworkNode` utilizes a linear, time independent conversion rate of the `input`
 [`Resource`](@ref)s to the output [`Resource`](@ref)s, subject to the available capacity.
 The capacity is hereby normalized to a conversion value of 1 in the fields `input` and
@@ -227,11 +227,11 @@ The capacity is hereby normalized to a conversion value of 1 in the fields `inpu
 - **`cap::TimeProfile`** is the installed capacity.
 - **`opex_var::TimeProfile`** is the variable operating expense per energy unit produced.
 - **`opex_fixed::TimeProfile`** is the fixed operating expense.
-- **`input::Dict{<:Resource, <:Real}`** are the input [`Resource`](@ref)s with conversion
+- **`input::Dict{<:Resource,<:Real}`** are the input [`Resource`](@ref)s with conversion
   value `Real`.
-- **`output::Dict{<:Resource, <:Real}`** are the generated [`Resource`](@ref)s with
+- **`output::Dict{<:Resource,<:Real}`** are the generated [`Resource`](@ref)s with
   conversion value `Real`.
-- **`data::Vector{Data}`** is the additional data (e.g. for investments). The field `data`
+- **`data::Vector{Data}`** is the additional data (*e.g.*, for investments). The field `data`
   is conditional through usage of a constructor.
 """
 struct RefNetworkNode <: NetworkNode
@@ -279,7 +279,7 @@ GenAvailability(id, 𝒫::Vector{<:Resource}) = GenAvailability(id, 𝒫, 𝒫)
 """
     RefStorage{T} <: Storage{T}
 
-A reference `Storage` node.
+A reference [`Storage`](@ref) node.
 
 This node is designed to store either a [`ResourceCarrier`](@ref) or a [`ResourceEmit`](@ref).
 It is designed as a parametric type through the type parameter `T` to differentiate between
@@ -292,18 +292,18 @@ The current implemented cyclic behaviours are [`CyclicRepresentative`](@ref),
 
 # Fields
 - **`id`** is the name/identifier of the node.
-- **`charge::AbstractStorageParameters`** are the charging parameters of the `Storage` node.
+- **`charge::AbstractStorageParameters`** are the charging parameters of the [`Storage`](@ref) node.
   Depending on the chosen type, the charge parameters can include variable OPEX, fixed OPEX,
   and/or a capacity.
-- **`level::AbstractStorageParameters`** are the level parameters of the `Storage` node.
+- **`level::AbstractStorageParameters`** are the level parameters of the [`Storage`](@ref) node.
   Depending on the chosen type, the charge parameters can include variable OPEX and/or fixed OPEX.
 - **`stor_res::Resource`** is the stored [`Resource`](@ref).
-- **`input::Dict{<:Resource, <:Real}`** are the input [`Resource`](@ref)s with conversion
+- **`input::Dict{<:Resource,<:Real}`** are the input [`Resource`](@ref)s with conversion
   value `Real`.
-- **`output::Dict{<:Resource, <:Real}`** are the generated [`Resource`](@ref)s with conversion
+- **`output::Dict{<:Resource,<:Real}`** are the generated [`Resource`](@ref)s with conversion
   value `Real`. Only relevant for linking and the stored [`Resource`](@ref) as the output
   value is not utilized in the calculations.
-- **`data::Vector{<:Data}`** is the additional data (e.g. for investments). The field `data`
+- **`data::Vector{<:Data}`** is the additional data (*e.g.*, for investments). The field `data`
   is conditional through usage of a constructor.
 """
 struct RefStorage{T} <: Storage{T}
@@ -330,17 +330,18 @@ end
 """
     RefSink <: Sink
 
-A reference `Sink` node. This node corresponds to a demand given by the field `cap`.
+A reference [`Sink`](@ref) node. This node corresponds to a demand given by the field `cap`.
 The penalties introduced in the field `penalty` affect the variable OPEX for both a surplus
 and deficit.
 
 # Fields
 - **`id`** is the name/identifier of the node.
-- **`cap::TimeProfile`** is the Demand.
+- **`cap::TimeProfile`** is the demand.
 - **`penalty::Dict{Any, TimeProfile}`** are penalties for surplus or deficits. Requires the
   fields `:surplus` and `:deficit`.
-- **`input::Dict{<:Resource, <:Real}`** are the input [`Resource`](@ref)s with conversion value `Real`.
-- **`data::Vector{<:Data}`** is the additional data (e.g. for investments). The field `data`
+- **`input::Dict{<:Resource,<:Real}`** are the input [`Resource`](@ref)s with conversion
+  value `Real`.
+- **`data::Vector{<:Data}`** is the additional data (*e.g.*, for investments). The field `data`
   is conditional through usage of a constructor.
 """
 struct RefSink <: Sink
@@ -362,7 +363,7 @@ end
 """
     is_source(n::Node)
 
-Checks, whether node `n` is a `Source` node
+Checks whether node `n` is a [`Source`](@ref) node,
 """
 is_source(n::Node) = false
 is_source(n::Source) = true
@@ -370,7 +371,7 @@ is_source(n::Source) = true
 """
     is_network_node(n::Node)
 
-Checks, whether node `n` is a `NetworkNode` node
+Checks whether node `n` is a [`NetworkNode`](@ref) node,
 """
 is_network_node(n::Node) = false
 is_network_node(n::NetworkNode) = true
@@ -378,7 +379,7 @@ is_network_node(n::NetworkNode) = true
 """
     is_storage(n::Node)
 
-Checks, whether node `n` is a `Storage` node
+Checks whether node `n` is a [`Storage`](@ref) node,
 """
 is_storage(n::Node) = false
 is_storage(n::Storage) = true
@@ -386,7 +387,7 @@ is_storage(n::Storage) = true
 """
     is_sink(n::Node)
 
-Checks, whether node `n` is a `Sink` node
+Checks whether node `n` is a [`Sink`](@ref) node,
 """
 is_sink(n::Node) = false
 is_sink(n::Sink) = true
@@ -394,7 +395,7 @@ is_sink(n::Sink) = true
 """
     has_emissions(n::Node)
 
-Checks whether the Node `n` has emissions.
+Checks whether node `n` has emissions.
 """
 has_emissions(n::Node) = any(typeof(data) <: EmissionsData for data ∈ n.data)
 has_emissions(n::Availability) = false
@@ -431,14 +432,15 @@ nodes_not_av(𝒩::Array{<:Node}) = filter(x -> ~isa(x, Availability), 𝒩)
 """
     nodes_input(𝒩::Array{<:Node}, sub)
 
-Returns nodes that have an input, i.e., `Sink` and `NetworkNode` nodes.
+Returns nodes that have an input, *i.e.*, [`Sink`](@ref) and [`NetworkNode`](@ref) nodes.
 """
 nodes_input(𝒩::Array{<:Node}) = filter(has_input, 𝒩)
 
 """
     has_input(n::Node)
 
-Returns logic whether the node is an input node, i.e., `Sink` and `NetworkNode` nodes.
+Returns logic whether the node is an input node, *i.e.*, [`Sink`](@ref) and
+[`NetworkNode`](@ref) nodes.
 """
 has_input(n::Node) = true
 has_input(n::Source) = false
@@ -446,14 +448,15 @@ has_input(n::Source) = false
 """
     nodes_output(𝒩::Array{<:Node})
 
-Returns nodes that have an output, i.e., `Source` and `NetworkNode` nodes.
+Returns nodes that have an output, *i.e.*, [`Source`](@ref) and [`NetworkNode`](@ref) nodes.
 """
 nodes_output(𝒩::Array{<:Node}) = filter(has_output, 𝒩)
 
 """
     has_output(n::Node)
 
-Returns logic whether the node is an output node, i.e., `Source` and `NetworkNode` nodes.
+Returns logic whether the node is an output node, *i.e.*, [`Source`](@ref) and
+[`NetworkNode`](@ref) nodes.
 """
 has_output(n::Node) = true
 has_output(n::Sink) = false
@@ -500,8 +503,8 @@ has_charge_OPEX_var(n::Storage) =
 """
     has_discharge(n::Storage)
 
-Returns logic whether the node has a `discharge` field allowing for restrictions and/or costs
-on the (installed) discharging rate.
+Returns logic whether the node has a `discharge` field allowing for restrictions and/or
+costs on the (installed) discharging rate.
 """
 has_discharge(n::Storage) = hasfield(typeof(n), :discharge)
 
@@ -560,72 +563,56 @@ has_level_OPEX_var(n::Storage) = isa(level(n), UnionOpexVar)
 
 """
     capacity(n::Node)
-
-Returns the capacity of a node `n` as `TimeProfile`. The capacity is not directly defined
-for `Storage` nodes. Instead, it is necessary to call the function on the respective
-field, see [`capacity(stor_par::AbstractStorageParameters)`](@ref).
-"""
-capacity(n::Node) = n.cap
-"""
-    capacity(stor_par::AbstractStorageParameters)
-
-Returns the capacity of storage parameter `stor_par` as `TimeProfile`.
-The individual storage parameters of a `Storage` node can be accessed through the functions
-[`charge(n)`](@ref), [`level(n)`](@ref), and [`discharge(n)`](@ref).
-"""
-capacity(stor_par::AbstractStorageParameters) = stor_par.capacity
-
-"""
     capacity(n::Node, t)
 
-Returns the capacity of a node `n` at operational period `t`. The capacity is not directly
-defined for `Storage` nodes. Instead, it is necessary to call the function on the respective
-field, see [`capacity(stor_par::AbstractStorageParameters, t)`](@ref).
+Returns the capacity of a node `n` as `TimeProfile` in operational period `t`.
+
+The capacity is not directly defined for [`Storage`](@ref) nodes. Instead, it is necessary
+to call the function on the respective field, see
+[`capacity(stor_par::AbstractStorageParameters)`](@ref).
 """
+capacity(n::Node) = n.cap
 capacity(n::Node, t) = n.cap[t]
+
 """
+    capacity(stor_par::AbstractStorageParameters)
     capacity(stor_par::AbstractStorageParameters, t)
 
-Returns the capacity of storage parameter `stor_par` at operational period `t`.
-The individual storage parameters of a `Storage` node can be accessed through the functions
-[`charge(n)`](@ref), [`level(n)`](@ref), and [`discharge(n)`](@ref).
+Returns the capacity of storage parameter `stor_par` as `TimeProfile` or in operational
+period `t`.
+
+The individual storage parameters of a [`Storage`](@ref) node can be accessed through the
+functions [`charge(n)`](@ref), [`level(n)`](@ref), and [`discharge(n)`](@ref).
 """
+capacity(stor_par::AbstractStorageParameters) = stor_par.capacity
 capacity(stor_par::AbstractStorageParameters, t) = stor_par.capacity[t]
 
 """
     inputs(n::Node)
+    inputs(n::Node, p::Resource)
 
-Returns the input resources of a node `n`. These resources are specified via the field
-`input`.
+Returns the input resources of a node `n`, specified *via* the field `input`. If the resource
+`p` is specified, it returns the value (1 in the case of [`Availability`](@ref), nothing in
+the case of a [`Source`](@ref))
 """
 inputs(n::Node) = collect(keys(n.input))
 inputs(n::Availability) = n.input
 inputs(n::Source) = []
-
-"""
-    inputs(n::Node, p::Resource)
-
-Returns the value of an input resource `p` of a node `n`.
-"""
 inputs(n::Node, p::Resource) = n.input[p]
 inputs(n::Availability, p::Resource) = 1
 inputs(n::Source, p::Resource) = nothing
 
 """
     outputs(n::Node)
+    outputs(n::Node, p::Resource)
 
-Returns the output resources of a node `n`. These resources are specified via the field
-`output`.
+Returns the output resources of a node `n`, specified *via* the field `output`. If the resource
+`p` is specified, it returns the value (1 in the case of [`Availability`](@ref), nothing in
+the case of a [`Sink`](@ref))
 """
 outputs(n::Node) = collect(keys(n.output))
 outputs(n::Availability) = n.output
 outputs(n::Sink) = []
-
-"""
-    outputs(n::Node, p::Resource)
-
-Returns the value of an output resource `p` of a node `n`.
-"""
 outputs(n::Node, p::Resource) = n.output[p]
 outputs(n::Availability, p::Resource) = 1
 outputs(n::Sink, p::Resource) = nothing
@@ -641,94 +628,74 @@ node_data(n::Availability) = []
 """
     storage_resource(n::Storage)
 
-Returns the storage resource of `Storage` node `n`.
+Returns the storage resource of [`Storage`](@ref) node `n`.
 """
 storage_resource(n::Storage) = n.stor_res
 
 """
     opex_var(n::Node)
-
-Returns the variable OPEX of a node `n` as `TimeProfile`. The variable OPEX is not directly
-defined for `Storage` nodes. Instead, it is necessary to call the function on the respective
-field, see [`opex_var(stor_par::AbstractStorageParameters)`](@ref).
-"""
-opex_var(n::Node) = n.opex_var
-"""
-    opex_var(stor_par::UnionOpexVar)
-
-Returns the variable OPEX of storage parameter `stor_par` as `TimeProfile`.
-The individual storage parameters of a `Storage` node can be accessed through the functions
-[`charge(n)`](@ref), [`level(n)`](@ref), and [`discharge(n)`](@ref).
-"""
-opex_var(stor_par::UnionOpexVar) = stor_par.opex_var
-"""
     opex_var(n::Node, t)
 
-Returns the variable OPEX of a node `n` in operational period `t`. The variable OPEX is not
-directly defined for `Storage` nodes. Instead, it is necessary to call the function on the
-respective field, see [`opex_var(stor_par::AbstractStorageParameters, t)`](@ref).
+Returns the variable OPEX of a node `n` as `TimeProfile` or in operational period `t`.
+
+The variable OPEX is not directly defined for [`Storage`](@ref) nodes. Instead, it is
+necessary to call the function on the respective field, see
+[`opex_var(stor_par::AbstractStorageParameters)`](@ref).
 """
+opex_var(n::Node) = n.opex_var
 opex_var(n::Node, t) = n.opex_var[t]
 """
+    opex_var(stor_par::UnionOpexVar)
     opex_var(stor_par::UnionOpexVar, t)
 
-Returns the variable OPEX of storage parameter `stor_par` at operational period `t`.
-The individual storage parameters of a `Storage` node can be accessed through the functions
-[`charge(n)`](@ref), [`level(n)`](@ref), and [`discharge(n)`](@ref).
+Returns the variable OPEX of storage parameter `stor_par` as `TimeProfile` or in operational
+period `t`.
+
+The individual storage parameters of a [`Storage`](@ref) node can be accessed through the
+functions [`charge(n)`](@ref), [`level(n)`](@ref), and [`discharge(n)`](@ref).
 """
+opex_var(stor_par::UnionOpexVar) = stor_par.opex_var
 opex_var(stor_par::UnionOpexVar, t) = stor_par.opex_var[t]
 
 """
     opex_fixed(n::Node)
-
-Returns the fixed OPEX of a node `n` as `TimeProfile`. The fixed OPEX is not directly
-defined for `Storage` nodes. Instead, it is necessary to call the function on the respective
-field, see [`opex_fixed(stor_par::AbstractStorageParameters)`](@ref).
-"""
-opex_fixed(n::Node) = n.opex_fixed
-"""
-    opex_fixed(stor_par::UnionOpexFixed)
-
-Returns the fixed OPEX of storage parameter `stor_par` as `TimeProfile`.
-The individual storage parameters of a `Storage` node can be accessed through the functions
-[`charge(n)`](@ref), [`level(n)`](@ref), and [`discharge(n)`](@ref).
-"""
-opex_fixed(stor_par::UnionOpexFixed) = stor_par.opex_fixed
-"""
     opex_fixed(n::Node, t_inv)
 
-Returns the fixed OPEX of a node `n` at strategic period `t_inv`. The fixed OPEX is not
-directly defined for `Storage` nodes. Instead, it is necessary to call the function on the
-respective field, see [`opex_fixed(stor_par::AbstractStorageParameters, t)`](@ref).
+Returns the fixed OPEX of a node node `n` as `TimeProfile` or in strategic period `t_inv`.
+
+The fixed OPEX is not directly defined for [`Storage`](@ref) nodes. Instead, it is necessary
+to call the function on the respective field, see
+[`opex_fixed(stor_par::AbstractStorageParameters)`](@ref).
 """
+opex_fixed(n::Node) = n.opex_fixed
 opex_fixed(n::Node, t_inv) = n.opex_fixed[t_inv]
 """
-    opex_fixed(stor_par::UnionOpexFixed, t)
+    opex_fixed(stor_par::UnionOpexFixed)
+    opex_fixed(stor_par::UnionOpexFixed, t_inv)
 
-Returns the fixed OPEX of storage parameter `stor_par` at operational period `t`.
-The individual storage parameters of a `Storage` node can be accessed through the functions
-[`charge(n)`](@ref), [`level(n)`](@ref), and [`discharge(n)`](@ref).
+Returns the fixed OPEX of storage parameter `stor_par` as `TimeProfile` or in strategic
+period `t_inv`.
+
+The individual storage parameters of a [`Storage`](@ref) node can be accessed through the
+functions [`charge(n)`](@ref), [`level(n)`](@ref), and [`discharge(n)`](@ref).
 """
+opex_fixed(stor_par::UnionOpexFixed) = stor_par.opex_fixed
 opex_fixed(stor_par::UnionOpexFixed, t_inv) = stor_par.opex_fixed[t_inv]
 
 """
     surplus_penalty(n::Sink)
-Returns the surplus penalty of sink `n` as `TimeProfile`.
+    surplus_penalty(n::Sink, t)
+
+Returns the surplus penalty of sink `n` as `TimeProfile` or in operational period `t`.
 """
 surplus_penalty(n::Sink) = n.penalty[:surplus]
-"""
-    surplus_penalty(n::Sink, t)
-Returns the surplus penalty of sink `n` at operational period `t`
-"""
 surplus_penalty(n::Sink, t) = n.penalty[:surplus][t]
 
 """
     deficit_penalty(n::Sink)
-Returns the deficit penalty of sink `n` as `TimeProfile`.
+    deficit_penalty(n::Sink, t)
+
+Returns the deficit penalty of sink `n` as `TimeProfile` or in operational period `t`.
 """
 deficit_penalty(n::Sink) = n.penalty[:deficit]
-"""
-    deficit_penalty(n::Sink, t)
-Returns the deficit penalty of sink `n` at operational period `t`
-"""
 deficit_penalty(n::Sink, t) = n.penalty[:deficit][t]

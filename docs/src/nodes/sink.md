@@ -14,13 +14,13 @@ The fields of a [`RefSink`](@ref) node are given as:
   The field **`id`** is only used for providing a name to the node.
 - **`cap::TimeProfile`**:\
   The installed capacity corresponds to the nominal demand of the node.\
-  If the node should contain investments through the application of [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/stable/), it is important to note that you can only use `FixedProfile` or `StrategicProfile` for the capacity, but not `RepresentativeProfile` or `OperationalProfile`.
+  If the node should contain investments through the application of [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/), it is important to note that you can only use `FixedProfile` or `StrategicProfile` for the capacity, but not `RepresentativeProfile` or `OperationalProfile`.
   In addition, all values have to be non-negative.
 - **`penalty::Dict{Symbol,<:TimeProfile}`**:\
   The penalty dictionary is used for providing penalties for soft constraints to allow for both over and under delivering the demand.\
   It must include the fields `:surplus` and `:deficit`.
   In addition, it is crucial that the sum of both values is larger than 0 to avoid an unconstrained model.
-- **`input::Dict{<:Resource, <:Real}`**:\
+- **`input::Dict{<:Resource,<:Real}`**:\
   The field `input` includes [`Resource`](@ref Resource)s with their corresponding conversion factors as dictionaries..\
   All values have to be non-negative.
 - **`data::Vector{Data}`**:\

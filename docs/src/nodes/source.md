@@ -13,7 +13,7 @@ The fields of a [`RefSource`](@ref) node are given as:
   The field **`id`** is only used for providing a name to the node.
 - **`cap::TimeProfile`**:\
   The installed capacity corresponds to the nominal capacity of the node.\
-  If the node should contain investments through the application of [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/stable/), it is important to note that you can only use `FixedProfile` or `StrategicProfile` for the capacity, but not `RepresentativeProfile` or `OperationalProfile`.
+  If the node should contain investments through the application of [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/), it is important to note that you can only use `FixedProfile` or `StrategicProfile` for the capacity, but not `RepresentativeProfile` or `OperationalProfile`.
   In addition, all values have to be non-negative.
 - **`opex_var::TimeProfile`**:\
   The variable operational expenses are based on the capacity utilization through the variable [`:cap_use`](@ref man-opt_var-cap).
@@ -23,7 +23,7 @@ The fields of a [`RefSource`](@ref) node are given as:
   The fixed operating expenses are relative to the installed capacity (through the field `cap`) and the chosen duration of a strategic period as outlined on *[Utilize `TimeStruct`](@ref how_to-utilize_TS)*.\
   It is important to note that you can only use `FixedProfile` or `StrategicProfile` for the fixed OPEX, but not `RepresentativeProfile` or `OperationalProfile`.
   In addition, all values have to be non-negative.
-- **`output::Dict{<:Resource, <:Real}`**:\
+- **`output::Dict{<:Resource,<:Real}`**:\
   The field `output` includes [`Resource`](@ref Resource)s with their corresponding conversion factors as dictionaries.
   CO₂ cannot be directly specified, *i.e.*, you cannot specify a ratio.
   If you would like to use a `Source` node with CO₂ as output with a given ratio, it is necessary to utilize the package [`EnergyModelsCO2`](https://energymodelsx.github.io/EnergyModelsCO2.jl/).

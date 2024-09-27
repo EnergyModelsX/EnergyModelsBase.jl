@@ -68,13 +68,13 @@ The fields of a [`RefStorage`](@ref) are given as:
   The level storage parameters must include a capacity for charging.
   More information can be found on *[storage parameters](@ref lib-pub-nodes-stor_par)*.
   !!! note "Permitted values for storage parameters in `charge` and `level`"
-      If the node should contain investments through the application of [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/stable/), it is important to note that you can only use `FixedProfile` or `StrategicProfile` for the capacity, but not `RepresentativeProfile` or `OperationalProfile`.
+      If the node should contain investments through the application of [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/), it is important to note that you can only use `FixedProfile` or `StrategicProfile` for the capacity, but not `RepresentativeProfile` or `OperationalProfile`.
       Similarly, you can only use `FixedProfile` or `StrategicProfile` for the fixed OPEX, but not `RepresentativeProfile` or `OperationalProfile`.
       The variable operating expenses can be provided as `OperationalProfile` as well.
       In addition, all capacity and fixed OPEX values have to be non-negative.
 - **`stor_res::ResourceEmit`**:\
   The `stor_res` is the stored [`Resource`](@ref Resource).
-- **`input::Dict{<:Resource, <:Real}`** and **`output::Dict{<:Resource, <:Real}`**:\
+- **`input::Dict{<:Resource,<:Real}`** and **`output::Dict{<:Resource,<:Real}`**:\
   Both fields describe the `input` and `output` [`Resource`](@ref Resource)s with their corresponding conversion factors as dictionaries.
   It is not necessary to specify the stored [`Resource`](@ref Resource) (outlined above), but it is in general advisable.\
   All values have to be non-negative.

@@ -7,7 +7,7 @@ Base.show(io::IO, r::Resource) = print(io, "$(r.id)")
 """
     ResourceEmit{T<:Real} <: Resource
 
-Resources that can can be emitted (e.g., CO₂, CH₄, NOₓ).
+Resources that can can be emitted (*e.g.*, CO₂, CH₄, NOₓ).
 
 These resources can be included as resources that are emitted, *e.g*, in the variable
 [`emissions_strategic`](@ref man-opt_var-emissions).

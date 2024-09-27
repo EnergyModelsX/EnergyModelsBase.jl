@@ -21,50 +21,31 @@ end
 
 """
     emission_limit(modeltype::EnergyModel)
+    emission_limit(modeltype, p::ResourceEmit)
+    emission_limit(modeltype, p::ResourceEmit, t_inv::TS.AbstractStrategicPeriod)
 
 Returns the emission limit of EnergyModel `model` as dictionary with `TimeProfile`s for
-each [`ResourceEmit`](@ref).
+each [`ResourceEmit`](@ref), as `TimeProfile` for [`ResourceEmit`](@ref) `p` or, in
+strategic period `t_inv` for [`ResourceEmit`](@ref) `p`.
 """
 emission_limit(modeltype::EnergyModel) = modeltype.emission_limit
-"""
-    emission_limit(modeltype, p::ResourceEmit)
-
-Returns the emission limit of EnergyModel `model` and [`ResourceEmit`](@ref) `p` as
-`TimeProfile`.
-"""
 emission_limit(modeltype, p::ResourceEmit) = modeltype.emission_limit[p]
-"""
-    emission_limit(modeltype, p::ResourceEmit, t_inv::TS.StrategicPeriod)
-
-Returns the emission limit of EnergyModel `model` and [`ResourceEmit`](@ref) `p`
-in strategic period period `t_inv`.
-"""
-emission_limit(modeltype, p::ResourceEmit, t_inv::TS.StrategicPeriod) =
+emission_limit(modeltype, p::ResourceEmit, t_inv::TS.AbstractStrategicPeriod) =
     modeltype.emission_limit[p][t_inv]
 
 """
     emission_price(modeltype::EnergyModel)
+    emission_price(modeltype, p::ResourceEmit)
+    emission_price(modeltype, p::ResourceEmit, t_inv::TS.AbstractStrategicPeriod)
 
 Returns the emission price of EnergyModel `model` as dictionary with `TimeProfile`s for
-each [`ResourceEmit`](@ref).
+each [`ResourceEmit`](@ref), as `TimeProfile` for [`ResourceEmit`](@ref) `p` or, in
+strategic period `t_inv` for [`ResourceEmit`](@ref) `p`.
 """
 emission_price(modeltype::EnergyModel) = modeltype.emission_price
-"""
-    emission_price(modeltype, p::ResourceEmit)
-
-Returns the emission price of EnergyModel `modeltype` and ResourceEmit `p` as `TimeProfile`.
-If no emission price is specified for the ResourceEmit `p`, the function returns 0
-"""
 emission_price(modeltype, p::ResourceEmit) =
     haskey(modeltype.emission_price, p) ? modeltype.emission_price[p] : 0
-"""
-    emission_price(modeltype, p::ResourceEmit, t_inv::TS.StrategicPeriod)
-
-Returns the emission price of EnergyModel `modeltype` and ResourceEmit `p` in strategic
-period `t_inv`.
-If no emission price is specified for the ResourceEmit `p`, the function returns 0
-"""
-emission_price(modeltype, p::ResourceEmit, t_inv::TS.StrategicPeriod) =
+emission_price(modeltype, p::ResourceEmit, t_inv::TS.AbstractStrategicPeriod) =
     haskey(modeltype.emission_price, p) ? modeltype.emission_price[p][t_inv] : 0
 
 """

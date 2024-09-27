@@ -317,7 +317,7 @@ value = OperationalProfile([1, 2])
 ```
 
 If you use a more detailed TimeProfile than the TimeStructure, it will you provide you with
-a warning, e.g., using `RepresentativeProfile` without `RepresentativePeriods`.
+a warning, *e.g.*, using `RepresentativeProfile` without `RepresentativePeriods`.
 
 It currently does not include support for identifying `OperationalProfile`s.
 """

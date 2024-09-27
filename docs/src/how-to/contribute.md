@@ -5,7 +5,7 @@ Contributing to `EnergyModelsBase` can be achieved in several different ways.
 ## [Create new extensions](@id how_to-con-ext)
 
 The main focus of `EnergyModelsBase` is to provide an easily extensible energy system optimization modelling framework.
-Hence, a first approach to contributing to `EnergyModelsBase` is to create a new package with, _e.g._, the introduction of new node descriptions.
+Hence, a first approach to contributing to `EnergyModelsBase` is to create a new package with, *e.g.*, the introduction of new node descriptions.
 
 This is explained in [_How to create a new node_](@ref how_to-create_node).
 
@@ -47,7 +47,7 @@ Feature requests can be achieved through two approaches:
     `EnergyModelsBase` should not include everything.
 
     The aim of the framework is to be lightweight and extendable by the user.
-    Hence, feature requests should only include basic requirements for the core structure, and not, _e.g._, the description of new technologies.
+    Hence, feature requests should only include basic requirements for the core structure, and not, *e.g.*, the description of new technologies.
     These should be developed outside of `EnergyModelsBase`.
 
 ### [Create an Issue](@id how_to-feat_req-issue)
