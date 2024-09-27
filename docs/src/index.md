@@ -68,10 +68,27 @@ Depth = 1
 
 ## Library outline
 
+### Public library
+
 ```@contents
 Pages = [
-    "library/public.md",
+    "library/public/resources.md",
+    "library/public/model_data.md",
+    "library/public/nodes.md",
+    "library/public/links.md",
+    "library/public/functions.md",
+    "library/public/misc.md",
+    "library/public/emi_extension.md",
+]
+Depth = 1
+```
+
+### Internal library
+
+```@contents
+Pages = [
     "library/internals/reference.md",
+    "library/internals/reference_EMIExt.md",
 ]
 Depth = 1
 ```

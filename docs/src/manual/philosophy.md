@@ -77,7 +77,7 @@ The `Array{Data}` field provides us with flexibility with respect to providing a
 It is implemented in `EnergyModelsBase` for including emissions (both process and energy usage related).
 In that case, it allows for flexibility through either saying whether process (or energy related emissions) are present, or not.
 In addition, it allows for capturing the CO₂ from either the individual CO₂ sources (process and energy usage related), alternatively from both sources, or not at all.
-The individual data types are explained in the Section *[Emissions data](@ref lib-pub-em_data)* in the public library as well as on *[Data functions](@ref man-data_fun)*.
+The individual data types are explained in the Section *[Additional data](@ref lib-pub-mod_data-data)* in the public library as well as on *[Data functions](@ref man-data_fun)*.
 In addition, it is already used in the package [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/) through the introduction of the `abstract type` `InvestmentData` as subtype of `Data`.
 The introduction of `InvestmentData` allows providing additional parameters to individual technologies.
 However, the implementation in `EnergyModelsInvestments` does not utilize the extension through the *[Data functions](@ref man-data_fun)*.

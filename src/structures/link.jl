@@ -48,6 +48,6 @@ link_res(l::Link) = intersect(inputs(l.to), outputs(l.from))
 """
     formulation(l::Link)
 
-Return the formulation of a Link ´l´.
+Return the formulation of a Link `l`.
 """
 formulation(l::Link) = l.formulation

@@ -61,8 +61,16 @@ makedocs(
             "Contribute to EnergyModelsBase"=>"how-to/contribute.md",
         ],
         "Library" => Any[
-            "Public"=>"library/public.md",
-            "Internals"=>Any[
+            "Public" => Any[
+                "Resources"=>"library/public/resources.md",
+                "Modeltype and Data"=>"library/public/model_data.md",
+                "Nodes"=>"library/public/nodes.md",
+                "Links"=>"library/public/links.md",
+                "Functions"=>"library/public/functions.md",
+                "Miscellaneous"=>"library/public/misc.md",
+                "EMI extension"=>"library/public/emi_extension.md",
+            ],
+            "Internal" => Any[
                 "Reference"=>"library/internals/reference.md",
                 "Reference EMIExt"=>"library/internals/reference_EMIExt.md",
             ],

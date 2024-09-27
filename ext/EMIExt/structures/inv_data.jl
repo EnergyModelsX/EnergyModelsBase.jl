@@ -4,7 +4,7 @@
 Internal type for [`StorageInvData`](@ref EMB.StorageInvData). The introduction of an
 internal type is necessary as extensions do not allow to export functions or types.
 """
-struct StorageInvData <: InvestmentData
+struct StorageInvData <: EMB.StorageInvData
     charge::Union{AbstractInvData,Nothing}
     level::Union{AbstractInvData,Nothing}
     discharge::Union{AbstractInvData,Nothing}

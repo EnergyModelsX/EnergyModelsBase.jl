@@ -1,16 +1,22 @@
 """
-    create_model(case, modeltype::EnergyModel, m::JuMP.Model; check_timeprofiles::Bool=true)
+    create_model(
+        case,
+        modeltype::EnergyModel,
+        m::JuMP.Model;
+        check_timeprofiles::Bool = true,
+        check_any_data::Bool = true,
+    )
 
 Create the model and call all required functions.
 
-## Input
+## Arguments
 - `case` - The case dictionary requiring the keys `:T`, `:nodes`, `:links`, and `products`.
   If the input is not provided in the correct form, the checks will identify the problem.
 - `modeltype` - Used modeltype, that is a subtype of the type `EnergyModel`.
 - `m` - the empty `JuMP.Model` instance. If it is not provided, then it is assumed that the
   input is a standard `JuMP.Model`.
 
-## Conditional input
+## Keyword arguments
 - `check_timeprofiles=true` - A boolean indicator whether the time profiles of the individual
   nodes should be checked or not. It is advised to not deactivate the check, except if you
   are testing new components. It may lead to unexpected behaviour and potential
@@ -231,7 +237,7 @@ function variables_nodes(m, 𝒩, 𝒯, modeltype::EnergyModel)
     end
 end
 
-""""
+"""
     variables_node(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
 
 Default fallback method when no function is defined for a node type.
@@ -346,6 +352,13 @@ end
 
 Set all constraints for a `Source`.
 Can serve as fallback option for all unspecified subtypes of `Source`.
+
+# Called constraint functions
+- [`constraints_data`](@ref) for all `node_data(n)`,
+- [`constraints_flow_out`](@ref),
+- [`constraints_capacity`](@ref),
+- [`constraints_opex_fixed`](@ref), and
+- [`constraints_opex_var`](@ref).
 """
 function create_node(m, n::Source, 𝒯, 𝒫, modeltype::EnergyModel)
 
@@ -373,6 +386,14 @@ end
 
 Set all constraints for a `NetworkNode`.
 Can serve as fallback option for all unspecified subtypes of `NetworkNode`.
+
+# Called constraint functions
+- [`constraints_data`](@ref) for all `node_data(n)`,
+- [`constraints_flow_in`](@ref),
+- [`constraints_flow_out`](@ref),
+- [`constraints_capacity`](@ref),
+- [`constraints_opex_fixed`](@ref), and
+- [`constraints_opex_var`](@ref).
 """
 function create_node(m, n::NetworkNode, 𝒯, 𝒫, modeltype::EnergyModel)
 
@@ -401,6 +422,15 @@ end
 
 Set all constraints for a `Storage`. Can serve as fallback option for all unspecified
 subtypes of `Storage`.
+
+# Called constraint functions
+- [`constraints_level`](@ref)
+- [`constraints_data`](@ref) for all `node_data(n)`,
+- [`constraints_flow_in`](@ref),
+- [`constraints_flow_out`](@ref),
+- [`constraints_capacity`](@ref),
+- [`constraints_opex_fixed`](@ref), and
+- [`constraints_opex_var`](@ref).
 """
 function create_node(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
 
@@ -432,6 +462,13 @@ end
 
 Set all constraints for a `Sink`.
 Can serve as fallback option for all unspecified subtypes of `Sink`.
+
+# Called constraint functions
+- [`constraints_data`](@ref) for all `node_data(n)`,
+- [`constraints_flow_in`](@ref),
+- [`constraints_capacity`](@ref),
+- [`constraints_opex_fixed`](@ref), and
+- [`constraints_opex_var`](@ref).
 """
 function create_node(m, n::Sink, 𝒯, 𝒫, modeltype::EnergyModel)
 
