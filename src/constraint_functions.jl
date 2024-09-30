@@ -306,7 +306,7 @@ function constraints_level_iterate(
     # Constraint for the total change in the level in a given representative period
     @constraint(m, [t_rp ∈ 𝒯ʳᵖ],
         m[:stor_level_Δ_rp][n, t_rp] ==
-            sum(m[:stor_level_Δ_op][n, t] * multiple(per, t) for t ∈ t_rp)
+        sum(m[:stor_level_Δ_op][n, t] * multiple(per, t) for t ∈ t_rp)
     )
 
     # Iterate through the operational structure
