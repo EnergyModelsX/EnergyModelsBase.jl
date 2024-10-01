@@ -294,7 +294,7 @@ function constraints_level_iterate(
     # Constraint for the total change in the level in a given representative period
     @constraint(m, [t_rp ∈ 𝒯ʳᵖ],
         m[:stor_level_Δ_rp][n, t_rp] ==
-        sum(m[:stor_level_Δ_op][n, t] * multiple(per, t) for t ∈ t_rp)
+        sum(m[:stor_level_Δ_op][n, t] * scale_op_sp(per, t) for t ∈ t_rp)
     )
 
     # Iterate through the operational structure
@@ -627,7 +627,7 @@ In the case of a `Sink` node, the variable OPEX is calculate through the penalti
 function constraints_opex_var(m, n::Node, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         m[:opex_var][n, t_inv] ==
-        sum(m[:cap_use][n, t] * opex_var(n, t) * multiple(t_inv, t) for t ∈ t_inv)
+        sum(m[:cap_use][n, t] * opex_var(n, t) * scale_op_sp(t_inv, t) for t ∈ t_inv)
     )
 end
 function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
@@ -636,7 +636,7 @@ function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyMod
     if has_level_OPEX_var(n)
         opex_var_level = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
             sum(
-                m[:stor_level][n, t] * opex_var(level(n), t) * multiple(t_inv, t) for
+                m[:stor_level][n, t] * opex_var(level(n), t) * scale_op_sp(t_inv, t) for
                 t ∈ t_inv
             )
         )
@@ -646,7 +646,7 @@ function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyMod
     if has_charge_OPEX_var(n)
         opex_var_charge = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
             sum(
-                m[:stor_charge_use][n, t] * opex_var(charge(n), t) * multiple(t_inv, t)
+                m[:stor_charge_use][n, t] * opex_var(charge(n), t) * scale_op_sp(t_inv, t)
                 for t ∈ t_inv
             )
         )
@@ -658,7 +658,7 @@ function constraints_opex_var(m, n::Storage, 𝒯ᴵⁿᵛ, modeltype::EnergyMod
             sum(
                 m[:stor_discharge_use][n, t] *
                 opex_var(discharge(n), t) *
-                multiple(t_inv, t) for t ∈ t_inv
+                scale_op_sp(t_inv, t) for t ∈ t_inv
             )
         )
     else
@@ -678,7 +678,7 @@ function constraints_opex_var(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)
             (
                 m[:sink_surplus][n, t] * surplus_penalty(n, t) +
                 m[:sink_deficit][n, t] * deficit_penalty(n, t)
-            ) * multiple(t_inv, t) for t ∈ t_inv
+            ) * scale_op_sp(t_inv, t) for t ∈ t_inv
         )
     )
 end

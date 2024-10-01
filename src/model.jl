@@ -303,7 +303,7 @@ function constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
     )
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ],
         m[:emissions_strategic][t_inv, p] ==
-        sum(m[:emissions_total][t, p] * multiple(t_inv, t) for t ∈ t_inv)
+        sum(m[:emissions_total][t, p] * scale_op_sp(t_inv, t) for t ∈ t_inv)
     )
 end
 

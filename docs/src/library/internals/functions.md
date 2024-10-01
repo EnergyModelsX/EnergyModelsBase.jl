@@ -10,14 +10,14 @@ Pages = ["functions.md"]
 CurrentModule = EnergyModelsBase
 ```
 
-## Extension methods
+## Extension functions
 
 ```@docs
 create_link
 objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 ```
 
-## Constraint methods
+## Constraint functions
 
 ```@docs
 constraints_emissions
@@ -29,7 +29,7 @@ constraints_level_scp
 constraints_level_bounds
 ```
 
-## Variable creation methods
+## Variable creation functions
 
 ```@docs
 variables_capacity
@@ -40,7 +40,7 @@ variables_opex
 variables_nodes
 ```
 
-## Check methods
+## Check functions
 
 ```@docs
 check_data
@@ -57,7 +57,7 @@ check_scenario_profile
 compile_logs
 ```
 
-## Identification methods
+## Identification functions
 
 ```@docs
 is_network_node
@@ -83,10 +83,9 @@ res_not
 res_sub
 ```
 
-## Miscellaneous methods
+## Miscellaneous functions
 
 ```@docs
-multiple
 collect_types
 sort_types
 ```

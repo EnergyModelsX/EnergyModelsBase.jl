@@ -222,14 +222,14 @@ Hence, if you do not have to call additional functions, but only plan to include
   ```math
   \begin{aligned}
   \texttt{opex\_var}&[n, t_{inv}] = \\ \sum_{t \in t_{inv}}&
-    opex\_var(level(n), t) \times \texttt{stor\_level}[n, t] \times EMB.multiple(t_{inv}, t) + \\ &
-    opex\_var(charge(n), t) \times \texttt{stor\_charge\_use}[n, t] \times EMB.multiple(t_{inv}, t) + \\ &
-    opex\_var(discharge(n), t) \times \texttt{stor\_discharge\_use}[n, t] \times EMB.multiple(t_{inv}, t)
+    opex\_var(level(n), t) \times \texttt{stor\_level}[n, t] \times scale\_op\_sp(t_{inv}, t) + \\ &
+    opex\_var(charge(n), t) \times \texttt{stor\_charge\_use}[n, t] \times scale\_op\_sp(t_{inv}, t) + \\ &
+    opex\_var(discharge(n), t) \times \texttt{stor\_discharge\_use}[n, t] \times scale\_op\_sp(t_{inv}, t)
   \end{aligned}
   ```
 
-  !!! tip "The function `EMB.multiple`"
-      The function [``EMB.multiple(t_{inv}, t)``](@ref EnergyModelsBase.multiple) calculates the scaling factor between operational and strategic periods.
+  !!! tip "The function `scale_op_sp`"
+      The function [``scale\_op\_sp(t_{inv}, t)``](@ref scale_op_sp) calculates the scaling factor between operational and strategic periods.
       It also takes into account potential operational scenarios and their probability as well as representative periods.
 
 - `constraints_data`:\
@@ -277,7 +277,7 @@ If the time structure includes representative periods, we calculate the change o
 
 ```math
 \texttt{stor\_level\_Δ\_rp}[n, t_{rp}] = \sum_{t \in t_{rp}}
-\texttt{stor\_level\_Δ\_op}[n, t] \times EMB.multiple(t_{rp}, t)
+\texttt{stor\_level\_Δ\_op}[n, t] \times scale_op_sp(t_{rp}, t)
 ```
 
 In the case of [`CyclicStrategic`](@ref), we add an additional constraint to the change in the function `constraints_level_rp`:

@@ -39,6 +39,9 @@ export Resource, ResourceCarrier, ResourceEmit
 export Source, NetworkNode, Sink, Storage, Availability
 export GenAvailability, RefSource, RefNetworkNode, RefSink, RefStorage
 
+# Export some of the utility functions
+export scale_op_sp
+
 # Export the storage behaviour types
 export Accumulating, AccumulatingEmissions
 export Cyclic, CyclicRepresentative, CyclicStrategic
