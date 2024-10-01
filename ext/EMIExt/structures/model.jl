@@ -1,8 +1,8 @@
 """
     InvestmentModel <: EMB.InvestmentModel
 
-Internal type for [`InvestmentModel`](@ref EMB.InvestmentModel). The introduction of an internal type is necessary
-as extensions do not allow to export functions or types.
+Internal type for [`InvestmentModel`](@ref EMB.InvestmentModel). The introduction of an
+internal type is necessary as extensions do not allow to export functions or types.
 """
 struct InvestmentModel <: EMB.InvestmentModel
     emission_limit::Dict{<:ResourceEmit,<:TimeProfile}

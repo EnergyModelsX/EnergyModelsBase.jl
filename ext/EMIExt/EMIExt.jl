@@ -60,11 +60,16 @@ Return the investment data of the investment data `SingleInvData`.
 EMI.investment_data(inv_data::SingleInvData) = inv_data.cap
 
 """
-    EMI.investment_data(element, field::Symbol)
+    EMI.investment_data(n::EMB.Node)
+    EMI.investment_data(n::EMB.Node, field::Symbol)
 
-Return the investment data of the type `element` of the capacity `field`.
+Return the `InvestmentData` of the Node `n` or if `field` is specified, it retrns the
+`InvData` for the corresponding capacity.
 """
+EMI.investment_data(n::EMB.Node) =
+    filter(data -> typeof(data) <: InvestmentData, node_data(n))[1]
 EMI.investment_data(n::EMB.Node, field::Symbol) = getproperty(investment_data(n), field)
+
 
 EMI.start_cap(n::EMB.Node, t_inv, inv_data::NoStartInvData, cap) =
     capacity(n, t_inv)

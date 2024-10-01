@@ -9,8 +9,8 @@ Operational Energy Model without investments.
 # Fields
 - **`emission_limit::Dict{<:ResourceEmit, <:TimeProfile}`** is a dictionary with
   individual emission limits as `TimeProfile` for each emission resource [`ResourceEmit`](@ref).
-- **`emission_price::Dict{<:ResourceEmit, <:TimeProfile}`** are the prices for the
-  different considered emission resources [`ResourceEmit`](@ref).
+- **`emission_price::Dict{<:ResourceEmit, <:TimeProfile}`** are the emission costs for each
+  emission resources [`ResourceEmit`](@ref).
 - **`co2_instance`** is a [`ResourceEmit`](@ref) and corresponds to the type used for CO₂.
 """
 struct OperationalModel <: EnergyModel
@@ -83,10 +83,10 @@ investments and additional discounting of future years.
     `EnergyModelsInvestments` is loaded
 
 # Fields
-- **`emission_limit::Dict{<:ResourceEmit, <:TimeProfile}`** are the emission caps for the
-  different emissions types considered.
-- **`emission_price::Dict{<:ResourceEmit, <:TimeProfile}`** are the prices for the
-  different emissions types considered.
+- **`emission_limit::Dict{<:ResourceEmit, <:TimeProfile}`** is a dictionary with
+  individual emission limits as `TimeProfile` for each emission resource [`ResourceEmit`](@ref).
+- **`emission_price::Dict{<:ResourceEmit, <:TimeProfile}`** are the emission costs for each
+  emission resources [`ResourceEmit`](@ref).
 - **`co2_instance`** is a [`ResourceEmit`](@ref) and corresponds to the type used for CO₂.
 - **`r::Float64`** is the discount rate in the investment optimization.
 """

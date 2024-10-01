@@ -390,10 +390,10 @@ check_profile(fieldname, value, ts, sp) = nothing
     check_strategic_profile(time_profile::TimeProfile, message::String)
 
 Function for checking that an individual `TimeProfile` does not include the wrong type for
-strategic indexing
+strategic indexing.
 
 ## Checks
-- `TimeProfile`s access in `StrategicPeriod`s cannot include `OperationalProfile`,
+- `TimeProfile`s accessed in `StrategicPeriod`s cannot include `OperationalProfile`,
   `ScenarioProfile`, or `RepresentativeProfile` as this is not allowed through indexing
   on the `TimeProfile`.
 """
@@ -439,14 +439,14 @@ end
     check_representative_profile(time_profile::TimeProfile, message::String)
 
 Function for checking that an individual `TimeProfile` does not include the wrong type for
-representative periods indexing
+representative periods indexing.
 
 ## Input
 - `time_profile` - The time profile that should be checked.
 - `message` - A message that should be printed after the type of profile.
 
 ## Checks
-- `TimeProfile`s access in `RepresentativePeriod`s cannot include `OperationalProfile`
+- `TimeProfile`s accessed in `RepresentativePeriod`s cannot include `OperationalProfile`
   or `ScenarioProfile` as this is not allowed through indexing on the `TimeProfile`.
 """
 function check_representative_profile(time_profile::TimeProfile, message::String)
@@ -480,10 +480,10 @@ end
     check_scenario_profile(time_profile::TimeProfile, message::String)
 
 Function for checking that an individual `TimeProfile` does not include the wrong type for
-scenario indexing
+scenario indexing.
 
 ## Checks
-- `TimeProfile`s access in `RepresentativePeriod`s cannot include `OperationalProfile`
+- `TimeProfile`s accessed in `RepresentativePeriod`s cannot include `OperationalProfile`
   or `ScenarioProfile` as this is not allowed through indexing on the `TimeProfile`.
 """
 function check_scenario_profile(time_profile::TimeProfile, message::String)

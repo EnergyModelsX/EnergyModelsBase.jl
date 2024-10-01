@@ -10,13 +10,14 @@ process. If the data ia a [`CaptureData`](@ref), it provides the constraint for 
 :flow_out of CO₂.
 
 There exist several configurations:
-- **[`EmissionsEnergy`](@ref)**: Only energy usage related emissions.
-- **[`EmissionsProcess`](@ref)**: Both process and energy usage related emissions.
-- **[`CaptureEnergyEmissions`](@ref)**: Capture of energy usage related emissions, can include
-  process emissions.
-- **[`CaptureProcessEmissions`](@ref)**: Capture of process emissions.
-- **[`CaptureProcessEnergyEmissions`](@ref)**: Capture of both process and energy usage
-  related emissions.
+- **[`EmissionsEnergy`](@ref)** corresponds to only energy usage related emissions.
+- **[`EmissionsProcess`](@ref)** corresponds to both process and energy usage related emissions.
+- **[`CaptureEnergyEmissions`](@ref)** corresponds to capture of energy usage related emissions,
+  can include process emissions.
+- **[`CaptureProcessEmissions`](@ref)** corresponds to capture of process emissions while
+  energy usage related emissions are not captured.
+- **[`CaptureProcessEnergyEmissions`](@ref)** corresponds to capture of both process and energy
+   usage related emissions.
 """
 function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsEnergy)
 

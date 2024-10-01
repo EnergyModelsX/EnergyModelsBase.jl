@@ -5,41 +5,46 @@ abstract type Data end
 struct EmptyData <: Data end
 
 """
-    EmissionsData{T} <: Data end
+    EmissionsData{T<:Union{TimeProfile,Float64}} <: Data
 
 Abstract type for `EmissionsData` can be used to dispatch on different types of
 capture configurations.
 
 In general, the different types require the following input:
-- **`emissions::Dict{ResourceEmit, T}`** are the process emissions per unit produced. It
-  allows for an input as `TimeProfile` or `Float64`.
+- **`emissions::Dict{ResourceEmit, T}`** are the process emissions per capacity usage
+  through the variable `:cap_use`. It allows for an input as `TimeProfile` or `Float64`.
 - **`co2_capture::Float64`** is the CO₂ capture rate.
 
 # Types
-- **`CaptureProcessEnergyEmissions`**: Capture both the process emissions and the
+- **[`CaptureProcessEnergyEmissions`](@ref)**: Capture both the process emissions and the
   energy usage related emissions.
-- **`CaptureProcessEmissions`**: Capture the process emissions, but not the
+- **[`CaptureProcessEmissions`](@ref)**: Capture the process emissions, but not the
   energy usage related emissions.
-- **`CaptureEnergyEmissions`**: Capture the energy usage related emissions, but not the
-  process emissions. Does not require `emissions` as input.
-- **`EmissionsProcess`**: No capture, but process emissions are present.
+- **[`CaptureEnergyEmissions`](@ref)**: Capture the energy usage related emissions, but not
+  the process emissions. Does not require `emissions` as input.
+- **[`EmissionsProcess`](@ref)**: No capture, but process emissions are present.
   Does not require `co2_capture` as input, but will ignore it, if provided.
-- **`EmissionsEnergy`**: No capture and no process emissions. Does not require
+- **[`EmissionsEnergy`](@ref)**: No capture and no process emissions. Does not require
   `co2_capture` or `emissions` as input, but will ignore them, if provided.
 """
+abstract type EmissionsData{T<:Union{TimeProfile,Float64}} <: Data end
+"""
+    CaptureData{T} <: EmissionsData{T}
 
-""" `EmissionsData` as supertype for all `Data` types for emissions."""
-abstract type EmissionsData{T} <: Data end
-""" `CaptureData` as supertype for all `EmissionsData` that include CO₂ capture."""
+Supertype for all `EmissionsData` that include CO₂ capture.
+"""
 abstract type CaptureData{T} <: EmissionsData{T} end
 
 """
-    CaptureProcessEnergyEmissions{T} <: CaptureData{T}
+    struct CaptureProcessEnergyEmissions{T} <: CaptureData{T}
+
+    CaptureProcessEnergyEmissions(emissions::Dict{<:ResourceEmit, T}, co2_capture::Float64) where T
 
 Capture both the process emissions and the energy usage related emissions.
 
 # Fields
-- **`emissions::Dict{ResourceEmit, T}`** are the process emissions per unit produced.
+- **`emissions::Dict{ResourceEmit, T}`** are the process emissions per capacity usage
+  through the variable `:cap_use`.
 - **`co2_capture::Float64`** is the CO₂ capture rate.
 """
 struct CaptureProcessEnergyEmissions{T} <: CaptureData{T}
@@ -48,12 +53,15 @@ struct CaptureProcessEnergyEmissions{T} <: CaptureData{T}
 end
 
 """
-    CaptureProcessEmissions{T} <: CaptureData{T}
+    struct CaptureProcessEmissions{T} <: CaptureData{T}
+
+    CaptureProcessEmissions(emissions::Dict{<:ResourceEmit, T}, co2_capture::Float64) where T
 
 Capture the process emissions, but not the energy usage related emissions.
 
 # Fields
-- **`emissions::Dict{ResourceEmit, T}`** are the process emissions per unit produced.
+- **`emissions::Dict{ResourceEmit, T}`** are the process emissions per capacity usage
+  through the variable `:cap_use`.
 - **`co2_capture::Float64`** is the CO₂ capture rate.
 """
 struct CaptureProcessEmissions{T} <: CaptureData{T}
@@ -62,13 +70,17 @@ struct CaptureProcessEmissions{T} <: CaptureData{T}
 end
 
 """
-    CaptureEnergyEmissions{T} <: CaptureData{T}
+    struct CaptureEnergyEmissions{T} <: CaptureData{T}
+
+    CaptureEnergyEmissions(emissions::Dict{<:ResourceEmit, T}, co2_capture::Float64) where T
+    CaptureEnergyEmissions(co2_capture::Float64)
 
 Capture the energy usage related emissions, but not the process emissions.
 Does not require `emissions` as input, but can be supplied.
 
 # Fields
-- **`emissions::Dict{ResourceEmit, T}`** are the process emissions per unit produced.
+- **`emissions::Dict{ResourceEmit, T}`** are the process emissions per capacity usage
+  through the variable `:cap_use`.
 - **`co2_capture::Float64`** is the CO₂ capture rate.
 """
 struct CaptureEnergyEmissions{T} <: CaptureData{T}
@@ -79,7 +91,11 @@ CaptureEnergyEmissions(co2_capture::Float64) =
     CaptureEnergyEmissions(Dict{ResourceEmit,Float64}(), co2_capture)
 
 """
-    EmissionsProcess{T} <: EmissionsData{T}
+    struct EmissionsProcess{T} <: EmissionsData{T}
+
+    EmissionsProcess(emissions::Dict{<:ResourceEmit,T}) where T
+    EmissionsProcess(emissions::Dict{<:ResourceEmit,T}, _) where T
+    EmissionsProcess()
 
 No capture, but process emissions are present. Does not require `co2_capture` as input,
 but accepts it and will ignore it, if provided.
@@ -95,7 +111,11 @@ EmissionsProcess(emissions::Dict{<:ResourceEmit,T}, _) where {T} =
 EmissionsProcess() = EmissionsProcess(Dict{ResourceEmit,Float64}())
 
 """
-    EmissionsEnergy{T} <: EmissionsData{T}
+    struct EmissionsEnergy{T} <: EmissionsData{T}
+
+    EmissionsEnergy(_, _)
+    EmissionsEnergy(_)
+    EmissionsEnergy()
 
 No capture, no process emissions are present. Does not require `co2_capture` or `emissions`
 as input, but accepts it and will ignore it, if provided.
@@ -114,18 +134,21 @@ co2_capture(data::CaptureData) = data.co2_capture
 
 """
     process_emissions(data::EmissionsData)
+    process_emissions(data::EmissionsData{T}, p::ResourceEmit)
+    process_emissions(data::EmissionsData{T}, p:ResourceEmit, t)
 
-Returns the [`ResourceEmit`](@ref)s that have process emissions of the [`EmissionsData`](@ref).
+Returns the [`ResourceEmit`](@ref)s that have process emissions of the [`EmissionsData`](@ref)
+`data`.
+
+When the [`ResourceEmit`](@ref) `p` is specified, it returns the process emissions as
+`TimeProfile` (`FixedProfile`, if the emissions are provided as `Float64` and
+`FixedProfile(0)` if no values are provided.)
+
+When the [`ResourceEmit`](@ref) `p` and the operational period `t` are specified, it returns
+the value (or 0, if there are no process emissions for the specifed `ResourceEmit` `p`).
 """
 process_emissions(data::EmissionsData) = collect(keys(data.emissions))
 
-"""
-    process_emissions(data::EmissionsData{T}, p::ResourceEmit)
-
-Returns the the process emissions of resource `p` in the `data` as `TimeProfile`.
-If the process emissions are provided as `Float64`, it returns a `FixedProfile(x)`.
-If there are no process emissions, it returns a `FixedProfile(0)`.
-"""
 process_emissions(data::EmissionsData{T}, p::ResourceEmit) where {T<:Float64} =
     haskey(data.emissions, p) ? FixedProfile(data.emissions[p]) : FixedProfile(0)
 process_emissions(data::EmissionsData{T}, p::ResourceEmit) where {T<:TimeProfile} =
@@ -134,11 +157,6 @@ process_emissions(data::EmissionsEnergy{T}, p::ResourceEmit) where {T} =
     @error("The type `EmissionsEnergy` should not be used in combination with calling \
     the function `process_emissions`.")
 
-"""
-    process_emissions(data::EmissionsData{T}, p:ResourceEmit, t)
-Returns the the process emissions of resource `p` in the `data` at operational period t.
-If there are no process emissions, it returns a value of 0.
-"""
 process_emissions(data::EmissionsData{T}, p::ResourceEmit, t) where {T<:Float64} =
     haskey(data.emissions, p) ? data.emissions[p] : 0
 process_emissions(data::EmissionsData{T}, p::ResourceEmit, t) where {T<:TimeProfile} =
@@ -148,6 +166,8 @@ process_emissions(data::EmissionsEnergy{T}, p::ResourceEmit, t) where {T} =
     the function `process_emissions`.")
 
 """
+    InvestmentData <: Data
+
 Abstract type for the extra data for investing in technologies.
 """
 abstract type InvestmentData <: Data end

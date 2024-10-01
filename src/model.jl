@@ -157,9 +157,9 @@ Declaration of emission variables per technology node with emissions `n ∈ 𝒩
 resource `𝒫ᵉᵐ ∈ 𝒫`.
 
 The emission variables are differentiated in:
-  * `:emissions_node` - emissions of a node in an operational period,
-  * `:emissions_total` - total emissions in an operational period, and
-  * `:emissions_strategic` - total strategic emissions, constrained to an upper limit \
+* `:emissions_node` - emissions of a node in an operational period,
+* `:emissions_total` - total emissions in an operational period, and
+* `:emissions_strategic` - total strategic emissions, constrained to an upper limit
   based on the field `emission_limit` of the `EnergyModel`.
 """
 function variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
@@ -240,16 +240,16 @@ end
 """
     variables_node(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
 
-Default fallback method when no function is defined for a node type.
+Default fallback method when no method is defined for a node type.
 """
 function variables_node(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, modeltype::EnergyModel) end
 
 """
     variables_node(m, 𝒩ˢⁱⁿᵏ::Vector{<:Sink}, 𝒯, modeltype::EnergyModel)
 
-Declaration of both surplus (`:sink_surplus`) and deficit (`:sink_deficit`) variables
-for `Sink` nodes `𝒩ˢⁱⁿᵏ` to quantify when there is too much or too little energy for
-satisfying the demand.
+When the node vector is a `Vector{<:Sink}`, both surplus (`:sink_surplus`) and deficit
+(`:sink_deficit`) variables are created to quantify when there is too much or too little
+energy for satisfying the demand.
 """
 function variables_node(m, 𝒩ˢⁱⁿᵏ::Vector{<:Sink}, 𝒯, modeltype::EnergyModel)
     @variable(m, sink_surplus[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
@@ -317,6 +317,9 @@ The default option includes to the objective function:
 - the cost for the emissions.
 
 The values are not discounted.
+
+This function serve as fallback option if no other method is specified for a specific
+`modeltype`.
 """
 function objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
@@ -503,7 +506,7 @@ end
 Set all constraints for a `Availability`. Can serve as fallback option for all unspecified
 subtypes of `Availability`.
 
-Availability nodes can be seen as routing nodes. It is not necessary to have more than one
+`Availability` nodes can be seen as routing nodes. It is not necessary to have more than one
 available node except if one wants to include as well transport between different
 `Availability` nodes with associated costs (not implemented at the moment).
 """
