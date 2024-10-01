@@ -53,6 +53,7 @@ makedocs(
             "NetworkNode" => "nodes/networknode.md",
             "Storage" => "nodes/storage.md",
             "Sink" => "nodes/sink.md",
+            "Availability" => "nodes/availability.md",
         ],
         "How to" => Any[
             "Create a new node"=>"how-to/create-new-node.md",

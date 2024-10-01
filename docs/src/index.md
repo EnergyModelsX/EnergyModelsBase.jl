@@ -50,6 +50,7 @@ Pages = [
     "nodes/networknode.md",
     "nodes/storage.md",
     "nodes/sink.md",
+    "nodes/availability.md",
 ]
 Depth = 1
 ```
