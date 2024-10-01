@@ -45,14 +45,6 @@ function EMI.has_investment(n::Storage, field::Symbol)
 end
 
 """
-    EMI.investment_data(n::EMB.Node)
-
-Return the investment data of the Node `n`.
-"""
-EMI.investment_data(n::EMB.Node) =
-    filter(data -> typeof(data) <: InvestmentData, node_data(n))[1]
-
-"""
     EMI.investment_data(inv_data::SingleInvData)
 
 Return the investment data of the investment data `SingleInvData`.
