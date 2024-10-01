@@ -68,14 +68,14 @@ function generate_example_data()
             FixedProfile(1e12),         # Capacity in MW
             FixedProfile(30),           # Variable OPEX in EUR/MW
             FixedProfile(0),            # Fixed OPEX in EUR/8h
-            Dict(NG => 1),              # Output from the Node, in this gase, NG
+            Dict(NG => 1),              # Output from the Node, in this case, NG
         ),
         RefSource(
             "coal source",              # Node id
             FixedProfile(1e12),         # Capacity in MW
             FixedProfile(9),            # Variable OPEX in EUR/MWh
             FixedProfile(0),            # Fixed OPEX in EUR/8h
-            Dict(Coal => 1),            # Output from the Node, in this gase, coal
+            Dict(Coal => 1),            # Output from the Node, in this case, coal
         ),
         RefNetworkNode(
             "NG+CCS power plant",       # Node id
