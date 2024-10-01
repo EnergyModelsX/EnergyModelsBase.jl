@@ -28,7 +28,7 @@ This is however only advised if you do not need to access the value of the varia
 !!! danger "Variable names"
     By default, it is not possible to use the same variable name twice within JuMP.
     I found some weird behavior in which it is possible to register the same variable name with a different node set, but it should not be possible to count on it.
-    If you require variables, it is of importance to check whether the variable names are already utilized by other nodes you are using!
+    If you require variables, it is crucial to check whether the variable names are already utilized by other nodes you are using!
     The individual variables are shown on the description of individual nodes.
 
     It is hence in general advisable to provide a specific name including the node type as prefix, *e.g.*, `node_test_flow_in if you want to create a variable for a `NodeTest`.
