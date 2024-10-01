@@ -2,7 +2,16 @@
 
 ## Unversioned
 
+### Minor updates
+
 * Included an option to deactive the checks entirely with printing a warning.
+
+### Rework of documentation
+
+* The documentation received a significant rework.
+  The rework consists of:
+  * Provide webpages for the individual nodal descriptions in which the fields are described more in detail as well as a description of the math involved in the nodes.
+  * Restructured both the public and internal libraries
 
 ## Version 0.8.0 (2024-08-20)
 
