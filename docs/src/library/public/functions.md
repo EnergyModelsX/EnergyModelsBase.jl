@@ -36,6 +36,10 @@ create_node
 
 ## [Constraint functions](@id lib-pub-fun-con)
 
+```@meta
+CurrentModule = EMB
+```
+
 The following functions can be used in new developed nodes to include constraints.
 See the pages *[Constraint functions](@ref man-con)* and *[Data functions](@ref man-data_fun)* for a detailed explanation on their usage.
 
@@ -48,7 +52,7 @@ See the pages *[Constraint functions](@ref man-con)* and *[Data functions](@ref 
 constraints_flow_in
 constraints_flow_out
 constraints_capacity
-constraints_capacity_installed
+constraints_capacity_installed(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
 constraints_level
 constraints_level_aux
 constraints_opex_var

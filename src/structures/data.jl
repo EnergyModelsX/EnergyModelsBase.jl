@@ -235,6 +235,10 @@ type `LifetimeMode`, when required.
 
 See the _[documentation](https://energymodelsx.github.io/EnergyModelsInvestments.jl/how-to/update-models)_
 for further information regarding how you can translate your existing model to the new model.
+
+!!! note
+    Although it is declared within `EnergyModelsBase`, its concrete is only accessible if
+    `EnergyModelsInvestments` is loaded
 """
 InvData(nothing) = nothing
 
@@ -263,5 +267,9 @@ rewriting the investment options for `Storage` nodes.
 
 See the _[documentation](https://energymodelsx.github.io/EnergyModelsInvestments.jl/how-to/update-models)_
 for further information regarding how you can translate your existing model to the new model.
+
+!!! note
+    Although it is declared within `EnergyModelsBase`, its concrete is only accessible if
+    `EnergyModelsInvestments` is loaded
 """
 InvDataStorage(nothing) = nothing

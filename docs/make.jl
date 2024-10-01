@@ -71,8 +71,9 @@ makedocs(
                 "EMI extension"=>"library/public/emi_extension.md",
             ],
             "Internal" => Any[
-                "Reference"=>"library/internals/reference.md",
-                "Reference EMIExt"=>"library/internals/reference_EMIExt.md",
+                "Types"=>"library/internals/types.md",
+                "Functions"=>"library/internals/functions.md",
+                "EMI extension"=>"library/internals/reference_EMIExt.md",
             ],
         ],
     ],

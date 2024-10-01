@@ -57,9 +57,6 @@ export Linear, Link, Direct
 # Export the miscellaneous types
 export PreviousPeriods, CyclicPeriods
 
-# Legacy data types
-export RefNetwork, RefNetworkEmissions, RefStorageEmissions
-
 # Export of the types for investment models
 export AbstractInvestmentModel, InvestmentModel
 export InvestmentData, SingleInvData, StorageInvData
@@ -73,11 +70,10 @@ export constraints_capacity, constraints_capacity_installed
 export constraints_flow_in, constraints_flow_out
 export constraints_level, constraints_level_aux
 export constraints_opex_fixed, constraints_opex_var
+export constraints_data
 
 # Export functions used for level balancing modifications
 export previous_level, previous_level_sp
-
-export constraints_data
 
 # Export commonly used functions for extracting fields in `Resource`
 export co2_int

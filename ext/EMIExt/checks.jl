@@ -1,17 +1,18 @@
 """
-    EMB.check_node_data(
-        n::EMB.Node,
-        data::InvestmentData,
-        𝒯,
-        modeltype::AbstractInvestmentModel,
-        check_timeprofiles::Bool
-    )
+    EMB.check_node_data(n::EMB.Node, data::InvestmentData, 𝒯, modeltype::AbstractInvestmentModel, check_timeprofiles::Bool)
+    EMB.check_node_data(n::Storage, data::InvestmentData, 𝒯, modeltype::AbstractInvestmentModel, check_timeprofiles::Bool)
 
-Performs various checks on investment data for standard nodes.
+Performs various checks on investment data for standard and [`Storage`](@ref) nodes.
 
-## Checks
+## Checks for standard nodes
 - Each node can only have a single `InvestmentData`.
 - All checks incorporated in the function [`check_inv_data`](@ref).
+
+## Checks for [`Storage`](@ref) nodes
+- Each node can only have a single `InvestmentData`.
+- The `InvestmentData` must be `StorageInvData`.
+- For each individual investment field all checks incorporated in the function
+  [`check_inv_data`](@ref).
 """
 function EMB.check_node_data(
     n::EMB.Node,
@@ -29,24 +30,6 @@ function EMB.check_node_data(
 
     check_inv_data(EMI.investment_data(data), EMB.capacity(n), 𝒯, "", check_timeprofiles)
 end
-"""
-    EMB.check_node_data(
-        n::Storage,
-        data::InvestmentData,
-        𝒯,
-        modeltype::AbstractInvestmentModel,
-        check_timeprofiles::Bool,
-    )
-
-Performs various checks on investment data for standard nodes. It is similar to the standard
-check nodes functions, but adds checks on
-
-## Checks
-- Each node can only have a single `InvestmentData`.
-- The `InvestmentData` must be `StorageInvData`.
-- For each individual investment field all checks incorporated in the function
-  [`check_inv_data`](@ref).
-"""
 function EMB.check_node_data(
     n::Storage,
     data::InvestmentData,

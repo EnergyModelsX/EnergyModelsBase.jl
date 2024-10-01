@@ -1,10 +1,6 @@
 """
-    EMB.constraints_capacity_installed(
-        m,
-        n::EMB.Node,
-        𝒯::TimeStructure,
-        modeltype::AbstractInvestmentModel,
-    )
+    constraints_capacity_installed(m, n::Node, 𝒯::TimeStructure, modeltype::AbstractInvestmentModel)
+    constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::AbstractInvestmentModel)
 
 When the modeltype is an investment model, the function introduces the related constraints
 for the capacity expansion. The investment mode and lifetime mode are used for adding
@@ -12,7 +8,10 @@ constraints.
 
 The default function only accepts nodes with [`SingleInvData`](@ref). If you have several
 capacities for investments, you have to dispatch specifically on the node type. This is
-implemented for `Storage` nodes.
+implemented for `Storage` nodes where the function introduces the related constraints for
+the capacity expansions for the fields `:charge`, `:level`, and `:discharge`. This requires
+the utilization of the [`StorageInvData`](@ref) investment type, in which the investment
+mode and lifetime mode are used for adding constraints for each capacity.
 """
 function EMB.constraints_capacity_installed(
     m,
@@ -34,21 +33,6 @@ function EMB.constraints_capacity_installed(
         end
     end
 end
-
-"""
-    EMB.constraints_capacity_installed(
-        m,
-        n::Storages,
-        𝒯::TimeStructure,
-        modeltype::AbstractInvestmentModel,
-    )
-
-When the modeltype is an investment model and the node is a `Storage` node, the function
-introduces the related constraints for the capacity expansions for the fields `:charge`,
-`:level`, and `:discharge`. This requires the utilization of the [`StorageInvData`](@ref)
-investment type, in which the investment mode and lifetime mode are used for adding
-constraints for each capacity.
-"""
 function EMB.constraints_capacity_installed(
     m,
     n::Storage,

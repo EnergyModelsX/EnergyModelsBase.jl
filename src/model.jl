@@ -311,6 +311,12 @@ end
     objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Create the objective for the optimization problem for a given modeltype.
+
+The default option includes to the objective function:
+- the variable and fixed operating expenses for the individual nodes and
+- the cost for the emissions.
+
+The values are not discounted.
 """
 function objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 

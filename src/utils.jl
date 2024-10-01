@@ -33,8 +33,8 @@ end
 Return a Dict of all the give types_list and their supertypes. The keys in the dictionary
 are the types, and their corresponding value is the number in the type hierarchy.
 
-*e.g.*, `Node` is at the top and will thus have the value 1. Types just below `Node` will have
-value 2, and so on.
+As an example, `Node` is at the top and will thus have the value 1. Types just below
+`Node` will have value 2, and so on.
 """
 function collect_types(types_list)
     types = Dict()
