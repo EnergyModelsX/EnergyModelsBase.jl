@@ -55,7 +55,7 @@ EMI.investment_data(inv_data::SingleInvData) = inv_data.cap
     EMI.investment_data(n::EMB.Node)
     EMI.investment_data(n::EMB.Node, field::Symbol)
 
-Return the `InvestmentData` of the Node `n` or if `field` is specified, it retrns the
+Return the `InvestmentData` of the Node `n` or if `field` is specified, it returns the
 `InvData` for the corresponding capacity.
 """
 EMI.investment_data(n::EMB.Node) =

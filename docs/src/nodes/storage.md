@@ -52,7 +52,7 @@ The individual types are
 `EnergyModelsBase` provides although union types for simplifying providing new dispatch.
 These are [`EnergyModelsBase.UnionOpexFixed`](@ref), [`EnergyModelsBase.UnionOpexVar`](@ref), and [`EnergyModelsBase.UnionCapacity`](@ref).
 
-## [Introduced type and its field](@id nodes-storage-fields)
+## [Introduced type and its fields](@id nodes-storage-fields)
 
 The [`RefStorage`](@ref) node is implemented as a reference node that can be used for a [`Storage`](@ref).
 It includes basic functionalities common to most energy system optimization models.
@@ -60,7 +60,7 @@ It includes basic functionalities common to most energy system optimization mode
 The fields of a [`RefStorage`](@ref) are given as:
 
 - **`id`**:\
-  The field **`id`** is only used for providing a name to the node.
+  The field `id` is only used for providing a name to the node.
 - **`charge::UnionCapacity`**:\
   The charge storage parameters must include a capacity for charging.
   More information can be found on *[storage parameters](@ref lib-pub-nodes-stor_par)*.
@@ -125,7 +125,7 @@ The variables of [`Storage`](@ref)s include:
 - [``\texttt{flow\_out}``](@ref man-opt_var-flow)
 - [``\texttt{stor\_level\_Δ\_op}``](@ref man-opt_var-cap)
 - [``\texttt{stor\_level\_Δ\_rp}``](@ref man-opt_var-cap) if the `TimeStruct` includes `RepresentativePeriods`
-- [``\texttt{emissions\_node}``](@ref man-opt_var-emissions)
+- [``\texttt{emissions\_node}``](@ref man-opt_var-emissions) if specified through the function [`has_emissions`](@ref) or if you use a `RefStorage{AccumulatingEmissions}`.
 
 ### [Constraints](@id nodes-storage-math-con)
 

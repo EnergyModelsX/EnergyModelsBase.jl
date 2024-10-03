@@ -2,7 +2,7 @@
 
 [`NetworkNode`](@ref)s are technologies that have both an input and an output connection.
 
-## [Introduced type and its field](@id nodes-network_node-fields)
+## [Introduced type and its fields](@id nodes-network_node-fields)
 
 The [`RefNetworkNode`](@ref) is implemented as a reference node that can be used for a [`NetworkNode`](@ref).
 It includes basic functionalities common to most energy system optimization models.
@@ -10,7 +10,7 @@ It includes basic functionalities common to most energy system optimization mode
 The fields of a [`RefNetworkNode`](@ref) are given as:
 
 - **`id`**:\
-  The field **`id`** is only used for providing a name to the node.
+  The field `id` is only used for providing a name to the node.
 - **`cap::TimeProfile`**:\
   The installed capacity corresponds to the nominal capacity of the node.\
   If the node should contain investments through the application of [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/), it is important to note that you can only use `FixedProfile` or `StrategicProfile` for the capacity, but not `RepresentativeProfile` or `OperationalProfile`.
@@ -66,7 +66,7 @@ The variables of [`NetworkNode`](@ref)s include:
 - [``\texttt{cap\_inst}``](@ref man-opt_var-cap)
 - [``\texttt{flow\_in}``](@ref man-opt_var-flow)
 - [``\texttt{flow\_out}``](@ref man-opt_var-flow)
-- [``\texttt{emissions\_node}``](@ref man-opt_var-emissions) if `EmissionsData` is added to the field `data`.
+- [``\texttt{emissions\_node}``](@ref man-opt_var-emissions) if `EmissionsData` is added to the field `data`
 
 ### [Constraints](@id nodes-network_node-math-con)
 
@@ -119,7 +119,7 @@ Hence, if you do not have to call additional functions, but only plan to include
   ```
 
   !!! tip "Why do we use `first()`"
-      The variable ``\texttt{cap\_inst}`` ise declared over all operational periods (see the section on *[Capacity variables](@ref man-opt_var-cap)* for further explanations).
+      The variable ``\texttt{cap\_inst}`` is declared over all operational periods (see the section on *[Capacity variables](@ref man-opt_var-cap)* for further explanations).
       Hence, we use the function ``first(t_{inv})`` to retrieve the installed capacity in the first operational period of a given strategic period ``t_{inv}`` in the function `constraints_opex_fixed`.
 
 - `constraints_opex_var`:

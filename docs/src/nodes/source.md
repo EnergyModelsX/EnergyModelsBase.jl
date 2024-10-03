@@ -2,7 +2,7 @@
 
 [`Source`](@ref) nodes are technologies that only have an output connection.
 
-## [Introduced type and its field](@id nodes-source-fields)
+## [Introduced type and its fields](@id nodes-source-fields)
 
 The [`RefSource`](@ref) node is implemented as a reference node that can be used for a [`Source`](@ref).
 It includes basic functionalities common to most energy system optimization models.
@@ -10,7 +10,7 @@ It includes basic functionalities common to most energy system optimization mode
 The fields of a [`RefSource`](@ref) node are given as:
 
 - **`id`**:\
-  The field **`id`** is only used for providing a name to the node.
+  The field `id` is only used for providing a name to the node.
 - **`cap::TimeProfile`**:\
   The installed capacity corresponds to the nominal capacity of the node.\
   If the node should contain investments through the application of [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/), it is important to note that you can only use `FixedProfile` or `StrategicProfile` for the capacity, but not `RepresentativeProfile` or `OperationalProfile`.
@@ -68,7 +68,7 @@ The variables of [`Source`](@ref) nodes include:
 - [``\texttt{cap\_use}``](@ref man-opt_var-cap)
 - [``\texttt{cap\_inst}``](@ref man-opt_var-cap)
 - [``\texttt{flow\_out}``](@ref man-opt_var-flow)
-- [``\texttt{emissions\_node}``](@ref man-opt_var-emissions) if `EmissionsData` is added to the field `data`.
+- [``\texttt{emissions\_node}``](@ref man-opt_var-emissions) if `EmissionsData` is added to the field `data`
   Note that [`Source`](@ref) nodes are not compatible with [`CaptureData`](@ref) except for [`CaptureProcessEmissions`](@ref).
   Hence, you can only provide [`EmissionsProcess`](@ref EmissionsProcess) to the node.
 
@@ -109,17 +109,17 @@ Hence, if you do not have to call additional functions, but only plan to include
   \qquad \forall p \in outputs(n) \setminus \{\text{CO}_2\}
   ```
 
-- `constraints_opex_fixed`::
+- `constraints_opex_fixed`:
 
   ```math
   \texttt{opex\_fixed}[n, t_{inv}] = opex\_fixed(n, t_{inv}) \times \texttt{cap\_inst}[n, first(t_{inv})]
   ```
 
   !!! tip "Why do we use `first()`"
-      The variable ``\texttt{cap\_inst}`` ise declared over all operational periods (see the section on *[Capacity variables](@ref man-opt_var-cap)* for further explanations).
+      The variable ``\texttt{cap\_inst}`` is declared over all operational periods (see the section on *[Capacity variables](@ref man-opt_var-cap)* for further explanations).
       Hence, we use the function ``first(t_{inv})`` to retrieve the installed capacity in the first operational period of a given strategic period ``t_{inv}`` in the function `constraints_opex_fixed`.
 
-- `constraints_opex_var`::
+- `constraints_opex_var`:
 
   ```math
   \texttt{opex\_var}[n, t_{inv}] = \sum_{t \in t_{inv}} opex\_var(n, t) \times \texttt{cap\_use}[n, t] \times EMB.multiple(t_{inv}, t)

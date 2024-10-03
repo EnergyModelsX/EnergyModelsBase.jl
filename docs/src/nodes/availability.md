@@ -20,7 +20,7 @@ In the latter case, all nodes are connected to the [`Availability`](@ref) node.
     This implies you can even have multiple connections from a node and avoid transfer *via* the [`Availability`](@ref) node.
     This is especially relevant for retrofit CO₂ capture.
 
-## [Introduced type and its field](@id nodes-availability-fields)
+## [Introduced type and its fields](@id nodes-availability-fields)
 
 The [`GenAvailability`](@ref) node is implemented as a reference node that can be used for a [`Availability`](@ref).
 It includes basic functionalities common to most energy system optimization models.
@@ -28,7 +28,7 @@ It includes basic functionalities common to most energy system optimization mode
 The fields of a [`GenAvailability`](@ref) node are given as:
 
 - **`id`**:\
-  The field **`id`** is only used for providing a name to the node.
+  The field `id` is only used for providing a name to the node.
 - **`input::Vector{<:Resource}`** and **`output::Vector{<:Resource}`**:\
   Both fields describe the `input` and `output` [`Resource`](@ref)s as vectors.
   This approach is different to all other nodes, but simplifies the overall design.

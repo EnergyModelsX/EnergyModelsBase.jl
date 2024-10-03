@@ -3,7 +3,7 @@
 [`Sink`](@ref) nodes are technologies that only have an input connection.
 In the context of `EnergyModelsBase`, they correspond to a demand.
 
-## [Introduced type and its field](@id nodes-sink-fields)
+## [Introduced type and its fields](@id nodes-sink-fields)
 
 The [`RefSink`](@ref) node is implemented as a reference node that can be used for a [`Sink`](@ref).
 It includes basic functionalities common to most energy system optimization models.
@@ -11,7 +11,7 @@ It includes basic functionalities common to most energy system optimization mode
 The fields of a [`RefSink`](@ref) node are given as:
 
 - **`id`**:\
-  The field **`id`** is only used for providing a name to the node.
+  The field `id` is only used for providing a name to the node.
 - **`cap::TimeProfile`**:\
   The installed capacity corresponds to the nominal demand of the node.\
   If the node should contain investments through the application of [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/), it is important to note that you can only use `FixedProfile` or `StrategicProfile` for the capacity, but not `RepresentativeProfile` or `OperationalProfile`.
@@ -106,7 +106,7 @@ Hence, if you do not have to call additional functions, but only plan to include
   \texttt{opex\_fixed}[n, t_{inv}] = 0
   ```
 
-- `constraints_opex_var`::
+- `constraints_opex_var`:
 
   ```math
   \begin{aligned}

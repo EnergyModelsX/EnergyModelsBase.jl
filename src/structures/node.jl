@@ -578,7 +578,7 @@ has_level_OPEX_var(n::Storage) = isa(level(n), UnionOpexVar)
     capacity(n::Node)
     capacity(n::Node, t)
 
-Returns the capacity of a node `n` as `TimeProfile` in operational period `t`.
+Returns the capacity of a node `n` as `TimeProfile` or in operational period `t`.
 
 !!! warning "Storage nodes"
     The capacity is not directly defined for [`Storage`](@ref) nodes. Instead, it is necessary
