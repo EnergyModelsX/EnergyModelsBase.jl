@@ -45,7 +45,7 @@ end
 function EMB.SingleInvData(
     capex_trans::TimeProfile,
     trans_max_inst::TimeProfile,
-    initial::Real,
+    initial::TimeProfile,
     inv_mode::Investment,
 )
     return SingleInvData(StartInvData(capex_trans, trans_max_inst, initial, inv_mode))
@@ -53,7 +53,7 @@ end
 function EMB.SingleInvData(
     capex_trans::TimeProfile,
     trans_max_inst::TimeProfile,
-    initial::Real,
+    initial::TimeProfile,
     inv_mode::Investment,
     life_mode::LifetimeMode,
 )

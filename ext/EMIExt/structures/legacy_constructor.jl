@@ -1,9 +1,38 @@
-"""
-    EMB.InvData(;kwargs)
 
-Internal method for [`InvData`](@ref EMB.InvData). The introduction of an internal method
-is necessary as extensions do not allow to export functions or types.
-"""
+function EMB.SingleInvData(
+    capex_trans::TimeProfile,
+    trans_max_inst::TimeProfile,
+    initial::Real,
+    inv_mode::Investment,
+)
+    @warn(
+        "The used implementation of a `StartInvData` will be discontinued in the near future.\n" *
+        "You have to only change the value of the field `initial` to a `FixedProfile` " *
+        "for utilizing the new version.",
+        maxlog = 1
+    )
+    return SingleInvData(
+        StartInvData(capex_trans, trans_max_inst, FixedProfile(initial), inv_mode)
+    )
+end
+function EMB.SingleInvData(
+    capex_trans::TimeProfile,
+    trans_max_inst::TimeProfile,
+    initial::Real,
+    inv_mode::Investment,
+    life_mode::LifetimeMode,
+)
+    @warn(
+        "The used implementation of a `StartInvData` will be discontinued in the near future.\n" *
+        "You have to only change the value of the field `initial` to a `FixedProfile` " *
+        "for utilizing the new version.",
+        maxlog = 1
+    )
+    return SingleInvData(
+        StartInvData(capex_trans, trans_max_inst, FixedProfile(initial), inv_mode, life_mode),
+    )
+end
+
 function EMB.InvData(;
     capex_cap::TimeProfile,
     cap_max_inst::TimeProfile,
@@ -73,12 +102,6 @@ function EMB.InvData(;
     end
 end
 
-"""
-    InvDataStorage(;kwargs)
-
-Internal method for [`InvDataStorage`](@ref EMB.InvDataStorage). The introduction of an
-internal method is necessary as extensions do not allow to export functions or types.
-"""
 function EMB.InvDataStorage(;
     #Investment data related to storage power
     capex_rate::TimeProfile,
