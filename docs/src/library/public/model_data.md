@@ -15,7 +15,7 @@ OperationalModel
 
 ### [Functions for accessing fields of `EnergyModel` types](@id lib-pub-mod_data-fun_field_model)
 
-The following functions are declared for accessing fields from a `EnergyModel` type.
+The following functions are declared for accessing fields from an `EnergyModel` type.
 
 !!! warning
     If you want to introduce new `EnergyModel` types, it is important that the functions `emission_limit`, `emission_price`, and `co2_instance` are either functional for your new types or you have to declare corresponding functions.
@@ -60,7 +60,7 @@ CaptureProcessEnergyEmissions
 
 ### [Functions for accessing fields of `EmissionsData` types](@id lib-pub-mod_data-data-fun_field)
 
-The following functions are declared for accessing fields from a `EmissionsData` type.
+The following functions are declared for accessing fields from an `EmissionsData` type.
 
 !!! warning
     If you want to introduce new `EmissionsData` types, it is important that the functions `co2_capture` and `process_emissions` are either functional for your new types or you have to declare corresponding functions.

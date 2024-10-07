@@ -22,7 +22,7 @@ In the latter case, all nodes are connected to the [`Availability`](@ref) node.
 
 ## [Introduced type and its fields](@id nodes-availability-fields)
 
-The [`GenAvailability`](@ref) node is implemented as a reference node that can be used for a [`Availability`](@ref).
+The [`GenAvailability`](@ref) node is implemented as a reference node that can be used for an [`Availability`](@ref).
 It includes basic functionalities common to most energy system optimization models.
 
 The fields of a [`GenAvailability`](@ref) node are given as:

@@ -141,7 +141,7 @@ If we would like to have a duration of 1 in an operational period corresponding 
     It is important to be certain which value one should use for `op_per_strat`. When using the wrong value, one obtains wrong operational results that may affect the analysis.
 
 Similar to the `SimpleTimes` structure, it is possible to also have strategic periods of varying durations.
-In can be advantageous to, *e.g.*, have a reduced duration in the initial investment periods, while having an increased duration in the latter.
+It can be advantageous to, *e.g.*, have a reduced duration in the initial investment periods, while having an increased duration in the latter.
 This would allow to reflect the higher uncertainty associated with future decisions and improve computational tractability by reducing model instance size.
 
 You can extract an iterator for the individual strategic periods by using the command:

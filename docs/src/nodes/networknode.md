@@ -73,7 +73,7 @@ The variables of [`NetworkNode`](@ref)s include:
 A qualitative overview of the individual constraints can be found on *[Constraint functions](@ref man-con)*.
 This section focuses instead on the mathematical description of the individual constraints.
 It omits the direction inclusion of the vector of network nodes (or all nodes, if nothing specific is implemented).
-Instead, it is implicitly assumed that the constraints are valid ``\forall n ∈ N^{\text{NetworkNode}}`` for all [`NetworkNode`](@ref) types if not stated differently.
+Instead, it is implicitly assumed that the constraints are valid ``\forall n ∈ N^{\text{NetworkNode}}`` (for all [`NetworkNode`](@ref) types) if not stated differently.
 In addition, all constraints are valid ``\forall t \in T`` (that is in all operational periods) or ``\forall t_{inv} \in T^{Inv}`` (that is in all strategic periods).
 
 The following standard constraints are implemented for a [`NetworkNode`](@ref) node.
@@ -125,7 +125,7 @@ Hence, if you do not have to call additional functions, but only plan to include
 - `constraints_opex_var`:
 
   ```math
-  \texttt{opex\_var}[n, t_{inv}] = \sum_{t \in t_{inv}} opex_var(n, t) \times \texttt{cap\_use}[n, t] \times EMB.multiple(t_{inv}, t)
+  \texttt{opex\_var}[n, t_{inv}] = \sum_{t \in t_{inv}} opex\_var(n, t) \times \texttt{cap\_use}[n, t] \times EMB.multiple(t_{inv}, t)
   ```
 
   !!! tip "The function `EMB.multiple`"

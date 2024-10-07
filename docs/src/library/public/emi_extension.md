@@ -38,7 +38,7 @@ discount_rate
 Two different types are directly introduced, `SingleInvData` and `StorageInvData`.
 
 `SingleInvData` is providing a composite type with a single field.
-It is used for investments in technologies with a single capacity, that is all nodes except for storage nodes as well as tranmission modes.
+It is used for investments in technologies with a single capacity, that is all nodes except for storage nodes as well as transmission modes.
 
 `StorageInvData` is required as `Storage` nodes behave differently compared to the other nodes.
 In `Storage` nodes, it is possible to invest both in the charge capacity for storing energy, the storage capacity, that is the level of a `Storage` node, as well as the discharge capacity, that is how fast energy can be withdrawn.

@@ -17,7 +17,7 @@ EnergyModelsBase
 `PreviousPeriods` is a type used to store information from the previous periods in an iteration loop through the application of the iterator [`withprev`](@extref TimeStruct.withprev) of `TimeStruct`.
 
 `CyclicPeriods` is used for storing the current and the last period.
-The periods can either be either and `AbstractStrategicPeriod` or `AbstractRepresentativePeriod`.
+The periods can either be `AbstractStrategicPeriod` or `AbstractRepresentativePeriod`.
 In the former case, it is however not fully used as the last strategic period is not relevant for the level balances.
 
 Both composite types allow only `EMB.NothingPeriod` types as input to the individual fields.

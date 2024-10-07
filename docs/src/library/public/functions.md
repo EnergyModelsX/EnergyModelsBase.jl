@@ -40,7 +40,7 @@ create_node
 CurrentModule = EMB
 ```
 
-The following functions can be used in new developed nodes to include constraints.
+The following functions can be used in newly developed nodes to include constraints.
 See the pages *[Constraint functions](@ref man-con)* and *[Data functions](@ref man-data_fun)* for a detailed explanation on their usage.
 
 !!! warning

@@ -49,11 +49,11 @@ makedocs(
             "Release notes"=>"manual/NEWS.md",
         ],
         "Nodes" => Any[
-            "Source" => "nodes/source.md",
-            "NetworkNode" => "nodes/networknode.md",
-            "Storage" => "nodes/storage.md",
-            "Sink" => "nodes/sink.md",
-            "Availability" => "nodes/availability.md",
+            "Source"=>"nodes/source.md",
+            "NetworkNode"=>"nodes/networknode.md",
+            "Storage"=>"nodes/storage.md",
+            "Sink"=>"nodes/sink.md",
+            "Availability"=>"nodes/availability.md",
         ],
         "How to" => Any[
             "Create a new node"=>"how-to/create-new-node.md",
@@ -62,7 +62,7 @@ makedocs(
             "Contribute to EnergyModelsBase"=>"how-to/contribute.md",
         ],
         "Library" => Any[
-            "Public" => Any[
+            "Public"=>Any[
                 "Resources"=>"library/public/resources.md",
                 "Modeltype and Data"=>"library/public/model_data.md",
                 "Nodes"=>"library/public/nodes.md",
@@ -71,7 +71,7 @@ makedocs(
                 "Miscellaneous"=>"library/public/misc.md",
                 "EMI extension"=>"library/public/emi_extension.md",
             ],
-            "Internal" => Any[
+            "Internal"=>Any[
                 "Types"=>"library/internals/types.md",
                 "Functions"=>"library/internals/functions.md",
                 "EMI extension"=>"library/internals/reference_EMIExt.md",

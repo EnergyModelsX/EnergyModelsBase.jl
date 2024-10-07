@@ -21,7 +21,7 @@ The fields of a [`RefSink`](@ref) node are given as:
   It must include the fields `:surplus` and `:deficit`.
   In addition, it is crucial that the sum of both values is larger than 0 to avoid an unconstrained model.
 - **`input::Dict{<:Resource,<:Real}`**:\
-  The field `input` includes [`Resource`](@ref Resource)s with their corresponding conversion factors as dictionaries..\
+  The field `input` includes [`Resource`](@ref Resource)s with their corresponding conversion factors as dictionaries.\
   All values have to be non-negative.
 - **`data::Vector{Data}`**:\
   An entry for providing additional data to the model.
