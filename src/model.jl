@@ -1,16 +1,22 @@
 """
-    create_model(case, modeltype::EnergyModel, m::JuMP.Model; check_timeprofiles::Bool=true)
+    create_model(
+        case,
+        modeltype::EnergyModel,
+        m::JuMP.Model;
+        check_timeprofiles::Bool = true,
+        check_any_data::Bool = true,
+    )
 
 Create the model and call all required functions.
 
-## Input
+## Arguments
 - `case` - The case dictionary requiring the keys `:T`, `:nodes`, `:links`, and `products`.
   If the input is not provided in the correct form, the checks will identify the problem.
 - `modeltype` - Used modeltype, that is a subtype of the type `EnergyModel`.
 - `m` - the empty `JuMP.Model` instance. If it is not provided, then it is assumed that the
   input is a standard `JuMP.Model`.
 
-## Conditional input
+## Keyword arguments
 - `check_timeprofiles=true` - A boolean indicator whether the time profiles of the individual
   nodes should be checked or not. It is advised to not deactivate the check, except if you
   are testing new components. It may lead to unexpected behaviour and potential
@@ -95,12 +101,12 @@ These variables are:
   in the operational case to the provided capacity in the [storage parameters](@ref lib-pub-nodes-stor_par)
   used in the field `:level`.
 * `:stor_charge_use` - storage charging use in each operational period.
-* `:stor_charge_inst` - installed charging capacity, e.g. power, in each operational period,
+* `:stor_charge_inst` - installed charging capacity, *e.g.*, power, in each operational period,
   constrained in the operational case to the provided capacity in the
   [storage parameters](@ref lib-pub-nodes-stor_par) used in the field `:charge`.
   This variable is only defined if the `Storage` node has a field `charge.`
 * `:stor_discharge_use` - storage discharging use in each operational period.
-* `:stor_discharge_inst` - installed discharging capacity, e.g. power, in each operational period,
+* `:stor_discharge_inst` - installed discharging capacity, *e.g.*, power, in each operational period,
   constrained in the operational case to the provided capacity in the
   [storage parameters](@ref lib-pub-nodes-stor_par) used in the field `:discharge`.
   This variable is only defined if the `Storage` node has a field `discharge.`
@@ -151,9 +157,9 @@ Declaration of emission variables per technology node with emissions `n ∈ 𝒩
 resource `𝒫ᵉᵐ ∈ 𝒫`.
 
 The emission variables are differentiated in:
-  * `:emissions_node` - emissions of a node in an operational period,
-  * `:emissions_total` - total emissions in an operational period, and
-  * `:emissions_strategic` - total strategic emissions, constrained to an upper limit \
+* `:emissions_node` - emissions of a node in an operational period,
+* `:emissions_total` - total emissions in an operational period, and
+* `:emissions_strategic` - total strategic emissions, constrained to an upper limit
   based on the field `emission_limit` of the `EnergyModel`.
 """
 function variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
@@ -231,19 +237,19 @@ function variables_nodes(m, 𝒩, 𝒯, modeltype::EnergyModel)
     end
 end
 
-""""
+"""
     variables_node(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
 
-Default fallback method when no function is defined for a node type.
+Default fallback method when no method is defined for a node type.
 """
 function variables_node(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, modeltype::EnergyModel) end
 
 """
     variables_node(m, 𝒩ˢⁱⁿᵏ::Vector{<:Sink}, 𝒯, modeltype::EnergyModel)
 
-Declaration of both surplus (`:sink_surplus`) and deficit (`:sink_deficit`) variables
-for `Sink` nodes `𝒩ˢⁱⁿᵏ` to quantify when there is too much or too little energy for
-satisfying the demand.
+When the node vector is a `Vector{<:Sink}`, both surplus (`:sink_surplus`) and deficit
+(`:sink_deficit`) variables are created to quantify when there is too much or too little
+energy for satisfying the demand.
 """
 function variables_node(m, 𝒩ˢⁱⁿᵏ::Vector{<:Sink}, 𝒯, modeltype::EnergyModel)
     @variable(m, sink_surplus[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
@@ -305,6 +311,15 @@ end
     objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Create the objective for the optimization problem for a given modeltype.
+
+The default option includes to the objective function:
+- the variable and fixed operating expenses for the individual nodes and
+- the cost for the emissions.
+
+The values are not discounted.
+
+This function serve as fallback option if no other method is specified for a specific
+`modeltype`.
 """
 function objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
@@ -346,6 +361,13 @@ end
 
 Set all constraints for a `Source`.
 Can serve as fallback option for all unspecified subtypes of `Source`.
+
+# Called constraint functions
+- [`constraints_data`](@ref) for all `node_data(n)`,
+- [`constraints_flow_out`](@ref),
+- [`constraints_capacity`](@ref),
+- [`constraints_opex_fixed`](@ref), and
+- [`constraints_opex_var`](@ref).
 """
 function create_node(m, n::Source, 𝒯, 𝒫, modeltype::EnergyModel)
 
@@ -373,6 +395,14 @@ end
 
 Set all constraints for a `NetworkNode`.
 Can serve as fallback option for all unspecified subtypes of `NetworkNode`.
+
+# Called constraint functions
+- [`constraints_data`](@ref) for all `node_data(n)`,
+- [`constraints_flow_in`](@ref),
+- [`constraints_flow_out`](@ref),
+- [`constraints_capacity`](@ref),
+- [`constraints_opex_fixed`](@ref), and
+- [`constraints_opex_var`](@ref).
 """
 function create_node(m, n::NetworkNode, 𝒯, 𝒫, modeltype::EnergyModel)
 
@@ -401,6 +431,15 @@ end
 
 Set all constraints for a `Storage`. Can serve as fallback option for all unspecified
 subtypes of `Storage`.
+
+# Called constraint functions
+- [`constraints_level`](@ref)
+- [`constraints_data`](@ref) for all `node_data(n)`,
+- [`constraints_flow_in`](@ref),
+- [`constraints_flow_out`](@ref),
+- [`constraints_capacity`](@ref),
+- [`constraints_opex_fixed`](@ref), and
+- [`constraints_opex_var`](@ref).
 """
 function create_node(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
 
@@ -409,6 +448,11 @@ function create_node(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Mass/energy balance constraints for stored energy carrier.
     constraints_level(m, n, 𝒯, 𝒫, modeltype)
+
+    # Iterate through all data and set up the constraints corresponding to the data
+    for data ∈ node_data(n)
+        constraints_data(m, n, 𝒯, 𝒫, modeltype, data)
+    end
 
     # Call of the function for the inlet flow to and outlet flow from the `Storage` node
     constraints_flow_in(m, n, 𝒯, modeltype)
@@ -427,6 +471,13 @@ end
 
 Set all constraints for a `Sink`.
 Can serve as fallback option for all unspecified subtypes of `Sink`.
+
+# Called constraint functions
+- [`constraints_data`](@ref) for all `node_data(n)`,
+- [`constraints_flow_in`](@ref),
+- [`constraints_capacity`](@ref),
+- [`constraints_opex_fixed`](@ref), and
+- [`constraints_opex_var`](@ref).
 """
 function create_node(m, n::Sink, 𝒯, 𝒫, modeltype::EnergyModel)
 
@@ -455,7 +506,7 @@ end
 Set all constraints for a `Availability`. Can serve as fallback option for all unspecified
 subtypes of `Availability`.
 
-Availability nodes can be seen as routing nodes. It is not necessary to have more than one
+`Availability` nodes can be seen as routing nodes. It is not necessary to have more than one
 available node except if one wants to include as well transport between different
 `Availability` nodes with associated costs (not implemented at the moment).
 """

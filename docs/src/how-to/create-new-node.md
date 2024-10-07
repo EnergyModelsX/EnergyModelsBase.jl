@@ -1,6 +1,6 @@
 # [Create a new node](@id how_to-create_node)
 
-The energy system model is based on the *[JuMP](https://jump.dev/JuMP.jl/stable/)* optimization framework, so some basic knowledge on this Julia package is needed to implement a new technology node.
+The energy system model is based on the *[JuMP](https://jump.dev/JuMP.jl/)* optimization framework, so some basic knowledge on this Julia package is needed to implement a new technology node.
 
 > **To create a new technology node named `NewTechNode`, we need to**
 >
@@ -25,7 +25,15 @@ While step 1 is always required, it is possible to omit step 2 if no new variabl
 It is also possible to create unregistered variables for each instance of the node.
 This is however only advised if you do not need to access the value of the variables after the optimization.
 
-!!! warning
+!!! danger "Variable names"
+    By default, it is not possible to use the same variable name twice within JuMP.
+    I found some weird behavior in which it is possible to register the same variable name with a different node set, but it should not be possible to count on it.
+    If you require variables, it is crucial to check whether the variable names are already utilized by other nodes you are using!
+    The individual variables are shown on the description of individual nodes.
+
+    It is hence in general advisable to provide a specific name including the node type as prefix, *e.g.*, `node_test_flow_in if you want to create a variable for a `NodeTest`.
+
+!!! warning "Field names"
     When creating a new node type, you are free to change the field names to whatever name you desire. However, if you change the  field names, there are several things to consider:
 
     1. Certain functions are used within the core structure of the code for accessing the fields. These functions can be found in the *[Public Interface](@ref lib-pub-nodes-fun_field)*.

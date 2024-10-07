@@ -1,7 +1,7 @@
 # [Utilize `TimeStruct`](@id how_to-utilize_TS)
 
-`EnergyModelsBase` uses for the description of time the package [`TimeStruct`](https://sintefore.github.io/TimeStruct.jl/stable/).
-[`TimeStruct`](https://sintefore.github.io/TimeStruct.jl/stable/) offers a large variety of different options that can appear to be overwhelming, when first exposed to them.
+`EnergyModelsBase` uses for the description of time the package [`TimeStruct`](https://sintefore.github.io/TimeStruct.jl//).
+[`TimeStruct`](https://sintefore.github.io/TimeStruct.jl//) offers a large variety of different options that can appear to be overwhelming, when first exposed to them.
 Hence, it is important to highlight how it works and which parameters you would want to analyse.
 
 ## [Structures for time description](@id how_to-utilize_TS-struct)
@@ -23,7 +23,7 @@ op_number = 24   # There are in total 24 operational periods
 operational_periods = SimpleTimes(op_number, op_duration)
 ```
 
-In above's example, we assume that we have in total 24 operational periods which have the same duration each, _i.e._, a duration of 1.
+In above's example, we assume that we have in total 24 operational periods which have the same duration each, *i.e.*, a duration of 1.
 The unit in itself is not important, but it can be either if you consider that a duration of 1 corresponds to one hour.
 In this case, the operational periods would correspond to a full day.
 
@@ -67,7 +67,7 @@ and a constructor will automatically deduce that there have to be 11 operational
 
 `SimpleTimes` is also the lowest `TimeStructure` that is present in `TimeStruct`.
 It is used in all subsequent structures.
-When iterating over a `TimeStructure`, _e.g._, as `t ∈ operational_periods`, you obtain the single operational periods that are required for solving the optimal dispatch.
+When iterating over a `TimeStructure`, *e.g.*, as `t ∈ operational_periods`, you obtain the single operational periods that are required for solving the optimal dispatch.
 
 !!! warning
     Energy conversion, production, or emissions of a node as well as all flows are always defined for a duration of length 1 in operational periods. You have to be careful when considering the output from the model. The same holds for capacities provided in the input file.
@@ -141,7 +141,7 @@ If we would like to have a duration of 1 in an operational period corresponding 
     It is important to be certain which value one should use for `op_per_strat`. When using the wrong value, one obtains wrong operational results that may affect the analysis.
 
 Similar to the `SimpleTimes` structure, it is possible to also have strategic periods of varying durations.
-In can be advantageous to, _e.g._, have a reduced duration in the initial investment periods, while having an increased duration in the latter.
+It can be advantageous to, *e.g.*, have a reduced duration in the initial investment periods, while having an increased duration in the latter.
 This would allow to reflect the higher uncertainty associated with future decisions and improve computational tractability by reducing model instance size.
 
 You can extract an iterator for the individual strategic periods by using the command:
@@ -169,7 +169,7 @@ It does not have any implication on the model building speed and it is up to the
 ### [Summary](@id how_to-utilize_TS-struct-sum)
 
 In the standard case, it is recommended to use **hour** as duration 1 of operational period and **year** as duration 1 of a strategic period.
-This still allows to utilize a higher resolution, like _e.g._ 15 minutes or less through specifying a duration of 0.25 for these operational periods, but it simplifies the overall design.
+This still allows to utilize a higher resolution, like *e.g.* 15 minutes or less through specifying a duration of 0.25 for these operational periods, but it simplifies the overall design.
 
 ```julia
 day = SimpleTimes(24, 1)
@@ -292,6 +292,6 @@ op_profile_5 = OperationalProfile(rand(24))
 strat_profile = StrategicProfile([op_profile_1, op_profile_2, op_profile_3, op_profile_4, op_profile_5])
 ```
 
-This approach is frequently used for demands where there are changes both on the operational level (_e.g._, hour) and strategic level (_e.g._, year).
+This approach is frequently used for demands where there are changes both on the operational level (*e.g.*, hour) and strategic level (*e.g.*, year).
 
 It is similarly possible to include `RepresentativeProfile`s.

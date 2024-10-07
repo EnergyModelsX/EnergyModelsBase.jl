@@ -42,6 +42,19 @@ Pages = [
 Depth = 1
 ```
 
+## Description of the nodes
+
+```@contents
+Pages = [
+    "nodes/source.md",
+    "nodes/networknode.md",
+    "nodes/storage.md",
+    "nodes/sink.md",
+    "nodes/availability.md",
+]
+Depth = 1
+```
+
 ## How to guides
 
 ```@contents
@@ -56,10 +69,28 @@ Depth = 1
 
 ## Library outline
 
+### Public library
+
 ```@contents
 Pages = [
-    "library/public.md",
-    "library/internals/reference.md",
+    "library/public/resources.md",
+    "library/public/model_data.md",
+    "library/public/nodes.md",
+    "library/public/links.md",
+    "library/public/functions.md",
+    "library/public/misc.md",
+    "library/public/emi_extension.md",
+]
+Depth = 1
+```
+
+### Internal library
+
+```@contents
+Pages = [
+    "library/internals/types.md",
+    "library/internals/functions.md",
+    "library/internals/reference_EMIExt.md",
 ]
 Depth = 1
 ```

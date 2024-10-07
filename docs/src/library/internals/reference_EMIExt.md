@@ -1,4 +1,4 @@
-# Internals - EnergyModelsInvestment extensions
+# Internals - EnergyModelsInvestment extension
 
 ## Index
 
@@ -6,26 +6,60 @@
 Pages = ["reference_EMIExt.md"]
 ```
 
-## Types
-
-```@autodocs
-Modules = [
-    isdefined(Base, :get_extension) ?
-    Base.get_extension(EMB, :EMIExt) :
-    EMB.EMIExt
-]
-Public = false
-Order = [:type]
+```@meta
+CurrentModule =
+    Base.get_extension(EMB, :EMIExt)
 ```
 
-## Methods
+## Extension
 
-```@autodocs
-Modules = [
-    isdefined(Base, :get_extension) ?
-    Base.get_extension(EMB, :EMIExt) :
-    EMB.EMIExt
-]
-Public = false
-Order = [:function]
+### Types
+
+```@docs
+InvestmentModel
+SingleInvData
+StorageInvData
+```
+
+### Methods
+
+```@docs
+check_inv_data
+```
+
+## EnergyModelsBase
+
+### Methods
+
+```@docs
+EMB.variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype::AbstractInvestmentModel)
+EMB.constraints_capacity_installed(m, n::EMB.Node, 𝒯::TimeStructure, modeltype::AbstractInvestmentModel)
+EMB.objective(m, 𝒩, 𝒯, 𝒫, modeltype::AbstractInvestmentModel)
+EMB.check_node_data(n::EMB.Node, data::InvestmentData, 𝒯, modeltype::AbstractInvestmentModel, check_timeprofiles::Bool)
+```
+
+## EnergyModelsInvestments
+
+### Constructors
+
+The following constructors are only relevant for the legacy constructors introduced within the extension.
+They do not provide any additional information.
+
+```@docs
+EMI.BinaryInvestment
+EMI.ContinuousInvestment
+EMI.DiscreteInvestment
+EMI.FixedInvestment
+EMI.PeriodLife
+EMI.RollingLife
+EMI.SemiContinuousInvestment
+EMI.SemiContinuousOffsetInvestment
+EMI.StudyLife
+```
+
+### Methods
+
+```@docs
+EMI.has_investment
+EMI.investment_data
 ```

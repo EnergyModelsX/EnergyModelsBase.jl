@@ -186,7 +186,7 @@ Checks the `modeltype` .
 - The profiles in `emission_limit` have to have the same length as the number of strategic
   periods.
 - The profiles in `emission_price` have to have the same length as the number of strategic
-periods.
+  periods.
 """
 function check_model(case, modeltype::EnergyModel, check_timeprofiles::Bool)
     𝒯ᴵⁿᵛ = strategic_periods(case[:T])
@@ -250,7 +250,8 @@ end
 """
     check_time_structure(n::Node, 𝒯)
 
-Check that all fields of a `Node` that are of type `TimeProfile` correspond to the time structure `𝒯`.
+Check that all fields of a `Node` that are of type `TimeProfile` correspond to the time
+structure `𝒯`.
 """
 function check_time_structure(n::Node, 𝒯)
     for fieldname ∈ fieldnames(typeof(n))
@@ -317,7 +318,7 @@ value = OperationalProfile([1, 2])
 ```
 
 If you use a more detailed TimeProfile than the TimeStructure, it will you provide you with
-a warning, e.g., using `RepresentativeProfile` without `RepresentativePeriods`.
+a warning, *e.g.*, using `RepresentativeProfile` without `RepresentativePeriods`.
 
 It currently does not include support for identifying `OperationalProfile`s.
 """
@@ -389,12 +390,12 @@ check_profile(fieldname, value, ts, sp) = nothing
     check_strategic_profile(time_profile::TimeProfile, message::String)
 
 Function for checking that an individual `TimeProfile` does not include the wrong type for
-strategic indexing
+strategic indexing.
 
 ## Checks
-- `TimeProfile`s access in `StrategicPeriod`s cannot include `OperationalProfile`, \
-`ScenarioProfile`, or `RepresentativeProfile` as this is not allowed through indexing \
-on the `TimeProfile`.
+- `TimeProfile`s accessed in `StrategicPeriod`s cannot include `OperationalProfile`,
+  `ScenarioProfile`, or `RepresentativeProfile` as this is not allowed through indexing
+  on the `TimeProfile`.
 """
 function check_strategic_profile(time_profile::TimeProfile, message::String)
     @assert_or_log(
@@ -438,15 +439,15 @@ end
     check_representative_profile(time_profile::TimeProfile, message::String)
 
 Function for checking that an individual `TimeProfile` does not include the wrong type for
-representative periods indexing
+representative periods indexing.
 
 ## Input
 - `time_profile` - The time profile that should be checked.
 - `message` - A message that should be printed after the type of profile.
 
 ## Checks
-- `TimeProfile`s access in `RepresentativePeriod`s cannot include `OperationalProfile` \
-or `ScenarioProfile` as this is not allowed through indexing on the `TimeProfile`.
+- `TimeProfile`s accessed in `RepresentativePeriod`s cannot include `OperationalProfile`
+  or `ScenarioProfile` as this is not allowed through indexing on the `TimeProfile`.
 """
 function check_representative_profile(time_profile::TimeProfile, message::String)
     @assert_or_log(
@@ -479,11 +480,11 @@ end
     check_scenario_profile(time_profile::TimeProfile, message::String)
 
 Function for checking that an individual `TimeProfile` does not include the wrong type for
-scenario indexing
+scenario indexing.
 
 ## Checks
-- `TimeProfile`s access in `RepresentativePeriod`s cannot include `OperationalProfile` \
-or `ScenarioProfile` as this is not allowed through indexing on the `TimeProfile`.
+- `TimeProfile`s accessed in `RepresentativePeriod`s cannot include `OperationalProfile`
+  or `ScenarioProfile` as this is not allowed through indexing on the `TimeProfile`.
 """
 function check_scenario_profile(time_profile::TimeProfile, message::String)
     @assert_or_log(
@@ -524,7 +525,7 @@ function check_node(n::Availability, 𝒯, modeltype::EnergyModel, check_timepro
 This method checks that a `Source` node is valid.
 
 These checks are always performed, if the user is not creating a new method. Hence, it is
-important that a new `Source` type includes at least the same fields as in the `RefSource`
+important that a new `Source` type includes at least the same fields as in the [`RefSource`](@ref)
 node or that a new `Source` type receives a new method for `check_node`.
 
 ## Checks
@@ -532,7 +533,7 @@ node or that a new `Source` type receives a new method for `check_node`.
  - The values of the dictionary `output` are required to be non-negative.
  - The value of the field `fixed_opex` is required to be non-negative and
    accessible through a `StrategicPeriod` as outlined in the function
-   `check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`.
+   [`check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`](@ref).
 """
 function check_node(n::Source, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -554,7 +555,7 @@ This method checks that a `NetworkNode` node is valid.
 
 These checks are always performed, if the user is not creating a new method. Hence, it is
 important that a new `NetworkNode` type includes at least the same fields as in the
-`RefNetworkNode` node or that a new `NetworkNode` type receives a new method for `check_node`.
+[`RefNetworkNode`(@ref) node or that a new `NetworkNode` type receives a new method for `check_node`.
 
 ## Checks
  - The field `cap` is required to be non-negative.
@@ -562,7 +563,7 @@ important that a new `NetworkNode` type includes at least the same fields as in 
  - The values of the dictionary `output` are required to be non-negative.
  - The value of the field `fixed_opex` is required to be non-negative and
    accessible through a `StrategicPeriod` as outlined in the function
-   `check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`.
+   [`check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`](@ref).
 """
 function check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -588,7 +589,7 @@ This method checks that a `Storage` node is valid.
 
 These checks are always performed, if the user is not creating a new method. Hence, it is
 important that a new `Storage` type includes at least the same fields as in the
-`RefStorage` node or that a new `Storage` type receives a new method for `check_node`.
+[`RefStorage`](@ref) node or that a new `Storage` type receives a new method for `check_node`.
 
 ## Checks
  - The `TimeProfile` of the field `capacity` in the type in the field `charge` is required
@@ -599,7 +600,7 @@ important that a new `Storage` type includes at least the same fields as in the
    to be non-negative if the chosen composite type has the field `capacity`.
  - The `TimeProfile` of the field `fixed_opex` is required to be non-negative and
    accessible through a `StrategicPeriod` as outlined in the function
-   `check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)` for the chosen composite type .
+   [`check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`](@ref) for the chosen composite type .
  - The values of the dictionary `input` are required to be non-negative.
  - The values of the dictionary `output` are required to be non-negative.
 """
@@ -649,8 +650,8 @@ end
 This method checks that a `Sink` node is valid.
 
 These checks are always performed, if the user is not creating a new method. Hence, it is
-important that a new `Sink` type includes at least the same fields as in the `RefSink` node
-or that a new `Source` type receives a new method for `check_node`.
+important that a new `Sink` type includes at least the same fields as in the [`RefSink`](@ref)
+node or that a new `Source` type receives a new method for `check_node`.
 
 ## Checks
  - The field `cap` is required to be non-negative.
@@ -719,26 +720,17 @@ end
 
 """
     check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
-
-Check that the included `Data` types of a `Node` corresponds to required structure.
-This function will always result in a multiple error message, if several instances of the
-same supertype is loaded.
-"""
-check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) =
-    nothing
-
-"""
     check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
 Check that the included `Data` types of a `Node` corresponds to required structure.
 This function will always result in a multiple error message, if several instances of the
 same supertype is loaded.
 
-## Checks
+## Checks `EmissionsData`
 - Each node can only have a single `EmissionsData`.
 - Time profiles for process emissions, if present.
-- The value of the field `co2_capture` is required to be in the range ``[0, 1]``, if \
-[`CaptureData`](@ref) is used.
+- The value of the field `co2_capture` is required to be in the range ``[0, 1]``, if
+  [`CaptureData`](@ref) is used.
 """
 function check_node_data(
     n::Node,
@@ -791,3 +783,5 @@ function check_node_data(
         "The field `co2_capture` in `CaptureData` must be non-negative."
     )
 end
+check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) =
+    nothing

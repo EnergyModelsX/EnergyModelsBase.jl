@@ -48,6 +48,13 @@ makedocs(
             "Investment options"=>"manual/investments.md",
             "Release notes"=>"manual/NEWS.md",
         ],
+        "Nodes" => Any[
+            "Source"=>"nodes/source.md",
+            "NetworkNode"=>"nodes/networknode.md",
+            "Storage"=>"nodes/storage.md",
+            "Sink"=>"nodes/sink.md",
+            "Availability"=>"nodes/availability.md",
+        ],
         "How to" => Any[
             "Create a new node"=>"how-to/create-new-node.md",
             "Utilize TimeStruct"=>"how-to/utilize-timestruct.md",
@@ -55,10 +62,19 @@ makedocs(
             "Contribute to EnergyModelsBase"=>"how-to/contribute.md",
         ],
         "Library" => Any[
-            "Public"=>"library/public.md",
-            "Internals"=>Any[
-                "Reference"=>"library/internals/reference.md",
-                "Reference EMIExt"=>"library/internals/reference_EMIExt.md",
+            "Public"=>Any[
+                "Resources"=>"library/public/resources.md",
+                "Modeltype and Data"=>"library/public/model_data.md",
+                "Nodes"=>"library/public/nodes.md",
+                "Links"=>"library/public/links.md",
+                "Functions"=>"library/public/functions.md",
+                "Miscellaneous"=>"library/public/misc.md",
+                "EMI extension"=>"library/public/emi_extension.md",
+            ],
+            "Internal"=>Any[
+                "Types"=>"library/internals/types.md",
+                "Functions"=>"library/internals/functions.md",
+                "EMI extension"=>"library/internals/reference_EMIExt.md",
             ],
         ],
     ],

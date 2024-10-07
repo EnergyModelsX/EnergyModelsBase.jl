@@ -1,17 +1,23 @@
 """
-    constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::DataEmissions)
+    constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsEnergy)
+    constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
+    constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
+    constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureProcessEmissions)
+    constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureProcessEnergyEmissions)
 
 Constraints functions for calculating both the emissions and amount of CO₂ captured in the
-process.
+process. If the data ia a [`CaptureData`](@ref), it provides the constraint for the variable
+:flow_out of CO₂.
 
 There exist several configurations:
-- **`EmissionsEnergy`**: Only energy usage related emissions.\n
-- **`EmissionsProcess`**: Both process and energy usage related emissions.\n
-- **`CaptureEnergyEmissions`**: Capture of energy usage related emissions, can include \
-process emissions.\n
-- **`CaptureProcessEmissions`**: Capture of process emissions.\n
-- **`CaptureProcessEnergyEmissions`**: Capture of both process and energy usage related
-emissions.\n
+- **[`EmissionsEnergy`](@ref)** corresponds to only energy usage related emissions.
+- **[`EmissionsProcess`](@ref)** corresponds to both process and energy usage related emissions.
+- **[`CaptureEnergyEmissions`](@ref)** corresponds to capture of energy usage related emissions,
+  can include process emissions.
+- **[`CaptureProcessEmissions`](@ref)** corresponds to capture of process emissions while
+  energy usage related emissions are not captured.
+- **[`CaptureProcessEnergyEmissions`](@ref)** corresponds to capture of both process and energy
+   usage related emissions.
 """
 function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsEnergy)
 
@@ -159,7 +165,7 @@ end
     constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::Data)
 
 Fallback option when data is specified, but it is not desired to add the constraints through
-this function. This is, e.g., the case for `EnergyModelsInvestments` as the capacity
-constraint has to be replaced
+this function. This is, *e.g.*, the case for `EnergyModelsInvestments` as the capacity
+constraint has to be replaced.
 """
 constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::Data) = nothing

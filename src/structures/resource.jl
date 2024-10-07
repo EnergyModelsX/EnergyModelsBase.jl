@@ -7,14 +7,14 @@ Base.show(io::IO, r::Resource) = print(io, "$(r.id)")
 """
     ResourceEmit{T<:Real} <: Resource
 
-Resources that can can be emitted (e.g., CO₂, CH₄, NOₓ).
+Resources that can can be emitted (*e.g.*, CO₂, CH₄, NOₓ).
 
 These resources can be included as resources that are emitted, *e.g*, in the variable
 [`emissions_strategic`](@ref man-opt_var-emissions).
 
 # Fields
 - **`id`** is the name/identifyer of the resource.
-- **`co2_int::T`** is the the CO₂ intensity, *e.g.*, t/MWh.
+- **`co2_int::T`** is the CO₂ intensity, *e.g.*, t/MWh.
 """
 struct ResourceEmit{T<:Real} <: Resource
     id::Any
@@ -25,12 +25,12 @@ end
     ResourceCarrier{T<:Real} <: Resource
 
 Resources that can be transported and converted.
-These resources cannot be included as resources that are emitted, *e.g*, in the variable
+These resources **cannot** be included as resources that are emitted, *e.g*, in the variable
 [`emissions_strategic`](@ref man-opt_var-emissions).
 
 # Fields
 - **`id`** is the name/identifyer of the resource.
-- **`co2_int::T`** is the the CO₂ intensity, *e.g.*, t/MWh.
+- **`co2_int::T`** is the CO₂ intensity, *e.g.*, t/MWh.
 """
 struct ResourceCarrier{T<:Real} <: Resource
     id::Any
@@ -61,6 +61,7 @@ res_sub(𝒫::Array{<:Resource}, sub = ResourceEmit) = filter(x -> isa(x, sub), 
 
 """
     res_not(𝒩::Array{<:Resource}, res_inst)
+    res_not(𝒫::Dict, res_inst::Resource)
 
 Return all resources that are not `res_inst` for
 - a given array `::Array{<:Resource}`.
@@ -73,6 +74,7 @@ res_not(𝒫::Dict, res_inst::Resource) = Dict(k => v for (k, v) ∈ 𝒫 if k !
 
 """
     res_em(𝒫::Array{<:Resource})
+    res_em(𝒫::Dict)
 
 Returns all emission resources for a
 - a given array `::Array{<:Resource}`.

@@ -31,7 +31,7 @@ It allows to consider:
 5. CO₂ capture of process emissions ([`CaptureProcessEmissions`](@ref)), and
 6. CO₂ capture of both process and energy usage related emissions ([`CaptureProcessEnergyEmissions`](@ref)).
 
-The individual fields of the different types are described in the *[Public interface](@ref lib-pub-em_data)*.
+The individual fields of the different types are described in the *[Public interface](@ref lib-pub-mod_data-data)*.
 
 The extension is then implemented through the functions
 
