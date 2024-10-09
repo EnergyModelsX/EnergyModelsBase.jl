@@ -14,6 +14,13 @@
   * This type is now exported, simplifying its application in other packages.
   * `EMB.multiple` is still included through a deprecation notice. It is however advisable to switch to the new function.
 
+### Adjustment to EnergyModelsInvestments changes
+
+* Adjusted the ivnestment data checks.
+* Provided legacy constructors for the previous usage of `SingleInvData`.
+* Introduced the investment examples to the example sections.
+* Added investment options tests.
+
 ### Rework of documentation
 
 * The documentation received a significant rework.
