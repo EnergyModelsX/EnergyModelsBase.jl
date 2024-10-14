@@ -123,7 +123,7 @@ end
     # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
     @test sum(
         value.(m[:emissions_strategic][t_inv, CO2]) ≈
-        sum(value.(m[:emissions_total][t, CO2]) * EMB.multiple(t_inv, t) for t ∈ t_inv) for
+        sum(value.(m[:emissions_total][t, CO2]) * scale_op_sp(t_inv, t) for t ∈ t_inv) for
         t_inv ∈ 𝒯ᴵⁿᵛ, atol ∈ TEST_ATOL
     ) ≈ length(𝒯ᴵⁿᵛ)
     @test sum(

@@ -67,3 +67,12 @@ These auxiliary functions provide the user with simple approaches for calculatin
 previous_level
 previous_level_sp
 ```
+
+## [Utility functions](@id lib-pub-fun-util)
+
+The following function can be used in newly developed nodes to scale from operational to strategic periods.
+The function replaced the previously used function [`EMB.multiple`] which is still available with a deprecation warning.
+
+```@docs
+scale_op_sp
+```

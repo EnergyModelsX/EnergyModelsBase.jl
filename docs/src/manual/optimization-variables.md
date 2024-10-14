@@ -24,7 +24,7 @@ m[:flow_in][n, t, p] * duration(t)
 
 The multiplication then leads to an energy/mass quantity in stead of an energy/mass flow.
 
-The coupling of strategic and operational periods can be achieved through the function `EMB.multiple(t, t_inv)`.
+The coupling of strategic and operational periods can be achieved through the function `scale_op_sp(t, t_inv)`.
 This functions allows for considering the scaling of the operational periods within a strategic period.
 
 ## [Operational cost variables](@id man-opt_var-opex)

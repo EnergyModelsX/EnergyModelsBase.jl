@@ -5,6 +5,9 @@
 ### Minor updates
 
 * Included an option to deactive the checks entirely with printing a warning.
+* Replaced the function `EMB.multiple` with the function `scale_op_sp` to avoid issues with respect to a function of the same name in `TimeStruct`.
+  * This type is now exported, simplifying its application in other packages.
+  * `EMB.multiple` is still included through a deprecation notice. It is however advisable to switch to the new function.
 
 ### Rework of documentation
 
