@@ -133,7 +133,7 @@ end
     @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
 
     # Check that we receive an error if the profiles are wrong
-    # - check_strategic_profile(time_profile, message)
+    # - EMB.check_strategic_profile(time_profile, message)
     rprofile = RepresentativeProfile([FixedProfile(100)])
     scprofile = ScenarioProfile([FixedProfile(100)])
     oprofile = OperationalProfile(ones(100))
@@ -257,12 +257,6 @@ end
             Dict(Power => 1),
         )
 
-        modeltype = OperationalModel(
-            Dict(CO2 => FixedProfile(100)),
-            Dict(CO2 => FixedProfile(0)),
-            CO2,
-        )
-
         nodes = [source, sink]
         links = [Direct(12, source, sink)]
         model = OperationalModel(
@@ -325,6 +319,57 @@ end
         "provide the correct timeprofiles using a preprocessing routine.\n\n" *
         "If timeprofiles are not checked, inconsistencies can occur."
     @test_logs (:warn, msg) create_model(case, model; check_timeprofiles = false)
+
+    # Deactivate logging and instead use `assert_or_log` as `assert`
+    EMB.ASSERTS_AS_LOG = false
+
+    # Check that wrong profiles for strategic indexable variables are identified
+    # - EMB.check_strategic_profile(time_profile::TimeProfile, message::String)
+    profiles = [
+        OperationalProfile([5]),
+        ScenarioProfile([5]),
+        RepresentativeProfile([5]),
+        StrategicProfile([OperationalProfile([5])]),
+        StrategicProfile([ScenarioProfile([5])]),
+        StrategicProfile([RepresentativeProfile([5])]),
+    ]
+    for tp ∈ profiles
+        @test_throws AssertionError EMB.check_strategic_profile(tp, "")
+    end
+
+    # Check that wrong profiles for representative indexable variables are identified
+    # - EMB.check_representative_profile(time_profile::TimeProfile, message::String)
+    profiles = [
+        OperationalProfile([5]),
+        ScenarioProfile([5]),
+        StrategicProfile([OperationalProfile([5])]),
+        StrategicProfile([ScenarioProfile([5])]),
+        StrategicProfile([RepresentativeProfile([OperationalProfile([5])])]),
+        StrategicProfile([RepresentativeProfile([ScenarioProfile([5])])]),
+        RepresentativeProfile([OperationalProfile([5])]),
+        RepresentativeProfile([ScenarioProfile([5])]),
+    ]
+    for tp ∈ profiles
+        @test_throws AssertionError EMB.check_representative_profile(tp, "")
+    end
+
+    # Check that wrong profiles for scenario indexable variables are identified
+    # - EMB.check_scenario_profile(time_profile::TimeProfile, message::String)
+    profiles = [
+        OperationalProfile([5]),
+        StrategicProfile([OperationalProfile([5])]),
+        StrategicProfile([RepresentativeProfile([OperationalProfile([5])])]),
+        StrategicProfile([RepresentativeProfile([ScenarioProfile([OperationalProfile([5])])])]),
+        RepresentativeProfile([OperationalProfile([5])]),
+        RepresentativeProfile([ScenarioProfile([OperationalProfile([5])])]),
+        ScenarioProfile([OperationalProfile([5])]),
+    ]
+    for tp ∈ profiles
+        @test_throws AssertionError EMB.check_scenario_profile(tp, "")
+    end
+
+    # Reactivate logging
+    EMB.ASSERTS_AS_LOG = true
 end
 
 @testset "Test checks - Nodes" begin
