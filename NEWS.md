@@ -8,7 +8,7 @@
 
 ### Adjustment to EnergyModelsInvestments changes
 
-* Adjusted the ivnestment data checks.
+* Adjusted the investment data checks.
 * Provided legacy constructors for the previous usage of `SingleInvData`.
 * Introduced the investment examples to the example sections.
 * Added investment options tests.
