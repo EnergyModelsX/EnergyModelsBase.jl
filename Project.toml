@@ -1,7 +1,7 @@
 name = "EnergyModelsBase"
 uuid = "5d7e687e-f956-46f3-9045-6f5a5fd49f50"
 authors = ["Lars Hellemo <Lars.Hellemo@sintef.no>, Julian Straus <Julian.Straus@sintef.no>"]
-version = "0.8.0"
+version = "0.8.1"
 
 [deps]
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
@@ -15,8 +15,8 @@ EnergyModelsInvestments = "fca3f8eb-b383-437d-8e7b-aac76bb2004f"
 EMIExt = "EnergyModelsInvestments"
 
 [compat]
-EnergyModelsInvestments = "0.7"
+EnergyModelsInvestments = "0.8"
 JuMP = "1"
 SparseVariables = "0.7.3"
-TimeStruct = "^0.8"
-julia = "1.9"
+TimeStruct = "0.9"
+julia = "1.10"

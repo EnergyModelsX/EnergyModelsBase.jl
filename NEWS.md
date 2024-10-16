@@ -1,18 +1,10 @@
 # Release notes
 
-## Unversioned
+## Version 0.8.1 (2024-10-16)
 
 ### Bugfixes
 
 * Fixed a bug in which it was possible to have wrong profiles if it must be indexed over an operational scenario or representative period.
-
-### Minor updates
-
-* Included an option to deactive the checks entirely with printing a warning.
-* Introduced the variable ``\texttt{stor\_level\_Δ\_sp}`` using `SparseVariables` to simplify the extension in other `Storage` nodes.
-* Replaced the function `EMB.multiple` with the function `scale_op_sp` to avoid issues with respect to a function of the same name in `TimeStruct`.
-  * This type is now exported, simplifying its application in other packages.
-  * `EMB.multiple` is still included through a deprecation notice. It is however advisable to switch to the new function.
 
 ### Adjustment to EnergyModelsInvestments changes
 
@@ -25,8 +17,16 @@
 
 * The documentation received a significant rework.
   The rework consists of:
-  * Provide webpages for the individual nodal descriptions in which the fields are described more in detail as well as a description of the math involved in the nodes.
+  * Providing webpages for the individual nodal descriptions in which the fields are described more in detail as well as a description of the constraints of the individual nodes.
   * Restructured both the public and internal libraries
+
+### Minor updates
+
+* Included an option to deactive the checks entirely with printing a warning.
+* Introduced the variable ``\texttt{stor\_level\_Δ\_sp}`` using `SparseVariables` to simplify the extension in other `Storage` nodes.
+* Replaced the function `EMB.multiple` with the function `scale_op_sp` to avoid issues with respect to a function of the same name in `TimeStruct`.
+  * This type is now exported, simplifying its application in other packages.
+  * `EMB.multiple` is still included through a deprecation notice. It is however advisable to switch to the new function.
 
 ## Version 0.8.0 (2024-08-20)
 
