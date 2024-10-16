@@ -9,6 +9,25 @@
 It is designed to model the basic operations of various generation, conversion and storage technologies.
 `EnergyModelsBase` is designed to enable optimization of operations, and to be be easily extendible to investment models, and/or to include new technologies or more detailed models of key technologies.
 
+## Error in stable documentation
+
+The stable documentation (based on the registered version) has currently the following error.
+In the description of the variables, we wrote in the [Section on capacity variables](https://energymodelsx.github.io/EnergyModelsBase.jl/stable/manual/optimization-variables/#man-opt_var-cap):
+
+```julia
+for t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ˢᵘᵇ
+    insertvar!(stor_level_Δ_sp, n, t_inv)
+end
+```
+
+The correct solution is
+
+```julia
+for t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ˢᵘᵇ
+    insertvar!(m[:stor_level_Δ_sp], n, t_inv)
+end
+```
+
 ## Usage
 
 The usage of the package is best illustrated through the commented [`examples`](examples).
