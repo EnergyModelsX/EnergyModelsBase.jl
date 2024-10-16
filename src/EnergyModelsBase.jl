@@ -11,6 +11,7 @@ You can find the exported types and functions below or on the pages \
 module EnergyModelsBase
 
 using JuMP
+using SparseVariables
 using TimeStruct
 const TS = TimeStruct
 

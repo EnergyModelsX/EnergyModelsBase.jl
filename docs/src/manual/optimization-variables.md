@@ -86,12 +86,20 @@ The storage level is always defined for the end of the operational period it is 
 There are in addition two variables for the storage level that behave slightly different:
 
 - ``\texttt{stor\_level\_Δ\_op}[n, t]``: Change of the absolute level of energy/mass stored in a `Storage` node ``n`` in operational period ``t`` with a typical unit of GWh or t, and
-- ``\texttt{stor\_level\_Δ\_rp}[n, t_{rp}]``: Change of the absolute level of energy/mass stored in a `Storage` node ``n`` in representative period ``t_{rp}`` with a typical unit of GWh or t.
+- ``\texttt{stor\_level\_Δ\_rp}[n, t_{rp}]``: Change of the absolute level of energy/mass stored in a `Storage` node ``n`` in representative period ``t_{rp}`` with a typical unit of GWh or t, and
+- ``\texttt{stor\_level\_Δ\_sp}[n, t_\texttt{inv}]``: Change of the absolute level of energy/mass stored in a `Storage` node ``n`` in strategic period ``t_\texttt{inv}`` with a typical unit of GWh or t.
 
-These two variables are introduced to track the change in the storage level in a operational period and a representative period, respectively.
+These variables are introduced to track the change in the storage level in an operational period, a representative period, or an investment period, respectively.
 They can be considered as helper variables to account for the duration of the operational period as well as the total change within a representative period.
-``\texttt{stor\_level\_Δ\_rp}`` is only declared if the `TimeStructure` includes `RepresentativePeriods`.
+``\texttt{stor\_level\_Δ\_rp}`` is only declared if the `TimeStructure` includes `RepresentativePeriods` while ``\texttt{stor\_level\_Δ\_sp}`` is introduced as an empty `SparseVariables` container.
 The application of `RepresentativePeriods` is explained in *[How to use TimeStruct.jl](@ref how_to-utilize_TS-struct-rp)*.
+The utilization of ``\texttt{stor\_level\_Δ\_sp}`` requires to include in the function [`variables_node`](@ref) for the given `Storage` array `𝒩ˢᵘᵇ::Vector{<:NewStorageNode}` as, *e.g.*, the following loop
+
+```julia
+for t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ˢᵘᵇ
+    insertvar!(stor_level_Δ_sp, n, t_inv)
+end
+```
 
 The variables ``\texttt{cap\_inst}``, ``\texttt{stor\_charge\_inst}``, ``\texttt{stor\_level\_inst}``, and ``\texttt{stor\_discharge\_inst}`` are used in `EnergyModelsInvestment` to allow for investments in capacity of individual nodes.
 
@@ -187,6 +195,7 @@ These variables are for the individual nodes given in the subsections below.
 - [``\texttt{stor\_discharge\_inst}``](@ref man-opt_var-cap), if the `Storage` node has a field `:discharge` with the `StorageParameters` corresponding to *[capacity storage parameters](@ref lib-pub-nodes-stor_par)*
 - [``\texttt{stor\_level\_Δ\_op}``](@ref man-opt_var-cap)
 - [``\texttt{stor\_level\_Δ\_rp}``](@ref man-opt_var-cap) if the `TimeStruct` includes `RepresentativePeriods`
+- [``\texttt{stor\_level\_Δ\_sp}``](@ref man-opt_var-cap) if the function [`variables_node`](@ref) is declared for the new `Storage` type
 - [``\texttt{flow\_in}``](@ref man-opt_var-flow)
 - [``\texttt{flow\_out}``](@ref man-opt_var-flow)
 - [``\texttt{emissions\_node}``](@ref man-opt_var-emissions) if `ResourceEmit` is stored

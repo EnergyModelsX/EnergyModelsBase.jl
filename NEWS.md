@@ -2,9 +2,14 @@
 
 ## Unversioned
 
+### Bugfixes
+
+* Fixed a bug in which it was possible to have wrong profiles if it must be indexed over an operational scenario or representative period.
+
 ### Minor updates
 
 * Included an option to deactive the checks entirely with printing a warning.
+* Introduced the variable ``\texttt{stor\_level\_Δ\_sp}`` using `SparseVariables` to simplify the extension in other `Storage` nodes.
 * Replaced the function `EMB.multiple` with the function `scale_op_sp` to avoid issues with respect to a function of the same name in `TimeStruct`.
   * This type is now exported, simplifying its application in other packages.
   * `EMB.multiple` is still included through a deprecation notice. It is however advisable to switch to the new function.

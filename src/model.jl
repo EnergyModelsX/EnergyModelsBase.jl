@@ -96,7 +96,10 @@ These variables are:
 
 * `:stor_level` - storage level at the end of each operational period.
 * `:stor_level_Δ_op` - storage level change in each operational period.
-* `:stor_level_Δ_rp` - storage level change in each representative period.
+* `:stor_level_Δ_rp` - storage level change in each representative period. These variables
+  are only created if the time structure includes representative periods.
+* `:stor_level_Δ_op` - storage level change in each strategic period. These variables are
+  optional and created through `SparseVariables`.
 * `:stor_level_inst` - installed capacity for storage in each operational period, constrained
   in the operational case to the provided capacity in the [storage parameters](@ref lib-pub-nodes-stor_par)
   used in the field `:level`.
@@ -116,6 +119,7 @@ function variables_capacity(m, 𝒩, 𝒯, modeltype::EnergyModel)
     𝒩ˢᵗᵒʳ = filter(is_storage, 𝒩)
     𝒩ˢᵗᵒʳ⁻ᶜ = filter(has_charge, 𝒩ˢᵗᵒʳ)
     𝒩ˢᵗᵒʳ⁻ᵈᶜ = filter(has_discharge, 𝒩ˢᵗᵒʳ)
+    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     @variable(m, cap_use[𝒩ⁿᵒᵗ, 𝒯] >= 0)
     @variable(m, cap_inst[𝒩ⁿᵒᵗ, 𝒯] >= 0)
@@ -127,6 +131,7 @@ function variables_capacity(m, 𝒩, 𝒯, modeltype::EnergyModel)
         𝒯ʳᵖ = repr_periods(𝒯)
         @variable(m, stor_level_Δ_rp[𝒩ˢᵗᵒʳ, 𝒯ʳᵖ])
     end
+    @variable(m, stor_level_Δ_sp[𝒩ˢᵗᵒʳ, 𝒯ᴵⁿᵛ]; container = IndexedVarArray)
     @variable(m, stor_charge_use[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_charge_inst[𝒩ˢᵗᵒʳ⁻ᶜ, 𝒯] >= 0)
     @variable(m, stor_discharge_use[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
