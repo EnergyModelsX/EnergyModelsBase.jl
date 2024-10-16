@@ -97,7 +97,7 @@ The utilization of ``\texttt{stor\_level\_Δ\_sp}`` requires to include in the f
 
 ```julia
 for t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ˢᵘᵇ
-    insertvar!(stor_level_Δ_sp, n, t_inv)
+    insertvar!(m[:stor_level_Δ_sp], n, t_inv)
 end
 ```
 
