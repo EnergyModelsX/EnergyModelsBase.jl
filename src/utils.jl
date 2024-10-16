@@ -341,7 +341,7 @@ scale_op_sp(t_inv::TS.AbstractStrategicPeriod, t::TS.TimePeriod) =
 
 function multiple(t_inv, t)
     @warn(
-        "`multiple(t_inv, t)` is deprecated, use scale_op_sp(t_inv, t)` instead.",
+        "`multiple(t_inv, t)` is deprecated, use `scale_op_sp(t_inv, t)` instead.",
         maxlog = 1
     )
     return scale_op_sp(t_inv, t)

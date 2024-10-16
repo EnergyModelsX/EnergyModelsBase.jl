@@ -22,10 +22,10 @@ jobs:
           - version: '1'  # The latest point-release (Windows)
             os: windows-latest
             arch: x64
-          - version: '1.9'  # 1.9 
+          - version: '1.10'  # 1.10
             os: ubuntu-latest
             arch: x64
-          - version: '1.9'  # 1.9
+          - version: '1.10'  # 1.10
             os: ubuntu-latest
             arch: x86
           # - version: 'nightly'

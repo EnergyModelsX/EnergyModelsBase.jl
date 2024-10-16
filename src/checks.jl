@@ -378,7 +378,7 @@ function check_profile(
     for t_rp ∈ repr_periods(ts)
         check_profile(
             fieldname,
-            value.vals[minimum([t_rp.rper, length(value.vals)])],
+            value.vals[minimum([t_rp.rp, length(value.vals)])],
             t_rp.operational,
             sp,
         )
