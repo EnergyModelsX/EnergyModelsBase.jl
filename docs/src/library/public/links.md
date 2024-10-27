@@ -40,6 +40,7 @@ formulation
 The following functions are declared for filtering on `Link` types.
 
 ```@docs
+has_capacity(l::Link)
 has_emissions(l::Link)
 has_opex(l::Link)
 is_unidirectional(l::Link)

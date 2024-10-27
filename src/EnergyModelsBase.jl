@@ -103,7 +103,7 @@ export has_charge, has_discharge
 export charge, level, discharge
 
 # Export commonly used functions for extracting fields in `Link`
-export has_opex
+export has_opex, has_capacity
 export formulation
 
 # Export commonly used functions for extracting fields in `EnergyModel`

@@ -61,6 +61,7 @@ function create_model(
     variables_capacity(m, 𝒩, 𝒯, modeltype)
     variables_nodes(m, 𝒩, 𝒯, modeltype)
 
+    variables_links_capacity(m, ℒ, 𝒯, modeltype)
     variables_links_opex(m, ℒ, 𝒯, 𝒫, modeltype)
 
     # Construction of constraints for the problem
@@ -233,6 +234,20 @@ Declaration of the CAPEX variables of the model for each investment period `t_in
 Empty for operational models but required for multiple dispatch in investment model.
 """
 function variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel) end
+
+"""
+    variables_links_capacity(m, ℒ, 𝒯, modeltype::EnergyModel)
+
+Declaration of the capacity variable for links (`:link_cap_inst`) in each operational period
+t ∈ 𝒯 of the model. The capacity variabke is only created for links, if the function
+[`has_capacity`](@ref) has received an additional method for a given link `l` returning the
+value `true`.
+"""
+function variables_links_capacity(m, ℒ, 𝒯, modeltype::EnergyModel)
+    ℒᶜᵃᵖ = filter(has_capacity, ℒ)
+
+    @variable(m, link_cap_inst[ℒᶜᵃᵖ, 𝒯])
+end
 
 """
     variables_links_opex(m, ℒ, 𝒯, 𝒫, modeltype::EnergyModel)
@@ -413,11 +428,11 @@ end
 """
     constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 
-Call the function `create_link` for link formulation
+Call the function [`create_link`](@ref) for link formulation.
 """
 function constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
     for l ∈ ℒ
-        create_link(m, 𝒯, 𝒫, l, formulation(l))
+        create_link(m, 𝒯, 𝒫, l, modeltype, formulation(l))
     end
 end
 
@@ -584,15 +599,24 @@ function create_node(m, n::Availability, 𝒯, 𝒫, modeltype::EnergyModel)
 end
 
 """
-    create_link(m, 𝒯, 𝒫, l, formulation::Formulation)
+    create_link(m, 𝒯, 𝒫, l::Link, formulation::Formulation)
 
 Set the constraints for a simple `Link` (input = output). Can serve as fallback option for
 all unspecified subtypes of `Link`.
+
+All links with capacity, as indicated through the function [`has_capacity`](@ref) call
+furthermore the function [`constraints_capacity_installed`](@ref) for limiting the capacity
+to the installed capacity.
 """
-function create_link(m, 𝒯, 𝒫, l, formulation::Formulation)
+function create_link(m, 𝒯, 𝒫, l::Link, modeltype::EnergyModel, formulation::Formulation)
 
     # Generic link in which each output corresponds to the input
     @constraint(m, [t ∈ 𝒯, p ∈ link_res(l)],
         m[:link_out][l, t, p] == m[:link_in][l, t, p]
     )
+
+    # Call of the function for limiting the capacity to the maximum installed capacity
+    if has_capacity(l)
+        constraints_capacity_installed(m, l, 𝒯, modeltype)
+    end
 end

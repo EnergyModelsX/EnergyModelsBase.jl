@@ -113,7 +113,19 @@ for t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ˢᵘᵇ
 end
 ```
 
-The variables ``\texttt{cap\_inst}``, ``\texttt{stor\_charge\_inst}``, ``\texttt{stor\_level\_inst}``, and ``\texttt{stor\_discharge\_inst}`` are used in `EnergyModelsInvestment` to allow for investments in capacity of individual nodes.
+We also introduce the potential for links with capacities.
+By default, links do not introduce new variables.
+The capacity variable is only created for a link ``l`` if the function [`has_capacity(n::Link)`](@ref) returns `true`.
+The following link variable ise then declared representing the capacity of links:
+
+- ``\texttt{link\_cap\_inst}[l, t]``: Installed capacity of link ``l`` at operational period ``t``.
+
+!!! tip "Links with a capacity"
+    All links introduced in `EnergyModelsBase` do not allow for a capacity limiting the transfer.
+    If you plan to introduce a link with a capacity, you have to create a new method for the function `has_capacity` for your introduced link.
+
+!!! note "Inclusions of investments"
+    The variables ``\texttt{cap\_inst}``, ``\texttt{stor\_charge\_inst}``, ``\texttt{stor\_level\_inst}``, ``\texttt{stor\_discharge\_inst}``, and ``\texttt{link\_cap\_inst}`` are used in `EnergyModelsInvestment` to allow for investments in capacity of individual nodes.
 
 ## [Flow variables](@id man-opt_var-flow)
 

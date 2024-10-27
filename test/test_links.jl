@@ -101,10 +101,12 @@
             for l ∈ ℒ, t ∈ 𝒯
         )
 
-        # Test that `emissions_link`, `link_opex_var`, and `link_opex_fixed` are empty
+        # Test that `emissions_link`, `link_opex_var`, `link_opex_fixed`, and `link_cap_inst`
+        #are empty
         @test isempty(m[:emissions_link])
         @test isempty(m[:link_opex_var])
         @test isempty(m[:link_opex_fixed])
+        @test isempty(m[:link_cap_inst])
     end
 end
 
@@ -156,7 +158,7 @@ end
         to::EMB.Node
         formulation::EMB.Formulation
     end
-    function EMB.create_link(m, 𝒯, 𝒫, l::EmissionDirect, formulation::EMB.Formulation)
+    function EMB.create_link(m, 𝒯, 𝒫, l::EmissionDirect, modeltype::EnergyModel, formulation::EMB.Formulation)
         # Generic link in which each output corresponds to the input
         @constraint(m, [t ∈ 𝒯, p ∈ EMB.link_res(l)],
             m[:link_out][l, t, p] == m[:link_in][l, t, p]
@@ -195,7 +197,7 @@ end
         to::EMB.Node
         formulation::EMB.Formulation
     end
-    function EMB.create_link(m, 𝒯, 𝒫, l::OpexDirect, formulation::EMB.Formulation)
+    function EMB.create_link(m, 𝒯, 𝒫, l::OpexDirect, modeltype::EnergyModel, formulation::EMB.Formulation)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
         # Generic link in which each output corresponds to the input
@@ -225,4 +227,49 @@ end
     #   1               is the fixed OPEX contribution from the link
     # The multiplication with 2 * 2 is due to 2 strategic periods with a duration of 2
     @test objective_value(m) ≈ -((3 * 10 * 10) + 0.2 + 1) * (2 * 2) atol=TEST_ATOL
+end
+
+@testset "Link - capacity" begin
+    # Creation of a new link type with associated capacity
+    struct CapDirect <: Link
+        id::Any
+        from::EMB.Node
+        to::EMB.Node
+        formulation::EMB.Formulation
+    end
+    function EMB.create_link(m, 𝒯, 𝒫, l::CapDirect, modeltype::EnergyModel, formulation::EMB.Formulation)
+
+        # Generic link in which each output corresponds to the input
+        @constraint(m, [t ∈ 𝒯, p ∈ EMB.link_res(l)],
+            m[:link_out][l, t, p] == m[:link_in][l, t, p]
+        )
+
+        # Capacity constraint
+        @constraint(m, [t ∈ 𝒯, p ∈ EMB.link_res(l)],
+            m[:link_out][l, t, p] ≤ m[:link_cap_inst][l, t]
+        )
+        constraints_capacity_installed(m, l, 𝒯, modeltype)
+    end
+    EMB.capacity(l::CapDirect, t) = OperationalProfile([2, 3, 3, 2, 1])[t]
+    EMB.has_capacity(l::CapDirect) = true
+
+    # Create and solve the system
+    m, case, model = link_graph(CapDirect)
+    ℒ = case[:links]
+    𝒩 = case[:nodes]
+    𝒯 = case[:T]
+
+    # Helper for usage
+    cap = OperationalProfile([2, 3, 3, 2, 1])
+    deficit = OperationalProfile([1, 0, 0, 1, 2])
+
+    # Test that `link_cap_inst` is not empty
+    @test !isempty(m[:link_cap_inst])
+
+    # Test that the capacity is restricted, impacting the different nodes
+    @test all(value.(m[:cap_use][𝒩[1], t]) == cap[t] for t ∈ 𝒯)
+    @test all(value.(m[:cap_use][𝒩[2], t]) == cap[t] for t ∈ 𝒯)
+    @test all(value.(m[:sink_deficit][𝒩[2], t]) == deficit[t] for t ∈ 𝒯)
+    @test all(value.(m[:link_in][ℒ[1], t, Power]) == cap[t] for t ∈ 𝒯)
+    @test all(value.(m[:link_out][ℒ[1], t, Power]) == cap[t] for t ∈ 𝒯)
 end
