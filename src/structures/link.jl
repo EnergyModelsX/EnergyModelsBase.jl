@@ -41,8 +41,29 @@ end
     link_res(l::Link)
 
 Return the resources transported for a given link `l`.
+
+The default approach is to use the intersection of the inputs of the `to` node and the
+outputs of the `from` node.
 """
 link_res(l::Link) = intersect(inputs(l.to), outputs(l.from))
+
+"""
+    inputs(n::Link)
+
+Returns the input resources of a link `l`.
+
+The default approach is to use the function [`link_res(l::Link)`](@ref).
+"""
+inputs(l::Link) = link_res(l)
+
+"""
+    outputs(n::Link)
+
+Returns the output resources of a link `l`.
+
+The default approach is to use the function [`link_res(l::Link)`](@ref).
+"""
+outputs(l::Link) = link_res(l)
 
 """
     formulation(l::Link)

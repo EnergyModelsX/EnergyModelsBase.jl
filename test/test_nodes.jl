@@ -83,7 +83,6 @@
     end
 
     @testset "General tests - RefSink" begin
-
         # Test that the deficit values are properly calculated and time is involved
         # in the penalty calculation
         source = RefSource(

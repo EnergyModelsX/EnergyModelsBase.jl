@@ -30,5 +30,7 @@ The following functions are declared for accessing fields from a `Link` type.
     The first approach can be achieved through using the same name for the respective fields.
 
 ```@docs
+inputs(n::Link)
+outputs(n::Link)
 formulation
 ```

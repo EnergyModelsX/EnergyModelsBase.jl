@@ -151,8 +151,8 @@ function variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
     @variable(m, flow_in[n_in ∈ 𝒩ⁱⁿ, 𝒯, inputs(n_in)] >= 0)
     @variable(m, flow_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯, outputs(n_out)] >= 0)
 
-    @variable(m, link_in[l ∈ ℒ, 𝒯, link_res(l)] >= 0)
-    @variable(m, link_out[l ∈ ℒ, 𝒯, link_res(l)] >= 0)
+    @variable(m, link_in[l ∈ ℒ, 𝒯, inputs(l)] >= 0)
+    @variable(m, link_out[l ∈ ℒ, 𝒯, outputs(l)] >= 0)
 end
 
 """
@@ -276,14 +276,14 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
         if has_output(n)
             @constraint(m, [t ∈ 𝒯, p ∈ outputs(n)],
                 m[:flow_out][n, t, p] ==
-                sum(m[:link_in][l, t, p] for l ∈ ℒᶠʳᵒᵐ if p ∈ inputs(l.to))
+                sum(m[:link_in][l, t, p] for l ∈ ℒᶠʳᵒᵐ if p ∈ outputs(l))
             )
         end
         # Constraint for input flowrate and output links.
         if has_input(n)
             @constraint(m, [t ∈ 𝒯, p ∈ inputs(n)],
                 m[:flow_in][n, t, p] ==
-                sum(m[:link_out][l, t, p] for l ∈ ℒᵗᵒ if p ∈ outputs(l.from))
+                sum(m[:link_out][l, t, p] for l ∈ ℒᵗᵒ if p ∈ inputs(l))
             )
         end
         # Call of function for individual node constraints.
