@@ -55,7 +55,7 @@ function create_model(
 
     # Declaration of variables for the problem
     variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
-    variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype)
+    variables_emission(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype)
     variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype)
     variables_capacity(m, 𝒩, 𝒯, modeltype)
@@ -63,7 +63,7 @@ function create_model(
 
     # Construction of constraints for the problem
     constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
-    constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype)
+    constraints_emissions(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
 
     # Construction of the objective function
@@ -178,23 +178,30 @@ function variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 end
 
 """
-    variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+    variables_emission(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 
-Declaration of emission variables per technology node with emissions `n ∈ 𝒩ᵉᵐ` and emission
-resource `𝒫ᵉᵐ ∈ 𝒫`.
+Declaration of emission variables per technology node with emissions `n ∈ 𝒩ᵉᵐ` and link with
+emissions `l ∈ ℒᵉᵐ` for each emission resource `𝒫ᵉᵐ ∈ 𝒫`.
+
+The inclusion of node and link emissions require that the function `has_emissions` returns
+a value `true` for the given node or link. This is by default achieved for nodes through
+inclusion of `EmissionData`.
 
 The emission variables are differentiated in:
 * `:emissions_node` - emissions of a node in an operational period,
+* `:emissions_link` - emissions of a link in an operational period,
 * `:emissions_total` - total emissions in an operational period, and
 * `:emissions_strategic` - total strategic emissions, constrained to an upper limit
   based on the field `emission_limit` of the `EnergyModel`.
 """
-function variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+function variables_emission(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
     𝒩ᵉᵐ = filter(has_emissions, 𝒩)
+    ℒᵉᵐ = filter(has_emissions, ℒ)
     𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     @variable(m, emissions_node[𝒩ᵉᵐ, 𝒯, 𝒫ᵉᵐ])
+    @variable(m, emissions_link[ℒᵉᵐ, 𝒯, 𝒫ᵉᵐ] ≥ 0)
     @variable(m, emissions_total[𝒯, 𝒫ᵉᵐ])
     @variable(m,
         emissions_strategic[t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ] <= emission_limit(modeltype, p, t_inv)
@@ -314,19 +321,21 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 end
 
 """
-    constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+    constraints_emissions(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 
 Create constraints for the emissions accounting for both operational and strategic periods.
 """
-function constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+function constraints_emissions(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
     𝒩ᵉᵐ = filter(has_emissions, 𝒩)
+    ℒᵉᵐ = filter(has_emissions, ℒ)
     𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Creation of the individual constraints.
     @constraint(m, con_em_tot[t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
         m[:emissions_total][t, p] ==
-        sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ᵉᵐ)
+        sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ᵉᵐ) +
+        sum(m[:emissions_link][l, t, p] for l ∈ ℒᵉᵐ)
     )
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ],
         m[:emissions_strategic][t_inv, p] ==

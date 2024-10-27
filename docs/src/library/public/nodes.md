@@ -130,7 +130,7 @@ nodes_output
 nodes_emissions
 has_input
 has_output
-has_emissions
+has_emissions(n::EnergyModelsBase.Node)
 has_charge
 has_discharge
 is_unidirectional(n::EnergyModelsBase.Node)
