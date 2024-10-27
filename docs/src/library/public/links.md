@@ -21,7 +21,7 @@ Direct
 Linear
 ```
 
-## [Functions for accessing fields of `Link` types](@id lib-pub-fun_field)
+## [Functions for accessing fields of `Link` types](@id lib-pub-links-fun_field)
 
 The following functions are declared for accessing fields from a `Link` type.
 
@@ -33,4 +33,12 @@ The following functions are declared for accessing fields from a `Link` type.
 inputs(n::Link)
 outputs(n::Link)
 formulation
+```
+
+## [Functions for identifying `Link`s](@id lib-pub-links-fun_identify)
+
+The following functions are declared for filtering on `Link` types.
+
+```@docs
+is_unidirectional(l::Link)
 ```

@@ -53,6 +53,13 @@
         return case, model
     end
 
+    @testset "Identification functions" begin
+        case, model = simple_graph()
+
+        # Test that all links are identified as unidirectional
+        @test all(is_unidirectional(l) for l ∈ case[:links])
+    end
+
     @testset "Access functions" begin
         case, model = simple_graph()
         ℒ = case[:links]
@@ -69,5 +76,22 @@
         # Test that the constructor for a direct link is working and that the function
         # formulation is working
         @test isa(formulation(ℒ[1]), Linear)
+    end
+
+    @testset "Variable declaration" begin
+        case, model = simple_graph()
+        m = create_model(case, model)
+        ℒ = case[:links]
+        𝒯 = case[:T]
+
+        # Test that all link variables have a lower bound of 0
+        @test all(
+            all(lower_bound(m[:link_in][l, t, p]) == 0 for p ∈ inputs(l))
+            for l ∈ ℒ, t ∈ 𝒯
+        )
+        @test all(
+            all(lower_bound(m[:link_out][l, t, p]) == 0 for p ∈ outputs(l))
+            for l ∈ ℒ, t ∈ 𝒯
+        )
     end
 end

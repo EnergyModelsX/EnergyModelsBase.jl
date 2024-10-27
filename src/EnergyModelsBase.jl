@@ -87,7 +87,7 @@ export co2_capture, process_emissions
 
 # Export commonly used functions for extracting fields in `Node`
 export nodes_input, nodes_output, nodes_emissions
-export has_input, has_output, has_emissions
+export has_input, has_output, has_emissions, is_unidirectional
 export capacity,
     inputs,
     outputs,

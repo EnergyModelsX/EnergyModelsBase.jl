@@ -133,4 +133,5 @@ has_output
 has_emissions
 has_charge
 has_discharge
+is_unidirectional(n::EnergyModelsBase.Node)
 ```

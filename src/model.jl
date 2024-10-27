@@ -143,16 +143,38 @@ end
 
 Declaration of the individual input (`:flow_in`) and output (`:flow_out`) flowrates for
 each technological node `n ∈ 𝒩` and link `l ∈ ℒ` (`:link_in` and `:link_out`).
+
+By default, all nodes `𝒩` and links ℒ only allow for unidirectional flow.
 """
 function variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
     𝒩ⁱⁿ = filter(has_input, 𝒩)
     𝒩ᵒᵘᵗ = filter(has_output, 𝒩)
 
-    @variable(m, flow_in[n_in ∈ 𝒩ⁱⁿ, 𝒯, inputs(n_in)] >= 0)
-    @variable(m, flow_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯, outputs(n_out)] >= 0)
+    @variable(m, flow_in[n_in ∈ 𝒩ⁱⁿ, 𝒯, inputs(n_in)])
+    @variable(m, flow_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯, outputs(n_out)])
 
-    @variable(m, link_in[l ∈ ℒ, 𝒯, inputs(l)] >= 0)
-    @variable(m, link_out[l ∈ ℒ, 𝒯, outputs(l)] >= 0)
+    @variable(m, link_in[l ∈ ℒ, 𝒯, inputs(l)])
+    @variable(m, link_out[l ∈ ℒ, 𝒯, outputs(l)])
+
+    # Set the bounds fo unidirectional nodes and links
+    𝒩ⁱⁿ⁻ᵘⁿⁱ = filter(is_unidirectional, 𝒩ⁱⁿ)
+    𝒩ᵒᵘᵗ⁻ᵘⁿⁱ = filter(is_unidirectional, 𝒩ᵒᵘᵗ)
+    ℒᵘⁿⁱ = filter(is_unidirectional, ℒ)
+
+    for n_in ∈ 𝒩ⁱⁿ⁻ᵘⁿⁱ, t ∈ 𝒯, p ∈ inputs(n_in)
+        set_lower_bound(m[:flow_in][n_in, t, p], 0)
+    end
+    for n_out ∈ 𝒩ᵒᵘᵗ⁻ᵘⁿⁱ, t ∈ 𝒯, p ∈ outputs(n_out)
+        set_lower_bound(m[:flow_out][n_out, t, p], 0)
+    end
+    for l ∈ ℒᵘⁿⁱ, t ∈ 𝒯
+        for p ∈ inputs(l)
+            set_lower_bound(m[:link_in][l, t, p], 0)
+        end
+        for p ∈ outputs(l)
+            set_lower_bound(m[:link_out][l, t, p], 0)
+        end
+    end
 end
 
 """
