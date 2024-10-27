@@ -14,7 +14,7 @@ CurrentModule = EnergyModelsBase
 
 ```@docs
 create_link
-objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+objective(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 ```
 
 ## Constraint functions
@@ -38,6 +38,7 @@ variables_emission
 variables_flow
 variables_opex
 variables_nodes
+variables_links_opex
 ```
 
 ## Check functions

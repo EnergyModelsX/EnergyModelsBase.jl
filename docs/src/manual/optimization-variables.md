@@ -47,6 +47,18 @@ Instead, it is only dependent on the installed capacity.
 It is calculated using the function [`constraints_opex_fixed`](@ref).
 It represents fixed costs like labour cost, maintenance, as well as insurances and taxes.
 
+We also introduce the potential for links with operational costs.
+By default, links do not introduce new variables.
+Operational cost variables are only created for a link ``l`` if the function [`has_opex(n::Link)`](@ref) returns `true`.
+The following link variables are then declared representing the operational costs of the links:
+
+- ``\texttt{link\_opex\_var}[l, t_\texttt{inv}]``:  Variable OPEX of link ``l`` in strategic period ``t_\texttt{inv}``.
+- ``\texttt{link\_opex\_foxed}[l, t_\texttt{inv}]``:  Fixed OPEX of link ``l`` in strategic period ``t_\texttt{inv}``.
+
+!!! tip "Links with OPEX"
+    All links introduced in `EnergyModelsBase` do not allow for operational costs.
+    If you plan to introduce a link with operational costs, you have to create a new method for the function `has_opex` for your introduced link.
+
 ## [Capacity variables](@id man-opt_var-cap)
 
 Capacity variables focus on both the capacity usage and installed capacity.

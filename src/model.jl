@@ -61,13 +61,15 @@ function create_model(
     variables_capacity(m, 𝒩, 𝒯, modeltype)
     variables_nodes(m, 𝒩, 𝒯, modeltype)
 
+    variables_links_opex(m, ℒ, 𝒯, 𝒫, modeltype)
+
     # Construction of constraints for the problem
     constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     constraints_emissions(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
 
     # Construction of the objective function
-    objective(m, 𝒩, 𝒯, 𝒫, modeltype)
+    objective(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
 
     return m
 end
@@ -212,7 +214,9 @@ end
     variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Declaration of the OPEX variables (`:opex_var` and `:opex_fixed`) of the model for each
-period `𝒯ᴵⁿᵛ ∈ 𝒯`. Variable OPEX can be non negative to account for revenue streams.
+investment period `t_inv ∈ 𝒯ᴵⁿᵛ`.
+
+Variable OPEX can be negative to account for revenue streams.
 """
 function variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
     𝒩ⁿᵒᵗ = nodes_not_av(𝒩)
@@ -225,10 +229,28 @@ end
 """
     variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
-Declaration of the CAPEX variables of the model for each investment period `𝒯ᴵⁿᵛ ∈ 𝒯`.
+Declaration of the CAPEX variables of the model for each investment period `t_inv ∈ 𝒯ᴵⁿᵛ`.
 Empty for operational models but required for multiple dispatch in investment model.
 """
 function variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel) end
+
+"""
+    variables_links_opex(m, ℒ, 𝒯, 𝒫, modeltype::EnergyModel)
+
+Declaration of the OPEX variables for links (`:link_opex_var` and `:link_opex_fixed`) of
+the model for each investment period `t_inv ∈ 𝒯ᴵⁿᵛ`. The OPEX variables are only created for
+links, if the function [`has_opex`](@ref) has received an additional method for a given
+link `l` returning the value `true`.
+
+Variable OPEX can be negative to account for revenue streams.
+"""
+function variables_links_opex(m, ℒ, 𝒯, 𝒫, modeltype::EnergyModel)
+    ℒᵒᵖᵉˣ = filter(has_opex, ℒ)
+    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+
+    @variable(m, link_opex_var[ℒᵒᵖᵉˣ, 𝒯ᴵⁿᵛ])
+    @variable(m, link_opex_fixed[ℒᵒᵖᵉˣ, 𝒯ᴵⁿᵛ] ≥ 0)
+end
 
 """
     variables_nodes(m, 𝒩, 𝒯, modeltype::EnergyModel)
@@ -334,17 +356,17 @@ function constraints_emissions(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
     # Creation of the individual constraints.
     @constraint(m, con_em_tot[t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
         m[:emissions_total][t, p] ==
-        sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ᵉᵐ) +
-        sum(m[:emissions_link][l, t, p] for l ∈ ℒᵉᵐ)
+            sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ᵉᵐ) +
+            sum(m[:emissions_link][l, t, p] for l ∈ ℒᵉᵐ)
     )
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ],
         m[:emissions_strategic][t_inv, p] ==
-        sum(m[:emissions_total][t, p] * scale_op_sp(t_inv, t) for t ∈ t_inv)
+            sum(m[:emissions_total][t, p] * scale_op_sp(t_inv, t) for t ∈ t_inv)
     )
 end
 
 """
-    objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+    objective(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 
 Create the objective for the optimization problem for a given modeltype.
 
@@ -357,15 +379,20 @@ The values are not discounted.
 This function serve as fallback option if no other method is specified for a specific
 `modeltype`.
 """
-function objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+function objective(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 
     # Declaration of the required subsets.
     𝒩ⁿᵒᵗ = nodes_not_av(𝒩)
+    ℒᵒᵖᵉˣ = filter(has_opex, ℒ)
     𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     opex = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         sum((m[:opex_var][n, t_inv] + m[:opex_fixed][n, t_inv]) for n ∈ 𝒩ⁿᵒᵗ)
+    )
+
+    link_opex = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
+        sum((m[:link_opex_var][l, t_inv] + m[:link_opex_fixed][l, t_inv]) for l ∈ ℒᵒᵖᵉˣ)
     )
 
     emissions = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
@@ -377,7 +404,9 @@ function objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Calculation of the objective function.
     @objective(m, Max,
-        -sum((opex[t_inv] + emissions[t_inv]) * duration_strat(t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ)
+        -sum(
+            (opex[t_inv] + link_opex[t_inv] + emissions[t_inv]) * duration_strat(t_inv)
+        for t_inv ∈ 𝒯ᴵⁿᵛ)
     )
 end
 

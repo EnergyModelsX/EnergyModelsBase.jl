@@ -1,4 +1,4 @@
-@testset "Link utilities" begin
+@testset "Link - utilities" begin
 
     # Resources used in the analysis
     NG = ResourceEmit("NG", 0.2)
@@ -61,6 +61,9 @@
 
         # Test that all links do not have emissions
         @test !all(has_emissions(l) for l ∈ ℒ)
+
+        # Test that all links do not have opex variables
+        @test !all(has_opex(l) for l ∈ ℒ)
     end
 
     @testset "Access functions" begin
@@ -98,12 +101,54 @@
             for l ∈ ℒ, t ∈ 𝒯
         )
 
-        # Test that `emissions_link` variable is empty
+        # Test that `emissions_link`, `link_opex_var`, and `link_opex_fixed` are empty
         @test isempty(m[:emissions_link])
+        @test isempty(m[:link_opex_var])
+        @test isempty(m[:link_opex_fixed])
     end
 end
 
-@testset "Link emissions" begin
+
+# Resources used in the analysis
+Power = ResourceCarrier("Power", 0.0)
+CO2 = ResourceEmit("CO2", 1.0)
+
+# Function for setting up the system
+function link_graph(LinkType::Type{<:Link})
+    # Used source, network, and sink
+    source = RefSource(
+        "source",
+        FixedProfile(4),
+        FixedProfile(10),
+        FixedProfile(0),
+        Dict(Power => 1),
+    )
+    sink = RefSink(
+        "sink",
+        FixedProfile(3),
+        Dict(:surplus => FixedProfile(4), :deficit => FixedProfile(100)),
+        Dict(Power => 1),
+    )
+
+    resources = [Power, CO2]
+    ops = SimpleTimes(5, 2)
+    op_per_strat = 10
+    T = TwoLevel(2, 2, ops; op_per_strat)
+
+    nodes = [source, sink]
+    links = [
+        LinkType(12, source, sink, Linear())
+    ]
+    model = OperationalModel(
+        Dict(CO2 => FixedProfile(100)),
+        Dict(CO2 => FixedProfile(0)),
+        CO2,
+    )
+    case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+    return run_model(case, model, HiGHS.Optimizer), case, model
+end
+
+@testset "Link - emissions" begin
     # Creation of a new link type with associated emissions in each operational period
     struct EmissionDirect <: Link
         id::Any
@@ -112,7 +157,6 @@ end
         formulation::EMB.Formulation
     end
     function EMB.create_link(m, 𝒯, 𝒫, l::EmissionDirect, formulation::EMB.Formulation)
-
         # Generic link in which each output corresponds to the input
         @constraint(m, [t ∈ 𝒯, p ∈ EMB.link_res(l)],
             m[:link_out][l, t, p] == m[:link_in][l, t, p]
@@ -126,47 +170,8 @@ end
     end
     EMB.has_emissions(l::EmissionDirect) = true
 
-    # Resources used in the analysis
-    Power = ResourceCarrier("Power", 0.0)
-    CO2 = ResourceEmit("CO2", 1.0)
-
-    # Function for setting up the system
-    function simple_graph()
-        # Used source, network, and sink
-        source = RefSource(
-            "source",
-            FixedProfile(4),
-            FixedProfile(10),
-            FixedProfile(0),
-            Dict(Power => 1),
-        )
-        sink = RefSink(
-            "sink",
-            FixedProfile(3),
-            Dict(:surplus => FixedProfile(4), :deficit => FixedProfile(100)),
-            Dict(Power => 1),
-        )
-
-        resources = [Power, CO2]
-        ops = SimpleTimes(5, 2)
-        op_per_strat = 10
-        T = TwoLevel(2, 2, ops; op_per_strat)
-
-        nodes = [source, sink]
-        links = [
-            EmissionDirect(23, source, sink, Linear())
-        ]
-        model = OperationalModel(
-            Dict(CO2 => FixedProfile(100)),
-            Dict(CO2 => FixedProfile(0)),
-            CO2,
-        )
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
-        return case, model
-    end
-
-    case, model = simple_graph()
-    m = run_model(case, model, HiGHS.Optimizer)
+    # Create and solve the system
+    m, case, model = link_graph(EmissionDirect)
     ℒ = case[:links]
     𝒩 = case[:nodes]
     𝒯 = case[:T]
@@ -180,4 +185,44 @@ end
         value.(m[:emissions_link][ℒ[1], t, CO2])
     for t ∈ 𝒯)
     @test all(value.(m[:emissions_total][t, CO2]) == 0.1 for t ∈ 𝒯)
+end
+
+@testset "Link - OPEX" begin
+    # Creation of a new link type with associated OPEX
+    struct OpexDirect <: Link
+        id::Any
+        from::EMB.Node
+        to::EMB.Node
+        formulation::EMB.Formulation
+    end
+    function EMB.create_link(m, 𝒯, 𝒫, l::OpexDirect, formulation::EMB.Formulation)
+        𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+
+        # Generic link in which each output corresponds to the input
+        @constraint(m, [t ∈ 𝒯, p ∈ EMB.link_res(l)],
+            m[:link_out][l, t, p] == m[:link_in][l, t, p]
+        )
+
+        # Variable OPEX calculation
+        @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ], m[:link_opex_var][l, t_inv] == 0.2)
+        @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ], m[:link_opex_fixed][l, t_inv] == 1)
+    end
+    EMB.has_opex(l::OpexDirect) = true
+
+    # Create and solve the system
+    m, case, model = link_graph(OpexDirect)
+    ℒ = case[:links]
+    𝒩 = case[:nodes]
+    𝒯 = case[:T]
+
+    # Test that `link_opex_var` and `link_opex_fixed` are not empty
+    @test !isempty(m[:link_opex_var])
+    @test !isempty(m[:link_opex_fixed])
+
+    # Test that the values are included in the objective function
+    #   3 * 10 * 10     is the cost of the source Node
+    #   0.2             is the variable OPEX contribution from the link
+    #   1               is the fixed OPEX contribution from the link
+    # The multiplication with 2 * 2 is due to 2 strategic periods with a duration of 2
+    @test objective_value(m) ≈ -((3 * 10 * 10) + 0.2 + 1) * (2 * 2) atol=TEST_ATOL
 end
