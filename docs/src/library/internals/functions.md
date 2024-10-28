@@ -33,7 +33,7 @@ constraints_level_bounds
 
 ```@docs
 variables_capacity
-variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+variables_capex(m, 𝒩, 𝒯, modeltype::EnergyModel)
 variables_emission
 variables_flow
 variables_opex
@@ -41,6 +41,7 @@ variables_nodes
 variables_links
 variables_links_capacity
 variables_links_opex
+variables_links_capex(m, ℒ, 𝒯, modeltype::EnergyModel)
 ```
 
 ## Check functions

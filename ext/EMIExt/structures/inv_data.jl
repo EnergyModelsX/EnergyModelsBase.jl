@@ -28,36 +28,36 @@ struct SingleInvData <: EMB.SingleInvData
 end
 EMB.SingleInvData(args...) = SingleInvData(args...)
 function EMB.SingleInvData(
-    capex_trans::TimeProfile,
-    trans_max_inst::TimeProfile,
+    capex::TimeProfile,
+    max_inst::TimeProfile,
     inv_mode::Investment,
 )
-    return SingleInvData(NoStartInvData(capex_trans, trans_max_inst, inv_mode))
+    return SingleInvData(NoStartInvData(capex, max_inst, inv_mode))
 end
 function EMB.SingleInvData(
-    capex_trans::TimeProfile,
-    trans_max_inst::TimeProfile,
+    capex::TimeProfile,
+    max_inst::TimeProfile,
     inv_mode::Investment,
     life_mode::LifetimeMode,
 )
-    return SingleInvData(NoStartInvData(capex_trans, trans_max_inst, inv_mode, life_mode))
+    return SingleInvData(NoStartInvData(capex, max_inst, inv_mode, life_mode))
 end
 function EMB.SingleInvData(
-    capex_trans::TimeProfile,
-    trans_max_inst::TimeProfile,
+    capex::TimeProfile,
+    max_inst::TimeProfile,
     initial::TimeProfile,
     inv_mode::Investment,
 )
-    return SingleInvData(StartInvData(capex_trans, trans_max_inst, initial, inv_mode))
+    return SingleInvData(StartInvData(capex, max_inst, initial, inv_mode))
 end
 function EMB.SingleInvData(
-    capex_trans::TimeProfile,
-    trans_max_inst::TimeProfile,
+    capex::TimeProfile,
+    max_inst::TimeProfile,
     initial::TimeProfile,
     inv_mode::Investment,
     life_mode::LifetimeMode,
 )
     return SingleInvData(
-        StartInvData(capex_trans, trans_max_inst, initial, inv_mode, life_mode),
+        StartInvData(capex, max_inst, initial, inv_mode, life_mode),
     )
 end

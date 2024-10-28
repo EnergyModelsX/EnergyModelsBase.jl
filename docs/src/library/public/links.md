@@ -25,7 +25,7 @@ Linear
 
 The following functions are declared for accessing fields from a `Link` type.
 
-!!! warning
+!!! warning "New link types"
     If you want to introduce new `Link` types, it is important that the function `formulation` is either functional for your new types or you have to declare a corresponding function.
     The first approach can be achieved through using the same name for the respective fields.
 
@@ -33,6 +33,7 @@ The following functions are declared for accessing fields from a `Link` type.
 inputs(n::Link)
 outputs(n::Link)
 formulation
+link_data
 ```
 
 ## [Functions for identifying `Link`s](@id lib-pub-links-fun_identify)

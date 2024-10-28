@@ -105,7 +105,7 @@ export charge, level, discharge
 
 # Export commonly used functions for extracting fields in `Link`
 export has_opex, has_capacity
-export formulation
+export formulation, link_data
 
 # Export commonly used functions for extracting fields in `EnergyModel`
 export emission_limit, emission_price, co2_instance, discount_rate

@@ -57,11 +57,12 @@ function create_model(
     variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     variables_emission(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype)
-    variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype)
+    variables_capex(m, 𝒩, 𝒯, modeltype)
     variables_capacity(m, 𝒩, 𝒯, modeltype)
     variables_nodes(m, 𝒩, 𝒯, modeltype)
 
     variables_links_capacity(m, ℒ, 𝒯, modeltype)
+    variables_links_capex(m, ℒ, 𝒯, modeltype)
     variables_links_opex(m, ℒ, 𝒯, 𝒫, modeltype)
     variables_links(m, ℒ, 𝒯, modeltype)
 
@@ -229,12 +230,12 @@ function variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 end
 
 """
-    variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+    variables_capex(m, 𝒩, 𝒯, modeltype::EnergyModel)
 
 Declaration of the CAPEX variables of the model for each investment period `t_inv ∈ 𝒯ᴵⁿᵛ`.
 Empty for operational models but required for multiple dispatch in investment model.
 """
-function variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel) end
+function variables_capex(m, 𝒩, 𝒯, modeltype::EnergyModel) end
 
 """
     variables_links_capacity(m, ℒ, 𝒯, modeltype::EnergyModel)
@@ -267,6 +268,15 @@ function variables_links_opex(m, ℒ, 𝒯, 𝒫, modeltype::EnergyModel)
     @variable(m, link_opex_var[ℒᵒᵖᵉˣ, 𝒯ᴵⁿᵛ])
     @variable(m, link_opex_fixed[ℒᵒᵖᵉˣ, 𝒯ᴵⁿᵛ] ≥ 0)
 end
+
+"""
+    variables_links_capex(m, ℒ, 𝒯, modeltype::EnergyModel)
+
+Declaration of the CAPEX variables of the model for links for each investment period
+`t_inv ∈ 𝒯ᴵⁿᵛ`.
+Empty for operational models but required for multiple dispatch in investment model.
+"""
+function variables_links_capex(m, ℒ, 𝒯, modeltype::EnergyModel) end
 
 """
     variables_nodes(m, 𝒩, 𝒯, modeltype::EnergyModel)

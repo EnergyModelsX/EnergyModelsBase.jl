@@ -115,3 +115,12 @@ outputs(l::Link) = link_res(l)
 Return the formulation of a Link `l`.
 """
 formulation(l::Link) = l.formulation
+
+"""
+    link_data(l::Link)
+
+Returns the [`Data`](@ref) array of link `l`.
+
+The default options returns nothing.
+"""
+link_data(l::Link) = nothing

@@ -29,6 +29,7 @@ function EMB.objective(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::AbstractInvestmentMo
 
     # Filtering through the individual links
     ℒᵒᵖᵉˣ = filter(has_opex, ℒ)
+    ℒᴵⁿᵛ = filter(has_investment, ℒ)
 
     𝒫ᵉᵐ = filter(EMB.is_resource_emit, 𝒫)              # Emissions resources
 
@@ -51,7 +52,7 @@ function EMB.objective(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::AbstractInvestmentMo
         )
     )
 
-    # Calculation of the capital cost contribution
+    # Calculation of the capital cost contributionof standard nodes
     capex_cap = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         sum(m[:cap_capex][n, t_inv] for n ∈ 𝒩ᴵⁿᵛ)
     )
@@ -63,12 +64,18 @@ function EMB.objective(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::AbstractInvestmentMo
         sum(m[:stor_discharge_capex][n, t_inv] for n ∈ 𝒩ᵈⁱˢᶜʰᵃʳᵍᵉ)
     )
 
+    # Calculation of the capital cost contribution of Links
+    capex_link = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
+        sum(m[:link_cap_capex][l, t_inv] for l ∈ ℒᴵⁿᵛ)
+    )
+
     # Calculation of the objective function.
     @objective(m, Max,
         -sum(
             (opex[t_inv] + link_opex[t_inv] + emissions[t_inv]) *
             duration_strat(t_inv) * objective_weight(t_inv, disc; type = "avg") +
-            (capex_cap[t_inv] + capex_stor[t_inv]) * objective_weight(t_inv, disc)
-            for t_inv ∈ 𝒯ᴵⁿᵛ)
+            (capex_cap[t_inv] + capex_stor[t_inv] + capex_link[t_inv]) *
+            objective_weight(t_inv, disc)
+        for t_inv ∈ 𝒯ᴵⁿᵛ)
     )
 end
