@@ -63,6 +63,7 @@ function create_model(
 
     variables_links_capacity(m, ℒ, 𝒯, modeltype)
     variables_links_opex(m, ℒ, 𝒯, 𝒫, modeltype)
+    variables_links(m, ℒ, 𝒯, modeltype)
 
     # Construction of constraints for the problem
     constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
@@ -273,8 +274,9 @@ end
 Loop through all node types and create variables specific to each type. This is done by
 calling the method [`variables_node`](@ref) on all nodes of each type.
 
-The node type representing the widest cathegory will be called first. That is,
-`variables_node` will be called on a `Node` before it is called on `NetworkNode`-nodes.
+The node type representing the widest category will be called first. That is,
+[`variables_node`](@ref) will be called on a [`Node`](@ref EnergyModelsBase.Node) before it
+is called on [`NetworkNode`](@ref)-nodes.
 """
 function variables_nodes(m, 𝒩, 𝒯, modeltype::EnergyModel)
     # Vector of the unique node types in 𝒩.
@@ -326,6 +328,55 @@ function variables_node(m, 𝒩ˢⁱⁿᵏ::Vector{<:Sink}, 𝒯, modeltype::Ene
     @variable(m, sink_surplus[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
     @variable(m, sink_deficit[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
 end
+
+"""
+    variables_links(m, ℒ, 𝒯, modeltype::EnergyModel)
+
+Loop through all link types and create variables specific to each type. This is done by
+calling the method [`variables_link`](@ref) on all links of each type.
+
+The link type representing the widest category will be called first. That is,
+[`variables_link`](@ref) will be called on a [`Link`](@ref) before it is called on
+[`Direct`](@ref)-links.
+"""
+function variables_links(m, ℒ, 𝒯, modeltype::EnergyModel)
+    # Vector of the unique link types in ℒ.
+    link_composite_types = unique(map(l -> typeof(l), ℒ))
+    # Get all `link`-types in the type-hierarchy that the links ℒ represents.
+    link_types = collect_types(link_composite_types)
+    # Sort the link-types such that a supertype will always come its subtypes.
+    link_types = sort_types(link_types)
+
+    for link_type ∈ link_types
+        # All links of the given sub type.
+        ℒˢᵘᵇ = filter(l -> isa(l, link_type), ℒ)
+        # Convert to a Vector of common-type instad of Any.
+        ℒˢᵘᵇ = convert(Vector{link_type}, ℒˢᵘᵇ)
+        try
+            variables_link(m, ℒˢᵘᵇ, 𝒯, modeltype)
+        catch e
+            # Parts of the exception message we are looking for.
+            pre1 = "An object of name"
+            pre2 = "is already attached to this model."
+            if isa(e, ErrorException)
+                if occursin(pre1, e.msg) && occursin(pre2, e.msg)
+                    # 𝒩ˢᵘᵇ was already registered by a call to a supertype, so just continue.
+                    continue
+                end
+            end
+            # If we make it to this point, this means some other error occured. This should
+            # not be ignored.
+            throw(e)
+        end
+    end
+end
+
+"""
+    variables_link(m, ℒˢᵘᵇ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
+
+Default fallback method when no method is defined for a [`Link`](@ref) type.
+"""
+function variables_link(m, ℒˢᵘᵇ::Vector{<:Link}, 𝒯, modeltype::EnergyModel) end
 
 """
     constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)

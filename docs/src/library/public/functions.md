@@ -32,6 +32,7 @@ See the page *[Creating a new node](@ref how_to-create_node)* for a detailed exp
 ```@docs
 variables_node
 create_node
+variables_link
 ```
 
 ## [Constraint functions](@id lib-pub-fun-con)

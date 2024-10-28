@@ -110,13 +110,12 @@
     end
 end
 
-
 # Resources used in the analysis
 Power = ResourceCarrier("Power", 0.0)
 CO2 = ResourceEmit("CO2", 1.0)
 
 # Function for setting up the system
-function link_graph(LinkType::Type{<:Link})
+function link_graph(LinkType::Vector{DataType})
     # Used source, network, and sink
     source = RefSource(
         "source",
@@ -138,9 +137,7 @@ function link_graph(LinkType::Type{<:Link})
     T = TwoLevel(2, 2, ops; op_per_strat)
 
     nodes = [source, sink]
-    links = [
-        LinkType(12, source, sink, Linear())
-    ]
+    links = Link[link_type(string(link_type), source, sink, Linear()) for link_type ∈ LinkType]
     model = OperationalModel(
         Dict(CO2 => FixedProfile(100)),
         Dict(CO2 => FixedProfile(0)),
@@ -173,7 +170,7 @@ end
     EMB.has_emissions(l::EmissionDirect) = true
 
     # Create and solve the system
-    m, case, model = link_graph(EmissionDirect)
+    m, case, model = link_graph([EmissionDirect])
     ℒ = case[:links]
     𝒩 = case[:nodes]
     𝒯 = case[:T]
@@ -212,7 +209,7 @@ end
     EMB.has_opex(l::OpexDirect) = true
 
     # Create and solve the system
-    m, case, model = link_graph(OpexDirect)
+    m, case, model = link_graph([OpexDirect])
     ℒ = case[:links]
     𝒩 = case[:nodes]
     𝒯 = case[:T]
@@ -254,7 +251,7 @@ end
     EMB.has_capacity(l::CapDirect) = true
 
     # Create and solve the system
-    m, case, model = link_graph(CapDirect)
+    m, case, model = link_graph([CapDirect])
     ℒ = case[:links]
     𝒩 = case[:nodes]
     𝒯 = case[:T]
@@ -272,4 +269,55 @@ end
     @test all(value.(m[:sink_deficit][𝒩[2], t]) == deficit[t] for t ∈ 𝒯)
     @test all(value.(m[:link_in][ℒ[1], t, Power]) == cap[t] for t ∈ 𝒯)
     @test all(value.(m[:link_out][ℒ[1], t, Power]) == cap[t] for t ∈ 𝒯)
+end
+
+@testset "Link - variable creation" begin
+    # Creation of a new link types
+    abstract type DirectSub <: Link end
+    struct DirectSub1 <: DirectSub
+        id::Any
+        from::EMB.Node
+        to::EMB.Node
+        formulation::EMB.Formulation
+    end
+    struct DirectSub2 <: DirectSub
+        id::Any
+        from::EMB.Node
+        to::EMB.Node
+        formulation::EMB.Formulation
+    end
+
+    struct Direct1 <: Link
+        id::Any
+        from::EMB.Node
+        to::EMB.Node
+        formulation::EMB.Formulation
+    end
+
+    function EMB.variables_link(m, ℒˢᵘᵇ::Vector{<:DirectSub}, 𝒯, modeltype::EnergyModel)
+        @variable(m, test_var_sub[ℒˢᵘᵇ, 𝒯])
+    end
+    function EMB.variables_link(m, ℒˢᵘᵇ::Vector{<:DirectSub1}, 𝒯, modeltype::EnergyModel)
+        @variable(m, test_var_sub_1[ℒˢᵘᵇ, 𝒯])
+    end
+    function EMB.variables_link(m, ℒˢᵘᵇ::Vector{<:Direct1}, 𝒯, modeltype::EnergyModel)
+        @variable(m, test_var_1[ℒˢᵘᵇ, 𝒯])
+    end
+
+    # Create and solve the system
+    m, case, model = link_graph([DirectSub1, DirectSub2, Direct1])
+    ℒ = case[:links]
+    𝒩 = case[:nodes]
+    𝒯 = case[:T]
+
+    # Test that `test_var_sub`, `test_var_sub_1`, and `test_var_1` are created
+    @test haskey(object_dictionary(m), :test_var_sub)
+    @test haskey(object_dictionary(m), :test_var_sub_1)
+    @test haskey(object_dictionary(m), :test_var_1)
+
+    # Test that the variables are `test_var_sub`, `test_var_sub_1`, and `test_var_1` are
+    # created for the corresponding links
+    @test size(m[:test_var_sub]) == (2,10)
+    @test size(m[:test_var_sub_1]) == (1,10)
+    @test size(m[:test_var_1]) == (1,10)
 end

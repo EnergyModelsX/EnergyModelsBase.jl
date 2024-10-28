@@ -70,6 +70,7 @@ export InvData, InvDataStorage
 export @assert_or_log
 export create_model, run_model
 export variables_node, create_node
+export variables_link
 export constraints_capacity, constraints_capacity_installed
 export constraints_flow_in, constraints_flow_out
 export constraints_level, constraints_level_aux

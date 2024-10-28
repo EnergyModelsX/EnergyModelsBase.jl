@@ -38,6 +38,7 @@ variables_emission
 variables_flow
 variables_opex
 variables_nodes
+variables_links
 variables_links_capacity
 variables_links_opex
 ```
