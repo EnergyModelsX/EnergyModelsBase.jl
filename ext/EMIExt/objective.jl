@@ -52,7 +52,7 @@ function EMB.objective(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::AbstractInvestmentMo
         )
     )
 
-    # Calculation of the capital cost contributionof standard nodes
+    # Calculation of the capital cost contribution of standard nodes
     capex_cap = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         sum(m[:cap_capex][n, t_inv] for n ∈ 𝒩ᴵⁿᵛ)
     )

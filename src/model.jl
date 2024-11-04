@@ -149,7 +149,7 @@ end
 Declaration of the individual input (`:flow_in`) and output (`:flow_out`) flowrates for
 each technological node `n ∈ 𝒩` and link `l ∈ ℒ` (`:link_in` and `:link_out`).
 
-By default, all nodes `𝒩` and links ℒ only allow for unidirectional flow.
+By default, all nodes `𝒩` and links `ℒ` only allow for unidirectional flow.
 """
 function variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
     𝒩ⁱⁿ = filter(has_input, 𝒩)
@@ -161,7 +161,7 @@ function variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
     @variable(m, link_in[l ∈ ℒ, 𝒯, inputs(l)])
     @variable(m, link_out[l ∈ ℒ, 𝒯, outputs(l)])
 
-    # Set the bounds fo unidirectional nodes and links
+    # Set the bounds for unidirectional nodes and links
     𝒩ⁱⁿ⁻ᵘⁿⁱ = filter(is_unidirectional, 𝒩ⁱⁿ)
     𝒩ᵒᵘᵗ⁻ᵘⁿⁱ = filter(is_unidirectional, 𝒩ᵒᵘᵗ)
     ℒᵘⁿⁱ = filter(is_unidirectional, ℒ)
@@ -241,7 +241,7 @@ function variables_capex(m, 𝒩, 𝒯, modeltype::EnergyModel) end
     variables_links_capacity(m, ℒ, 𝒯, modeltype::EnergyModel)
 
 Declaration of the capacity variable for links (`:link_cap_inst`) in each operational period
-t ∈ 𝒯 of the model. The capacity variabke is only created for links, if the function
+t ∈ 𝒯 of the model. The capacity variable is only created for links, if the function
 [`has_capacity`](@ref) has received an additional method for a given link `l` returning the
 value `true`.
 """

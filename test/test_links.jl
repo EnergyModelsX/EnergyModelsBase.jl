@@ -60,10 +60,10 @@
         @test all(is_unidirectional(l) for l ∈ ℒ)
 
         # Test that all links do not have emissions
-        @test !all(has_emissions(l) for l ∈ ℒ)
+        @test !any(has_emissions(l) for l ∈ ℒ)
 
         # Test that all links do not have opex variables
-        @test !all(has_opex(l) for l ∈ ℒ)
+        @test !any(has_opex(l) for l ∈ ℒ)
     end
 
     @testset "Access functions" begin
