@@ -70,13 +70,15 @@ EMI.investment_data(inv_data::SingleInvData) = inv_data.cap
     EMI.investment_data(n::EMB.Node, field::Symbol)
     EMI.investment_data(l::Link, field::Symbol)
 
-Return the `InvestmentData` of the Node `n` or Link `l`.
+Return the `InvestmentData` of the Node `n` or Link `l`. It will return an error if the
+if the Node `n` or Link `l` does not have investment data.
+
 If `field` is specified, it returns the `InvData` for the corresponding capacity.
 """
 EMI.investment_data(n::EMB.Node) =
     filter(data -> typeof(data) <: InvestmentData, node_data(n))[1]
-    EMI.investment_data(l::Link) =
-        filter(data -> typeof(data) <: InvestmentData, link_data(l))[1]
+EMI.investment_data(l::Link) =
+    filter(data -> typeof(data) <: InvestmentData, link_data(l))[1]
 EMI.investment_data(n::EMB.Node, field::Symbol) = getproperty(investment_data(n), field)
 EMI.investment_data(l::Link, field::Symbol) = getproperty(investment_data(l), field)
 

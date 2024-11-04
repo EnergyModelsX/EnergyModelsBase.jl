@@ -1,5 +1,26 @@
 # Release notes
 
+## Unversioned
+
+### Incorporation of bidirectional flow
+
+* Allow (in theory) for nodes and links with bidirectional flow through avoiding hard-coding a lower bound on flow variables.
+* No existing links and nodes allow for bidirectional flow.
+* Bidirectional flow requires new links and nodes with new methods for the function `is_unidirectional`.
+
+### Rework of links
+
+* Extended the functionality of links significantly.
+* Allow for
+  * differing input and output resources of links as well as specifying these directly,
+  * emissions of links,
+  * OPEX of links (with both fixed and variable OPEX created at the same time),
+  * capacity of links,
+  * inclusion of specific link variables, and
+  * investments in links if the links have a capacity.
+* The majority of changes are incorporated through filter functions and require the user to define new methods for the included functions (*i.e.*, `has_opex`, `has_emissions`, and `has_capacity`)
+* Inclusion of variables follows principle of additional node variables.
+
 ## Version 0.8.1 (2024-10-16)
 
 ### Bugfixes

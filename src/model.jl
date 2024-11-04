@@ -189,8 +189,9 @@ Declaration of emission variables per technology node with emissions `n ∈ 𝒩
 emissions `l ∈ ℒᵉᵐ` for each emission resource `𝒫ᵉᵐ ∈ 𝒫`.
 
 The inclusion of node and link emissions require that the function `has_emissions` returns
-a value `true` for the given node or link. This is by default achieved for nodes through
-inclusion of `EmissionData`.
+`true` for the given node or link. This is by default achieved for nodes through inclusion
+of `EmissionData` in nodes while links require you to explicitly provide a method for your
+link type.
 
 The emission variables are differentiated in:
 * `:emissions_node` - emissions of a node in an operational period,

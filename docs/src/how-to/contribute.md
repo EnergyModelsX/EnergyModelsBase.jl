@@ -7,7 +7,7 @@ Contributing to `EnergyModelsBase` can be achieved in several different ways.
 The main focus of `EnergyModelsBase` is to provide an easily extensible energy system optimization modelling framework.
 Hence, a first approach to contributing to `EnergyModelsBase` is to create a new package with, *e.g.*, the introduction of new node descriptions.
 
-This is explained in [_How to create a new node_](@ref how_to-create_node).
+This is explained in *[How to create a new node](@ref how_to-create_node)*.
 
 !!! tip
     If you are uncertain how you could incorporate new nodal descriptions, take a look at [`EnergyModelsRenewableProducers`](https://github.com/EnergyModelsX/EnergyModelsRenewableProducers.jl).
@@ -90,8 +90,8 @@ It is in general preferable to work on a separate branch when developing new com
 
 Incorporate your changes in your new branch.
 The changes should be commented to understand the thought process behind them.
-In addition, please provide new tests for the added functionality and be certain that the tests run.
-The tests should be based on a minimum working example.
+In addition, please provide new tests for the added functionality and be certain that the existing tests run.
+New tests should be based on a minimum working example in which the new concept is evaluated.
 
 Some existing tests may potentially require changes when incorporating new features (especially within the test set `General tests`).
 In this case, it is ok that they are failing and we will comment on the required changes in the pull request.
@@ -103,7 +103,7 @@ It is not necessary to provide changes directly in the documentation.
 It can be easier to include these changes after the pull request is accepted in principal.
 It is however a requirement to update the [`NEWS.md`](https://github.com/EnergyModelsX/EnergyModelsBase.jl/blob/main/NEWS.md) file under a new subheading titled "Unversioned".
 
-!!! note
+!!! note "Used style in EnergyModelsBase"
     Currently, we have not written a style guide for the framework.
     We follow in general the conventions of the *[Blue style guide](https://github.com/JuliaDiff/BlueStyle)* with minor modifications.
 
@@ -116,4 +116,4 @@ Once you are satisified with your changes, create a pull request towards the mai
 We will internally assign the relevant person to the pull request.
 
 You may receive quite a few comments with respect to the incorporation and how it may potentially affect other parts of the code.
-Please remaing patient as it may take potentially some time before we can respond to the changes, although we try to answer as fast as possible.
+Please remain patient as it may take potentially some time before we can respond to the changes, although we try to answer as fast as possible.
