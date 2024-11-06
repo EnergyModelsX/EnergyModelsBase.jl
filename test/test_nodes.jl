@@ -1,4 +1,165 @@
 
+@testset "Node utilities" begin
+
+    # Resources used in the analysis
+    NG = ResourceEmit("NG", 0.2)
+    Coal = ResourceCarrier("Coal", 0.35)
+    Power = ResourceCarrier("Power", 0.0)
+    CO2 = ResourceEmit("CO2", 1.0)
+
+    # Function for setting up the system
+    function simple_graph()
+        # Define the different resources
+        NG = ResourceEmit("NG", 0.2)
+        Coal = ResourceCarrier("Coal", 0.35)
+        Power = ResourceCarrier("Power", 0.0)
+        CO2 = ResourceEmit("CO2", 1.0)
+        products = [NG, Coal, Power, CO2]
+
+        # Creation of the emission data for the individual nodes.
+        capture_data = CaptureEnergyEmissions(0.9)
+        emission_data = EmissionsEnergy()
+
+        # Create the individual test nodes, corresponding to a system with an electricity demand/sink,
+        # coal and nautral gas sources, coal and natural gas (with CCS) power plants and CO2 storage.
+        nodes = [
+            GenAvailability(1, products),
+            RefSource(2, FixedProfile(1e12), FixedProfile(30), FixedProfile(0), Dict(NG => 1)),
+            RefSource(3, FixedProfile(1e12), FixedProfile(9), FixedProfile(0), Dict(Coal => 1)),
+            RefNetworkNode(
+                4,
+                FixedProfile(25),
+                FixedProfile(5.5),
+                FixedProfile(5),
+                Dict(NG => 2),
+                Dict(Power => 1, CO2 => 1),
+                [capture_data],
+            ),
+            RefNetworkNode(
+                5,
+                FixedProfile(25),
+                FixedProfile(6),
+                FixedProfile(10),
+                Dict(Coal => 2.5),
+                Dict(Power => 1),
+                [emission_data],
+            ),
+            RefStorage{AccumulatingEmissions}(
+                6,
+                StorCapOpex(FixedProfile(60), FixedProfile(9.1), FixedProfile(0)),
+                StorCap(FixedProfile(600)),
+                CO2,
+                Dict(CO2 => 1, Power => 0.02),
+                Dict(CO2 => 1),
+            ),
+            RefSink(
+                7,
+                OperationalProfile([20, 30, 40, 30]),
+                Dict(:surplus => FixedProfile(0), :deficit => FixedProfile(1e6)),
+                Dict(Power => 1),
+            ),
+        ]
+
+        # Connect all nodes with the availability node for the overall energy/mass balance
+        links = [
+            Direct(14, nodes[1], nodes[4], Linear())
+            Direct(15, nodes[1], nodes[5], Linear())
+            Direct(16, nodes[1], nodes[6], Linear())
+            Direct(17, nodes[1], nodes[7], Linear())
+            Direct(21, nodes[2], nodes[1], Linear())
+            Direct(31, nodes[3], nodes[1], Linear())
+            Direct(41, nodes[4], nodes[1], Linear())
+            Direct(51, nodes[5], nodes[1], Linear())
+            Direct(61, nodes[6], nodes[1], Linear())
+        ]
+
+        # Creation of the time structure and global data
+        T = TwoLevel(4, 2, SimpleTimes(4, 2), op_per_strat = 8)
+        model = OperationalModel(
+            Dict(CO2 => StrategicProfile([160, 140, 120, 100]), NG => FixedProfile(1e6)),
+            Dict(CO2 => FixedProfile(0)),
+            CO2,
+        )
+
+        # WIP data structure
+        case = Dict(:nodes => nodes, :links => links, :products => products, :T => T)
+        return case, model
+    end
+
+    @testset "Identification functions" begin
+        case, model = simple_graph()
+        𝒩 = case[:nodes]
+        stor = 𝒩[6]
+
+        # Test that all nodal supertypes are identified correctly
+        @test [EMB.is_source(n) for n ∈ 𝒩] ==
+            [false, true, true, false, false, false, false]
+        @test [EMB.is_network_node(n) for n ∈ 𝒩] ==
+            [true, false, false, true, true, true, false]
+        @test [EMB.is_storage(n) for n ∈ 𝒩] ==
+            [false, false, false, false, false, true, false]
+        @test [EMB.is_sink(n) for n ∈ 𝒩] ==
+            [false, false, false, false, false, false, true]
+
+        # Test that the corrects nodes with emissions are identified
+        @test [EMB.has_emissions(n) for n ∈ 𝒩] ==
+            [false, false, false, true, true, true, false]
+
+        # Test that the corrects nodes with input and output are identified
+        @test [has_output(n) for n ∈ 𝒩] ==
+            [true, true, true, true, true, true, false]
+        @test [has_input(n) for n ∈ 𝒩] ==
+            [true, false, false, true, true, true, true]
+
+        # Test that all nodes are identified as unidirectional
+        @test all(is_unidirectional(n) for n ∈ 𝒩)
+
+        # Test that the storage node is correctly identified
+        @test all([
+            has_charge(stor), EMB.has_charge_cap(stor), EMB.has_charge_OPEX_fixed(stor),
+            EMB.has_charge_OPEX_var(stor),
+            !EMB.has_level_OPEX_fixed(stor), !EMB.has_level_OPEX_var(stor),
+            !has_discharge(stor), !EMB.has_discharge_cap(stor),
+            !EMB.has_discharge_OPEX_fixed(stor), !EMB.has_discharge_OPEX_var(stor),
+        ])
+    end
+
+    @testset "Access functions" begin
+        case, model = simple_graph()
+        𝒩 = case[:nodes]
+
+        # Test that the input and output resources are correctly identified
+        @test outputs(𝒩[2]) == [NG]
+        @test outputs(𝒩[2], NG) == 1
+        @test outputs(𝒩[4]) == [CO2, Power] || outputs(𝒩[4]) == [Power, CO2]
+        @test inputs(𝒩[6]) == [CO2, Power] || inputs(𝒩[6]) == [Power, CO2]
+        @test inputs(𝒩[7]) == [Power]
+        @test inputs(𝒩[7], Power) == 1
+    end
+
+    @testset "Variable declaration" begin
+        case, model = simple_graph()
+        m = create_model(case, model)
+
+        𝒩 = case[:nodes]
+        stor = 𝒩[6]
+        𝒩ⁱⁿ = filter(has_input, 𝒩)
+        𝒩ᵒᵘᵗ = setdiff(filter(has_output, 𝒩), [stor]) # The storage has a fixed output variable
+        𝒯 = case[:T]
+
+        # Test that all link variables have a lower bound of 0
+        @test all(
+            all(lower_bound(m[:flow_in][n_in, t, p]) == 0 for p ∈ inputs(n_in))
+            for n_in ∈ 𝒩ⁱⁿ, t ∈ 𝒯
+        )
+        @test all(
+            all(lower_bound(m[:flow_out][n_out, t, p]) == 0 for p ∈ outputs(n_out))
+            for n_out ∈ 𝒩ᵒᵘᵗ, t ∈ 𝒯
+        )
+    end
+end
+
+
 @testset "Test RefSource and RefSink" begin
 
     # Resources used in the analysis
@@ -83,7 +244,6 @@
     end
 
     @testset "General tests - RefSink" begin
-
         # Test that the deficit values are properly calculated and time is involved
         # in the penalty calculation
         source = RefSource(

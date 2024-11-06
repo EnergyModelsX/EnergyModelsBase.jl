@@ -1,14 +1,15 @@
 """
     constraints_capacity_installed(m, n::Node, 𝒯::TimeStructure, modeltype::AbstractInvestmentModel)
     constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::AbstractInvestmentModel)
+    constraints_capacity_installed(m, l::Link, 𝒯::TimeStructure, modeltype::AbstractInvestmentModel)
 
 When the modeltype is an investment model, the function introduces the related constraints
 for the capacity expansion. The investment mode and lifetime mode are used for adding
 constraints.
 
 The default function only accepts nodes with [`SingleInvData`](@ref). If you have several
-capacities for investments, you have to dispatch specifically on the node type. This is
-implemented for `Storage` nodes where the function introduces the related constraints for
+capacities for investments, you have to dispatch specifically on the node or link type. This
+is implemented for `Storage` nodes where the function introduces the related constraints for
 the capacity expansions for the fields `:charge`, `:level`, and `:discharge`. This requires
 the utilization of the [`StorageInvData`](@ref) investment type, in which the investment
 mode and lifetime mode are used for adding constraints for each capacity.
@@ -63,6 +64,26 @@ function EMB.constraints_capacity_installed(
             for t ∈ 𝒯
                 fix(var_inst[t], capacity(stor_par, t); force = true)
             end
+        end
+    end
+end
+function EMB.constraints_capacity_installed(
+    m,
+    l::Link,
+    𝒯::TimeStructure,
+    modeltype::AbstractInvestmentModel,
+)
+    if has_investment(l)
+        # Extract the investment data, the discount rate, and the strategic periods
+        disc_rate = discount_rate(modeltype)
+        inv_data = investment_data(l, :cap)
+        𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+
+        # Add the investment constraints
+        EMI.add_investment_constraints(m, l, inv_data, :cap, :link_cap, 𝒯ᴵⁿᵛ, disc_rate)
+    else
+        for t ∈ 𝒯
+            fix(m[:link_cap_inst][l, t], EMB.capacity(l, t); force = true)
         end
     end
 end

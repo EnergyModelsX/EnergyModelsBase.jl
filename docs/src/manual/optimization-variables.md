@@ -47,6 +47,18 @@ Instead, it is only dependent on the installed capacity.
 It is calculated using the function [`constraints_opex_fixed`](@ref).
 It represents fixed costs like labour cost, maintenance, as well as insurances and taxes.
 
+We also introduce the potential for links with operational costs.
+By default, links do not introduce new variables.
+Operational cost variables are only created for a link ``l`` if the function [`has_opex(n::Link)`](@ref) returns `true`.
+The following link variables are then declared representing the operational costs of the links:
+
+- ``\texttt{link\_opex\_var}[l, t_\texttt{inv}]``:  Variable OPEX of link ``l`` in strategic period ``t_\texttt{inv}``.
+- ``\texttt{link\_opex\_foxed}[l, t_\texttt{inv}]``:  Fixed OPEX of link ``l`` in strategic period ``t_\texttt{inv}``.
+
+!!! tip "Links with OPEX"
+    All links introduced in `EnergyModelsBase` do not allow for operational costs.
+    If you plan to introduce a link with operational costs, you have to create a new method for the function `has_opex` for your introduced link.
+
 ## [Capacity variables](@id man-opt_var-cap)
 
 Capacity variables focus on both the capacity usage and installed capacity.
@@ -101,7 +113,19 @@ for t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ˢᵘᵇ
 end
 ```
 
-The variables ``\texttt{cap\_inst}``, ``\texttt{stor\_charge\_inst}``, ``\texttt{stor\_level\_inst}``, and ``\texttt{stor\_discharge\_inst}`` are used in `EnergyModelsInvestment` to allow for investments in capacity of individual nodes.
+We also introduce the potential for links with capacities.
+By default, links do not introduce new variables.
+The capacity variable is only created for a link ``l`` if the function [`has_capacity(n::Link)`](@ref) returns `true`.
+The following link variable ise then declared representing the capacity of links:
+
+- ``\texttt{link\_cap\_inst}[l, t]``: Installed capacity of link ``l`` at operational period ``t``.
+
+!!! tip "Links with a capacity"
+    All links introduced in `EnergyModelsBase` do not allow for a capacity limiting the transfer.
+    If you plan to introduce a link with a capacity, you have to create a new method for the function `has_capacity` for your introduced link.
+
+!!! note "Inclusions of investments"
+    The variables ``\texttt{cap\_inst}``, ``\texttt{stor\_charge\_inst}``, ``\texttt{stor\_level\_inst}``, ``\texttt{stor\_discharge\_inst}``, and ``\texttt{link\_cap\_inst}`` are used in `EnergyModelsInvestment` to allow for investments in capacity of individual nodes.
 
 ## [Flow variables](@id man-opt_var-flow)
 
@@ -135,6 +159,19 @@ This is the case for all nodes that have [`EmissionsData`](@ref) within their fi
 The following node variable is then declared for all emission resource 𝒫ᵉᵐ:
 
 - ``\texttt{emissions\_node}[n, t, p_\texttt{em}]``:  Emissions of node ``n`` at operational period ``t`` of emission resource ``p_\texttt{em}``.
+
+Similarly, it is not necessary that links have associated emission variables.
+Emission variables are only created for a link ``l`` if the function [`has_emissions(n::Link)`](@ref) returns `true`.
+The following link variable is then declared for all emission resource 𝒫ᵉᵐ:
+
+- ``\texttt{emissions\_link}[n, t, p_\texttt{em}]``:  Emissions of link ``l`` at operational period ``t`` of emission resource ``p_\texttt{em}``.
+
+!!! tip "Links with emissions"
+    All links introduced in `EnergyModelsBase` do not allow for emissions.
+    If you plan to introduce a link with emissions, you have to create a new method for the function `has_emissions` for your introduced link.
+
+    We have not implemented a similar approach as for nodes.
+    It is however planned to allow for transmission emissions in the near future, similar to the concept employed for process emissions for nodes.
 
 In addition, `EnergyModelsBase` declares the following variables for the global emissions:
 

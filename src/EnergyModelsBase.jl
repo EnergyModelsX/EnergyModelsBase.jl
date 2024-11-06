@@ -70,6 +70,7 @@ export InvData, InvDataStorage
 export @assert_or_log
 export create_model, run_model
 export variables_node, create_node
+export variables_link
 export constraints_capacity, constraints_capacity_installed
 export constraints_flow_in, constraints_flow_out
 export constraints_level, constraints_level_aux
@@ -87,7 +88,7 @@ export co2_capture, process_emissions
 
 # Export commonly used functions for extracting fields in `Node`
 export nodes_input, nodes_output, nodes_emissions
-export has_input, has_output, has_emissions
+export has_input, has_output, has_emissions, is_unidirectional
 export capacity,
     inputs,
     outputs,
@@ -103,7 +104,8 @@ export has_charge, has_discharge
 export charge, level, discharge
 
 # Export commonly used functions for extracting fields in `Link`
-export formulation
+export has_opex, has_capacity
+export formulation, link_data
 
 # Export commonly used functions for extracting fields in `EnergyModel`
 export emission_limit, emission_price, co2_instance, discount_rate

@@ -38,11 +38,76 @@ function link_sub(ℒ::Vector{<:Link}, n::Node)
 end
 
 """
+    is_unidirectional(l::Link)
+
+Returns logic whether the link `l` can be used bidirectional or only unidirectional.
+
+!!! note "Bidirectional flow in links"
+    In the current stage, `EnergyModelsBase` does not include any links which can be used
+    bidirectional, that is with flow reversal.
+
+    If you plan to use bidirectional flow, you have to declare your own nodes and links which
+    support this. You can then dispatch on this function for the incorporation.
+"""
+is_unidirectional(l::Link) = true
+
+"""
+    has_emissions(l::Link)
+
+Checks whether link `l` has emissions.
+
+By default, links do not have emissions. You must dispatch on this function if you want to
+introduce links with associated emissions, *e.g.*, through leakage.
+"""
+has_emissions(l::Link) = false
+
+"""
+    has_capacity(l::Link)
+
+Checks whether link `l` has a capacity.
+
+By default, links do not have a capacity. You must dispatch on this function if you want to
+introduce links with capacities.
+"""
+has_capacity(l::Link) = false
+
+"""
+    has_opex(l::Link)
+
+Checks whether link `l` has operational expenses.
+
+By default, links do not have operational expenses. You must dispatch on this function if
+you want to introduce links with operational expenses.
+"""
+has_opex(l::Link) = false
+
+"""
     link_res(l::Link)
 
 Return the resources transported for a given link `l`.
+
+The default approach is to use the intersection of the inputs of the `to` node and the
+outputs of the `from` node.
 """
 link_res(l::Link) = intersect(inputs(l.to), outputs(l.from))
+
+"""
+    inputs(n::Link)
+
+Returns the input resources of a link `l`.
+
+The default approach is to use the function [`link_res(l::Link)`](@ref).
+"""
+inputs(l::Link) = link_res(l)
+
+"""
+    outputs(n::Link)
+
+Returns the output resources of a link `l`.
+
+The default approach is to use the function [`link_res(l::Link)`](@ref).
+"""
+outputs(l::Link) = link_res(l)
 
 """
     formulation(l::Link)
@@ -50,3 +115,12 @@ link_res(l::Link) = intersect(inputs(l.to), outputs(l.from))
 Return the formulation of a Link `l`.
 """
 formulation(l::Link) = l.formulation
+
+"""
+    link_data(l::Link)
+
+Returns the [`Data`](@ref) array of link `l`.
+
+The default options returns nothing.
+"""
+link_data(l::Link) = nothing

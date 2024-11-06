@@ -55,19 +55,24 @@ function create_model(
 
     # Declaration of variables for the problem
     variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
-    variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype)
+    variables_emission(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype)
-    variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype)
+    variables_capex(m, 𝒩, 𝒯, modeltype)
     variables_capacity(m, 𝒩, 𝒯, modeltype)
     variables_nodes(m, 𝒩, 𝒯, modeltype)
 
+    variables_links_capacity(m, ℒ, 𝒯, modeltype)
+    variables_links_capex(m, ℒ, 𝒯, modeltype)
+    variables_links_opex(m, ℒ, 𝒯, 𝒫, modeltype)
+    variables_links(m, ℒ, 𝒯, modeltype)
+
     # Construction of constraints for the problem
     constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
-    constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype)
+    constraints_emissions(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
 
     # Construction of the objective function
-    objective(m, 𝒩, 𝒯, 𝒫, modeltype)
+    objective(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
 
     return m
 end
@@ -143,36 +148,66 @@ end
 
 Declaration of the individual input (`:flow_in`) and output (`:flow_out`) flowrates for
 each technological node `n ∈ 𝒩` and link `l ∈ ℒ` (`:link_in` and `:link_out`).
+
+By default, all nodes `𝒩` and links `ℒ` only allow for unidirectional flow.
 """
 function variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
     𝒩ⁱⁿ = filter(has_input, 𝒩)
     𝒩ᵒᵘᵗ = filter(has_output, 𝒩)
 
-    @variable(m, flow_in[n_in ∈ 𝒩ⁱⁿ, 𝒯, inputs(n_in)] >= 0)
-    @variable(m, flow_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯, outputs(n_out)] >= 0)
+    @variable(m, flow_in[n_in ∈ 𝒩ⁱⁿ, 𝒯, inputs(n_in)])
+    @variable(m, flow_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯, outputs(n_out)])
 
-    @variable(m, link_in[l ∈ ℒ, 𝒯, link_res(l)] >= 0)
-    @variable(m, link_out[l ∈ ℒ, 𝒯, link_res(l)] >= 0)
+    @variable(m, link_in[l ∈ ℒ, 𝒯, inputs(l)])
+    @variable(m, link_out[l ∈ ℒ, 𝒯, outputs(l)])
+
+    # Set the bounds for unidirectional nodes and links
+    𝒩ⁱⁿ⁻ᵘⁿⁱ = filter(is_unidirectional, 𝒩ⁱⁿ)
+    𝒩ᵒᵘᵗ⁻ᵘⁿⁱ = filter(is_unidirectional, 𝒩ᵒᵘᵗ)
+    ℒᵘⁿⁱ = filter(is_unidirectional, ℒ)
+
+    for n_in ∈ 𝒩ⁱⁿ⁻ᵘⁿⁱ, t ∈ 𝒯, p ∈ inputs(n_in)
+        set_lower_bound(m[:flow_in][n_in, t, p], 0)
+    end
+    for n_out ∈ 𝒩ᵒᵘᵗ⁻ᵘⁿⁱ, t ∈ 𝒯, p ∈ outputs(n_out)
+        set_lower_bound(m[:flow_out][n_out, t, p], 0)
+    end
+    for l ∈ ℒᵘⁿⁱ, t ∈ 𝒯
+        for p ∈ inputs(l)
+            set_lower_bound(m[:link_in][l, t, p], 0)
+        end
+        for p ∈ outputs(l)
+            set_lower_bound(m[:link_out][l, t, p], 0)
+        end
+    end
 end
 
 """
-    variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+    variables_emission(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 
-Declaration of emission variables per technology node with emissions `n ∈ 𝒩ᵉᵐ` and emission
-resource `𝒫ᵉᵐ ∈ 𝒫`.
+Declaration of emission variables per technology node with emissions `n ∈ 𝒩ᵉᵐ` and link with
+emissions `l ∈ ℒᵉᵐ` for each emission resource `𝒫ᵉᵐ ∈ 𝒫`.
+
+The inclusion of node and link emissions require that the function `has_emissions` returns
+`true` for the given node or link. This is by default achieved for nodes through inclusion
+of `EmissionData` in nodes while links require you to explicitly provide a method for your
+link type.
 
 The emission variables are differentiated in:
 * `:emissions_node` - emissions of a node in an operational period,
+* `:emissions_link` - emissions of a link in an operational period,
 * `:emissions_total` - total emissions in an operational period, and
 * `:emissions_strategic` - total strategic emissions, constrained to an upper limit
   based on the field `emission_limit` of the `EnergyModel`.
 """
-function variables_emission(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+function variables_emission(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
     𝒩ᵉᵐ = filter(has_emissions, 𝒩)
+    ℒᵉᵐ = filter(has_emissions, ℒ)
     𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     @variable(m, emissions_node[𝒩ᵉᵐ, 𝒯, 𝒫ᵉᵐ])
+    @variable(m, emissions_link[ℒᵉᵐ, 𝒯, 𝒫ᵉᵐ] ≥ 0)
     @variable(m, emissions_total[𝒯, 𝒫ᵉᵐ])
     @variable(m,
         emissions_strategic[t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ] <= emission_limit(modeltype, p, t_inv)
@@ -183,7 +218,9 @@ end
     variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Declaration of the OPEX variables (`:opex_var` and `:opex_fixed`) of the model for each
-period `𝒯ᴵⁿᵛ ∈ 𝒯`. Variable OPEX can be non negative to account for revenue streams.
+investment period `t_inv ∈ 𝒯ᴵⁿᵛ`.
+
+Variable OPEX can be negative to account for revenue streams.
 """
 function variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
     𝒩ⁿᵒᵗ = nodes_not_av(𝒩)
@@ -194,12 +231,53 @@ function variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 end
 
 """
-    variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+    variables_capex(m, 𝒩, 𝒯, modeltype::EnergyModel)
 
-Declaration of the CAPEX variables of the model for each investment period `𝒯ᴵⁿᵛ ∈ 𝒯`.
+Declaration of the CAPEX variables of the model for each investment period `t_inv ∈ 𝒯ᴵⁿᵛ`.
 Empty for operational models but required for multiple dispatch in investment model.
 """
-function variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel) end
+function variables_capex(m, 𝒩, 𝒯, modeltype::EnergyModel) end
+
+"""
+    variables_links_capacity(m, ℒ, 𝒯, modeltype::EnergyModel)
+
+Declaration of the capacity variable for links (`:link_cap_inst`) in each operational period
+t ∈ 𝒯 of the model. The capacity variable is only created for links, if the function
+[`has_capacity`](@ref) has received an additional method for a given link `l` returning the
+value `true`.
+"""
+function variables_links_capacity(m, ℒ, 𝒯, modeltype::EnergyModel)
+    ℒᶜᵃᵖ = filter(has_capacity, ℒ)
+
+    @variable(m, link_cap_inst[ℒᶜᵃᵖ, 𝒯])
+end
+
+"""
+    variables_links_opex(m, ℒ, 𝒯, 𝒫, modeltype::EnergyModel)
+
+Declaration of the OPEX variables for links (`:link_opex_var` and `:link_opex_fixed`) of
+the model for each investment period `t_inv ∈ 𝒯ᴵⁿᵛ`. The OPEX variables are only created for
+links, if the function [`has_opex`](@ref) has received an additional method for a given
+link `l` returning the value `true`.
+
+Variable OPEX can be negative to account for revenue streams.
+"""
+function variables_links_opex(m, ℒ, 𝒯, 𝒫, modeltype::EnergyModel)
+    ℒᵒᵖᵉˣ = filter(has_opex, ℒ)
+    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+
+    @variable(m, link_opex_var[ℒᵒᵖᵉˣ, 𝒯ᴵⁿᵛ])
+    @variable(m, link_opex_fixed[ℒᵒᵖᵉˣ, 𝒯ᴵⁿᵛ] ≥ 0)
+end
+
+"""
+    variables_links_capex(m, ℒ, 𝒯, modeltype::EnergyModel)
+
+Declaration of the CAPEX variables of the model for links for each investment period
+`t_inv ∈ 𝒯ᴵⁿᵛ`.
+Empty for operational models but required for multiple dispatch in investment model.
+"""
+function variables_links_capex(m, ℒ, 𝒯, modeltype::EnergyModel) end
 
 """
     variables_nodes(m, 𝒩, 𝒯, modeltype::EnergyModel)
@@ -207,8 +285,9 @@ function variables_capex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel) end
 Loop through all node types and create variables specific to each type. This is done by
 calling the method [`variables_node`](@ref) on all nodes of each type.
 
-The node type representing the widest cathegory will be called first. That is,
-`variables_node` will be called on a `Node` before it is called on `NetworkNode`-nodes.
+The node type representing the widest category will be called first. That is,
+[`variables_node`](@ref) will be called on a [`Node`](@ref EnergyModelsBase.Node) before it
+is called on [`NetworkNode`](@ref)-nodes.
 """
 function variables_nodes(m, 𝒩, 𝒯, modeltype::EnergyModel)
     # Vector of the unique node types in 𝒩.
@@ -262,6 +341,55 @@ function variables_node(m, 𝒩ˢⁱⁿᵏ::Vector{<:Sink}, 𝒯, modeltype::Ene
 end
 
 """
+    variables_links(m, ℒ, 𝒯, modeltype::EnergyModel)
+
+Loop through all link types and create variables specific to each type. This is done by
+calling the method [`variables_link`](@ref) on all links of each type.
+
+The link type representing the widest category will be called first. That is,
+[`variables_link`](@ref) will be called on a [`Link`](@ref) before it is called on
+[`Direct`](@ref)-links.
+"""
+function variables_links(m, ℒ, 𝒯, modeltype::EnergyModel)
+    # Vector of the unique link types in ℒ.
+    link_composite_types = unique(map(l -> typeof(l), ℒ))
+    # Get all `link`-types in the type-hierarchy that the links ℒ represents.
+    link_types = collect_types(link_composite_types)
+    # Sort the link-types such that a supertype will always come its subtypes.
+    link_types = sort_types(link_types)
+
+    for link_type ∈ link_types
+        # All links of the given sub type.
+        ℒˢᵘᵇ = filter(l -> isa(l, link_type), ℒ)
+        # Convert to a Vector of common-type instad of Any.
+        ℒˢᵘᵇ = convert(Vector{link_type}, ℒˢᵘᵇ)
+        try
+            variables_link(m, ℒˢᵘᵇ, 𝒯, modeltype)
+        catch e
+            # Parts of the exception message we are looking for.
+            pre1 = "An object of name"
+            pre2 = "is already attached to this model."
+            if isa(e, ErrorException)
+                if occursin(pre1, e.msg) && occursin(pre2, e.msg)
+                    # 𝒩ˢᵘᵇ was already registered by a call to a supertype, so just continue.
+                    continue
+                end
+            end
+            # If we make it to this point, this means some other error occured. This should
+            # not be ignored.
+            throw(e)
+        end
+    end
+end
+
+"""
+    variables_link(m, ℒˢᵘᵇ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
+
+Default fallback method when no method is defined for a [`Link`](@ref) type.
+"""
+function variables_link(m, ℒˢᵘᵇ::Vector{<:Link}, 𝒯, modeltype::EnergyModel) end
+
+"""
     constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 
 Create link constraints for each `n ∈ 𝒩` depending on its type and calling the function
@@ -276,14 +404,14 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
         if has_output(n)
             @constraint(m, [t ∈ 𝒯, p ∈ outputs(n)],
                 m[:flow_out][n, t, p] ==
-                sum(m[:link_in][l, t, p] for l ∈ ℒᶠʳᵒᵐ if p ∈ inputs(l.to))
+                sum(m[:link_in][l, t, p] for l ∈ ℒᶠʳᵒᵐ if p ∈ outputs(l))
             )
         end
         # Constraint for input flowrate and output links.
         if has_input(n)
             @constraint(m, [t ∈ 𝒯, p ∈ inputs(n)],
                 m[:flow_in][n, t, p] ==
-                sum(m[:link_out][l, t, p] for l ∈ ℒᵗᵒ if p ∈ outputs(l.from))
+                sum(m[:link_out][l, t, p] for l ∈ ℒᵗᵒ if p ∈ inputs(l))
             )
         end
         # Call of function for individual node constraints.
@@ -292,28 +420,30 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 end
 
 """
-    constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+    constraints_emissions(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 
 Create constraints for the emissions accounting for both operational and strategic periods.
 """
-function constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+function constraints_emissions(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
     𝒩ᵉᵐ = filter(has_emissions, 𝒩)
+    ℒᵉᵐ = filter(has_emissions, ℒ)
     𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Creation of the individual constraints.
     @constraint(m, con_em_tot[t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
         m[:emissions_total][t, p] ==
-        sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ᵉᵐ)
+            sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ᵉᵐ) +
+            sum(m[:emissions_link][l, t, p] for l ∈ ℒᵉᵐ)
     )
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ],
         m[:emissions_strategic][t_inv, p] ==
-        sum(m[:emissions_total][t, p] * scale_op_sp(t_inv, t) for t ∈ t_inv)
+            sum(m[:emissions_total][t, p] * scale_op_sp(t_inv, t) for t ∈ t_inv)
     )
 end
 
 """
-    objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+    objective(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 
 Create the objective for the optimization problem for a given modeltype.
 
@@ -326,15 +456,20 @@ The values are not discounted.
 This function serve as fallback option if no other method is specified for a specific
 `modeltype`.
 """
-function objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+function objective(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 
     # Declaration of the required subsets.
     𝒩ⁿᵒᵗ = nodes_not_av(𝒩)
+    ℒᵒᵖᵉˣ = filter(has_opex, ℒ)
     𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     opex = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         sum((m[:opex_var][n, t_inv] + m[:opex_fixed][n, t_inv]) for n ∈ 𝒩ⁿᵒᵗ)
+    )
+
+    link_opex = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
+        sum((m[:link_opex_var][l, t_inv] + m[:link_opex_fixed][l, t_inv]) for l ∈ ℒᵒᵖᵉˣ)
     )
 
     emissions = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
@@ -346,18 +481,20 @@ function objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Calculation of the objective function.
     @objective(m, Max,
-        -sum((opex[t_inv] + emissions[t_inv]) * duration_strat(t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ)
+        -sum(
+            (opex[t_inv] + link_opex[t_inv] + emissions[t_inv]) * duration_strat(t_inv)
+        for t_inv ∈ 𝒯ᴵⁿᵛ)
     )
 end
 
 """
     constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 
-Call the function `create_link` for link formulation
+Call the function [`create_link`](@ref) for link formulation.
 """
 function constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
     for l ∈ ℒ
-        create_link(m, 𝒯, 𝒫, l, formulation(l))
+        create_link(m, 𝒯, 𝒫, l, modeltype, formulation(l))
     end
 end
 
@@ -524,15 +661,24 @@ function create_node(m, n::Availability, 𝒯, 𝒫, modeltype::EnergyModel)
 end
 
 """
-    create_link(m, 𝒯, 𝒫, l, formulation::Formulation)
+    create_link(m, 𝒯, 𝒫, l::Link, formulation::Formulation)
 
 Set the constraints for a simple `Link` (input = output). Can serve as fallback option for
 all unspecified subtypes of `Link`.
+
+All links with capacity, as indicated through the function [`has_capacity`](@ref) call
+furthermore the function [`constraints_capacity_installed`](@ref) for limiting the capacity
+to the installed capacity.
 """
-function create_link(m, 𝒯, 𝒫, l, formulation::Formulation)
+function create_link(m, 𝒯, 𝒫, l::Link, modeltype::EnergyModel, formulation::Formulation)
 
     # Generic link in which each output corresponds to the input
     @constraint(m, [t ∈ 𝒯, p ∈ link_res(l)],
         m[:link_out][l, t, p] == m[:link_in][l, t, p]
     )
+
+    # Call of the function for limiting the capacity to the maximum installed capacity
+    if has_capacity(l)
+        constraints_capacity_installed(m, l, 𝒯, modeltype)
+    end
 end

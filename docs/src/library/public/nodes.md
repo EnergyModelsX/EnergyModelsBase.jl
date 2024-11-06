@@ -101,8 +101,8 @@ The following functions are declared for accessing fields from a `Node` type.
 capacity
 opex_var
 opex_fixed
-inputs
-outputs
+inputs(n::EnergyModelsBase.Node)
+outputs(n::EnergyModelsBase.Node)
 node_data
 charge
 level
@@ -130,7 +130,8 @@ nodes_output
 nodes_emissions
 has_input
 has_output
-has_emissions
+has_emissions(n::EnergyModelsBase.Node)
 has_charge
 has_discharge
+is_unidirectional(n::EnergyModelsBase.Node)
 ```

@@ -249,6 +249,128 @@ using EnergyModelsInvestments
 
 end
 
+@testset "Link - OPEX and investments" begin
+    # Resources used in the analysis
+    Power = ResourceCarrier("Power", 0.0)
+    CO2 = ResourceEmit("CO2", 1.0)
+
+    # Creation of a new link type with associated capacity
+    struct InvDirect <: Link
+        id::Any
+        from::EMB.Node
+        to::EMB.Node
+        formulation::EMB.Formulation
+        data::Vector{<:Data}
+    end
+    function EMB.create_link(m, 𝒯, 𝒫, l::InvDirect, modeltype::EnergyModel, formulation::EMB.Formulation)
+
+        # Generic link in which each output corresponds to the input
+        @constraint(m, [t ∈ 𝒯, p ∈ EMB.link_res(l)],
+            m[:link_out][l, t, p] == m[:link_in][l, t, p]
+        )
+
+        # Capacity constraint
+        @constraint(m, [t ∈ 𝒯, p ∈ EMB.link_res(l)],
+            m[:link_out][l, t, p] ≤ m[:link_cap_inst][l, t]
+        )
+        constraints_capacity_installed(m, l, 𝒯, modeltype)
+    end
+    EMB.capacity(l::InvDirect, t) = 0
+    EMB.has_capacity(l::InvDirect) = true
+    EMB.link_data(l::InvDirect) = l.data
+
+    # Create simple model
+    function link_inv_graph()
+        # Uses 2 sources, one cheap and one expensive
+        # The former is used for the OPEX calculations, the latter for investments
+        source_1 = RefSource(
+            "source_1",
+            FixedProfile(4),
+            StrategicProfile([10, 10, 1000, 1000]),
+            FixedProfile(0),
+            Dict(Power => 1),
+        )
+        source_2 = RefSource(
+            "source_2",
+            FixedProfile(4),
+            StrategicProfile([1000, 1000, 10, 10]),
+            FixedProfile(0),
+            Dict(Power => 1),
+        )
+        sink = RefSink(
+            "sink",
+            FixedProfile(3),
+            Dict(:surplus => FixedProfile(4), :deficit => FixedProfile(100)),
+            Dict(Power => 1),
+        )
+
+        data_link = Data[
+            SingleInvData(
+                FixedProfile(10),
+                FixedProfile(10),
+                ContinuousInvestment(FixedProfile(0), FixedProfile(10)),
+            ),
+        ]
+
+        products = [Power, CO2]
+        nodes = [source_1, source_2, sink]
+        links = Link[
+            OpexDirect("OpexDirect", source_1, sink, Linear()),
+            InvDirect("InvDirect", source_2, sink, Linear(), data_link),
+        ]
+
+        # Creation of the time structure and global data
+        T = TwoLevel(4, 1, SimpleTimes(24, 1), op_per_strat = 24)
+        em_limits = Dict(CO2 => StrategicProfile([450, 400, 350, 300]))
+        em_cost = Dict(CO2 => FixedProfile(0))
+        modeltype = InvestmentModel(em_limits, em_cost, CO2, 0.0)
+
+        # WIP case structure
+        case = Dict(:nodes => nodes, :links => links, :products => products, :T => T)
+        return run_model(case, modeltype, HiGHS.Optimizer), case, modeltype
+    end
+
+    m, case, model = link_inv_graph()
+    ℒ = case[:links]
+    𝒩 = case[:nodes]
+    𝒯 = case[:T]
+    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+
+    # Test for the total number of variables
+    @test size(all_variables(m))[1] == 1684
+
+    # Test that the values are included in the objective function
+    # cost_source_1, used in the first 2 sps
+    #   3 * 10 * 24 * 2     cap_use * opex_var * num_op * num_sp
+    # cost_source_2, used in the last 2 sps
+    #   3 * 10 * 24 * 2     cap_use * opex_var * num_op * num_sp
+    # cost_link_1, used in the first 2 sps
+    #   (0.2 + 1) * 4       variable OPEX and fixed OPEX, hard coded, * num_sp
+    # cost_link_1, investment in third period
+    #   3 * 10              link_cap_add * capex(l)
+    cost_source_1 = 3 * 10 * 24 * 2 * 1
+    cost_source_2 = 3 * 10 * 24 * 2 * 1
+    cost_link_1 = (0.2 + 1) * 4
+    cost_link_2 = 3 * 10
+
+    @test objective_value(m) ≈ -(
+        cost_source_1 + cost_source_2 + cost_link_1 + cost_link_2
+    )
+
+    # Test that investments are happening
+    @test value.(m[:link_cap_add])[ℒ[2],𝒯ᴵⁿᵛ[3]] == 3
+
+    # Test that the variables are `link_cap_capex`, `link_cap_current`, `link_cap_add` and
+    # `link_cap_rem` are created for the corresponding links while `link_cap_invest_b` and
+    # `link_cap_remove_b` are empty
+    @test size(m[:link_cap_capex]) == (1, 4)
+    @test size(m[:link_cap_current]) == (1, 4)
+    @test size(m[:link_cap_add]) == (1, 4)
+    @test size(m[:link_cap_rem]) == (1, 4)
+    @test isempty(m[:link_cap_invest_b])
+    @test isempty(m[:link_cap_remove_b])
+end
+
 # Set the global to true to suppress the error message
 EMB.TEST_ENV = true
 

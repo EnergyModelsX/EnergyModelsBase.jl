@@ -45,11 +45,12 @@ end
 """
     constraints_capacity_installed(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
     constraints_capacity_installed(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
+    constraints_capacity_installed(m, l::Link, 𝒯::TimeStructure, modeltype::EnergyModel)
 
 Function for creating the constraint on the installed capacity to the available capacity.
 
 These functions serve as fallback option if no other method is specified for a specific
-`Node`.
+`Node` or `Link`.
 
 !!! danger "Dispatching on this function"
     This function should only be used to dispatch on the modeltype for providing investments.
@@ -87,6 +88,17 @@ function constraints_capacity_installed(
         for t ∈ 𝒯
             fix(m[:stor_discharge_inst][n, t], capacity(discharge(n), t); force = true)
         end
+    end
+end
+function constraints_capacity_installed(
+    m,
+    l::Link,
+    𝒯::TimeStructure,
+    modeltype::EnergyModel,
+)
+    # Fix the installed capacity to the upper bound
+    for t ∈ 𝒯
+        fix(m[:link_cap_inst][l, t], capacity(l, t); force = true)
     end
 end
 
