@@ -1,33 +1,43 @@
 """
-    EMB.variables_capex(m, 𝒩, 𝒯, modeltype::AbstractInvestmentModel)
+    EMB.variables_capex(m, 𝒩::Vector{<:EMB.Node}, 𝒯, modeltype::AbstractInvestmentModel)
+    EMB.variables_capex(m, ℒ::Vector{<:Link}, 𝒯, modeltype::AbstractInvestmentModel)
 
-Create variables for the capital costs for the investments in storage and technology nodes.
+Declaration of different capital expenditures (CAPEX) variables for the element types
+introduced in `EnergyModelsBase`. CAPEX variables are only introduced for elements that have
+in investments as identified through the function
+[`EMI.has_investment`](@ref EnergyModelsInvestments.has_investment). All investment
+variables are declared for all investment periods.
 
-Additional variables for investment in capacity:
-* `:cap_capex` - CAPEX costs for a technology
-* `:cap_current` - installed capacity for storage in each strategic period
-* `:cap_add` - added capacity
-* `:cap_rem` - removed capacity
-* `:cap_invest_b` - binary variable whether investments in capacity are happening
-* `:cap_remove_b` - binary variable whether investments in capacity are removed
+`EnergyModelsBase` introduces two elements for an energy system, and hence, provides the
+user with two individual methods for both `𝒩::Vector{<:EMB.Node}` and 𝒩::Vector{<:Link}.
 
+!!! note "Variables and naming conventions"
+    The individual capacities require the same variable although with different names.
+    Hence, `**prefix**` should be replaced in the following to
 
-Additional variables for investment in storage:
-* `:stor_level_capex` - CAPEX costs for increases in the capacity of a storage
-* `:stor_level_current` - installed capacity for storage in each strategic period
-* `:stor_level_add` - added capacity
-* `:stor_level_rem` - removed capacity
-* `:stor_level_invest_b` - binary variable whether investments in capacity are happening
-* `:stor_level_remove_b` - binary variable whether investments in capacity are removed
+    - `cap` for all nodes with investments except for [`Storage`](@ref) and
+      [`Availability`](@ref) nodes,
+    - `stor_level` for the storage level capacity of [`Storage`](@ref) nodes,
+    - `stor_charge` for the charge capacity of [`Storage`](@ref) nodes,
+    - `stor_discharge` for the discharge capacity of [`Storage`](@ref) nodes, and
+    - `link_cap` for [`Link`]s.
 
-* `:stor_charge_capex` - CAPEX costs for increases in the rate of a storage
-* `:stor_charge_current` - installed rate for storage in each strategic period
-* `:stor_charge_add` - added rate
-* `:stor_charge_rem` - removed rate
-* `:stor_charge_invest_b` - binary variable whether investments in rate are happening
-* `:stor_charge_remove_b` - binary variable whether investments in rate are removed
+    The individual variables are then given by:
+
+    - `**prefix**_capex` are the capital expenditures in node `n` in investment period
+      `t_inv`. The CAPEX variable take into account the invested capacity.
+    - `**prefix**_current` is the capacity of node `n` in investment period `t_inv`. It is
+      introduced in addition to `cap_inst` to simplify the model design.
+    - `**prefix**_add` are the additions in the installed capacity of node `n` in investment
+      period `t_inv`. Capacity additions are occuring at the beginning of an investment period.
+    - `**prefix**_rem` are the reduction in the installed capacity of node `n` in investment
+      period `t_inv`. Capacity reductions are occuring at the end of an investment period.
+    - `**prefix**_invest_b` is an auxiliary variable used in some investment modes for the
+      additions in capacities.
+    - `**prefix**_remove_b` is an auxiliary variable used in some investment modes for the
+      reduction of capacities.
 """
-function EMB.variables_capex(m, 𝒩, 𝒯, modeltype::AbstractInvestmentModel)
+function EMB.variables_capex(m, 𝒩::Vector{<:EMB.Node}, 𝒯, modeltype::AbstractInvestmentModel)
     𝒩ᴵⁿᵛ = filter(has_investment, filter(!EMB.is_storage, 𝒩))
     𝒩ˢᵗᵒʳ = filter(EMB.is_storage, 𝒩)
     𝒩ˡᵉᵛᵉˡ = filter(n -> has_investment(n, :level), 𝒩ˢᵗᵒʳ)
@@ -73,21 +83,7 @@ function EMB.variables_capex(m, 𝒩, 𝒯, modeltype::AbstractInvestmentModel)
         container = IndexedVarArray
     )
 end
-
-"""
-    EMB.variables_links_capex(m, ℒ, 𝒯, modeltype::AbstractInvestmentModel)
-
-Create variables for the capital costs for the investments in [`Link`](@ref)s.
-
-Additional variables for investment in capacity:
-* `:link_cap_capex` - CAPEX costs for a technology
-* `:link_cap_current` - installed capacity for storage in each strategic period
-* `:link_cap_add` - added capacity
-* `:link_cap_rem` - removed capacity
-* `:link_cap_invest_b` - binary variable whether investments in capacity are happening
-* `:link_cap_remove_b` - binary variable whether investments in capacity are removed
-"""
-function EMB.variables_links_capex(m, ℒ, 𝒯, modeltype::AbstractInvestmentModel)
+function EMB.variables_capex(m, ℒ::Vector{<:Link}, 𝒯, modeltype::AbstractInvestmentModel)
     ℒᴵⁿᵛ = filter(has_investment, ℒ)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 

@@ -54,17 +54,15 @@ function create_model(
     𝒫 = case[:products]
 
     # Declaration of variables for the problem
-    variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
-    variables_emission(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
-    variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype)
-    variables_capex(m, 𝒩, 𝒯, modeltype)
-    variables_capacity(m, 𝒩, 𝒯, modeltype)
-    variables_nodes(m, 𝒩, 𝒯, modeltype)
-
-    variables_links_capacity(m, ℒ, 𝒯, modeltype)
-    variables_links_capex(m, ℒ, 𝒯, modeltype)
-    variables_links_opex(m, ℒ, 𝒯, 𝒫, modeltype)
-    variables_links(m, ℒ, 𝒯, modeltype)
+    for elements ∈ (𝒩, ℒ)
+        variables_capacity(m, elements, 𝒯, modeltype)
+        variables_flow(m, elements, 𝒯, modeltype)
+        variables_opex(m, elements, 𝒯, modeltype)
+        variables_capex(m, elements, 𝒯, modeltype)
+        variables_emission(m, elements, 𝒫, 𝒯, modeltype)
+        variables_elements(m, elements, 𝒯, modeltype)
+   end
+   variables_emission(m, 𝒫, 𝒯, modeltype)
 
     # Construction of constraints for the problem
     constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
@@ -87,39 +85,65 @@ function create_model(
 end
 
 """
-    variables_capacity(m, 𝒩, 𝒯, modeltype::EnergyModel)
+    variables_capacity(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
+    variables_capacity(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
 
-Declaration of different capacity variables for nodes `𝒩ⁿᵒᵗ` that are neither `Storage`
-nor `Availability` nodes.
-These variables are:
-* `:cap_use` - use of a technology node in each operational period and
-* `:cap_inst` - installed capacity in each operational period in terms of either `:flow_in`
-  or `:flow_out` (depending on node `n ∈ 𝒩`)
+Declaration of different capacity variables for the element types introduced in
+`EnergyModelsBase`. `EnergyModelsBase` introduces two elements for an energy system, and
+hence, provides the user with two individual methods:
 
-Declaration of different storage variables for `Storage` nodes `𝒩ˢᵗᵒʳ`.
-These variables are:
+!!! note "Node variables"
+    All nodes, excluding `Storage` and `Availability` nodes have the following capacity
+    variables:
 
-* `:stor_level` - storage level at the end of each operational period.
-* `:stor_level_Δ_op` - storage level change in each operational period.
-* `:stor_level_Δ_rp` - storage level change in each representative period. These variables
-  are only created if the time structure includes representative periods.
-* `:stor_level_Δ_op` - storage level change in each strategic period. These variables are
-  optional and created through `SparseVariables`.
-* `:stor_level_inst` - installed capacity for storage in each operational period, constrained
-  in the operational case to the provided capacity in the [storage parameters](@ref lib-pub-nodes-stor_par)
-  used in the field `:level`.
-* `:stor_charge_use` - storage charging use in each operational period.
-* `:stor_charge_inst` - installed charging capacity, *e.g.*, power, in each operational period,
-  constrained in the operational case to the provided capacity in the
-  [storage parameters](@ref lib-pub-nodes-stor_par) used in the field `:charge`.
-  This variable is only defined if the `Storage` node has a field `charge.`
-* `:stor_discharge_use` - storage discharging use in each operational period.
-* `:stor_discharge_inst` - installed discharging capacity, *e.g.*, power, in each operational period,
-  constrained in the operational case to the provided capacity in the
-  [storage parameters](@ref lib-pub-nodes-stor_par) used in the field `:discharge`.
-  This variable is only defined if the `Storage` node has a field `discharge.`
+    - `cap_use[n, t]` is the capacity utilization of node `n` in operational period `t`.
+    - `cap_inst[n, t]` is the installed capacity of node `n` in operational period `t`.
+
+    `Storage` nodes have multiple capacities. The storage level (the amount of mass/energy)
+    stored is described through the followign variables
+
+    - `stor_level[n, t]` is the storage level of storage `n` at the end of operational
+      period `t`.
+    - `stor_level_Δ_op[n, t]` is the storage level change of storage `n` in operational
+      period `t`.
+    - `stor_level_Δ_rp[n, t_rp]` is the storage level change of storage `n` in representative
+      period `t_rp`. These variables are only created if the time structure includes
+      representative periods.
+    - `stor_level_Δ_sp[n, t_inv]` is storage level change of storage `n` in investment
+      period `t_inv`. These variables are optional and created through `SparseVariables`.
+      This implies you have to create a method for the function [`variables_node`](@ref) for
+      your node type that should use these variables.
+    - `stor_level_inst[n, t]` is the installed storage capacity for storage `n` in
+      operational period `t`, constrained in the operational case to the provided capacity
+      in the [storage parameters](@ref lib-pub-nodes-stor_par) used in the field `:level`.
+
+    The charge capacity variables are describing the charging of a `Storage`:
+
+    - `stor_charge_use[n, t]` is the charging rate of storage `n` in operational period `t`.
+    - `stor_charge_inst[n, t]` is the installed charging capacity, *e.g.*, power, of storage
+      `n` in operational period `t`, constrained in the operational case to the provided
+      capacity in the [storage parameters](@ref lib-pub-nodes-stor_par) used in the field
+      `:charge`. This variable is only declared if the `Storage` node has a field `charge`
+      and the storage parameters include a capacity.
+
+    The discharge capacity variables are describing the discharging of a `Storage`:
+
+    - `stor_discharge_use[n, t]` is the discharging rate of storage `n` in operational
+      period `t`.
+    - `stor_discharge_inst[n, t]` is the installed discharging capacity, *e.g.*, power, of
+      storage `n` in operational period `t`, constrained in the operational case to the
+      provided capacity in the [storage parameters](@ref lib-pub-nodes-stor_par) used in the
+      field `:discharge`. This variable is only declared if the `Storage` node has a field
+      `discharge` and the storage parameters include a capacity.
+
+!!! tip "Link variables"
+    The capacity variables are only created for links, if the function
+    [`has_capacity`](@ref) has received an additional method for a given link `l` returning
+    the value `true`.
+
+    - `link_cap_inst[l, t]` is the installed capacity of link `l` in operational period `t`.
 """
-function variables_capacity(m, 𝒩, 𝒯, modeltype::EnergyModel)
+function variables_capacity(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     𝒩ⁿᵒᵗ = nodes_not_sub(𝒩, Union{Storage,Availability})
     𝒩ˢᵗᵒʳ = filter(is_storage, 𝒩)
     𝒩ˢᵗᵒʳ⁻ᶜ = filter(has_charge, 𝒩ˢᵗᵒʳ)
@@ -142,29 +166,52 @@ function variables_capacity(m, 𝒩, 𝒯, modeltype::EnergyModel)
     @variable(m, stor_discharge_use[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_discharge_inst[𝒩ˢᵗᵒʳ⁻ᵈᶜ, 𝒯] >= 0)
 end
+function variables_capacity(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
+    ℒᶜᵃᵖ = filter(has_capacity, ℒ)
+
+    @variable(m, link_cap_inst[ℒᶜᵃᵖ, 𝒯])
+end
 
 """
-    variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
+    variables_flow(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
+    variables_flow(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
 
-Declaration of the individual input (`:flow_in`) and output (`:flow_out`) flowrates for
-each technological node `n ∈ 𝒩` and link `l ∈ ℒ` (`:link_in` and `:link_out`).
+Declaration of flow OPEX variables for the element types introduced in
+`EnergyModelsBase`. `EnergyModelsBase` introduces two elements for an energy system, and
+hence, provides the user with two individual methods:
 
-By default, all nodes `𝒩` and links `ℒ` only allow for unidirectional flow.
+!!! note "Node variables"
+    - `flow_in[n, t, p]` is the flow _**into**_ node `n` in operational period `t` for
+      resource `p`. The inflow resources of node `n` are extracted using the function
+      [`inputs`](@ref).
+    - `flow_out[n, t, p]` is the flow _**from**_ node `n` in operational period `t`
+      for resource `p`. The outflow resources of node `n` are extracted using the
+      function [`outputs`](@ref).
+
+!!! tip "Link variables"
+    - `link_in[n, t]` is the flow _**into**_ link `l` in operational period `t` for
+      resource `p`. The inflow resources of link `l` are extracted using the function
+      [`inputs`](@ref).
+    - `link_out[n, t, p]` is the flow _**from**_ link `l` in operational period `t`
+      for resource `p`. The outflow resources of link `l` are extracted using the
+      function [`outputs`](@ref).
+
+By default, all nodes `𝒩` and links `ℒ` only allow for unidirectional flow. You can specify
+bidirection flow through providing a method to the function [`is_unidirectional`](@ref) for
+new link/node types.
 """
-function variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
+function variables_flow(m, 𝒩::Vector{<:Node}, 𝒯,modeltype::EnergyModel)
+    # Extract the nodes with inputs and outputs
     𝒩ⁱⁿ = filter(has_input, 𝒩)
     𝒩ᵒᵘᵗ = filter(has_output, 𝒩)
 
+    # Create the nod flow variables
     @variable(m, flow_in[n_in ∈ 𝒩ⁱⁿ, 𝒯, inputs(n_in)])
     @variable(m, flow_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯, outputs(n_out)])
 
-    @variable(m, link_in[l ∈ ℒ, 𝒯, inputs(l)])
-    @variable(m, link_out[l ∈ ℒ, 𝒯, outputs(l)])
-
-    # Set the bounds for unidirectional nodes and links
+    # Set the bounds for unidirectional nodes
     𝒩ⁱⁿ⁻ᵘⁿⁱ = filter(is_unidirectional, 𝒩ⁱⁿ)
     𝒩ᵒᵘᵗ⁻ᵘⁿⁱ = filter(is_unidirectional, 𝒩ᵒᵘᵗ)
-    ℒᵘⁿⁱ = filter(is_unidirectional, ℒ)
 
     for n_in ∈ 𝒩ⁱⁿ⁻ᵘⁿⁱ, t ∈ 𝒯, p ∈ inputs(n_in)
         set_lower_bound(m[:flow_in][n_in, t, p], 0)
@@ -172,6 +219,15 @@ function variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
     for n_out ∈ 𝒩ᵒᵘᵗ⁻ᵘⁿⁱ, t ∈ 𝒯, p ∈ outputs(n_out)
         set_lower_bound(m[:flow_out][n_out, t, p], 0)
     end
+end
+function variables_flow(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
+    # Create the link flow variables
+    @variable(m, link_in[l ∈ ℒ, 𝒯, inputs(l)])
+    @variable(m, link_out[l ∈ ℒ, 𝒯, outputs(l)])
+
+    # Set the bounds for unidirectional links
+    ℒᵘⁿⁱ = filter(is_unidirectional, ℒ)
+
     for l ∈ ℒᵘⁿⁱ, t ∈ 𝒯
         for p ∈ inputs(l)
             set_lower_bound(m[:link_in][l, t, p], 0)
@@ -183,86 +239,36 @@ function variables_flow(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 end
 
 """
-    variables_emission(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
+    variables_opex(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
+    variables_opex(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
 
-Declaration of emission variables per technology node with emissions `n ∈ 𝒩ᵉᵐ` and link with
-emissions `l ∈ ℒᵉᵐ` for each emission resource `𝒫ᵉᵐ ∈ 𝒫`.
+Declaration of different OPEX variables for the element types introduced in
+`EnergyModelsBase`. `EnergyModelsBase` introduces two elements for an energy system, and
+hence, provides the user with two individual methods:
 
-The inclusion of node and link emissions require that the function `has_emissions` returns
-`true` for the given node or link. This is by default achieved for nodes through inclusion
-of `EmissionData` in nodes while links require you to explicitly provide a method for your
-link type.
+!!! note "Node variables"
+    - `opex_var[n, t_inv]` are the variable operating expenses of node `n` in investment
+      period `t_inv`. The values can be negative to account for revenue streams
+    - `opex_fixed[n, t_inv]` are the fixed operating expenses of node `n` in investment
+      period `t_inv`.
 
-The emission variables are differentiated in:
-* `:emissions_node` - emissions of a node in an operational period,
-* `:emissions_link` - emissions of a link in an operational period,
-* `:emissions_total` - total emissions in an operational period, and
-* `:emissions_strategic` - total strategic emissions, constrained to an upper limit
-  based on the field `emission_limit` of the `EnergyModel`.
+!!! tip "Link variables"
+    The OPEX variables are only created for links, if the function [`has_opex`](@ref) has
+    received an additional method for a given link `l` returning the value `true`.
+
+    - `link_opex_var[n, t_inv]` are the variable operating expenses of link `l` in investment
+      period `t_inv`. The values can be negative to account for revenue streams
+    - `link_opex_fixed[n, t_inv]` are the fixed operating expenses of node `n` in investment
+      period `t_inv`.
 """
-function variables_emission(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
-    𝒩ᵉᵐ = filter(has_emissions, 𝒩)
-    ℒᵉᵐ = filter(has_emissions, ℒ)
-    𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
-    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-
-    @variable(m, emissions_node[𝒩ᵉᵐ, 𝒯, 𝒫ᵉᵐ])
-    @variable(m, emissions_link[ℒᵉᵐ, 𝒯, 𝒫ᵉᵐ] ≥ 0)
-    @variable(m, emissions_total[𝒯, 𝒫ᵉᵐ])
-    @variable(m,
-        emissions_strategic[t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ] <= emission_limit(modeltype, p, t_inv)
-    )
-end
-
-"""
-    variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
-
-Declaration of the OPEX variables (`:opex_var` and `:opex_fixed`) of the model for each
-investment period `t_inv ∈ 𝒯ᴵⁿᵛ`.
-
-Variable OPEX can be negative to account for revenue streams.
-"""
-function variables_opex(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
+function variables_opex(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     𝒩ⁿᵒᵗ = nodes_not_av(𝒩)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     @variable(m, opex_var[𝒩ⁿᵒᵗ, 𝒯ᴵⁿᵛ])
     @variable(m, opex_fixed[𝒩ⁿᵒᵗ, 𝒯ᴵⁿᵛ] >= 0)
 end
-
-"""
-    variables_capex(m, 𝒩, 𝒯, modeltype::EnergyModel)
-
-Declaration of the CAPEX variables of the model for each investment period `t_inv ∈ 𝒯ᴵⁿᵛ`.
-Empty for operational models but required for multiple dispatch in investment model.
-"""
-function variables_capex(m, 𝒩, 𝒯, modeltype::EnergyModel) end
-
-"""
-    variables_links_capacity(m, ℒ, 𝒯, modeltype::EnergyModel)
-
-Declaration of the capacity variable for links (`:link_cap_inst`) in each operational period
-t ∈ 𝒯 of the model. The capacity variable is only created for links, if the function
-[`has_capacity`](@ref) has received an additional method for a given link `l` returning the
-value `true`.
-"""
-function variables_links_capacity(m, ℒ, 𝒯, modeltype::EnergyModel)
-    ℒᶜᵃᵖ = filter(has_capacity, ℒ)
-
-    @variable(m, link_cap_inst[ℒᶜᵃᵖ, 𝒯])
-end
-
-"""
-    variables_links_opex(m, ℒ, 𝒯, 𝒫, modeltype::EnergyModel)
-
-Declaration of the OPEX variables for links (`:link_opex_var` and `:link_opex_fixed`) of
-the model for each investment period `t_inv ∈ 𝒯ᴵⁿᵛ`. The OPEX variables are only created for
-links, if the function [`has_opex`](@ref) has received an additional method for a given
-link `l` returning the value `true`.
-
-Variable OPEX can be negative to account for revenue streams.
-"""
-function variables_links_opex(m, ℒ, 𝒯, 𝒫, modeltype::EnergyModel)
+function variables_opex(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
     ℒᵒᵖᵉˣ = filter(has_opex, ℒ)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
@@ -271,25 +277,92 @@ function variables_links_opex(m, ℒ, 𝒯, 𝒫, modeltype::EnergyModel)
 end
 
 """
-    variables_links_capex(m, ℒ, 𝒯, modeltype::EnergyModel)
+    variables_capex(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
+    variables_capex(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
 
-Declaration of the CAPEX variables of the model for links for each investment period
-`t_inv ∈ 𝒯ᴵⁿᵛ`.
-Empty for operational models but required for multiple dispatch in investment model.
+Declaration of different capital expenditures variables for the element types introduced in
+`EnergyModelsBase`. `EnergyModelsBase` introduces two elements for an energy system, and
+hence, provides the user with two individual methods:
+
+The default method is empty but it is required for multiple dispatch in investment models.
 """
-function variables_links_capex(m, ℒ, 𝒯, modeltype::EnergyModel) end
+function variables_capex(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel) end
+function variables_capex(m, 𝒩::Vector{<:Link}, 𝒯, modeltype::EnergyModel) end
 
 """
-    variables_nodes(m, 𝒩, 𝒯, modeltype::EnergyModel)
+    variables_emission(m, ℒ::Vector{<:Node}, 𝒫, 𝒯, modeltype::EnergyModel)
+    variables_emission(m, ℒ::Vector{<:Link}, 𝒫, 𝒯, modeltype::EnergyModel)
+    variables_emission(m, 𝒯, 𝒫, modeltype::EnergyModel)
 
-Loop through all node types and create variables specific to each type. This is done by
-calling the method [`variables_node`](@ref) on all nodes of each type.
+Declaration of emissions variables for the element types introduced in `EnergyModelsBase`
+as well as global emission variables. `EnergyModelsBase` introduces two elements for an
+energy system, and hence, provides the user with in total three individual methods,
+including the global variables:
 
-The node type representing the widest category will be called first. That is,
-[`variables_node`](@ref) will be called on a [`Node`](@ref EnergyModelsBase.Node) before it
-is called on [`NetworkNode`](@ref)-nodes.
+!!! note "Node variables"
+    - `emissions_node[n_em, t, p_em]` are the emissions of node `n_em` with emissions in
+      operational period `t` of emission resource `p_em`. The values can be negative to
+      account for removal of emissions resources from the environment, through, *e.g.*,
+      direct air capture.
+
+!!! tip "Link variables"
+    - `emissions_node[n_em, t, p_em]` are the emissions of link `l_em` with emissions in
+      operational period `t` of emission resource `p_em`. The values can only be positive as
+      links should not allow for removal.
+
+!!! warning "Global variables"
+    - `emissions_total[t, p_em]` are the total emissions of in operational period `t` of
+      emission resource `p_em`. The values can be negative to account for removal of
+      emissions resources from the environment, through, *e.g.*, direct air capture.
+    - `emissions_strategic[t_inv, p_em]` are the total emissions of in operational period
+      `t` of emission resource `p_em`. The values can be negative to account for removal of
+      emissions resources from the environment, through, *e.g.*, direct air capture. The
+      variable has an upper bound introduced through the function [`emission_limit`](@ref)
+      of the `EnergyModel`.
+
+The inclusion of node and link emissions require that the function `has_emissions` returns
+`true` for the given node or link. This is by default achieved for nodes through inclusion
+of `EmissionData` in nodes while links require you to explicitly provide a method for your
+link type.
 """
-function variables_nodes(m, 𝒩, 𝒯, modeltype::EnergyModel)
+function variables_emission(m, 𝒩::Vector{<:Node}, 𝒫, 𝒯, modeltype::EnergyModel)
+    𝒩ᵉᵐ = filter(has_emissions, 𝒩)
+    𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
+
+    @variable(m, emissions_node[𝒩ᵉᵐ, 𝒯, 𝒫ᵉᵐ])
+end
+function variables_emission(m, ℒ::Vector{<:Link}, 𝒫, 𝒯, modeltype::EnergyModel)
+    ℒᵉᵐ = filter(has_emissions, ℒ)
+    𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
+
+    @variable(m, emissions_link[ℒᵉᵐ, 𝒯, 𝒫ᵉᵐ] ≥ 0)
+end
+function variables_emission(m, 𝒫, 𝒯, modeltype::EnergyModel)
+    𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
+    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+
+    @variable(m, emissions_total[𝒯, 𝒫ᵉᵐ])
+    @variable(m,
+        emissions_strategic[t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ] <= emission_limit(modeltype, p, t_inv)
+    )
+end
+
+"""
+    variables_elements(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
+    variables_elements(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
+
+Loop through all element types and create variables specific to each type. It starts at the
+top level and subsequently move through the branches until it reaches a leave. That is,
+node nodes, [`variables_node`](@ref) will be called on a
+ [`Node`](@ref EnergyModelsBase.Node) before it is called on [`NetworkNode`](@ref)-nodes.
+
+`EnergyModelsBase` provides the user with two element types, [`Link`](@ref) and
+[`Node`](@ref EnergyModelsBase.Node):
+
+- `Node` - the subfunction is [`variables_node`](@ref).
+- `Link` - the subfunction is [`variables_link`](@ref).
+"""
+function variables_elements(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     # Vector of the unique node types in 𝒩.
     node_composite_types = unique(map(n -> typeof(n), 𝒩))
     # Get all `Node`-types in the type-hierarchy that the nodes 𝒩 represents.
@@ -320,37 +393,7 @@ function variables_nodes(m, 𝒩, 𝒯, modeltype::EnergyModel)
         end
     end
 end
-
-"""
-    variables_node(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
-
-Default fallback method when no method is defined for a node type.
-"""
-function variables_node(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, modeltype::EnergyModel) end
-
-"""
-    variables_node(m, 𝒩ˢⁱⁿᵏ::Vector{<:Sink}, 𝒯, modeltype::EnergyModel)
-
-When the node vector is a `Vector{<:Sink}`, both surplus (`:sink_surplus`) and deficit
-(`:sink_deficit`) variables are created to quantify when there is too much or too little
-energy for satisfying the demand.
-"""
-function variables_node(m, 𝒩ˢⁱⁿᵏ::Vector{<:Sink}, 𝒯, modeltype::EnergyModel)
-    @variable(m, sink_surplus[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
-    @variable(m, sink_deficit[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
-end
-
-"""
-    variables_links(m, ℒ, 𝒯, modeltype::EnergyModel)
-
-Loop through all link types and create variables specific to each type. This is done by
-calling the method [`variables_link`](@ref) on all links of each type.
-
-The link type representing the widest category will be called first. That is,
-[`variables_link`](@ref) will be called on a [`Link`](@ref) before it is called on
-[`Direct`](@ref)-links.
-"""
-function variables_links(m, ℒ, 𝒯, modeltype::EnergyModel)
+function variables_elements(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
     # Vector of the unique link types in ℒ.
     link_composite_types = unique(map(l -> typeof(l), ℒ))
     # Get all `link`-types in the type-hierarchy that the links ℒ represents.
@@ -380,6 +423,26 @@ function variables_links(m, ℒ, 𝒯, modeltype::EnergyModel)
             throw(e)
         end
     end
+end
+
+"""
+    variables_node(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
+
+Default fallback method when no method is defined for a node type. No variables are created
+in this case.
+"""
+function variables_node(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, modeltype::EnergyModel) end
+
+"""
+    variables_node(m, 𝒩ˢⁱⁿᵏ::Vector{<:Sink}, 𝒯, modeltype::EnergyModel)
+
+When the node vector is a `Vector{<:Sink}`, both surplus (`:sink_surplus`) and deficit
+(`:sink_deficit`) variables are created to quantify when there is too much or too little
+energy for satisfying the demand.
+"""
+function variables_node(m, 𝒩ˢⁱⁿᵏ::Vector{<:Sink}, 𝒯, modeltype::EnergyModel)
+    @variable(m, sink_surplus[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
+    @variable(m, sink_deficit[𝒩ˢⁱⁿᵏ, 𝒯] >= 0)
 end
 
 """
