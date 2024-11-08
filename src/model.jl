@@ -67,8 +67,8 @@ function create_model(
 
     # Construction of constraints for the problem
     constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
-    constraints_emissions(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
     constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
+    constraints_emissions(m, 𝒳, 𝒫, 𝒯, modeltype)
 
     # Construction of the objective function
     objective(m, 𝒳, 𝒫, 𝒯, modeltype)
@@ -201,7 +201,7 @@ By default, all nodes `𝒩` and links `ℒ` only allow for unidirectional flow.
 bidirection flow through providing a method to the function [`is_unidirectional`](@ref) for
 new link/node types.
 """
-function variables_flow(m, 𝒩::Vector{<:Node}, 𝒯,modeltype::EnergyModel)
+function variables_flow(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     # Extract the nodes with inputs and outputs
     𝒩ⁱⁿ = filter(has_input, 𝒩)
     𝒩ᵒᵘᵗ = filter(has_output, 𝒩)
@@ -484,25 +484,58 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 end
 
 """
-    constraints_emissions(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
+    constraints_emissions(m, 𝒳, 𝒫, 𝒯, modeltype::EnergyModel)
 
 Create constraints for the emissions accounting for both operational and strategic periods.
 """
-function constraints_emissions(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
-    𝒩ᵉᵐ = filter(has_emissions, 𝒩)
-    ℒᵉᵐ = filter(has_emissions, ℒ)
+function constraints_emissions(m, 𝒳, 𝒫, 𝒯, modeltype::EnergyModel)
+    # Declaration of the required subsets
     𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+
+    emissions = JuMP.Containers.DenseAxisArray[]
+    for elements ∈ 𝒳
+        push!(emissions, emissions_operational(m, elements, 𝒫ᵉᵐ, 𝒯, modeltype))
+    end
 
     # Creation of the individual constraints.
     @constraint(m, con_em_tot[t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
         m[:emissions_total][t, p] ==
-            sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ᵉᵐ) +
-            sum(m[:emissions_link][l, t, p] for l ∈ ℒᵉᵐ)
+            sum(emission_type[t, p] for emission_type ∈ emissions)
     )
     @constraint(m, [t_inv ∈ 𝒯ᴵⁿᵛ, p ∈ 𝒫ᵉᵐ],
         m[:emissions_strategic][t_inv, p] ==
             sum(m[:emissions_total][t, p] * scale_op_sp(t_inv, t) for t ∈ t_inv)
+    )
+end
+"""
+    emissions_operational(m, elements, 𝒫ᵉᵐ, 𝒯, modeltype::EnergyModel)
+
+Create JuMP expressions indexed over the operational periods `𝒯` for different elements.
+The expressions correspond to the total emissions of a given type.
+
+By default, objective expressions are included for:
+- `elements = 𝒩::Vector{<:Node}`. In the case of a vector of nodes, the function returns the
+  sum of the emissions of all nodes whose method of the function [`has_emissions`](@ref)
+  returns true. These nodes should be automatically identified without user intervention.
+- `elements = 𝒩::Vector{<:Link}`. In the case of a vector of links, the function returns the
+  sum of the emissions of all links whose method of the function [`has_emissions`](@ref)
+  returns true.
+"""
+function emissions_operational(m, 𝒩::Vector{<:Node}, 𝒫ᵉᵐ, 𝒯, modeltype::EnergyModel)
+    # Declaration of the required subsets
+    𝒩ᵉᵐ = filter(has_emissions, 𝒩)
+
+    return @expression(m, [t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
+        sum(m[:emissions_node][n, t, p] for n ∈ 𝒩ᵉᵐ)
+    )
+end
+function emissions_operational(m, ℒ::Vector{<:Link}, 𝒫ᵉᵐ, 𝒯, modeltype::EnergyModel)
+    # Declaration of the required subsets
+    ℒᵉᵐ = filter(has_emissions, ℒ)
+
+    return @expression(m, [t ∈ 𝒯, p ∈ 𝒫ᵉᵐ],
+        sum(m[:emissions_link][l, t, p] for l ∈ ℒᵉᵐ)
     )
 end
 

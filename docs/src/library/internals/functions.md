@@ -16,6 +16,7 @@ CurrentModule = EnergyModelsBase
 create_link
 objective(m, 𝒳, 𝒫, 𝒯, modeltype::EnergyModel)
 objective_operational
+emissions_operational
 ```
 
 ## Constraint functions
