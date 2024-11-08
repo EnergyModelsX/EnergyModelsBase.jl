@@ -1,5 +1,5 @@
 """
-    EMB.objective(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::AbstractInvestmentModel)
+    EMB.objective(m, 𝒳, 𝒫, 𝒯, modeltype::AbstractInvestmentModel)
 
 Create objective function overloading the default from EMB for `AbstractInvestmentModel`.
 
@@ -14,7 +14,7 @@ These variables would need to be introduced through the package `SparsVariables`
 Both are not necessary, as it is possible to include them through the OPEX values, but it
 would be beneficial for a better separation and simpler calculations from the results.
 """
-function EMB.objective(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::AbstractInvestmentModel)
+function EMB.objective(m, 𝒳, 𝒫, 𝒯, modeltype::AbstractInvestmentModel)
 
     # Extraction of the individual subtypes for investments in nodes
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -22,17 +22,15 @@ function EMB.objective(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::AbstractInvestmentMo
     # Filtering through the individual links
     disc = Discounter(discount_rate(modeltype), 𝒯)
 
-    # Calculation of the OPEX contribution
+    # Calculation of the OPEX and CAPEX contributions
     opex = JuMP.Containers.DenseAxisArray[]
-    for elements ∈ (𝒩, ℒ, 𝒫)
-        push!(opex, EMB.objective_operational(m, elements, 𝒯ᴵⁿᵛ, modeltype))
-    end
-
-    # Calculation of the CAPEX contribution
     capex = JuMP.Containers.DenseAxisArray[]
-    for elements ∈ (𝒩, ℒ)
+    for elements ∈ 𝒳
+        push!(opex, EMB.objective_operational(m, elements, 𝒯ᴵⁿᵛ, modeltype))
         push!(capex, objective_invest(m, elements, 𝒯ᴵⁿᵛ, modeltype))
     end
+    push!(opex, EMB.objective_operational(m, 𝒫, 𝒯ᴵⁿᵛ,modeltype))
+
     # Calculation of the objective function.
     @objective(m, Max,
         -sum(

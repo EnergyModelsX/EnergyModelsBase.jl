@@ -14,7 +14,7 @@ CurrentModule = EnergyModelsBase
 
 ```@docs
 create_link
-objective(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
+objective(m, 𝒳, 𝒫, 𝒯, modeltype::EnergyModel)
 objective_operational
 ```
 

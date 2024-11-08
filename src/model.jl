@@ -52,9 +52,10 @@ function create_model(
     𝒩 = case[:nodes]
     ℒ = case[:links]
     𝒫 = case[:products]
+    𝒳 = (𝒩, ℒ)
 
     # Declaration of variables for the problem
-    for elements ∈ (𝒩, ℒ)
+    for elements ∈ 𝒳
         variables_capacity(m, elements, 𝒯, modeltype)
         variables_flow(m, elements, 𝒯, modeltype)
         variables_opex(m, elements, 𝒯, modeltype)
@@ -70,7 +71,7 @@ function create_model(
     constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
 
     # Construction of the objective function
-    objective(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
+    objective(m, 𝒳, 𝒫, 𝒯, modeltype)
 
     return m
 end
@@ -506,7 +507,7 @@ function constraints_emissions(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
 end
 
 """
-    objective(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
+    objective(m, 𝒳, 𝒫, 𝒯, modeltype::EnergyModel)
 
 Create the objective for the optimization problem for a given modeltype.
 
@@ -520,14 +521,15 @@ The values are not discounted.
 This function serve as fallback option if no other method is specified for a specific
 `modeltype`.
 """
-function objective(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
+function objective(m, 𝒳, 𝒫, 𝒯, modeltype::EnergyModel)
     # Declaration of the required subsets
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     opex = JuMP.Containers.DenseAxisArray[]
-    for elements ∈ (𝒩, ℒ, 𝒫)
+    for elements ∈ 𝒳
         push!(opex, objective_operational(m, elements, 𝒯ᴵⁿᵛ, modeltype))
     end
+    push!(opex, objective_operational(m, 𝒫, 𝒯ᴵⁿᵛ, modeltype))
 
     # Calculation of the objective function.
     @objective(m, Max,
