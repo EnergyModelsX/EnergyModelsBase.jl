@@ -511,7 +511,8 @@ end
 Create the objective for the optimization problem for a given modeltype.
 
 The default option includes to the objective function:
-- the variable and fixed operating expenses for the individual nodes and
+- the variable and fixed operating expenses for the individual nodes,
+- the variable and fixed operating expenses for the individual links, and
 - the cost for the emissions.
 
 The values are not discounted.
@@ -520,35 +521,88 @@ This function serve as fallback option if no other method is specified for a spe
 `modeltype`.
 """
 function objective(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
-
-    # Declaration of the required subsets.
-    𝒩ⁿᵒᵗ = nodes_not_av(𝒩)
-    ℒᵒᵖᵉˣ = filter(has_opex, ℒ)
-    𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
+    # Declaration of the required subsets
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    opex = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
+    opex = JuMP.Containers.DenseAxisArray[]
+    for elements ∈ (𝒩, ℒ, 𝒫)
+        push!(opex, objective_operational(m, elements, 𝒯ᴵⁿᵛ, modeltype))
+    end
+
+    # Calculation of the objective function.
+    @objective(m, Max,
+        -sum(
+            sum(elements[t_inv] for elements ∈ opex) * duration_strat(t_inv)
+        for t_inv ∈ 𝒯ᴵⁿᵛ)
+    )
+end
+"""
+    objective_operational(m, elements, 𝒯ᴵⁿᵛ::TS.AbstractStratPers, modeltype::EnergyModel)
+
+Create JuMP expressions indexed over the investment periods `𝒯ᴵⁿᵛ` for different elements.
+The expressions correspond to the operational expenses of the different elements.
+The expressions are not discounted and do not take the duration of the investment periods
+into account.
+
+By default, objective expressions are included for:
+- `elements = 𝒩::Vector{<:Node}`. In the case of a vector of nodes, the function returns the
+  sum of the variable and fixed OPEX for all nodes whose method of the function [`has_opex`](@ref)
+  returns true.
+- `elements = 𝒩::Vector{<:Link}`. In the case of a vector of links, the function returns the
+  sum of the variable and fixed OPEX for all links whose method of the function [`has_opex`](@ref)
+  returns true.
+- `elements = 𝒩::Vector{<:Resource}`. In the case of a vector of resources, the function
+  returns the costs associated to the emissions using the function [`emission_price`](@ref).
+
+!!! note "Default function"
+    It is also possible to provide a tuple `𝒳` for only operational or only investment
+    objective contributions. In this situation, the expression returns a value of 0 for all
+    investment periods.
+"""
+function objective_operational(
+    m,
+    𝒩::Vector{<:Node},
+    𝒯ᴵⁿᵛ::TS.AbstractStratPers,
+    modeltype::EnergyModel,
+)
+    # Declaration of the required subsets
+    𝒩ⁿᵒᵗ = nodes_not_av(𝒩)
+
+    return @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         sum((m[:opex_var][n, t_inv] + m[:opex_fixed][n, t_inv]) for n ∈ 𝒩ⁿᵒᵗ)
     )
+end
+function objective_operational(
+    m,
+    ℒ::Vector{<:Link},
+    𝒯ᴵⁿᵛ::TS.AbstractStratPers,
+    modeltype::EnergyModel,
+)
+    # Declaration of the required subsets
+    ℒᵒᵖᵉˣ = filter(has_opex, ℒ)
 
-    link_opex = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
+    return @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         sum((m[:link_opex_var][l, t_inv] + m[:link_opex_fixed][l, t_inv]) for l ∈ ℒᵒᵖᵉˣ)
     )
+end
+function objective_operational(
+    m,
+    𝒫::Vector{<:Resource},
+    𝒯ᴵⁿᵛ::TS.AbstractStratPers,
+    modeltype::EnergyModel,
+)
+    # Declaration of the required subsets
+    𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
 
-    emissions = @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
+    return @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         sum(
             m[:emissions_strategic][t_inv, p] * emission_price(modeltype, p, t_inv) for
             p ∈ 𝒫ᵉᵐ
         )
     )
-
-    # Calculation of the objective function.
-    @objective(m, Max,
-        -sum(
-            (opex[t_inv] + link_opex[t_inv] + emissions[t_inv]) * duration_strat(t_inv)
-        for t_inv ∈ 𝒯ᴵⁿᵛ)
-    )
 end
+objective_operational(m, _, 𝒯ᴵⁿᵛ::TS.AbstractStratPers, _::EnergyModel) =
+    @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)
 
 """
     constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
