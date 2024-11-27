@@ -20,7 +20,7 @@ The fields of a [`RefSource`](@ref) node are given as:
   Hence, it is directly related to the specified `output` ratios.
   The variable operating expenses can be provided as `OperationalProfile` as well.
 - **`opex_fixed::TimeProfile`**:\
-  The fixed operating expenses are relative to the installed capacity (through the field `cap`) and the chosen duration of a strategic period as outlined on *[Utilize `TimeStruct`](@ref how_to-utilize_TS)*.\
+  The fixed operating expenses are relative to the installed capacity (through the field `cap`) and the chosen duration of an investment period as outlined on *[Utilize `TimeStruct`](@ref how_to-utilize_TS)*.\
   It is important to note that you can only use `FixedProfile` or `StrategicProfile` for the fixed OPEX, but not `RepresentativeProfile` or `OperationalProfile`.
   In addition, all values have to be non-negative.
 - **`output::Dict{<:Resource,<:Real}`**:\
@@ -78,7 +78,7 @@ A qualitative overview of the individual constraints can be found on *[Constrain
 This section focuses instead on the mathematical description of the individual constraints.
 It omits the direction inclusion of the vector of source nodes (or all nodes, if nothing specific is implemented).
 Instead, it is implicitly assumed that the constraints are valid ``\forall n ∈ N^{\text{Source}}`` for all [`Source`](@ref) types if not stated differently.
-In addition, all constraints are valid ``\forall t \in T`` (that is in all operational periods) or ``\forall t_{inv} \in T^{Inv}`` (that is in all strategic periods).
+In addition, all constraints are valid ``\forall t \in T`` (that is in all operational periods) or ``\forall t_{inv} \in T^{Inv}`` (that is in all investment periods).
 
 The following standard constraints are implemented for a [`Source`](@ref) node.
 [`Source`](@ref) nodes utilize the declared method for all nodes 𝒩.
@@ -117,7 +117,7 @@ Hence, if you do not have to call additional functions, but only plan to include
 
   !!! tip "Why do we use `first()`"
       The variable ``\texttt{cap\_inst}`` is declared over all operational periods (see the section on *[Capacity variables](@ref man-opt_var-cap)* for further explanations).
-      Hence, we use the function ``first(t_{inv})`` to retrieve the installed capacity in the first operational period of a given strategic period ``t_{inv}`` in the function `constraints_opex_fixed`.
+      Hence, we use the function ``first(t_{inv})`` to retrieve the installed capacity in the first operational period of a given investment period ``t_{inv}`` in the function `constraints_opex_fixed`.
 
 - `constraints_opex_var`:
 
@@ -126,7 +126,7 @@ Hence, if you do not have to call additional functions, but only plan to include
   ```
 
   !!! tip "The function `scale_op_sp`"
-      The function [``scale\_op\_sp(t_{inv}, t)``](@ref scale_op_sp) calculates the scaling factor between operational and strategic periods.
+      The function [``scale\_op\_sp(t_{inv}, t)``](@ref scale_op_sp) calculates the scaling factor between operational and investment periods.
       It also takes into account potential operational scenarios and their probability as well as representative periods.
 
 - `constraints_data`:\

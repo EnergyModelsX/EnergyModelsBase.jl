@@ -102,7 +102,7 @@ function generate_example_network()
             StorCapOpex(
                 FixedProfile(60),       # Charge capacity in t/h
                 FixedProfile(9.1),      # Storage variable OPEX for the charging in EUR/t
-                FixedProfile(0)        # Storage fixed OPEX for the charging in EUR/(t/h 8h)
+                FixedProfile(0)         # Storage fixed OPEX for the charging in EUR/(t/h 8h)
             ),
             StorCap(FixedProfile(600)), # Storage capacity in t
             CO2,                        # Stored resource

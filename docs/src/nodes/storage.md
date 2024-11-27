@@ -1,6 +1,6 @@
 # [Storage](@id nodes-storage)
 
-[`Storage`](@ref) nodes are subtypes of [`Storage`](@ref) as they have in general an input and output (except for permanent CO2 storage).
+[`Storage`](@ref) nodes are subtypes of [`Storage`](@ref) as they have in general an input and output (except for permanent CO₂ storage).
 Storages require additional variables and parameters.
 As a consequence, a new abstract type is specified.
 
@@ -16,7 +16,7 @@ As `TimeStruct`, and hence, `EnergyModelsBase` supports the inclusion of both re
 The structure of the level balance calculation is explained on *[Storage level constraints](@ref man-con-stor_level)* while you can find the mathematical description in the Section *[Level constraints](@ref nodes-storage-math-con-level)*.
 
 We differentiate between [`Accumulating`](@ref) and [`Cyclic`](@ref) storage behaviors.
-The former allows for a net change of the storage level within a strategic period, while the latter requires a cyclic behavior for the level balance.
+The former allows for a net change of the storage level within an investment period, while the latter requires a cyclic behavior for the level balance.
 
 A single concrete type is included for `Accumulating` using [`AccumulatingEmissions`](@ref). This type was introduced for [`ResourceEmit`](@ref) resources to represent a permanent storage node.
 It was initially utilized for CO₂ storage.
@@ -24,7 +24,7 @@ It was initially utilized for CO₂ storage.
 Two concrete types are included for [`Cyclic`](@ref), [`CyclicRepresentative`](@ref) and [`CyclicStrategic`](@ref).
 These two types differ only if the time structure includes representative periods.
 If not, they are equivalent.
-In the case of inclusion of representative periods, [`CyclicRepresentative`](@ref) enforces the cyclic constraint within a representative period while [`CyclicStrategic`](@ref) enforces the cyclic constraint within the strategic period.
+In the case of inclusion of representative periods, [`CyclicRepresentative`](@ref) enforces the cyclic constraint within a representative period while [`CyclicStrategic`](@ref) enforces the cyclic constraint within the investment period.
 In the case of [`CyclicStrategic`](@ref), we hence allow for a net change in the storage level within a representative period.
 This net change is then used for the scaling.
 
@@ -61,11 +61,10 @@ The fields of a [`RefStorage`](@ref) are given as:
 
 - **`id`**:\
   The field `id` is only used for providing a name to the node.
-- **`charge::UnionCapacity`**:\
-  The charge storage parameters must include a capacity for charging.
-  More information can be found on *[storage parameters](@ref lib-pub-nodes-stor_par)*.
+- **`charge::AbstractStorageParameters`**:\
+    More information can be found on *[storage parameters](@ref lib-pub-nodes-stor_par)*.
 - **`level::UnionCapacity`**:\
-  The level storage parameters must include a capacity for charging.
+  The level storage parameters must include a capacity.
   More information can be found on *[storage parameters](@ref lib-pub-nodes-stor_par)*.
   !!! note "Permitted values for storage parameters in `charge` and `level`"
       If the node should contain investments through the application of [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/), it is important to note that you can only use `FixedProfile` or `StrategicProfile` for the capacity, but not `RepresentativeProfile` or `OperationalProfile`.
@@ -115,10 +114,10 @@ The variables of [`Storage`](@ref)s include:
 
 - [``\texttt{opex\_var}``](@ref man-opt_var-opex)
 - [``\texttt{opex\_fixed}``](@ref man-opt_var-opex)
+- [``\texttt{stor\_level\_inst}``](@ref man-opt_var-cap)
 - [``\texttt{stor\_level}``](@ref man-opt_var-cap)
-- [``\texttt{stor\_level\_inst}``](@ref man-opt_var-cap) if the `Storage` has the field `charge` with a capacity
+- [``\texttt{stor\_charge\_inst}``](@ref man-opt_var-cap) if the `Storage` has the field `charge` with a capacity
 - [``\texttt{stor\_charge\_use}``](@ref man-opt_var-cap)
-- [``\texttt{stor\_charge\_inst}``](@ref man-opt_var-cap)
 - [``\texttt{stor\_discharge\_inst}``](@ref man-opt_var-cap) if the `Storage` has the field `discharge` with a capacity
 - [``\texttt{stor\_discharge\_use}``](@ref man-opt_var-cap)
 - [``\texttt{flow\_in}``](@ref man-opt_var-flow)
@@ -133,7 +132,7 @@ A qualitative overview of the individual constraints can be found on *[Constrain
 This section focuses instead on the mathematical description of the individual constraints.
 It omits the direction inclusion of the vector of network nodes (or all nodes, if nothing specific is implemented).
 Instead, it is implicitly assumed that the constraints are valid ``\forall n ∈ N^{\text{Storage}}`` for all [`Storage`](@ref) types if not stated differently.
-In addition, all constraints are valid ``\forall t \in T`` (that is in all operational periods) or ``\forall t_{inv} \in T^{Inv}`` (that is in all strategic periods).
+In addition, all constraints are valid ``\forall t \in T`` (that is in all operational periods) or ``\forall t_{inv} \in T^{Inv}`` (that is in all investment periods).
 
 The following standard constraints are implemented for a [`Storage`](@ref) node.
 [`Storage`](@ref) nodes utilize the declared method for all nodes 𝒩.
@@ -215,7 +214,7 @@ Hence, if you do not have to call additional functions, but only plan to include
 
   !!! tip "Why do we use `first()`"
       The variables ``\texttt{stor\_level\_inst}`` are declared over all operational periods (see the section on *[Capacity variables](@ref man-opt_var-cap)* for further explanations).
-      Hence, we use the function ``first(t_{inv})`` to retrieve the installed capacities in the first operational period of a given strategic period ``t_{inv}`` in the function `constraints_opex_fixed`.
+      Hence, we use the function ``first(t_{inv})`` to retrieve the installed capacities in the first operational period of a given investment period ``t_{inv}`` in the function `constraints_opex_fixed`.
 
 - `constraints_opex_var`:
 
@@ -229,7 +228,7 @@ Hence, if you do not have to call additional functions, but only plan to include
   ```
 
   !!! tip "The function `scale_op_sp`"
-      The function [``scale\_op\_sp(t_{inv}, t)``](@ref scale_op_sp) calculates the scaling factor between operational and strategic periods.
+      The function [``scale\_op\_sp(t_{inv}, t)``](@ref scale_op_sp) calculates the scaling factor between operational and investment periods.
       It also takes into account potential operational scenarios and their probability as well as representative periods.
 
 - `constraints_data`:\
@@ -308,7 +307,7 @@ It is calculated through the function `previous_level`.
 
 We can distinguish the following cases:
 
-1. The first operational period (in the first representative period) in a strategic period (given by ``typeof(t_{prev}) = typeof(t_{rp, prev}) = = nothing``).
+1. The first operational period (in the first representative period) in an investment period (given by ``typeof(t_{prev}) = typeof(t_{rp, prev}) = = nothing``).
    In this situation, the previous level is dependent on the chosen storage behavior.
    In the default case of a [`Cyclic`](@ref) behaviors, it is given by the last operational period of either the strategic or representative period:
 
@@ -330,7 +329,7 @@ We can distinguish the following cases:
    \end{aligned}
    ```
 
-   ``t_{rp,last}`` corresponds in this situation to the last representative period in the current strategic period.
+   ``t_{rp,last}`` corresponds in this situation to the last representative period in the current investment period.
 
    If the storage behavior is instead given by [`CyclicStrategic`](@ref), the previous level is set to 0:
 
@@ -338,7 +337,7 @@ We can distinguish the following cases:
    prev\_level = 0
    ```
 
-2. The first operational period in subsequent representative periods in any strategic period (given by ``typeof(t_{prev}) = nothing``).
+2. The first operational period in subsequent representative periods in any investment period (given by ``typeof(t_{prev}) = nothing``).
    The previous level is again dependent on the chosen storage behavior.
    The default approach calculates it as:
 

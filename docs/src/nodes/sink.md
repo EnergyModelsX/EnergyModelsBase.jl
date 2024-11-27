@@ -64,7 +64,7 @@ A qualitative overview of the individual constraints can be found on *[Constrain
 This section focuses instead on the mathematical description of the individual constraints.
 It omits the direction inclusion of the vector of sink nodes (or all nodes, if nothing specific is implemented).
 Instead, it is implicitly assumed that the constraints are valid ``\forall n ∈ N^{\text{Sink}}`` for all [`Sink`](@ref) types if not stated differently.
-In addition, all constraints are valid ``\forall t \in T`` (that is in all operational periods) or ``\forall t_{inv} \in T^{Inv}`` (that is in all strategic periods).
+In addition, all constraints are valid ``\forall t \in T`` (that is in all operational periods) or ``\forall t_{inv} \in T^{Inv}`` (that is in all investment periods).
 
 The following standard constraints are implemented for a [`Sink`](@ref) node.
 [`Sink`](@ref) nodes utilize the declared method for all nodes 𝒩.
@@ -118,7 +118,7 @@ Hence, if you do not have to call additional functions, but only plan to include
   ```
 
   !!! tip "The function `scale_op_sp`"
-      The function [``scale\_op\_sp(t_{inv}, t)``](@ref scale_op_sp) calculates the scaling factor between operational and strategic periods.
+      The function [``scale\_op\_sp(t_{inv}, t)``](@ref scale_op_sp) calculates the scaling factor between operational and investment periods.
       It also takes into account potential operational scenarios and their probability as well as representative periods.
 
 - `constraints_data`:\
