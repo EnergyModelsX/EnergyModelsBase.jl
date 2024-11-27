@@ -25,6 +25,7 @@ StorageInvData
 
 ```@docs
 check_inv_data
+objective_invest
 ```
 
 ## EnergyModelsBase
@@ -32,10 +33,9 @@ check_inv_data
 ### Methods
 
 ```@docs
-EMB.variables_capex(m, 𝒩, 𝒯, modeltype::AbstractInvestmentModel)
-EMB.variables_links_capex(m, ℒ, 𝒯, modeltype::AbstractInvestmentModel)
+EMB.variables_capex(m, 𝒩::Vector{<:EMB.Node}, 𝒯, modeltype::AbstractInvestmentModel)
+EMB.objective(m, 𝒳, 𝒫, 𝒯, modeltype::AbstractInvestmentModel)
 EMB.constraints_capacity_installed(m, n::EMB.Node, 𝒯::TimeStructure, modeltype::AbstractInvestmentModel)
-EMB.objective(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::AbstractInvestmentModel)
 EMB.check_node_data(n::EMB.Node, data::InvestmentData, 𝒯, modeltype::AbstractInvestmentModel, check_timeprofiles::Bool)
 ```
 

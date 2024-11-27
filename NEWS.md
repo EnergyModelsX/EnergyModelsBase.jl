@@ -2,6 +2,11 @@
 
 ## Unversioned
 
+### Restructuring of function calls
+
+* Restructured function flow for variable and constraint.
+* Allows extension with new types that we have not yet considered for the cost function and the emissions.
+
 ### Incorporation of bidirectional flow
 
 * Allow (in theory) for nodes and links with bidirectional flow through avoiding hard-coding a lower bound on flow variables.
