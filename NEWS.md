@@ -1,6 +1,6 @@
 # Release notes
 
-## Unversioned
+## Version 0.8.2 (2024-11-27)
 
 ### Restructuring of function calls
 
@@ -25,6 +25,11 @@
   * investments in links if the links have a capacity.
 * The majority of changes are incorporated through filter functions and require the user to define new methods for the included functions (*i.e.*, `has_opex`, `has_emissions`, and `has_capacity`)
 * Inclusion of variables follows principle of additional node variables.
+
+### Minor updates
+
+* Updated som docstrings.
+* Updated some minor changes in the documentation.
 
 ## Version 0.8.1 (2024-10-16)
 

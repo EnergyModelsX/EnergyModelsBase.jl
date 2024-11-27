@@ -553,20 +553,20 @@ function check_osc_sub_profile(sub_profile::TimeProfile, sub_msg::String, bool_s
 end
 
 """
-    check_node(n::Node, 𝒯, modeltype::EnergyModel)
+    check_node(n::Node, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
 Check that the fields of a `Node` corresponds to required structure.
 """
 function check_node(n::Node, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) end
 """
-    check_node(n::Availability, 𝒯, modeltype::EnergyModel)
+    check_node(n::Availability, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
 This method checks that an `Availability` node is valid. By default, that does not include
 any checks.
 """
 function check_node(n::Availability, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) end
 """
-    check_node(n::Source, 𝒯, modeltype::EnergyModel)
+    check_node(n::Source, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
 This method checks that a `Source` node is valid.
 
@@ -575,11 +575,11 @@ important that a new `Source` type includes at least the same fields as in the [
 node or that a new `Source` type receives a new method for `check_node`.
 
 ## Checks
- - The field `cap` is required to be non-negative.
- - The values of the dictionary `output` are required to be non-negative.
- - The value of the field `fixed_opex` is required to be non-negative and
-   accessible through a `StrategicPeriod` as outlined in the function
-   [`check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`](@ref).
+- The field `cap` is required to be non-negative.
+- The values of the dictionary `output` are required to be non-negative.
+- The value of the field `fixed_opex` is required to be non-negative and
+  accessible through a `StrategicPeriod` as outlined in the function
+  [`check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`](@ref).
 """
 function check_node(n::Source, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -595,7 +595,7 @@ function check_node(n::Source, 𝒯, modeltype::EnergyModel, check_timeprofiles:
     check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)
 end
 """
-    check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel)
+    check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
 This method checks that a `NetworkNode` node is valid.
 
@@ -604,12 +604,12 @@ important that a new `NetworkNode` type includes at least the same fields as in 
 [`RefNetworkNode`(@ref) node or that a new `NetworkNode` type receives a new method for `check_node`.
 
 ## Checks
- - The field `cap` is required to be non-negative.
- - The values of the dictionary `input` are required to be non-negative.
- - The values of the dictionary `output` are required to be non-negative.
- - The value of the field `fixed_opex` is required to be non-negative and
-   accessible through a `StrategicPeriod` as outlined in the function
-   [`check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`](@ref).
+- The field `cap` is required to be non-negative.
+- The values of the dictionary `input` are required to be non-negative.
+- The values of the dictionary `output` are required to be non-negative.
+- The value of the field `fixed_opex` is required to be non-negative and
+  accessible through a `StrategicPeriod` as outlined in the function
+  [`check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`](@ref).
 """
 function check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -629,7 +629,7 @@ function check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel, check_timeprof
     check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)
 end
 """
-    check_node(n::Storage, 𝒯, modeltype::EnergyModel)
+    check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
 This method checks that a `Storage` node is valid.
 
@@ -638,17 +638,17 @@ important that a new `Storage` type includes at least the same fields as in the
 [`RefStorage`](@ref) node or that a new `Storage` type receives a new method for `check_node`.
 
 ## Checks
- - The `TimeProfile` of the field `capacity` in the type in the field `charge` is required
-   to be non-negative if the chosen composite type has the field `capacity`.
- - The `TimeProfile` of the field `capacity` in the type in the field `level` is required
-   to be non-negative`.
- - The `TimeProfile` of the field `capacity` in the type in the field `discharge` is required
-   to be non-negative if the chosen composite type has the field `capacity`.
- - The `TimeProfile` of the field `fixed_opex` is required to be non-negative and
-   accessible through a `StrategicPeriod` as outlined in the function
-   [`check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`](@ref) for the chosen composite type .
- - The values of the dictionary `input` are required to be non-negative.
- - The values of the dictionary `output` are required to be non-negative.
+- The `TimeProfile` of the field `capacity` in the type in the field `charge` is required
+  to be non-negative if the chosen composite type has the field `capacity`.
+- The `TimeProfile` of the field `capacity` in the type in the field `level` is required
+  to be non-negative`.
+- The `TimeProfile` of the field `capacity` in the type in the field `discharge` is required
+  to be non-negative if the chosen composite type has the field `capacity`.
+- The `TimeProfile` of the field `fixed_opex` is required to be non-negative and
+  accessible through a `StrategicPeriod` as outlined in the function
+  [`check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`](@ref) for the chosen composite type .
+- The values of the dictionary `input` are required to be non-negative.
+- The values of the dictionary `output` are required to be non-negative.
 """
 function check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -691,7 +691,7 @@ function check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles
     )
 end
 """
-    check_node(n::Sink, 𝒯, modeltype::EnergyModel)
+    check_node(n::Sink, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
 This method checks that a `Sink` node is valid.
 
@@ -700,11 +700,11 @@ important that a new `Sink` type includes at least the same fields as in the [`R
 node or that a new `Source` type receives a new method for `check_node`.
 
 ## Checks
- - The field `cap` is required to be non-negative.
- - The values of the dictionary `input` are required to be non-negative.
- - The dictionary `penalty` is required to have the keys `:deficit` and `:surplus`.
- - The sum of the values `:deficit` and `:surplus` in the dictionary `penalty` has to be
-   non-negative to avoid an infeasible model.
+- The field `cap` is required to be non-negative.
+- The values of the dictionary `input` are required to be non-negative.
+- The dictionary `penalty` is required to have the keys `:deficit` and `:surplus`.
+- The sum of the values `:deficit` and `:surplus` in the dictionary `penalty` has to be
+  non-negative to avoid an infeasible model.
 """
 function check_node(n::Sink, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     @assert_or_log(

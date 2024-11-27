@@ -153,7 +153,7 @@ function check_inv_data(
         end
     else
         submessage =
-            "are not allowed for the capacity of the investment data" * message *
+            "are not allowed for the capacity of the investment data " * message *
             ", if investments are allowed and the chosen investment type is `NoStartInvData`."
         bool_sp = EMB.check_strategic_profile(capacity_profile, submessage)
         if bool_sp
@@ -161,7 +161,7 @@ function check_inv_data(
                 sum(capacity_profile[t_inv] ≤ EMI.max_installed(inv_data, t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ) ==
                     length(𝒯ᴵⁿᵛ),
                 "The existing capacity can not be larger than the maximum installed value in " *
-                "all strategic periods for the capacity coupled to the investment data" *
+                "all strategic periods for the capacity coupled to the investment data " *
                 message * "."
             )
         end
@@ -171,7 +171,7 @@ function check_inv_data(
     if isa(EMI.investment_mode(inv_data), Union{ContinuousInvestment,SemiContiInvestment})
         @assert_or_log(
             sum(EMI.min_add(inv_data, t) ≤ EMI.max_add(inv_data, t) for t ∈ 𝒯) == length(𝒯),
-            "`min_add` has to be less than `max_add` in the investment data" *
+            "`min_add` has to be less than `max_add` in the investment data " *
             message * "."
         )
     end
