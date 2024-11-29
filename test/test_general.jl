@@ -110,26 +110,26 @@ end
 
     # Check that total emissions of both methane and CO2 are within the constraint
     # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
-    @test sum(
+    @test all(
         value.(m[:emissions_strategic])[t_inv, CO2] <=
         EMB.emission_limit(model, CO2, t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ
-    ) == length(𝒯ᴵⁿᵛ)
-    @test sum(
+    )
+    @test all(
         value.(m[:emissions_strategic])[t_inv, NG] <= EMB.emission_limit(model, NG, t_inv)
         for t_inv ∈ 𝒯ᴵⁿᵛ
-    ) == length(𝒯ᴵⁿᵛ)
+    )
 
     # Check that the total and strategic emissions are correctly calculated
     # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
-    @test sum(
+    @test all(
         value.(m[:emissions_strategic][t_inv, CO2]) ≈
         sum(value.(m[:emissions_total][t, CO2]) * scale_op_sp(t_inv, t) for t ∈ t_inv) for
         t_inv ∈ 𝒯ᴵⁿᵛ, atol ∈ TEST_ATOL
-    ) ≈ length(𝒯ᴵⁿᵛ)
-    @test sum(
+    )
+    @test all(
         value.(m[:emissions_total][t, CO2]) ≈
         sum(value.(m[:emissions_node][n, t, CO2]) for n ∈ 𝒩ᵉᵐ) for t ∈ 𝒯, atol ∈ TEST_ATOL
-    ) ≈ length(𝒯)
+    )
 
     # Check that the objective value is properly calculated
     # - objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
@@ -145,36 +145,36 @@ end
         ℒᶠʳᵒᵐ, ℒᵗᵒ = EMB.link_sub(ℒ, n)
         # Constraint for output flowrate and input links.
         if has_output(n)
-            @test sum(
+            @test all(
                 value.(m[:flow_out][n, t, p]) ≈
                 sum(value.(m[:link_in][l, t, p]) for l ∈ ℒᶠʳᵒᵐ if p ∈ inputs(l.to)) for
                 t ∈ 𝒯, p ∈ outputs(n), atol ∈ TEST_ATOL
-            ) ≈ length(𝒯) * length(outputs(n))
+            )
         end
         # Constraint for input flowrate and output links.
         if has_input(n)
-            @test sum(
+            @test all(
                 value.(m[:flow_in][n, t, p]) ≈
                 sum(value.(m[:link_out][l, t, p]) for l ∈ ℒᵗᵒ if p ∈ outputs(l.from)) for
                 t ∈ 𝒯, p ∈ inputs(n), atol ∈ TEST_ATOL
-            ) ≈ length(𝒯) * length(inputs(n))
+            )
         end
     end
 
     # Check that the total energy balances are fulfilled in the availability node for
     # each resource
     # - create_node(m, n::Availability, 𝒯, 𝒫, modeltype::EnergyModel)
-    @test sum(
+    @test all(
         value.(m[:flow_in][avail, t, p]) ≈ value.(m[:flow_out][avail, t, p]) for t ∈ 𝒯,
         p ∈ 𝒫, atol ∈ TEST_ATOL
-    ) ≈ length(𝒯) * length(𝒫)
+    )
 
     # Check that the link balance is correct
     # - create_link(m, 𝒯, 𝒫, l, formulation::Formulation)
-    @test sum(
-        sum(
+    @test all(
+        all(
             value.(m[:link_out][l, t, p]) ≈ value.(m[:link_in][l, t, p]) for t ∈ 𝒯,
             p ∈ EMB.link_res(l), atol ∈ TEST_ATOL
-        ) ≈ length(𝒯) * length(EMB.link_res(l)) for l ∈ ℒ, atol ∈ TEST_ATOL
-    ) ≈ length(ℒ)
+        ) for l ∈ ℒ, atol ∈ TEST_ATOL
+    )
 end

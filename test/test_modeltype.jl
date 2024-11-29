@@ -41,9 +41,9 @@
 
         # Test that the system produces
         # Test that the deficit is hence larger than 0 in a strategic period
-        @test sum(
+        @test all(
             sum(value.(m[:cap_use][sink, t]) for t ∈ t_inv) > TEST_ATOL for t_inv ∈ 𝒯ᴵⁿᵛ
-        ) == length(𝒯ᴵⁿᵛ)
+        )
     end
 
     @testset "Emission cap" begin
@@ -65,15 +65,15 @@
 
         # Test that the strategic emission limits hold
         # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel
-        @test sum(
+        @test all(
             value.(m[:emissions_strategic][t_inv, CO2]) ≈ cap for t_inv ∈ 𝒯ᴵⁿᵛ,
             atol ∈ TEST_ATOL
-        ) == length(𝒯ᴵⁿᵛ)
+        )
         # Test that the deficit is hence larger than 0 in a strategic period
-        @test sum(
+        @test all(
             sum(value.(m[:sink_deficit][sink, t]) for t ∈ t_inv) > TEST_ATOL for
             t_inv ∈ 𝒯ᴵⁿᵛ
-        ) == length(𝒯ᴵⁿᵛ)
+        )
     end
 
     @testset "Emission price" begin
@@ -99,6 +99,6 @@
         @test objective_value(m) ≈ -cap * price * 2 * 2 atol = TEST_ATOL
 
         # Check that there is no deficit
-        @test sum(value.(m[:sink_deficit][sink, t]) ≤ TEST_ATOL for t ∈ 𝒯) == length(𝒯)
+        @test all(value.(m[:sink_deficit][sink, t]) ≤ TEST_ATOL for t ∈ 𝒯)
     end
 end

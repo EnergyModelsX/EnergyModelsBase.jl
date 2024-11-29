@@ -9,7 +9,7 @@ One key aim in the development of `EnergyModelsBase` was to create an energy sys
 3. is designed in a way such that the thought process for understanding the model is straight forward.
 
 Julia as a programming language offers the flexibility required in points 1 and 2 through the concept of multiple dispatch.
-The philosophy hence focueses on only creating variables and constraintes that are used, instead of creating all potential constraints and variables and constrain a large fraction of these variables to a value of 0.
+`EnergyModelsBase` hence focuses on only creating variables and constraints that are used, instead of creating all potential constraints and variables and constrain a large fraction of these variables to a value of 0.
 In that respect, `EnergyModelsBase` moves away from a parameter driven flexibility to a type driven flexibility.
 Point 3 is achieved through a one direction flow in function calls, that is that we limit the number of required files and function calls for the individual technology constraint creations, and meaningful names of the individual functions.
 

@@ -556,23 +556,37 @@ end
     check_node(n::Node, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
 Check that the fields of a `Node` corresponds to required structure.
+
+The default approach calls the subroutine [`check_node_default`](@ref) which provides the
+user with default checks for [`Source`](@ref), [`NetworkNode`](@ref), [`Availability`](@ref),
+[`Storage`](@ref), and [`Sink`](@ref) nodes.
+
+!!! tip "Creating a new node type"
+    When developing a new node with new checks, it is important to create a new method for
+    `check_node`. You can then call within this function the default tests for the corresponding
+    supertype through calling the function [`check_node_default`](@ref).
 """
-function check_node(n::Node, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) end
+check_node(n::Node, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) =
+    check_node_default(n, 𝒯, modeltype, check_timeprofiles)
 """
-    check_node(n::Availability, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+    check_node_default(n::Node, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+
+This method checks that a `Node` node is valid. By default, that does not include
+any checks.
+"""
+function check_node_default(n::Node, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) end
+"""
+    check_node_default(n::Availability, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
 This method checks that an `Availability` node is valid. By default, that does not include
 any checks.
 """
-function check_node(n::Availability, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) end
+function check_node_default(n::Availability, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) end
 """
-    check_node(n::Source, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+    check_node_default(n::Source, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
-This method checks that a `Source` node is valid.
-
-These checks are always performed, if the user is not creating a new method. Hence, it is
-important that a new `Source` type includes at least the same fields as in the [`RefSource`](@ref)
-node or that a new `Source` type receives a new method for `check_node`.
+Subroutine that can be utilized in other packages for incorporating the standard tests for
+a [`Source`](@ref) node.
 
 ## Checks
 - The field `cap` is required to be non-negative.
@@ -581,27 +595,24 @@ node or that a new `Source` type receives a new method for `check_node`.
   accessible through a `StrategicPeriod` as outlined in the function
   [`check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`](@ref).
 """
-function check_node(n::Source, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+function check_node_default(n::Source, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     @assert_or_log(
-        sum(capacity(n, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+        all(capacity(n, t) ≥ 0 for t ∈ 𝒯),
         "The capacity must be non-negative."
     )
     @assert_or_log(
-        sum(outputs(n, p) ≥ 0 for p ∈ outputs(n)) == length(outputs(n)),
+        all(outputs(n, p) ≥ 0 for p ∈ outputs(n)),
         "The values for the Dictionary `output` must be non-negative."
     )
     check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)
 end
 """
-    check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+    check_node_default(n::NetworkNode, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
-This method checks that a `NetworkNode` node is valid.
-
-These checks are always performed, if the user is not creating a new method. Hence, it is
-important that a new `NetworkNode` type includes at least the same fields as in the
-[`RefNetworkNode`(@ref) node or that a new `NetworkNode` type receives a new method for `check_node`.
+Subroutine that can be utilized in other packages for incorporating the standard tests for
+a [`NetworkNode`](@ref) node.
 
 ## Checks
 - The field `cap` is required to be non-negative.
@@ -611,31 +622,28 @@ important that a new `NetworkNode` type includes at least the same fields as in 
   accessible through a `StrategicPeriod` as outlined in the function
   [`check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`](@ref).
 """
-function check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+function check_node_default(n::NetworkNode, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     @assert_or_log(
-        sum(capacity(n, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+        all(capacity(n, t) ≥ 0 for t ∈ 𝒯),
         "The capacity must be non-negative."
     )
     @assert_or_log(
-        sum(inputs(n, p) ≥ 0 for p ∈ inputs(n)) == length(inputs(n)),
+        all(inputs(n, p) ≥ 0 for p ∈ inputs(n)),
         "The values for the Dictionary `input` must be non-negative."
     )
     @assert_or_log(
-        sum(outputs(n, p) ≥ 0 for p ∈ outputs(n)) == length(outputs(n)),
+        all(outputs(n, p) ≥ 0 for p ∈ outputs(n)),
         "The values for the Dictionary `output` must be non-negative."
     )
     check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)
 end
 """
-    check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+    check_node_default(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
-This method checks that a `Storage` node is valid.
-
-These checks are always performed, if the user is not creating a new method. Hence, it is
-important that a new `Storage` type includes at least the same fields as in the
-[`RefStorage`](@ref) node or that a new `Storage` type receives a new method for `check_node`.
+Subroutine that can be utilized in other packages for incorporating the standard tests for
+a [`Storage`](@ref) node.
 
 ## Checks
 - The `TimeProfile` of the field `capacity` in the type in the field `charge` is required
@@ -650,7 +658,7 @@ important that a new `Storage` type includes at least the same fields as in the
 - The values of the dictionary `input` are required to be non-negative.
 - The values of the dictionary `output` are required to be non-negative.
 """
-function check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+function check_node_default(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
     par_charge = charge(n)
     par_level = level(n)
@@ -658,7 +666,7 @@ function check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles
 
     if isa(par_charge, UnionCapacity)
         @assert_or_log(
-            sum(capacity(par_charge, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+            all(capacity(par_charge, t) ≥ 0 for t ∈ 𝒯),
             "The charge capacity must be non-negative."
         )
     end
@@ -666,7 +674,7 @@ function check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles
         check_fixed_opex(par_charge, 𝒯ᴵⁿᵛ, check_timeprofiles)
     end
     @assert_or_log(
-        sum(capacity(par_level, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+        all(capacity(par_level, t) ≥ 0 for t ∈ 𝒯),
         "The level capacity must be non-negative."
     )
     if isa(par_level, UnionOpexFixed)
@@ -674,45 +682,43 @@ function check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles
     end
     if isa(par_discharge, UnionCapacity)
         @assert_or_log(
-            sum(capacity(par_discharge, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
-            "The charge capacity must be non-negative."
+            all(capacity(par_discharge, t) ≥ 0 for t ∈ 𝒯),
+            "The discharge capacity must be non-negative."
         )
     end
     if isa(par_discharge, UnionOpexFixed)
         check_fixed_opex(par_discharge, 𝒯ᴵⁿᵛ, check_timeprofiles)
     end
-    @assert_or_log(
-        sum(inputs(n, p) ≥ 0 for p ∈ inputs(n)) == length(inputs(n)),
+    has_input(n) && @assert_or_log(
+        all(inputs(n, p) ≥ 0 for p ∈ inputs(n)),
         "The values for the Dictionary `input` must be non-negative."
     )
-    @assert_or_log(
-        sum(outputs(n, p) ≥ 0 for p ∈ outputs(n)) == length(outputs(n)),
+    has_output(n) && @assert_or_log(
+        all(outputs(n, p) ≥ 0 for p ∈ outputs(n)),
         "The values for the Dictionary `output` must be non-negative."
     )
 end
+
 """
-    check_node(n::Sink, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+    check_node_default(n::Sink, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
-This method checks that a `Sink` node is valid.
-
-These checks are always performed, if the user is not creating a new method. Hence, it is
-important that a new `Sink` type includes at least the same fields as in the [`RefSink`](@ref)
-node or that a new `Source` type receives a new method for `check_node`.
+Subroutine that can be utilized in other packages for incorporating the standard tests for
+a [`Sink`](@ref) node.
 
 ## Checks
 - The field `cap` is required to be non-negative.
 - The values of the dictionary `input` are required to be non-negative.
 - The dictionary `penalty` is required to have the keys `:deficit` and `:surplus`.
 - The sum of the values `:deficit` and `:surplus` in the dictionary `penalty` has to be
-  non-negative to avoid an infeasible model.
+    non-negative to avoid an infeasible model.
 """
-function check_node(n::Sink, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+function check_node_default(n::Sink, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     @assert_or_log(
-        sum(capacity(n, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+        all(capacity(n, t) ≥ 0 for t ∈ 𝒯),
         "The capacity must be non-negative."
     )
     @assert_or_log(
-        sum(inputs(n, p) ≥ 0 for p ∈ inputs(n)) == length(inputs(n)),
+        all(inputs(n, p) ≥ 0 for p ∈ inputs(n)),
         "The values for the Dictionary `input` must be non-negative."
     )
     @assert_or_log(
@@ -723,11 +729,13 @@ function check_node(n::Sink, 𝒯, modeltype::EnergyModel, check_timeprofiles::B
     if :surplus ∈ keys(n.penalty) && :deficit ∈ keys(n.penalty)
         # The if-condition was checked above.
         @assert_or_log(
-            sum(surplus_penalty(n, t) + deficit_penalty(n, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+            all(surplus_penalty(n, t) + deficit_penalty(n, t) ≥ 0 for t ∈ 𝒯),
             "An inconsistent combination of `:surplus` and `:deficit` leads to an infeasible model."
         )
     end
 end
+
+
 """
     check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles::Bool)
 
@@ -758,7 +766,7 @@ function check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles::Bool)
     # Check that the value is positive in all cases
     if bool_sp
         @assert_or_log(
-            sum(opex_fixed(n, t_inv) ≥ 0 for t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ),
+            all(opex_fixed(n, t_inv) ≥ 0 for t_inv ∈ 𝒯ᴵⁿᵛ),
             "The fixed OPEX must be non-negative."
         )
     end

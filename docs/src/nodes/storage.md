@@ -143,9 +143,9 @@ Hence, if you do not have to call additional functions, but only plan to include
 
   ```math
   \begin{aligned}
-  \texttt{stor\_level\_use}[n, t] & = \texttt{stor\_level\_inst}[n, t] \\
-  \texttt{stor\_charge\_use}[n, t] & = \texttt{stor\_charge\_inst}[n, t] \\
-  \texttt{stor\_discharge\_use}[n, t] & = \texttt{stor\_discharge\_inst}[n, t]
+  \texttt{stor\_level\_use}[n, t] & \leq \texttt{stor\_level\_inst}[n, t] \\
+  \texttt{stor\_charge\_use}[n, t] & \leq \texttt{stor\_charge\_inst}[n, t] \\
+  \texttt{stor\_discharge\_use}[n, t] & \leq \texttt{stor\_discharge\_inst}[n, t]
   \end{aligned}
   ```
 

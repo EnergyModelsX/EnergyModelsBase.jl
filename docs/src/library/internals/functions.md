@@ -49,6 +49,7 @@ check_data
 check_case_data
 check_model
 check_node
+check_node_default
 check_fixed_opex
 check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 check_time_structure
