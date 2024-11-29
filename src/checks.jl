@@ -683,7 +683,7 @@ function check_node_default(n::Storage, 𝒯, modeltype::EnergyModel, check_time
     if isa(par_discharge, UnionCapacity)
         @assert_or_log(
             all(capacity(par_discharge, t) ≥ 0 for t ∈ 𝒯),
-            "The charge capacity must be non-negative."
+            "The discharge capacity must be non-negative."
         )
     end
     if isa(par_discharge, UnionOpexFixed)
