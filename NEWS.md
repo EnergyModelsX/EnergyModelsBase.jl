@@ -1,5 +1,12 @@
 # Release notes
 
+## Version 0.8.3 (2024-11-29)
+
+### Reference checks possible to be called
+
+* Created function `check_node_default()`.
+* The function can be called from other `check_node` to include all default checks
+
 ## Version 0.8.2 (2024-11-27)
 
 ### Restructuring of function calls
