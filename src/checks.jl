@@ -585,11 +585,11 @@ function check_node(n::Source, 𝒯, modeltype::EnergyModel, check_timeprofiles:
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     @assert_or_log(
-        sum(capacity(n, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+        all(capacity(n, t) ≥ 0 for t ∈ 𝒯),
         "The capacity must be non-negative."
     )
     @assert_or_log(
-        sum(outputs(n, p) ≥ 0 for p ∈ outputs(n)) == length(outputs(n)),
+        all(outputs(n, p) ≥ 0 for p ∈ outputs(n)),
         "The values for the Dictionary `output` must be non-negative."
     )
     check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)
@@ -615,15 +615,15 @@ function check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel, check_timeprof
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     @assert_or_log(
-        sum(capacity(n, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+        all(capacity(n, t) ≥ 0 for t ∈ 𝒯),
         "The capacity must be non-negative."
     )
     @assert_or_log(
-        sum(inputs(n, p) ≥ 0 for p ∈ inputs(n)) == length(inputs(n)),
+        all(inputs(n, p) ≥ 0 for p ∈ inputs(n)),
         "The values for the Dictionary `input` must be non-negative."
     )
     @assert_or_log(
-        sum(outputs(n, p) ≥ 0 for p ∈ outputs(n)) == length(outputs(n)),
+        all(outputs(n, p) ≥ 0 for p ∈ outputs(n)),
         "The values for the Dictionary `output` must be non-negative."
     )
     check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)
@@ -658,7 +658,7 @@ function check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles
 
     if isa(par_charge, UnionCapacity)
         @assert_or_log(
-            sum(capacity(par_charge, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+            all(capacity(par_charge, t) ≥ 0 for t ∈ 𝒯),
             "The charge capacity must be non-negative."
         )
     end
@@ -666,7 +666,7 @@ function check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles
         check_fixed_opex(par_charge, 𝒯ᴵⁿᵛ, check_timeprofiles)
     end
     @assert_or_log(
-        sum(capacity(par_level, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+        all(capacity(par_level, t) ≥ 0 for t ∈ 𝒯),
         "The level capacity must be non-negative."
     )
     if isa(par_level, UnionOpexFixed)
@@ -674,7 +674,7 @@ function check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles
     end
     if isa(par_discharge, UnionCapacity)
         @assert_or_log(
-            sum(capacity(par_discharge, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+            all(capacity(par_discharge, t) ≥ 0 for t ∈ 𝒯),
             "The charge capacity must be non-negative."
         )
     end
@@ -682,11 +682,11 @@ function check_node(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles
         check_fixed_opex(par_discharge, 𝒯ᴵⁿᵛ, check_timeprofiles)
     end
     @assert_or_log(
-        sum(inputs(n, p) ≥ 0 for p ∈ inputs(n)) == length(inputs(n)),
+        all(inputs(n, p) ≥ 0 for p ∈ inputs(n)),
         "The values for the Dictionary `input` must be non-negative."
     )
-    @assert_or_log(
-        sum(outputs(n, p) ≥ 0 for p ∈ outputs(n)) == length(outputs(n)),
+    has_output(n) && @assert_or_log(
+        all(outputs(n, p) ≥ 0 for p ∈ outputs(n)),
         "The values for the Dictionary `output` must be non-negative."
     )
 end
@@ -708,11 +708,11 @@ node or that a new `Source` type receives a new method for `check_node`.
 """
 function check_node(n::Sink, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     @assert_or_log(
-        sum(capacity(n, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+        all(capacity(n, t) ≥ 0 for t ∈ 𝒯),
         "The capacity must be non-negative."
     )
     @assert_or_log(
-        sum(inputs(n, p) ≥ 0 for p ∈ inputs(n)) == length(inputs(n)),
+        all(inputs(n, p) ≥ 0 for p ∈ inputs(n)),
         "The values for the Dictionary `input` must be non-negative."
     )
     @assert_or_log(
@@ -723,7 +723,7 @@ function check_node(n::Sink, 𝒯, modeltype::EnergyModel, check_timeprofiles::B
     if :surplus ∈ keys(n.penalty) && :deficit ∈ keys(n.penalty)
         # The if-condition was checked above.
         @assert_or_log(
-            sum(surplus_penalty(n, t) + deficit_penalty(n, t) ≥ 0 for t ∈ 𝒯) == length(𝒯),
+            all(surplus_penalty(n, t) + deficit_penalty(n, t) ≥ 0 for t ∈ 𝒯),
             "An inconsistent combination of `:surplus` and `:deficit` leads to an infeasible model."
         )
     end
@@ -758,7 +758,7 @@ function check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles::Bool)
     # Check that the value is positive in all cases
     if bool_sp
         @assert_or_log(
-            sum(opex_fixed(n, t_inv) ≥ 0 for t_inv ∈ 𝒯ᴵⁿᵛ) == length(𝒯ᴵⁿᵛ),
+            all(opex_fixed(n, t_inv) ≥ 0 for t_inv ∈ 𝒯ᴵⁿᵛ),
             "The fixed OPEX must be non-negative."
         )
     end

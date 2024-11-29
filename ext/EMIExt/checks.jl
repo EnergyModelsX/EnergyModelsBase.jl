@@ -145,8 +145,7 @@ function check_inv_data(
     if isa(inv_data, StartInvData)
         if bool_sp
             @assert_or_log(
-                sum(inv_data.initial[t_inv] ≤ EMI.max_installed(inv_data, t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ) ==
-                    length(𝒯ᴵⁿᵛ),
+                all(inv_data.initial[t_inv] ≤ EMI.max_installed(inv_data, t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ),
                 "The value for the field `initial` in the investment data " * message *
                 " can not be larger than the maximum installed constraint."
             )
@@ -158,8 +157,7 @@ function check_inv_data(
         bool_sp = EMB.check_strategic_profile(capacity_profile, submessage)
         if bool_sp
             @assert_or_log(
-                sum(capacity_profile[t_inv] ≤ EMI.max_installed(inv_data, t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ) ==
-                    length(𝒯ᴵⁿᵛ),
+                all(capacity_profile[t_inv] ≤ EMI.max_installed(inv_data, t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ),
                 "The existing capacity can not be larger than the maximum installed value in " *
                 "all strategic periods for the capacity coupled to the investment data " *
                 message * "."
@@ -170,7 +168,7 @@ function check_inv_data(
     # Check on the minmimum and maximum added capacities
     if isa(EMI.investment_mode(inv_data), Union{ContinuousInvestment,SemiContiInvestment})
         @assert_or_log(
-            sum(EMI.min_add(inv_data, t) ≤ EMI.max_add(inv_data, t) for t ∈ 𝒯) == length(𝒯),
+            all(EMI.min_add(inv_data, t) ≤ EMI.max_add(inv_data, t) for t ∈ 𝒯),
             "`min_add` has to be less than `max_add` in the investment data " *
             message * "."
         )
