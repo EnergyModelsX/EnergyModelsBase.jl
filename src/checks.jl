@@ -689,7 +689,7 @@ function check_node_default(n::Storage, 𝒯, modeltype::EnergyModel, check_time
     if isa(par_discharge, UnionOpexFixed)
         check_fixed_opex(par_discharge, 𝒯ᴵⁿᵛ, check_timeprofiles)
     end
-    @assert_or_log(
+    has_input(n) && @assert_or_log(
         all(inputs(n, p) ≥ 0 for p ∈ inputs(n)),
         "The values for the Dictionary `input` must be non-negative."
     )
