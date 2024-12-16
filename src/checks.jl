@@ -654,7 +654,7 @@ a [`Storage`](@ref) node.
   to be non-negative if the chosen composite type has the field `capacity`.
 - The `TimeProfile` of the field `fixed_opex` is required to be non-negative and
   accessible through a `StrategicPeriod` as outlined in the function
-  [`check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`](@ref) for the chosen composite type .
+  [`check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`](@ref) for the chosen composite type.
 - The values of the dictionary `input` are required to be non-negative.
 - The values of the dictionary `output` are required to be non-negative.
 """
