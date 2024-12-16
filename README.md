@@ -20,14 +20,14 @@ If you find `EnergyModelsBase` useful in your work, we kindly request that you c
 
 ```bibtex
 @article{hellemo2024energymodelsx,
-  title={EnergyModelsX: Flexible Energy Systems Modelling with Multiple Dispatch},
-  author={Hellemo, Lars and B{\o}dal, Espen Flo and Holm, Sigmund Eggen and Pinel, Dimitri and Straus, Julian},
-  journal={Journal of Open Source Software},
-  volume={9},
-  number={97},
-  pages={6619},
-  year={2024},
-  doi={https://doi.org/10.21105/joss.06619},
+  title = {EnergyModelsX: Flexible Energy Systems Modelling with Multiple Dispatch},
+  author = {Hellemo, Lars and B{\o}dal, Espen Flo and Holm, Sigmund Eggen and Pinel, Dimitri and Straus, Julian},
+  journal = {Journal of Open Source Software},
+  volume = {9},
+  number = {97},
+  pages = {6619},
+  year = {2024},
+  doi = {https://doi.org/10.21105/joss.06619},
 }
 ```
 
