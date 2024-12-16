@@ -331,7 +331,7 @@ We can distinguish the following cases:
 
    ``t_{rp,last}`` corresponds in this situation to the last representative period in the current investment period.
 
-   If the storage behavior is instead given by [`Accumlating`](@ref), the previous level is set to 0:
+   If the storage behavior is instead given by [`Accumulating`](@ref), the previous level is set to 0:
 
    ```math
    prev\_level = 0
