@@ -19,7 +19,7 @@ objective_operational
 emissions_operational
 ```
 
-## [Constraint methods](@id lib-int-fun-con)
+## [Constraint functions](@id lib-int-fun-con)
 
 ```@docs
 constraints_emissions
@@ -86,7 +86,7 @@ res_not
 res_sub
 ```
 
-## Miscellaneous functions
+## [Miscellaneous functions](@id lib-int-fun-misc)
 
 ```@docs
 collect_types
