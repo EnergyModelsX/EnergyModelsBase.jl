@@ -26,7 +26,7 @@ Within this function, the function
 constraints_capacity_installed(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
 ```
 
-is called to limit the variable ``\texttt{cap\_inst}`` (or ``\texttt{stor\_charge_\_inst}``, ``\texttt{stor\_level\_inst}`` and ``\texttt{stor\_discharge_\_inst}`` for `Storage` nodes) of a technology node ``n``.
+is called to limit the variable ``\texttt{cap\_inst}`` (or ``\texttt{stor\_charge\_inst}``, ``\texttt{stor\_level\_inst}`` and ``\texttt{stor\_discharge\_inst}`` for `Storage` nodes) of a technology node ``n``.
 This functions is also used to subsequently dispatch on model type for the introduction of investments.
 
 !!! warning

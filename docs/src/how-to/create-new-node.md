@@ -31,7 +31,7 @@ This is however only advised if you do not need to access the value of the varia
     If you require variables, it is crucial to check whether the variable names are already utilized by other nodes you are using!
     The individual variables are shown on the description of individual nodes.
 
-    It is hence in general advisable to provide a specific name including the node type as prefix, *e.g.*, `node_test_flow_in if you want to create a variable for a `NodeTest`.
+    It is hence in general advisable to provide a specific name including the node type as prefix, *e.g.*, `node_test_flow_in` if you want to create a variable for a `NodeTest`.
 
 !!! warning "Field names"
     When creating a new node type, you are free to change the field names to whatever name you desire. However, if you change the  field names, there are several things to consider:

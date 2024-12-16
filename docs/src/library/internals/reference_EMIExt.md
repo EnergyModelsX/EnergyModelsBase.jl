@@ -1,6 +1,6 @@
-# Internals - EnergyModelsInvestment extension
+# [Internals - EnergyModelsInvestment extension](@id lib-int-EMIext)
 
-## Index
+## [Index](@id lib-int-EMIext-idx)
 
 ```@index
 Pages = ["reference_EMIExt.md"]
@@ -11,9 +11,9 @@ CurrentModule =
     Base.get_extension(EMB, :EMIExt)
 ```
 
-## Extension
+## [Extension](@id lib-int-EMIext-ext)
 
-### Types
+### [Types](@id lib-int-EMIext-ext-types)
 
 ```@docs
 InvestmentModel
@@ -21,16 +21,16 @@ SingleInvData
 StorageInvData
 ```
 
-### Methods
+### [Functions](@id lib-int-EMIext-fun)
 
 ```@docs
 check_inv_data
 objective_invest
 ```
 
-## EnergyModelsBase
+## [EnergyModelsBase](@id lib-int-EMIext-EMB)
 
-### Methods
+### [Methods](@id lib-int-EMIext-met)
 
 ```@docs
 EMB.variables_capex(m, 𝒩::Vector{<:EMB.Node}, 𝒯, modeltype::AbstractInvestmentModel)
@@ -39,9 +39,9 @@ EMB.constraints_capacity_installed(m, n::EMB.Node, 𝒯::TimeStructure, modeltyp
 EMB.check_node_data(n::EMB.Node, data::InvestmentData, 𝒯, modeltype::AbstractInvestmentModel, check_timeprofiles::Bool)
 ```
 
-## EnergyModelsInvestments
+## [EnergyModelsInvestments](@id lib-int-EMIext-EMI)
 
-### Constructors
+### [Constructors](@id lib-int-EMIext-construct)
 
 The following constructors are only relevant for the legacy constructors introduced within the extension.
 They do not provide any additional information.
@@ -58,7 +58,7 @@ EMI.SemiContinuousOffsetInvestment
 EMI.StudyLife
 ```
 
-### Methods
+### [Methods](@id lib-int-EMIext-met)
 
 ```@docs
 EMI.has_investment

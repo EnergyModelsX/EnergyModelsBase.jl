@@ -1,6 +1,6 @@
-# Internal functions
+# [Internal functions](@id lib-int-fun)
 
-## Index
+## [Index](@id lib-int-fun-idx)
 
 ```@index
 Pages = ["functions.md"]
@@ -10,7 +10,7 @@ Pages = ["functions.md"]
 CurrentModule = EnergyModelsBase
 ```
 
-## Extension functions
+## [Extension functions](@id lib-int-fun-ext)
 
 ```@docs
 create_link
@@ -19,7 +19,7 @@ objective_operational
 emissions_operational
 ```
 
-## Constraint functions
+## [Constraint methods](@id lib-int-fun-con)
 
 ```@docs
 constraints_emissions
@@ -31,7 +31,7 @@ constraints_level_scp
 constraints_level_bounds
 ```
 
-## Variable creation functions
+## [Variable creation functions](@id lib-int-fun-var)
 
 ```@docs
 variables_capacity
@@ -42,7 +42,7 @@ variables_emission
 variables_elements
 ```
 
-## Check functions
+## [Check functions](@id lib-int-fun-check)
 
 ```@docs
 check_data
@@ -60,7 +60,7 @@ check_scenario_profile
 compile_logs
 ```
 
-## Identification functions
+## [Identification functions](@id lib-int-fun-identi)
 
 ```@docs
 is_network_node

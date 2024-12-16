@@ -276,7 +276,7 @@ If the time structure includes representative periods, we calculate the change o
 
 ```math
 \texttt{stor\_level\_Δ\_rp}[n, t_{rp}] = \sum_{t \in t_{rp}}
-\texttt{stor\_level\_Δ\_op}[n, t] \times scale_op_sp(t_{rp}, t)
+\texttt{stor\_level\_Δ\_op}[n, t] \times scale\_op\_sp(t_{rp}, t)
 ```
 
 In the case of [`CyclicStrategic`](@ref), we add an additional constraint to the change in the function `constraints_level_rp`:
@@ -331,7 +331,7 @@ We can distinguish the following cases:
 
    ``t_{rp,last}`` corresponds in this situation to the last representative period in the current investment period.
 
-   If the storage behavior is instead given by [`CyclicStrategic`](@ref), the previous level is set to 0:
+   If the storage behavior is instead given by [`Accumlating`](@ref), the previous level is set to 0:
 
    ```math
    prev\_level = 0
