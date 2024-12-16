@@ -26,7 +26,8 @@ If you find `EnergyModelsBase` useful in your work, we kindly request that you c
   volume={9},
   number={97},
   pages={6619},
-  year={2024}
+  year={2024},
+  doi={https://doi.org/10.21105/joss.06619},
 }
 ```
 
