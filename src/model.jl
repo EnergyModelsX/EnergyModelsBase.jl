@@ -55,10 +55,9 @@ function create_model(
     𝒯 = f_time_struct(case)
     𝒫 = f_products(case)
     𝒳 = f_elements_vec(case)
-    𝒩 = f_nodes(case)
-    ℒ = f_links(case)
+    𝒳_𝒳 = f_couplings(case)
 
-    # Declaration of variables for the problem
+    # Declaration of element variables and constraints of the problem
     for elements ∈ 𝒳
         variables_capacity(m, elements, 𝒯, modeltype)
         variables_flow(m, elements, 𝒯, modeltype)
@@ -66,12 +65,18 @@ function create_model(
         variables_capex(m, elements, 𝒯, modeltype)
         variables_emission(m, elements, 𝒫, 𝒯, modeltype)
         variables_elements(m, elements, 𝒯, modeltype)
-    end
-    variables_emission(m, 𝒫, 𝒯, modeltype)
 
-    # Construction of constraints for the problem
-    constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
-    constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
+        constraints_elements(m, elements, 𝒫, 𝒯, modeltype)
+    end
+
+    # Declaration of coupling constraints of the problem
+    for couple ∈ 𝒳_𝒳
+        elements_vec = [cpl(case) for cpl ∈ couple]
+        constraints_couple(m, elements_vec..., 𝒫, 𝒯, modeltype)
+    end
+
+    # Declaration of global vairables and constraints
+    variables_emission(m, 𝒫, 𝒯, modeltype)
     constraints_emissions(m, 𝒳, 𝒫, 𝒯, modeltype)
 
     # Construction of the objective function
@@ -109,6 +114,7 @@ function create_model(
 end
 
 """
+    variables_capacity(m, 𝒩::Vector{<:AbstractElement}, 𝒯, modeltype::EnergyModel)
     variables_capacity(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     variables_capacity(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
 
@@ -167,6 +173,7 @@ hence, provides the user with two individual methods:
 
     - `link_cap_inst[l, t]` is the installed capacity of link `l` in operational period `t`.
 """
+function variables_capacity(m, 𝒩::Vector{<:AbstractElement}, 𝒯, modeltype::EnergyModel) end
 function variables_capacity(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     𝒩ⁿᵒᵗ = nodes_not_sub(𝒩, Union{Storage,Availability})
     𝒩ˢᵗᵒʳ = filter(is_storage, 𝒩)
@@ -197,7 +204,7 @@ function variables_capacity(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel
 end
 
 """
-    variables_flow(m, _::Vector{<:AbstractElement}, 𝒯, modeltype::EnergyModel)
+    variables_flow(m, _, 𝒯, modeltype::EnergyModel)
     variables_flow(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     variables_flow(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
 
@@ -225,7 +232,7 @@ By default, all nodes `𝒩` and links `ℒ` only allow for unidirectional flow.
 bidirection flow through providing a method to the function [`is_unidirectional`](@ref) for
 new link/node types.
 """
-function variables_flow(m, _::Vector{<:AbstractElement}, 𝒯, modeltype::EnergyModel) end
+function variables_flow(m, _, 𝒯, modeltype::EnergyModel) end
 function variables_flow(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     # Extract the nodes with inputs and outputs
     𝒩ⁱⁿ = filter(has_input, 𝒩)
@@ -265,7 +272,7 @@ function variables_flow(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
 end
 
 """
-    variables_opex(m, _::Vector{<:AbstractElement}, 𝒯, modeltype::EnergyModel)
+    variables_opex(m, _, 𝒯, modeltype::EnergyModel)
     variables_opex(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     variables_opex(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
 
@@ -288,7 +295,7 @@ hence, provides the user with two individual methods:
     - `link_opex_fixed[n, t_inv]` are the fixed operating expenses of node `n` in investment
       period `t_inv`.
 """
-function variables_opex(m, _::Vector{<:AbstractElement}, 𝒯, modeltype::EnergyModel) end
+function variables_opex(m, _, 𝒯, modeltype::EnergyModel) end
 function variables_opex(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     𝒩ⁿᵒᵗ = nodes_not_av(𝒩)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -305,7 +312,7 @@ function variables_opex(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
 end
 
 """
-    variables_capex(m, _::Vector{<:AbstractElement}, 𝒯, modeltype::EnergyModel)
+    variables_capex(m, _, 𝒯, modeltype::EnergyModel)
     variables_capex(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     variables_capex(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
 
@@ -315,12 +322,12 @@ hence, provides the user with two individual methods:
 
 The default method is empty but it is required for multiple dispatch in investment models.
 """
-function variables_capex(m, _::Vector{<:AbstractElement}, 𝒯, modeltype::EnergyModel) end
+function variables_capex(m, _, 𝒯, modeltype::EnergyModel) end
 function variables_capex(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel) end
 function variables_capex(m, 𝒩::Vector{<:Link}, 𝒯, modeltype::EnergyModel) end
 
 """
-    variables_emission(m, _::Vector{<:AbstractElement}, 𝒫, 𝒯, modeltype::EnergyModel)
+    variables_emission(m, _, 𝒫, 𝒯, modeltype::EnergyModel)
     variables_emission(m, ℒ::Vector{<:Node}, 𝒫, 𝒯, modeltype::EnergyModel)
     variables_emission(m, ℒ::Vector{<:Link}, 𝒫, 𝒯, modeltype::EnergyModel)
     variables_emission(m, 𝒯, 𝒫, modeltype::EnergyModel)
@@ -356,7 +363,7 @@ The inclusion of node and link emissions require that the function `has_emission
 of `EmissionData` in nodes while links require you to explicitly provide a method for your
 link type.
 """
-function variables_emission(m, _::Vector{<:AbstractElement}, 𝒫, 𝒯, modeltype::EnergyModel) end
+function variables_emission(m, _, 𝒫, 𝒯, modeltype::EnergyModel) end
 function variables_emission(m, 𝒩::Vector{<:Node}, 𝒫, 𝒯, modeltype::EnergyModel)
     𝒩ᵉᵐ = filter(has_emissions, 𝒩)
     𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
@@ -380,7 +387,7 @@ function variables_emission(m, 𝒫, 𝒯, modeltype::EnergyModel)
 end
 
 """
-    variables_elements(m, _::Vector{<:AbstractElement}, 𝒯, modeltype::EnergyModel)
+    variables_elements(m, _, 𝒯, modeltype::EnergyModel)
     variables_elements(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     variables_elements(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
 
@@ -395,7 +402,7 @@ node nodes, [`variables_node`](@ref) will be called on a
 - `Node` - the subfunction is [`variables_node`](@ref).
 - `Link` - the subfunction is [`variables_link`](@ref).
 """
-function variables_elements(m, _::Vector{<:AbstractElement}, 𝒯, modeltype::EnergyModel) end
+function variables_elements(m, _, 𝒯, modeltype::EnergyModel) end
 function variables_elements(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     # Vector of the unique node types in 𝒩.
     node_composite_types = unique(map(n -> typeof(n), 𝒩))
@@ -487,14 +494,44 @@ Default fallback method when no method is defined for a [`Link`](@ref) type.
 function variables_link(m, ℒˢᵘᵇ::Vector{<:Link}, 𝒯, modeltype::EnergyModel) end
 
 """
-    constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
+    constraints_elements(m, _, 𝒫, 𝒯, modeltype::EnergyModel)
+    constraints_elements(m, 𝒩::Vector{<:Node}, 𝒫, 𝒯, modeltype::EnergyModel)
+    constraints_elements(m, ℒ::Vector{<:Link}, 𝒫, 𝒯, modeltype::EnergyModel)
 
-Create link constraints for each `n ∈ 𝒩` depending on its type and calling the function
-`create_node(m, n, 𝒯, 𝒫)` for the individual node constraints.
+Loop through all entries of the elements vector and call a subfunction for creating the
+internal constraints of the entries of the elements vector.
 
-Create constraints for fixed OPEX.
+`EnergyModelsBase` provides the user with two element types, [`Link`](@ref) and
+[`Node`](@ref EnergyModelsBase.Node):
+
+- `Node` - the subfunction is [`create_node`](@ref).
+- `Link` - the subfunction is [`create_link`](@ref).
 """
-function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
+function constraints_elements(m, _, 𝒫, 𝒯, modeltype::EnergyModel) end
+function constraints_elements(m, 𝒩::Vector{<:Node}, 𝒫, 𝒯, modeltype::EnergyModel)
+    for n ∈ 𝒩
+        create_node(m, n, 𝒯, 𝒫, modeltype)
+    end
+end
+function constraints_elements(m, ℒ::Vector{<:Link}, 𝒫, 𝒯, modeltype::EnergyModel)
+    for l ∈ ℒ
+        create_link(m, 𝒯, 𝒫, l, modeltype, formulation(l))
+    end
+end
+
+"""
+    constraints_couple(m, _::Vector{<:AbstractElement}, _::Vector{<:AbstractElement}, 𝒫, 𝒯, modeltype::EnergyModel)
+    constraints_couple(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫, 𝒯, modeltype::EnergyModel)
+    constraints_couple(m, ℒ::Vector{<:Link}, 𝒩::Vector{<:Node}, 𝒫, 𝒯, modeltype::EnergyModel)
+
+Create the couple constraints in `EnergyModelsBase`.
+
+Only couplings between two types are introducded in energy models base. A fallback solution
+is available for the coupling between [`AbstractElement`](@ref)s while a method is implemented
+for the coupling between a [`Link`](@ref) and a [`Node`](@ref EnergyModelsBase.Node).
+"""
+function constraints_couple(m, _::Vector{<:AbstractElement}, _::Vector{<:AbstractElement}, 𝒫, 𝒯, modeltype::EnergyModel) end
+function constraints_couple(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫, 𝒯, modeltype::EnergyModel)
     for n ∈ 𝒩
         ℒᶠʳᵒᵐ, ℒᵗᵒ = link_sub(ℒ, n)
         # Constraint for output flowrate and input links.
@@ -511,9 +548,10 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
                 sum(m[:link_out][l, t, p] for l ∈ ℒᵗᵒ if p ∈ inputs(l))
             )
         end
-        # Call of function for individual node constraints.
-        create_node(m, n, 𝒯, 𝒫, modeltype)
     end
+end
+function constraints_couple(m, ℒ::Vector{<:Link}, 𝒩::Vector{<:Node}, 𝒫, 𝒯, modeltype::EnergyModel)
+    return constraints_couple(m, 𝒩, ℒ, 𝒫, 𝒯, modeltype)
 end
 
 """
@@ -571,6 +609,7 @@ function emissions_operational(m, ℒ::Vector{<:Link}, 𝒫ᵉᵐ, 𝒯, modelty
         sum(m[:emissions_link][l, t, p] for l ∈ ℒᵉᵐ)
     )
 end
+function emissions_operational(m, _, 𝒫ᵉᵐ, 𝒯, modeltype::EnergyModel) end
 
 """
     objective(m, 𝒳, 𝒫, 𝒯, modeltype::EnergyModel)
@@ -671,17 +710,6 @@ function objective_operational(
 end
 objective_operational(m, _, 𝒯ᴵⁿᵛ::TS.AbstractStratPers, _::EnergyModel) =
     @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)
-
-"""
-    constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
-
-Call the function [`create_link`](@ref) for link formulation.
-"""
-function constraints_links(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
-    for l ∈ ℒ
-        create_link(m, 𝒯, 𝒫, l, modeltype, formulation(l))
-    end
-end
 
 """
     create_node(m, n::Source, 𝒯, 𝒫, modeltype::EnergyModel)

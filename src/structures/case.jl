@@ -15,9 +15,9 @@ for providing the input to a model.
 - **`elements::Vector{Vector{<:AbstractElement}}`** are the vectors of [`AbstractElement`](@ref)
   that should be included in the analysis. It must contain at least vectors of nodes and
   links for an analysis to be useful.
-- **`couplings::Vector{Vector}`** are the couplings between the individual function element
-  types. These elements are represented through a corresponding function, *e.g.*, [`f_nodes`](@ref)
-  or [`f_links`](@ref)
+- **`couplings::Vector{Vector{Function}}`** are the couplings between the individual function
+  element types. These elements are represented through a corresponding function, *e.g.*,
+  [`f_nodes`](@ref) or [`f_links`](@ref)
 - **`misc::Dict`** is a dictionary that can be utilized for providing additional high level
   data in the existing format in the case of a new function for case creation. It is
   conditional through the application of a constructor.
@@ -100,6 +100,13 @@ f_nodes(case::EMXCase) = filter(el -> isa(el, Vector{<:Node}), f_elements_vec(ca
 Returns the vector of links of the EMXCase `case`.
 """
 f_links(case::EMXCase) = filter(el -> isa(el, Vector{<:Link}), f_elements_vec(case))[1]
+
+"""
+    f_couplings(case::EMXCase)
+
+Returns the vector of coupling vectors of the EMXCase `case`.
+"""
+f_couplings(case::EMXCase) = case.couplings
 
 function EMXCase(
     T::TimeStructure,
