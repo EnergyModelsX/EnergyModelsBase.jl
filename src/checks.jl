@@ -67,9 +67,9 @@ function check_data(case, modeltype::EnergyModel, check_timeprofiles::Bool)
         compile_logs(case, log_by_element)
     end
 
-    𝒯 = case[:T]
+    𝒯 = f_time_struct(case)
 
-    for n ∈ case[:nodes]
+    for n ∈ f_nodes(case)
 
         # Empty the logs list before each check.
         global logs = []
@@ -145,31 +145,31 @@ Checks the `case` dictionary is in the correct format.
   - `:products::Vector{<:Resource}`.
 """
 function check_case_data(case)
-    case_keys = [:T, :nodes, :links, :products]
-    key_map = Dict(
-        :T => TimeStructure,
-        :nodes => Vector{<:Node},
-        :links => Vector{<:Link},
-        :products => Vector{<:Resource},
-    )
-    for key ∈ case_keys
-        @assert_or_log(
-            haskey(case, key),
-            "The `case` dictionary requires the key `:" *
-            string(key) *
-            "` which is " *
-            "not included."
-        )
-        if haskey(case, key)
-            @assert_or_log(
-                isa(case[key], key_map[key]),
-                "The key `" *
-                string(key) *
-                "` in the `case` dictionary contains " *
-                "other types than the allowed."
-            )
-        end
-    end
+    # case_keys = [:T, :nodes, :links, :products]
+    # key_map = Dict(
+    #     :T => TimeStructure,
+    #     :nodes => Vector{<:Node},
+    #     :links => Vector{<:Link},
+    #     :products => Vector{<:Resource},
+    # )
+    # for key ∈ case_keys
+    #     @assert_or_log(
+    #         haskey(case, key),
+    #         "The `case` dictionary requires the key `:" *
+    #         string(key) *
+    #         "` which is " *
+    #         "not included."
+    #     )
+    #     if haskey(case, key)
+    #         @assert_or_log(
+    #             isa(case[key], key_map[key]),
+    #             "The key `" *
+    #             string(key) *
+    #             "` in the `case` dictionary contains " *
+    #             "other types than the allowed."
+    #         )
+    #     end
+    # end
 end
 
 """
@@ -189,10 +189,10 @@ Checks the `modeltype` .
   periods.
 """
 function check_model(case, modeltype::EnergyModel, check_timeprofiles::Bool)
-    𝒯ᴵⁿᵛ = strategic_periods(case[:T])
+    𝒯ᴵⁿᵛ = strategic_periods(f_time_struct(case))
 
     # Check for inclusion of all emission resources
-    for p ∈ case[:products]
+    for p ∈ f_products(case)
         if isa(p, ResourceEmit)
             @assert_or_log(
                 haskey(emission_limit(modeltype::EnergyModel), p),

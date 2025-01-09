@@ -1,69 +1,69 @@
 # Set the global to true to suppress the error message
 EMB.TEST_ENV = true
 
-@testset "Test checks - case dictionary" begin
-    # Resources used in the analysis
-    Power = ResourceCarrier("Power", 0.0)
-    CO2 = ResourceEmit("CO2", 1.0)
+# @testset "Test checks - case dictionary" begin
+#     # Resources used in the analysis
+#     Power = ResourceCarrier("Power", 0.0)
+#     CO2 = ResourceEmit("CO2", 1.0)
 
-    # Function for setting up the system
-    function simple_graph()
-        resources = [Power, CO2]
-        ops = SimpleTimes(5, 2)
-        T = TwoLevel(2, 2, ops; op_per_strat = 10)
+#     # Function for setting up the system
+#     function simple_graph()
+#         resources = [Power, CO2]
+#         ops = SimpleTimes(5, 2)
+#         T = TwoLevel(2, 2, ops; op_per_strat = 10)
 
-        source = RefSource(
-            "source_emit",
-            FixedProfile(4),
-            FixedProfile(0),
-            FixedProfile(10),
-            Dict(Power => 1),
-        )
-        sink = RefSink(
-            "sink",
-            FixedProfile(3),
-            Dict(:surplus => FixedProfile(-4), :deficit => FixedProfile(4)),
-            Dict(Power => 1),
-        )
+#         source = RefSource(
+#             "source_emit",
+#             FixedProfile(4),
+#             FixedProfile(0),
+#             FixedProfile(10),
+#             Dict(Power => 1),
+#         )
+#         sink = RefSink(
+#             "sink",
+#             FixedProfile(3),
+#             Dict(:surplus => FixedProfile(-4), :deficit => FixedProfile(4)),
+#             Dict(Power => 1),
+#         )
 
-        ops = SimpleTimes(5, 2)
-        T = TwoLevel(2, 2, ops; op_per_strat = 10)
+#         ops = SimpleTimes(5, 2)
+#         T = TwoLevel(2, 2, ops; op_per_strat = 10)
 
-        nodes = [source, sink]
-        links = [Direct(12, source, sink)]
-        model = OperationalModel(
-            Dict(CO2 => FixedProfile(100)),
-            Dict(CO2 => FixedProfile(0)),
-            CO2,
-        )
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
-        return case, model
-    end
+#         nodes = [source, sink]
+#         links = [Direct(12, source, sink)]
+#         model = OperationalModel(
+#             Dict(CO2 => FixedProfile(100)),
+#             Dict(CO2 => FixedProfile(0)),
+#             CO2,
+#         )
+#         case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+#         return case, model
+#     end
 
-    # Check that the keys are present
-    # - EMB.check_case_data(case)
-    case, model = simple_graph()
-    for key ∈ keys(case)
-        case_test = deepcopy(case)
-        pop!(case_test, key)
-        @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
-    end
+#     # Check that the keys are present
+#     # - EMB.check_case_data(case)
+#     case, model = simple_graph()
+#     for key ∈ keys(case)
+#         case_test = deepcopy(case)
+#         pop!(case_test, key)
+#         @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
+#     end
 
-    # Check that the keys are of the correct format and do not include any unwanted types
-    # - EMB.check_case_data(case)
-    case_test = deepcopy(case)
-    case_test[:T] = 10
-    @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
-    case_test = deepcopy(case)
-    case_test[:nodes] = [case[:nodes], case[:nodes], 10]
-    @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
-    case_test = deepcopy(case)
-    case_test[:links] = [case[:links], 10]
-    @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
-    case_test = deepcopy(case)
-    case_test[:products] = [case[:products], case[:products], 10]
-    @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
-end
+#     # Check that the keys are of the correct format and do not include any unwanted types
+#     # - EMB.check_case_data(case)
+#     case_test = deepcopy(case)
+#     case_test[:T] = 10
+#     @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
+#     case_test = deepcopy(case)
+#     case_test[:nodes] = [case[:nodes], case[:nodes], 10]
+#     @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
+#     case_test = deepcopy(case)
+#     case_test[:links] = [case[:links], 10]
+#     @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
+#     case_test = deepcopy(case)
+#     case_test[:products] = [case[:products], case[:products], 10]
+#     @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
+# end
 
 @testset "Test checks - modeltype" begin
     # Resources used in the analysis

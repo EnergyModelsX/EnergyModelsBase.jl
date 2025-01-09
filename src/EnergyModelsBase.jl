@@ -23,6 +23,7 @@ include(joinpath("structures", "node.jl"))
 include(joinpath("structures", "link.jl"))
 include(joinpath("structures", "model.jl"))
 include(joinpath("structures", "misc.jl"))
+include(joinpath("structures", "case.jl"))
 
 include("utils.jl")
 include("model.jl")
@@ -33,9 +34,14 @@ include("data_functions.jl")
 # Legacy constructors for node types
 include("legacy_constructor.jl")
 
+# Export the case type and its functions
+export EMXCase
+export f_time_struct, f_products, f_elements_vec, f_nodes, f_links
+
 # Export the general classes
 export EnergyModel, OperationalModel
 export Resource, ResourceCarrier, ResourceEmit
+export AbstractElement
 
 # Export the different node types
 export Source, NetworkNode, Sink, Storage, Availability

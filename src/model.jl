@@ -1,6 +1,6 @@
 """
     create_model(
-        case,
+        case::EMXCase,
         modeltype::EnergyModel,
         m::JuMP.Model;
         check_timeprofiles::Bool = true,
@@ -10,8 +10,9 @@
 Create the model and call all required functions.
 
 ## Arguments
-- `case` - The case dictionary requiring the keys `:T`, `:nodes`, `:links`, and `products`.
-  If the input is not provided in the correct form, the checks will identify the problem.
+- `case::EMXCase` - The case type represents the chosen time structure, the included
+  [`Resource`](@ref)s and the elements and potential coupling between the elements.
+  It is explained in more detail in its *[docstring](@ref EMXCase)*.
 - `modeltype` - Used modeltype, that is a subtype of the type `EnergyModel`.
 - `m` - the empty `JuMP.Model` instance. If it is not provided, then it is assumed that the
   input is a standard `JuMP.Model`.
@@ -24,9 +25,12 @@ Create the model and call all required functions.
 - `check_any_data::Bool=true` - A boolean indicator whether the input data is checked or not.
   It is advised to not deactivate the check, except if you are testing new features.
   It may lead to unexpected behaviour and even infeasible models.
+
+!!! note "Old to new"
+    We provide additional methods for translating the old dictionary to the new case types.
 """
 function create_model(
-    case,
+    case::EMXCase,
     modeltype::EnergyModel,
     m::JuMP.Model;
     check_timeprofiles::Bool = true,
@@ -48,11 +52,11 @@ function create_model(
     end
 
     # WIP Data structure
-    𝒯 = case[:T]
-    𝒩 = case[:nodes]
-    ℒ = case[:links]
-    𝒫 = case[:products]
-    𝒳 = (𝒩, ℒ)
+    𝒯 = f_time_struct(case)
+    𝒫 = f_products(case)
+    𝒳 = f_elements_vec(case)
+    𝒩 = f_nodes(case)
+    ℒ = f_links(case)
 
     # Declaration of variables for the problem
     for elements ∈ 𝒳
@@ -62,8 +66,8 @@ function create_model(
         variables_capex(m, elements, 𝒯, modeltype)
         variables_emission(m, elements, 𝒫, 𝒯, modeltype)
         variables_elements(m, elements, 𝒯, modeltype)
-   end
-   variables_emission(m, 𝒫, 𝒯, modeltype)
+    end
+    variables_emission(m, 𝒫, 𝒯, modeltype)
 
     # Construction of constraints for the problem
     constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype)
@@ -76,7 +80,26 @@ function create_model(
     return m
 end
 function create_model(
-    case,
+    case::EMXCase,
+    modeltype::EnergyModel;
+    check_timeprofiles::Bool = true,
+    check_any_data::Bool = true,
+)
+    m = JuMP.Model()
+    create_model(case, modeltype, m; check_timeprofiles, check_any_data)
+end
+function create_model(
+    case::Dict,
+    modeltype::EnergyModel,
+    m::JuMP.Model;
+    check_timeprofiles::Bool = true,
+    check_any_data::Bool = true,
+)
+    case_new = EMXCase(case[:T], case[:products], [case[:nodes], case[:links]])
+    create_model(case_new, modeltype, m; check_timeprofiles, check_any_data)
+end
+function create_model(
+    case::Dict,
     modeltype::EnergyModel;
     check_timeprofiles::Bool = true,
     check_any_data::Bool = true,
@@ -174,6 +197,7 @@ function variables_capacity(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel
 end
 
 """
+    variables_flow(m, _::Vector{<:AbstractElement}, 𝒯, modeltype::EnergyModel)
     variables_flow(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     variables_flow(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
 
@@ -201,6 +225,7 @@ By default, all nodes `𝒩` and links `ℒ` only allow for unidirectional flow.
 bidirection flow through providing a method to the function [`is_unidirectional`](@ref) for
 new link/node types.
 """
+function variables_flow(m, _::Vector{<:AbstractElement}, 𝒯, modeltype::EnergyModel) end
 function variables_flow(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     # Extract the nodes with inputs and outputs
     𝒩ⁱⁿ = filter(has_input, 𝒩)
@@ -240,6 +265,7 @@ function variables_flow(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
 end
 
 """
+    variables_opex(m, _::Vector{<:AbstractElement}, 𝒯, modeltype::EnergyModel)
     variables_opex(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     variables_opex(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
 
@@ -262,6 +288,7 @@ hence, provides the user with two individual methods:
     - `link_opex_fixed[n, t_inv]` are the fixed operating expenses of node `n` in investment
       period `t_inv`.
 """
+function variables_opex(m, _::Vector{<:AbstractElement}, 𝒯, modeltype::EnergyModel) end
 function variables_opex(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     𝒩ⁿᵒᵗ = nodes_not_av(𝒩)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -278,6 +305,7 @@ function variables_opex(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
 end
 
 """
+    variables_capex(m, _::Vector{<:AbstractElement}, 𝒯, modeltype::EnergyModel)
     variables_capex(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     variables_capex(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
 
@@ -287,10 +315,12 @@ hence, provides the user with two individual methods:
 
 The default method is empty but it is required for multiple dispatch in investment models.
 """
+function variables_capex(m, _::Vector{<:AbstractElement}, 𝒯, modeltype::EnergyModel) end
 function variables_capex(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel) end
 function variables_capex(m, 𝒩::Vector{<:Link}, 𝒯, modeltype::EnergyModel) end
 
 """
+    variables_emission(m, _::Vector{<:AbstractElement}, 𝒫, 𝒯, modeltype::EnergyModel)
     variables_emission(m, ℒ::Vector{<:Node}, 𝒫, 𝒯, modeltype::EnergyModel)
     variables_emission(m, ℒ::Vector{<:Link}, 𝒫, 𝒯, modeltype::EnergyModel)
     variables_emission(m, 𝒯, 𝒫, modeltype::EnergyModel)
@@ -326,6 +356,7 @@ The inclusion of node and link emissions require that the function `has_emission
 of `EmissionData` in nodes while links require you to explicitly provide a method for your
 link type.
 """
+function variables_emission(m, _::Vector{<:AbstractElement}, 𝒫, 𝒯, modeltype::EnergyModel) end
 function variables_emission(m, 𝒩::Vector{<:Node}, 𝒫, 𝒯, modeltype::EnergyModel)
     𝒩ᵉᵐ = filter(has_emissions, 𝒩)
     𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
@@ -349,6 +380,7 @@ function variables_emission(m, 𝒫, 𝒯, modeltype::EnergyModel)
 end
 
 """
+    variables_elements(m, _::Vector{<:AbstractElement}, 𝒯, modeltype::EnergyModel)
     variables_elements(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     variables_elements(m, ℒ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
 
@@ -363,6 +395,7 @@ node nodes, [`variables_node`](@ref) will be called on a
 - `Node` - the subfunction is [`variables_node`](@ref).
 - `Link` - the subfunction is [`variables_link`](@ref).
 """
+function variables_elements(m, _::Vector{<:AbstractElement}, 𝒯, modeltype::EnergyModel) end
 function variables_elements(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     # Vector of the unique node types in 𝒩.
     node_composite_types = unique(map(n -> typeof(n), 𝒩))
