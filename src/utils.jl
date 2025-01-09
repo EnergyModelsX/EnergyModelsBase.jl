@@ -46,7 +46,7 @@ function collect_types(types_list)
         types[n] = 1
 
         parent = supertype(n)
-        if parent == Any
+        if parent == Any || parent == AbstractElement
             continue
         end
 
