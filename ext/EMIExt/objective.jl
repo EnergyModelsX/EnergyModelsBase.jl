@@ -27,7 +27,7 @@ function EMB.objective(m, 𝒳, 𝒫, 𝒯, modeltype::AbstractInvestmentModel)
     capex = JuMP.Containers.DenseAxisArray[]
     for elements ∈ 𝒳
         push!(opex, EMB.objective_operational(m, elements, 𝒯ᴵⁿᵛ, modeltype))
-        push!(capex, objective_invest(m, elements, 𝒯ᴵⁿᵛ, modeltype))
+        push!(capex, EMB.objective_invest(m, elements, 𝒯ᴵⁿᵛ, modeltype))
     end
     push!(opex, EMB.objective_operational(m, 𝒫, 𝒯ᴵⁿᵛ,modeltype))
 
@@ -42,7 +42,7 @@ function EMB.objective(m, 𝒳, 𝒫, 𝒯, modeltype::AbstractInvestmentModel)
     )
 end
 """
-    objective_invest(m, elements, 𝒯ᴵⁿᵛ::TS.AbstractStratPers, modeltype::EnergyModel)
+    EMB.objective_invest(m, elements, 𝒯ᴵⁿᵛ::TS.AbstractStratPers, modeltype::EnergyModel)
 
 Create JuMP expressions indexed over the investment periods `𝒯ᴵⁿᵛ` for different elements.
 The expressions correspond to the investments into the different elements. They are not
@@ -62,7 +62,7 @@ By default, objective expressions are included for:
     objective contributions. In this situation, the expression returns a value of 0 for all
     investment periods.
 """
-function objective_invest(
+function EMB.objective_invest(
     m,
     𝒩::Vector{<:EMB.Node},
     𝒯ᴵⁿᵛ::TS.AbstractStratPers,
@@ -82,7 +82,7 @@ function objective_invest(
         sum(m[:stor_discharge_capex][n, t_inv] for n ∈ 𝒩ᵈⁱˢᶜʰᵃʳᵍᵉ)
     )
 end
-function objective_invest(
+function EMB.objective_invest(
     m,
     ℒ::Vector{<:Link},
     𝒯ᴵⁿᵛ::TS.AbstractStratPers,
@@ -95,5 +95,3 @@ function objective_invest(
         sum(m[:link_cap_capex][l, t_inv] for l ∈ ℒᴵⁿᵛ)
     )
 end
-objective_invest(m, _, 𝒯ᴵⁿᵛ::TS.AbstractStratPers, _::AbstractInvestmentModel) =
-    @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)

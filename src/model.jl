@@ -713,6 +713,9 @@ end
 objective_operational(m, _, 𝒯ᴵⁿᵛ::TS.AbstractStratPers, _::EnergyModel) =
     @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)
 
+objective_invest(m, _, 𝒯ᴵⁿᵛ::TS.AbstractStratPers, _::AbstractInvestmentModel) =
+    @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ], 0)
+
 """
     create_node(m, n::Source, 𝒯, 𝒫, modeltype::EnergyModel)
 
