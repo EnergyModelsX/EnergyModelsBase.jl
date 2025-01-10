@@ -1,7 +1,7 @@
 """
-    EMB.variables_capex(m, _::Vector{<:AbstractElement}, 𝒯, modeltype::AbstractInvestmentModel)
-    EMB.variables_capex(m, 𝒩::Vector{<:EMB.Node}, 𝒯, modeltype::AbstractInvestmentModel)
-    EMB.variables_capex(m, ℒ::Vector{<:Link}, 𝒯, modeltype::AbstractInvestmentModel)
+    EMB.variables_capex(m, _::Vector{<:AbstractElement}, 𝒳, 𝒯, modeltype::AbstractInvestmentModel)
+    EMB.variables_capex(m, 𝒩::Vector{<:EMB.Node}, 𝒳, 𝒯, modeltype::AbstractInvestmentModel)
+    EMB.variables_capex(m, ℒ::Vector{<:Link}, 𝒳, 𝒯, modeltype::AbstractInvestmentModel)
 
 Declaration of different capital expenditures (CAPEX) variables for the element types
 introduced in `EnergyModelsBase`. CAPEX variables are only introduced for elements that have
@@ -38,8 +38,8 @@ user with two individual methods for both `𝒩::Vector{<:EMB.Node}` and 𝒩::V
     - `**prefix**_remove_b` is an auxiliary variable used in some investment modes for the
       reduction of capacities.
 """
-function EMB.variables_capex(m, _::Vector{<:AbstractElement}, 𝒯, modeltype::AbstractInvestmentModel) end
-function EMB.variables_capex(m, 𝒩::Vector{<:EMB.Node}, 𝒯, modeltype::AbstractInvestmentModel)
+function EMB.variables_capex(m, _::Vector{<:AbstractElement}, 𝒳, 𝒯, modeltype::AbstractInvestmentModel) end
+function EMB.variables_capex(m, 𝒩::Vector{<:EMB.Node}, 𝒳, 𝒯, modeltype::AbstractInvestmentModel)
     𝒩ᴵⁿᵛ = filter(has_investment, filter(!EMB.is_storage, 𝒩))
     𝒩ˢᵗᵒʳ = filter(EMB.is_storage, 𝒩)
     𝒩ˡᵉᵛᵉˡ = filter(n -> has_investment(n, :level), 𝒩ˢᵗᵒʳ)
@@ -85,7 +85,7 @@ function EMB.variables_capex(m, 𝒩::Vector{<:EMB.Node}, 𝒯, modeltype::Abstr
         container = IndexedVarArray
     )
 end
-function EMB.variables_capex(m, ℒ::Vector{<:Link}, 𝒯, modeltype::AbstractInvestmentModel)
+function EMB.variables_capex(m, ℒ::Vector{<:Link}, 𝒳, 𝒯, modeltype::AbstractInvestmentModel)
     ℒᴵⁿᵛ = filter(has_investment, ℒ)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
