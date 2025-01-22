@@ -126,6 +126,6 @@ formulation(l::Link) = l.formulation
 
 Returns the [`Data`](@ref) array of link `l`.
 
-The default options returns nothing.
+The default options returns an empty `Data` vector.
 """
-link_data(l::Link) = nothing
+link_data(l::Link) = Data[]

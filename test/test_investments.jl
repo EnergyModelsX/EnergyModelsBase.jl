@@ -275,6 +275,7 @@ end
         )
         constraints_capacity_installed(m, l, 𝒯, modeltype)
     end
+    EMB.capacity(l::InvDirect) = FixedProfile(0)
     EMB.capacity(l::InvDirect, t) = 0
     EMB.has_capacity(l::InvDirect) = true
     EMB.link_data(l::InvDirect) = l.data
@@ -375,7 +376,6 @@ end
 EMB.TEST_ENV = true
 
 @testset "Test checks - InvestmentData" begin
-
     # Testing, that the checks for NoStartInvData and StartInvData are working
     # - EMB.check_node_data(n::EMB.Node, data::InvestmentData, 𝒯, modeltype::AbstractInvestmentModel)
     @testset "SingleInvData" begin
@@ -639,6 +639,75 @@ EMB.TEST_ENV = true
         # Check that we receive an error if we provide a larger `min_add` than `max_add`
         min_add = FixedProfile(20)
         @test_throws AssertionError build_simple_graph(;min_add)
+    end
+
+    # Testing, that the checks for Links are working
+    # - EMB.check_link_data(n::Link, data::InvestmentData, 𝒯, modeltype::AbstractInvestmentModel)
+    @testset "SingleInvData" begin
+
+        function build_simple_graph(;
+            cap = FixedProfile(0),
+            min_add = FixedProfile(0),
+            max_add = FixedProfile(10),
+            inv_data = nothing,
+        )
+            if isnothing(inv_data)
+                inv_data = [
+                    SingleInvData(
+                        FixedProfile(1000),     # capex [€/kW]
+                        FixedProfile(30),       # max installed capacity [kW]
+                        ContinuousInvestment(min_add, max_add),   # investment mode
+                    ),
+                ]
+            end
+
+            CO2 = ResourceEmit("CO2", 1.0)
+            Power = ResourceCarrier("Power", 0.0)
+            products = [Power, CO2]
+
+            source = RefSource(
+                "-src",
+                cap,
+                FixedProfile(10),
+                FixedProfile(5),
+                Dict(Power => 1),
+            )
+            sink = RefSink(
+                "-snk",
+                FixedProfile(20),
+                Dict(:surplus => FixedProfile(0), :deficit => FixedProfile(1e4)),
+                Dict(Power => 1),
+            )
+            nodes = [source, sink]
+            links = [InvDirect("scr-sink", nodes[1], nodes[2], Linear(), inv_data)]
+            T = TwoLevel(4, 10, SimpleTimes(4, 1))
+            case = Dict(:nodes => nodes, :links => links, :products => products, :T => T)
+
+            em_limits = Dict(CO2 => StrategicProfile([450, 400, 350, 300]))
+            em_cost = Dict(CO2 => FixedProfile(0))
+            modeltype = InvestmentModel(em_limits, em_cost, CO2, 0.05)
+
+            return create_model(case, modeltype)
+        end
+
+        # Check that we receive an error if we provide two `InvestmentData`
+        inv_data = [
+            SingleInvData(
+                FixedProfile(1000),     # capex [€/kW]
+                FixedProfile(30),       # max installed capacity [kW]
+                ContinuousInvestment(FixedProfile(0), FixedProfile(20)), # investment mode
+            ),
+            SingleInvData(
+                FixedProfile(1000),     # capex [€/kW]
+                FixedProfile(30),       # max installed capacity [kW]
+                ContinuousInvestment(FixedProfile(0), FixedProfile(20)),   # investment mode
+            ),
+        ]
+        @test_throws AssertionError build_simple_graph(;inv_data)
+
+        # Check that the correct subtroutine is called
+        max_add = RepresentativeProfile([FixedProfile(4)])
+        @test_throws AssertionError build_simple_graph(;max_add)
     end
 end
 
