@@ -166,10 +166,11 @@ end
 Checks the individual elements vector. It has implemented methods for both `Vector{<:Node}`
 and Vector{<:Link}.
 
+
 !!! note "Node methods"
     All nodes are checked through the functions
     - [`check_node`](@ref) to identify problematic input,
-    - [`check_node_data-Tuple{Node, Data, Any, EnergyModel, Bool}`](@ref) to identify
+    - [`check_node_data`](@ref EnergyModelsBase.check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool))
       issues in the provided additional data, and
     - [`check_time_structure`](@ref) to identify time profiles at the highest level that
       are not equivalent to the provided timestructure.
@@ -177,8 +178,8 @@ and Vector{<:Link}.
 !!! note "Links methods"
     All links are checked through the functions
     - [`check_link`](@ref) to identify problematic input,
-    - [`check_link_data-Tuple{Link, Data, Any, EnergyModel, Bool}`](@ref) to identify
-      issues in the provided additional data, and
+    - [`check_link_data`](@ref EnergyModelsBase.check_link_data(l::Link, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool))
+      to identify issues in the provided additional data, and
     - [`check_time_structure`](@ref) to identify time profiles at the highest level that
       are not equivalent to the provided timestructure.
 
@@ -943,9 +944,9 @@ functionality does not check anthing, aside from the checks performed in [`check
 check_link(n::Link, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) = nothing
 
 """
-    check_link_data(n::Link, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+    check_link_data(l::Link, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
 Check that the included `Data` types of a `Link` correspond to required structure.
 """
-check_link_data(n::Link, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) =
+check_link_data(l::Link, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) =
     nothing

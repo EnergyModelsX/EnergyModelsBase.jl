@@ -59,6 +59,7 @@ Depth = 1
 
 ```@contents
 Pages = [
+    "how-to/create_new_element.md",
     "how-to/create-new-node.md",
     "how-to/utilize-timestruct.md",
     "how-to/update-models.md",
@@ -77,6 +78,7 @@ Pages = [
     "library/public/model_data.md",
     "library/public/nodes.md",
     "library/public/links.md",
+    "library/public/case_element.md",
     "library/public/functions.md",
     "library/public/misc.md",
     "library/public/emi_extension.md",

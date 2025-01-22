@@ -12,7 +12,7 @@ for providing the input to a model.
       It must containt all [`ResourceEmit`](@ref) in `EnergyModelsBase`, but it is not
       necessary that the [`ResourceCarrier`](@ref) are included. It is however advisable to
       include all resources.
-- **`elements::Vector{Vector{<:AbstractElement}}`** are the vectors of [`AbstractElement`](@ref)
+- **`elements::Vector{Vector}`** are the vectors of [`AbstractElement`](@ref)
   that should be included in the analysis. It must contain at least vectors of nodes and
   links for an analysis to be useful.
 - **`couplings::Vector{Vector{Function}}`** are the couplings between the individual function

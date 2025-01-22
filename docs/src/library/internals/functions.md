@@ -23,8 +23,8 @@ emissions_operational
 
 ```@docs
 constraints_emissions
-constraints_links
-constraints_node
+constraints_elements
+constraints_couple
 constraints_level_iterate
 constraints_level_rp
 constraints_level_scp
@@ -37,7 +37,7 @@ constraints_level_bounds
 variables_capacity
 variables_flow
 variables_opex
-variables_capex(m, 𝒩::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
+variables_capex(m, _, 𝒳, 𝒯, modeltype::EnergyModel)
 variables_emission
 variables_elements
 ```
@@ -48,10 +48,13 @@ variables_elements
 check_data
 check_case_data
 check_model
+check_elements
 check_node
+check_link
 check_node_default
-check_fixed_opex
 check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+check_link_data(n::Link, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+check_fixed_opex
 check_time_structure
 check_profile
 check_strategic_profile
