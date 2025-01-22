@@ -67,26 +67,15 @@ function check_data(case, modeltype::EnergyModel, check_timeprofiles::Bool)
         compile_logs(case, log_by_element)
     end
 
+    # Check the individual elements vector
+    𝒳 = f_elements_vec(case)
     𝒯 = f_time_struct(case)
-
-    for n ∈ f_nodes(case)
-
-        # Empty the logs list before each check.
-        global logs = []
-        check_node(n, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
-        for data ∈ node_data(n)
-            check_node_data(n, data, 𝒯, modeltype, check_timeprofiles)
-        end
-
-        if check_timeprofiles
-            check_time_structure(n, 𝒯)
-        end
-        # Put all log messages that emerged during the check, in a dictionary with the node as key.
-        log_by_element[n] = logs
+    for elements ∈ 𝒳
+        check_elements(log_by_element, elements, 𝒯, modeltype, check_timeprofiles)
     end
 
     logs = []
-    check_model(case, modeltype::EnergyModel, check_timeprofiles)
+    check_model(case, modeltype, check_timeprofiles)
     log_by_element["Modeltype"] = logs
 
     if ASSERTS_AS_LOG
@@ -137,39 +126,68 @@ end
 Checks the `case` dictionary is in the correct format.
 
 ## Checks
-- The dictionary requires the keys `:T`, `:nodes`, `:links`, and `:products`.
-- The individual keys are of the correct type, that is
-  - `:T::TimeStructure`,
-  - `:nodes::Vector{<:Node}`,
-  - `:links::Vector{<:Link}`, and
-  - `:products::Vector{<:Resource}`.
+- The individual elements vector must be unique, that it is not possible to have two vector
+  of nodes within the elements vector.
+- Check that the coupling functions do return elements and not only an empty vector
 """
 function check_case_data(case)
-    # case_keys = [:T, :nodes, :links, :products]
-    # key_map = Dict(
-    #     :T => TimeStructure,
-    #     :nodes => Vector{<:Node},
-    #     :links => Vector{<:Link},
-    #     :products => Vector{<:Resource},
-    # )
-    # for key ∈ case_keys
-    #     @assert_or_log(
-    #         haskey(case, key),
-    #         "The `case` dictionary requires the key `:" *
-    #         string(key) *
-    #         "` which is " *
-    #         "not included."
-    #     )
-    #     if haskey(case, key)
-    #         @assert_or_log(
-    #             isa(case[key], key_map[key]),
-    #             "The key `" *
-    #             string(key) *
-    #             "` in the `case` dictionary contains " *
-    #             "other types than the allowed."
-    #         )
-    #     end
-    # end
+    𝒳 = f_elements_vec(case)
+    get_vect_type(vec::Vector{T}) where {T} = T
+    vec_types = [get_vect_type(x) for x ∈ 𝒳]
+
+    for type_1 ∈ vec_types
+        for type_2 ∈ vec_types
+            if type_1 ≠ type_2
+                @assert_or_log(
+                    !(type_1 <: type_2),
+                    "It is not possible to have both `$(type_1)` and `$(type_2)` vectors in the case file."
+                )
+            end
+        end
+    end
+
+    𝒳_𝒳 = f_couplings(case)
+    for couple ∈ 𝒳_𝒳
+        for cpl ∈ couple
+            @assert_or_log(
+                !isempty(cpl(case)),
+                "The function `$cpl` in the couplings field returns an empty vector."
+            )
+        end
+    end
+
+end
+
+function check_elements(
+    log_by_element,
+    _::Vector{<:AbstractElement},
+    𝒯,
+    modeltype::EnergyModel,
+    check_timeprofiles::Bool
+)
+end
+function check_elements(
+    log_by_element,
+    elements::Vector{<:Node},
+    𝒯,
+    modeltype::EnergyModel,
+    check_timeprofiles::Bool
+)
+    for n ∈ elements
+
+        # Empty the logs list before each check.
+        global logs = []
+        check_node(n, 𝒯, modeltype, check_timeprofiles)
+        for data ∈ node_data(n)
+            check_node_data(n, data, 𝒯, modeltype, check_timeprofiles)
+        end
+
+        if check_timeprofiles
+            check_time_structure(n, 𝒯)
+        end
+        # Put all log messages that emerged during the check, in a dictionary with the node as key.
+        log_by_element[n] = logs
+    end
 end
 
 """
