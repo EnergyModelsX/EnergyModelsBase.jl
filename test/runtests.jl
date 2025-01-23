@@ -35,6 +35,10 @@ ENV["EMB_TEST"] = true # Set flag for example scripts to check if they are run a
         include("test_checks.jl")
     end
 
+    @testset "Base | Deprecation" begin
+        include("test_deprecation.jl")
+    end
+
     @testset "Base | Investments" begin
         include("test_investments.jl")
     end
