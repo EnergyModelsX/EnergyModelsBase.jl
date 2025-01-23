@@ -81,7 +81,7 @@ end
 
         nodes = [source, sink]
         links = [Direct(12, source, sink)]
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
         return case
     end
 
@@ -100,7 +100,7 @@ end
     # Check that all resources present in the case data are included in the emission limit
     # - EMB.check_model(case, modeltype::EnergyModel, check_timeprofiles)
     case_test = deepcopy(case)
-    case_test[:products] = [Power, CO2, ResourceEmit("NG", 0.06)]
+    append!(case_test.products, [ResourceEmit("NG", 0.06)])
     @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
 
     # Check that the timeprofiles for emission limit and price are correct
@@ -110,13 +110,13 @@ end
         Dict(CO2 => FixedProfile(0)),
         CO2,
     )
-    @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
+    @test_throws AssertionError run_model(case, model, HiGHS.Optimizer)
     model = OperationalModel(
         Dict(CO2 => FixedProfile(0)),
         Dict(CO2 => StrategicProfile([100])),
         CO2,
     )
-    @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
+    @test_throws AssertionError run_model(case, model, HiGHS.Optimizer)
 
     # Check that we receive an error if the profiles are wrong
     # - EMB.check_strategic_profile(time_profile, message)
@@ -177,7 +177,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
         return case, model
     end
 
@@ -250,7 +250,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
         return case, model
     end
 
@@ -379,7 +379,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
         return create_model(case, model), case, model
     end
 
@@ -534,7 +534,7 @@ end
             Dict(CO2 => FixedProfile(0), NG => FixedProfile(0)),
             CO2,
         )
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
         return create_model(case, model), case, model
     end
 
@@ -641,7 +641,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
         return create_model(case, model), case, model
     end
 
@@ -761,23 +761,21 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
         return case, model
     end
 
     # Test that the from and to fields are correctly checked
     # - check_elements(log_by_element, ℒ::Vector{<:Link}}, 𝒳, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     case, model = simple_graph()
-    av = case[:nodes][1]
-    source = case[:nodes][2]
-    sink = case[:nodes][3]
-    case[:links] = [Direct(12, GenAvailability("test", case[:products]), sink)]
+    av, source, sink = f_nodes(case)
+    case.elements[2] = [Direct(12, GenAvailability("test", f_products(case)), sink)]
     @test_throws AssertionError create_model(case, model)
-    case[:links] = [Direct(12, source, GenAvailability("test", case[:products]))]
+    case.elements[2] = [Direct(12, source, GenAvailability("test", f_products(case)))]
     @test_throws AssertionError create_model(case, model)
-    case[:links] = [Direct(12, av, source)]
+    case.elements[2] = [Direct(12, av, source)]
     @test_throws AssertionError create_model(case, model)
-    case[:links] = [Direct(12, sink, av)]
+    case.elements[2] = [Direct(12, sink, av)]
     @test_throws AssertionError create_model(case, model)
 end
 

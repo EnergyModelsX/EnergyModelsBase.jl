@@ -29,14 +29,14 @@
         nodes = [source, sink]
         links = [Direct(12, source, sink)]
         model = OperationalModel(Dict(CO2 => em_cap), Dict(CO2 => em_price), CO2)
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
         return run_model(case, model, HiGHS.Optimizer), case, model
     end
 
     function general_tests(m, case)
         # Extract parameters
-        𝒯 = case[:T]
-        sink = case[:nodes][2]
+        𝒯 = f_time_struct(case)
+        sink = f_nodes(case)[2]
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
         # Test that the system produces
@@ -56,8 +56,8 @@
 
         # Solve the system and extract parameters
         m, case, model = simple_graph(em_data, em_cap, em_price)
-        𝒯 = case[:T]
-        sink = case[:nodes][2]
+        𝒯 = f_time_struct(case)
+        sink = f_nodes(case)[2]
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
         # Conduct the general tests
@@ -86,8 +86,8 @@
         em_price = FixedProfile(price)
 
         m, case, model = simple_graph(em_data, em_cap, em_price)
-        𝒯 = case[:T]
-        sink = case[:nodes][2]
+        𝒯 = f_time_struct(case)
+        sink = f_nodes(case)[2]
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
         # Conduct the general tests

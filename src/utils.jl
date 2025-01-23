@@ -1,16 +1,11 @@
 """
-    run_model(case::Dict, model::EnergyModel, optimizer)
+    run_model(case::EMXCase, model::EnergyModel, optimizer; check_timeprofiles = true)
 
-Take the `case` data as a dictionary and the `model` and build and optimize the model.
+Take the `case` data, the `model` description, and an `optimizer` to build and optimize the
+model.
 Returns the solved JuMP model.
-
-The dictionary requires the keys:
- - `:nodes::Vector{Node}`
- - `:links::Vector{Link}`
- - `:products::Vector{Resource}`
- - `:T::TimeStructure`
 """
-function run_model(case::Dict, model, optimizer; check_timeprofiles = true)
+function run_model(case::EMXCase, model, optimizer; check_timeprofiles = true)
     @debug "Run model" optimizer
 
     m = create_model(case, model; check_timeprofiles)
@@ -24,6 +19,14 @@ function run_model(case::Dict, model, optimizer; check_timeprofiles = true)
     else
         @warn "No optimizer given"
     end
+    return m
+end
+function run_model(case::Dict, model, optimizer; check_timeprofiles = true)
+    @debug "Run model" optimizer
+
+    case_new = EMXCase(case[:T], case[:products], [case[:nodes], case[:links]])
+    m = run_model(case_new, model, optimizer; check_timeprofiles)
+
     return m
 end
 

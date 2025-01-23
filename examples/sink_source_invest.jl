@@ -94,13 +94,8 @@ function generate_example_ss_investment(lifemode = RollingLife; discount_rate = 
         Direct("source-demand", nodes[1], nodes[2], Linear()),
     ]
 
-    # WIP data structure
-    case = Dict(
-        :nodes => nodes,
-        :links => links,
-        :products => products,
-        :T => T,
-    )
+    # Input data structure
+    case = EMXCase(T, products, [nodes, links], [[f_nodes, f_links]])
     return case, model
 end
 
@@ -110,7 +105,7 @@ optimizer = optimizer_with_attributes(HiGHS.Optimizer, MOI.Silent() => true)
 m = run_model(case, model, optimizer)
 
 # Display some results
-source, sink = case[:nodes]
+source, sink = f_nodes(case)
 @info "Invested capacity for the source in the beginning of the individual strategic periods"
 pretty_table(
     JuMP.Containers.rowtable(

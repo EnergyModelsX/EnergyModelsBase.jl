@@ -80,14 +80,14 @@
             CO2,
         )
 
-        # WIP data structure
-        case = Dict(:nodes => nodes, :links => links, :products => products, :T => T)
+        # Input data structure
+        case = EMXCase(T, products, [nodes, links], [[f_nodes, f_links]])
         return case, model
     end
 
     @testset "Identification functions" begin
         case, model = simple_graph()
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         stor = 𝒩[6]
 
         # Test that all nodal supertypes are identified correctly
@@ -125,7 +125,7 @@
 
     @testset "Access functions" begin
         case, model = simple_graph()
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
 
         # Test that the input and output resources are correctly identified
         @test outputs(𝒩[2]) == [NG]
@@ -140,11 +140,11 @@
         case, model = simple_graph()
         m = create_model(case, model)
 
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         stor = 𝒩[6]
         𝒩ⁱⁿ = filter(has_input, 𝒩)
         𝒩ᵒᵘᵗ = setdiff(filter(has_output, 𝒩), [stor]) # The storage has a fixed output variable
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
 
         # Test that all node flow variables have a lower bound of 0
         @test all(
@@ -177,7 +177,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
         return run_model(case, model, HiGHS.Optimizer), case, model
     end
 
@@ -197,7 +197,7 @@ end
         )
 
         m, case, model = simple_graph(source, sink)
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
         # Test that the capacity bound is properly set
@@ -258,7 +258,7 @@ end
         )
 
         m, case, model = simple_graph(source, sink)
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
         # Test that the inflow is equal to the specified capacity usage
@@ -297,7 +297,7 @@ end
             Dict(Power => 1),
         )
         m, case, model = simple_graph(source, sink)
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
         # Test that the mass balance is properly calculated
@@ -336,7 +336,7 @@ end
             Dict(Power => 1),
         )
         m, case, model = simple_graph(source, sink)
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         @test !any(val == source for val ∈ axes(m[:emissions_node])[1])
         @test !any(val == sink for val ∈ axes(m[:emissions_node])[1])
 
@@ -351,7 +351,7 @@ end
             [em_data],
         )
         m, case, model = simple_graph(source, snk_emit)
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         # Test that the emissions are properly calculated
         @test all(
             value.(m[:cap_use][snk_emit, t]) * process_emissions(em_data, CO2, t) ≈
@@ -369,7 +369,7 @@ end
             [em_data],
         )
         m, case, model = simple_graph(src_emit, sink)
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         # Test that the emissions are properly calculated, although no input is present in
         # a `Source ndoe`
         # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
@@ -455,7 +455,7 @@ end
             Dict(CO2 => FixedProfile(0), NG => FixedProfile(0)),
             CO2,
         )
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
         return run_model(case, model, HiGHS.Optimizer), case, model
     end
 
@@ -465,9 +465,9 @@ end
 
         # Run the model and extract the data
         m, case, model = simple_graph()
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         net = 𝒩[2]
 
         # Check that there is production
@@ -498,11 +498,11 @@ end
         # Run the model and extract the data
         em_data = EmissionsEnergy()
         m, case, model = simple_graph(data_em = em_data)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         𝒩ᵉᵐ = nodes_emissions(𝒩)
         net = 𝒩[2]
 
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
         # Check that there is production
@@ -529,14 +529,14 @@ end
         # Run the model and extract the data
         em_data = EmissionsProcess(Dict(CO2 => 0.1, NG => 0.5))
         m, case, model = simple_graph(data_em = em_data)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         𝒩ᵉᵐ = nodes_emissions(𝒩)
         net = 𝒩[2]
 
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-        𝒫   = case[:products]
+        𝒫   = f_products(case)
         𝒫ᵉᵐ = setdiff(filter(EMB.is_resource_emit, 𝒫), [CO2])
 
         # Check that there is production
@@ -568,14 +568,14 @@ end
         # Run the model and extract the data
         em_data = EmissionsProcess(Dict(CO2 => FixedProfile(0.1), NG => FixedProfile(0.5)))
         m, case, model = simple_graph(data_em = em_data)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         𝒩ᵉᵐ = nodes_emissions(𝒩)
         net = 𝒩[2]
 
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-        𝒫   = case[:products]
+        𝒫   = f_products(case)
         𝒫ᵉᵐ = setdiff(filter(EMB.is_resource_emit, 𝒫), [CO2])
 
         # Check that there is production
@@ -607,14 +607,14 @@ end
         # Run the model and extract the data
         em_data = CaptureEnergyEmissions(Dict(CO2 => 0.1, NG => 0.5), 0.9)
         m, case, model = simple_graph(data_em = em_data)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         𝒩ᵉᵐ = nodes_emissions(𝒩)
         net = 𝒩[2]
 
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-        𝒫   = case[:products]
+        𝒫   = f_products(case)
         𝒫ᵉᵐ = setdiff(filter(EMB.is_resource_emit, 𝒫), [CO2])
 
         # Check that there is production
@@ -655,14 +655,14 @@ end
         # Run the model and extract the data
         em_data = CaptureProcessEmissions(Dict(CO2 => 0.1, NG => 0.5), 0.9)
         m, case, model = simple_graph(data_em = em_data)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         𝒩ᵉᵐ = nodes_emissions(𝒩)
         net = 𝒩[2]
 
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-        𝒫   = case[:products]
+        𝒫   = f_products(case)
         𝒫ᵉᵐ = setdiff(filter(EMB.is_resource_emit, 𝒫), [CO2])
 
         # Check that there is production
@@ -704,14 +704,14 @@ end
         # Run the model and extract the data
         em_data = CaptureProcessEnergyEmissions(Dict(CO2 => 0.1, NG => 0.5), 0.9)
         m, case, model = simple_graph(data_em = em_data)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         𝒩ᵉᵐ = nodes_emissions(𝒩)
         net = 𝒩[2]
 
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-        𝒫   = case[:products]
+        𝒫   = f_products(case)
         𝒫ᵉᵐ = setdiff(filter(EMB.is_resource_emit, 𝒫), [CO2])
 
         # Check that there is production
@@ -807,7 +807,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
         return run_model(case, model, HiGHS.Optimizer), case, model
     end
 
@@ -815,9 +815,9 @@ end
     function general_tests(m, case, model)
 
         # Extract the data
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         stor = 𝒩[3]
         sink = 𝒩[4]
 
@@ -870,9 +870,9 @@ end
 
         # Run the model and extract the data
         m, case, model = simple_graph()
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         stor = 𝒩[3]
 
         # Run the general tests
@@ -921,9 +921,9 @@ end
 
         # Run the model and extract the data
         m, case, model = simple_graph(; demand = OperationalProfile([10, 15, 5, 15, 5]))
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         stor = 𝒩[3]
 
         # Run the general tests
@@ -978,9 +978,9 @@ end
 
         m, case, model = simple_graph(; ops, op_per_strat = 8760, demand)
 
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         stor = 𝒩[3]
 
         # Run the general tests
@@ -1116,7 +1116,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
         return run_model(case, model, HiGHS.Optimizer), case, model
     end
 
@@ -1124,9 +1124,9 @@ end
     function general_tests(m, case, model)
 
         # Extract the data
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         stor = 𝒩[3]
         sink = 𝒩[4]
 
@@ -1180,9 +1180,9 @@ end
 
         # Run the model and extract the data
         m, case, model = simple_graph()
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         stor = 𝒩[3]
 
         # Run the general tests
@@ -1231,9 +1231,9 @@ end
 
         # Run the model and extract the data
         m, case, model = simple_graph(; demand = OperationalProfile([10, 15, 5, 15, 5]))
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         stor = 𝒩[3]
 
         # Run the general tests
@@ -1288,10 +1288,10 @@ end
 
         m, case, model = simple_graph(; ops, op_per_strat = 20, demand)
 
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
         𝒯ˢᶜ = opscenarios(𝒯)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         stor = 𝒩[3]
 
         # Run the general tests
@@ -1355,10 +1355,10 @@ end
 
         m, case, model = simple_graph(; ops, op_per_strat = 8760, demand)
 
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
         𝒯ʳᵖ = repr_periods(𝒯)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         stor = 𝒩[3]
 
         # Run the general tests
@@ -1434,11 +1434,11 @@ end
 
         m, case, model = simple_graph(; ops, op_per_strat = 8760, demand)
 
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
         𝒯ʳᵖ = repr_periods(𝒯)
         𝒯ˢᶜ = opscenarios(𝒯)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         stor = 𝒩[3]
         # Run the general tests
         general_tests(m, case, model)
@@ -1569,7 +1569,7 @@ end
             Dict(CO2 => FixedProfile(0), NG => FixedProfile(0)),
             CO2,
         )
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
         return run_model(case, model, HiGHS.Optimizer), case, model
     end
 
@@ -1577,9 +1577,9 @@ end
     function general_tests(m, case, model)
 
         # Extract the data
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         stor = 𝒩[3]
 
         # Test that there is production
@@ -1625,9 +1625,9 @@ end
 
         # Run the model and extract the data
         m, case, model = simple_graph()
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         stor = 𝒩[3]
 
         # Run the general tests
@@ -1676,9 +1676,9 @@ end
 
         # Run the model and extract the data
         m, case, model = simple_graph(; stor_cap = 100, em_limit = [100, 4])
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         stor = 𝒩[3]
 
         # Run the general tests
@@ -1740,9 +1740,9 @@ end
         ops = RepresentativePeriods(2, 60, [0.5, 0.5], [op_1, op_2])
 
         m, case, model = simple_graph(; ops, op_per_strat = 60, stor_cap = 1e6)
-        𝒯 = case[:T]
+        𝒯 = f_time_struct(case)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-        𝒩 = case[:nodes]
+        𝒩 = f_nodes(case)
         stor = 𝒩[3]
 
         # Run the general tests

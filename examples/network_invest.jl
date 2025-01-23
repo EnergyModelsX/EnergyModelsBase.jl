@@ -159,13 +159,8 @@ function generate_example_network_investment()
         Direct("CO2_stor-av", nodes[6], nodes[1], Linear())
     ]
 
-    # WIP data structure
-    case = Dict(
-        :nodes => nodes,
-        :links => links,
-        :products => products,
-        :T => T,
-    )
+    # Input data structure
+    case = EMXCase(T, products, [nodes, links], [[f_nodes, f_links]])
     return case, model
 end
 
@@ -175,7 +170,7 @@ optimizer = optimizer_with_attributes(HiGHS.Optimizer, MOI.Silent() => true)
 m = run_model(case, model, optimizer)
 
 # Display some results
-ng_ccs_pp, CO2_stor, = case[:nodes][[4, 6]]
+ng_ccs_pp, CO2_stor, = f_nodes(case)[[4, 6]]
 @info "Invested capacity for the natural gas plant in the beginning of the \
 individual strategic periods"
 pretty_table(
