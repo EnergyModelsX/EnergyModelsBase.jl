@@ -81,7 +81,7 @@
         )
 
         # Input data structure
-        case = EMXCase(T, products, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, products, [nodes, links], [[f_nodes, f_links]])
         return case, model
     end
 
@@ -177,7 +177,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, resources, [nodes, links], [[f_nodes, f_links]])
         return run_model(case, model, HiGHS.Optimizer), case, model
     end
 
@@ -455,7 +455,7 @@ end
             Dict(CO2 => FixedProfile(0), NG => FixedProfile(0)),
             CO2,
         )
-        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, resources, [nodes, links], [[f_nodes, f_links]])
         return run_model(case, model, HiGHS.Optimizer), case, model
     end
 
@@ -807,7 +807,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, resources, [nodes, links], [[f_nodes, f_links]])
         return run_model(case, model, HiGHS.Optimizer), case, model
     end
 
@@ -1116,7 +1116,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, resources, [nodes, links], [[f_nodes, f_links]])
         return run_model(case, model, HiGHS.Optimizer), case, model
     end
 
@@ -1569,7 +1569,7 @@ end
             Dict(CO2 => FixedProfile(0), NG => FixedProfile(0)),
             CO2,
         )
-        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, resources, [nodes, links], [[f_nodes, f_links]])
         return run_model(case, model, HiGHS.Optimizer), case, model
     end
 

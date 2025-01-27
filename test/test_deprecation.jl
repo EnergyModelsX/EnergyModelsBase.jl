@@ -34,7 +34,7 @@
 
         # Input data structures
         case_old = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
-        case_new = EMXCase(
+        case_new = Case(
             T,
             resources,
             [nodes, links],

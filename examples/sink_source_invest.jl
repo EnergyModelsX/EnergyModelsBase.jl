@@ -95,7 +95,7 @@ function generate_example_ss_investment(lifemode = RollingLife; discount_rate = 
     ]
 
     # Input data structure
-    case = EMXCase(T, products, [nodes, links], [[f_nodes, f_links]])
+    case = Case(T, products, [nodes, links], [[f_nodes, f_links]])
     return case, model
 end
 

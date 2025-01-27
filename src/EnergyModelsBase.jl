@@ -35,7 +35,7 @@ include("data_functions.jl")
 include("legacy_constructor.jl")
 
 # Export the case type and its functions
-export EMXCase
+export AbstractCase, Case
 export f_time_struct, f_products, f_elements_vec, f_nodes, f_links, f_couplings
 
 # Export the general classes

@@ -36,7 +36,7 @@ The fields of the case dictionary correspond to:
    However, storage balances may violate the upper and lower bound when the time structure includes [`OperationalScenarios](@extref TimeStruct.OperationalScenarios).
    In general, it is preferable to utilize either a [`TwoLevel`](@extref TimeStruct.TwoLevel) or [`TwoLevelTree`](@extref TimeStruct.TwoLevelTree) to properly calculate the operational costs and the emissions.
 2. **`products::Vector{<:Resource}`** is a vector of all considered *[resources](@ref lib-pub-res)* in the analysis.
-   In theory, it is not necessary that this vector includes all resources, although it must include all insatnces of [`ResourceEmit`](@ref).
+   In theory, it is not necessary that this vector includes all resources, although it must include all instances of [`ResourceEmit`](@ref).
 3. **`elements::Vector{Vector}`** is a vector of the vectors of [`AbstractElement`](@ref)s of the analysis, as described above.
    This `Vector{Vector}` can be extended with additional types for which variables and constraints should be introduced.
 
@@ -51,7 +51,8 @@ The fields of the case dictionary correspond to:
    `EnergyModelsBase` provides as potential functions [`f_nodes`](@ref) and [`f_links`](@ref) in the coupling.
 
 ```@docs
-EMXCase
+AbstractCase
+Case
 ```
 
 ## [Functions for accessing different information](@id lib-pub-links-fun_field)

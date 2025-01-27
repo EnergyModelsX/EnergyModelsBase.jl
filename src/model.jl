@@ -1,6 +1,6 @@
 """
     create_model(
-        case::EMXCase,
+        case::Case,
         modeltype::EnergyModel,
         m::JuMP.Model;
         check_timeprofiles::Bool = true,
@@ -10,9 +10,9 @@
 Create the model and call all required functions.
 
 ## Arguments
-- `case::EMXCase` - The case type represents the chosen time structure, the included
+- `case::Case` - The case type represents the chosen time structure, the included
   [`Resource`](@ref)s and the elements and potential coupling between the elements.
-  It is explained in more detail in its *[docstring](@ref EMXCase)*.
+  It is explained in more detail in its *[docstring](@ref Case)*.
 - `modeltype` - Used modeltype, that is a subtype of the type `EnergyModel`.
 - `m` - the empty `JuMP.Model` instance. If it is not provided, then it is assumed that the
   input is a standard `JuMP.Model`.
@@ -30,7 +30,7 @@ Create the model and call all required functions.
     We provide additional methods for translating the old dictionary to the new case types.
 """
 function create_model(
-    case::EMXCase,
+    case::Case,
     modeltype::EnergyModel,
     m::JuMP.Model;
     check_timeprofiles::Bool = true,
@@ -85,7 +85,7 @@ function create_model(
     return m
 end
 function create_model(
-    case::EMXCase,
+    case::Case,
     modeltype::EnergyModel;
     check_timeprofiles::Bool = true,
     check_any_data::Bool = true,
@@ -100,7 +100,7 @@ function create_model(
     check_timeprofiles::Bool = true,
     check_any_data::Bool = true,
 )
-    case_new = EMXCase(case[:T], case[:products], [case[:nodes], case[:links]])
+    case_new = Case(case[:T], case[:products], [case[:nodes], case[:links]])
     create_model(case_new, modeltype, m; check_timeprofiles, check_any_data)
 end
 function create_model(

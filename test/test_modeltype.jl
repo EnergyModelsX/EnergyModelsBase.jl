@@ -29,7 +29,7 @@
         nodes = [source, sink]
         links = [Direct(12, source, sink)]
         model = OperationalModel(Dict(CO2 => em_cap), Dict(CO2 => em_price), CO2)
-        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, resources, [nodes, links], [[f_nodes, f_links]])
         return run_model(case, model, HiGHS.Optimizer), case, model
     end
 

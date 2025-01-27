@@ -73,7 +73,7 @@ function generate_data()
     )
 
     # Input data structure
-    case = EMXCase(T, products, [nodes, links], [[f_nodes, f_links]])
+    case = Case(T, products, [nodes, links], [[f_nodes, f_links]])
     return case, model
 end
 

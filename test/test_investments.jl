@@ -212,7 +212,7 @@ using EnergyModelsInvestments
         modeltype = InvestmentModel(em_limits, em_cost, CO2, 0.07)
 
         # Input data structure
-        case = EMXCase(T, products, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, products, [nodes, links], [[f_nodes, f_links]])
         return case, modeltype
     end
 
@@ -327,7 +327,7 @@ end
         modeltype = InvestmentModel(em_limits, em_cost, CO2, 0.0)
 
         # Input data structure
-        case = EMXCase(T, products, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, products, [nodes, links], [[f_nodes, f_links]])
         return run_model(case, modeltype, HiGHS.Optimizer), case, modeltype
     end
 
@@ -417,7 +417,7 @@ EMB.TEST_ENV = true
             nodes = [source, sink]
             links = [Direct("scr-sink", nodes[1], nodes[2], Linear())]
             T = TwoLevel(4, 10, SimpleTimes(4, 1))
-            case = EMXCase(T, products, [nodes, links], [[f_nodes, f_links]])
+            case = Case(T, products, [nodes, links], [[f_nodes, f_links]])
 
             em_limits = Dict(CO2 => StrategicProfile([450, 400, 350, 300]))
             em_cost = Dict(CO2 => FixedProfile(0))
@@ -554,7 +554,7 @@ EMB.TEST_ENV = true
                 Direct("stor-snk", nodes[2], nodes[3], Linear())
             ]
             T = TwoLevel(4, 10, SimpleTimes(4, 1))
-            case = EMXCase(T, products, [nodes, links], [[f_nodes, f_links]])
+            case = Case(T, products, [nodes, links], [[f_nodes, f_links]])
 
             em_limits = Dict(CO2 => StrategicProfile([450, 400, 350, 300]))
             em_cost = Dict(CO2 => FixedProfile(0))
@@ -681,7 +681,7 @@ EMB.TEST_ENV = true
             nodes = [source, sink]
             links = [InvDirect("scr-sink", nodes[1], nodes[2], Linear(), inv_data)]
             T = TwoLevel(4, 10, SimpleTimes(4, 1))
-            case = EMXCase(T, products, [nodes, links], [[f_nodes, f_links]])
+            case = Case(T, products, [nodes, links], [[f_nodes, f_links]])
 
             em_limits = Dict(CO2 => StrategicProfile([450, 400, 350, 300]))
             em_cost = Dict(CO2 => FixedProfile(0))

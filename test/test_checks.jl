@@ -38,16 +38,16 @@ EMB.TEST_ENV = true
 
     # Check that the individual elements vector are unique
     # - EMB.check_case_data(case)
-    case_test = EMXCase(T, resources, [nodes, [nodes[1]], links])
+    case_test = Case(T, resources, [nodes, [nodes[1]], links])
     @test_throws AssertionError create_model(case_test, model)
-    case_test = EMXCase(T, resources, [nodes, [nodes[2]], links])
+    case_test = Case(T, resources, [nodes, [nodes[2]], links])
     @test_throws AssertionError create_model(case_test, model)
-    case_test = EMXCase(T, resources, [nodes, [links[1]], links])
+    case_test = Case(T, resources, [nodes, [links[1]], links])
     @test_throws AssertionError create_model(case_test, model)
 
     # Check that the couplings return non_empty vectors
     # - EMB.check_case_data(case)
-    case_test = EMXCase(T, resources, [nodes, Link[]], [[f_nodes, f_links]])
+    case_test = Case(T, resources, [nodes, Link[]], [[f_nodes, f_links]])
     @test_throws AssertionError create_model(case_test, model)
 end
 
@@ -81,7 +81,7 @@ end
 
         nodes = [source, sink]
         links = [Direct(12, source, sink)]
-        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, resources, [nodes, links], [[f_nodes, f_links]])
         return case
     end
 
@@ -177,7 +177,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, resources, [nodes, links], [[f_nodes, f_links]])
         return case, model
     end
 
@@ -250,7 +250,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, resources, [nodes, links], [[f_nodes, f_links]])
         return case, model
     end
 
@@ -379,7 +379,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, resources, [nodes, links], [[f_nodes, f_links]])
         return create_model(case, model), case, model
     end
 
@@ -534,7 +534,7 @@ end
             Dict(CO2 => FixedProfile(0), NG => FixedProfile(0)),
             CO2,
         )
-        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, resources, [nodes, links], [[f_nodes, f_links]])
         return create_model(case, model), case, model
     end
 
@@ -641,7 +641,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, resources, [nodes, links], [[f_nodes, f_links]])
         return create_model(case, model), case, model
     end
 
@@ -761,7 +761,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = EMXCase(T, resources, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, resources, [nodes, links], [[f_nodes, f_links]])
         return case, model
     end
 

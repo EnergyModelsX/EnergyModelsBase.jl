@@ -1,5 +1,14 @@
 """
-    EMXCase
+    abstract type AbstractCase
+
+An `AbstractCase` is a description of a case to be used within `EnergyModelsBase`. It is
+only required to create a new subtype if you plan to incorporate a new [`create_model`](@ref)
+function.
+"""
+abstract type AbstractCase end
+
+"""
+    struct Case <: AbstractCase
 
 Type representing a case in `EnergyModelsBase`. It replaces the previously used dictionary
 for providing the input to a model.
@@ -32,13 +41,13 @@ for providing the input to a model.
 
     in an external constructor if the couplings are not specified.
 """
-struct EMXCase
+struct Case <: AbstractCase
     T::TimeStructure
     products::Vector{<:Resource}
     elements::Vector{Vector}
     couplings::Vector{Vector{Function}}
     misc::Dict
-    function EMXCase(
+    function Case(
         T::TimeStructure,
         products::Vector{<:Resource},
         elements::Vector{Vector},
@@ -57,71 +66,71 @@ struct EMXCase
         end
     end
 end
-function EMXCase(
+function Case(
     T::TimeStructure,
     products::Vector{<:Resource},
     elements::Vector{Vector},
     couplings::Vector{Vector{Function}},
     )
-    return EMXCase(T, products, elements, couplings, Dict())
+    return Case(T, products, elements, couplings, Dict())
 end
 
 """
-    f_time_struct(case::EMXCase)
+    f_time_struct(case::Case)
 
-Returns the time structure of the EMXCase `case`.
+Returns the time structure of the Case `case`.
 """
-f_time_struct(case::EMXCase) = case.T
-
-"""
-    f_products(case::EMXCase)
-
-Returns the vector of products of the EMXCase `case`.
-"""
-f_products(case::EMXCase) = case.products
+f_time_struct(case::Case) = case.T
 
 """
-    f_elements_vec(case::EMXCase)
+    f_products(case::Case)
 
-Returns the vector of element vectors of the EMXCase `case`.
+Returns the vector of products of the Case `case`.
 """
-f_elements_vec(case::EMXCase) = case.elements
-
-"""
-    f_nodes(case::EMXCase)
-
-Returns the vector of nodes of the EMXCase `case`.
-"""
-f_nodes(case::EMXCase) = filter(el -> isa(el, Vector{<:Node}), f_elements_vec(case))[1]
+f_products(case::Case) = case.products
 
 """
-    f_links(case::EMXCase)
+    f_elements_vec(case::Case)
 
-Returns the vector of links of the EMXCase `case`.
+Returns the vector of element vectors of the Case `case`.
 """
-f_links(case::EMXCase) = filter(el -> isa(el, Vector{<:Link}), f_elements_vec(case))[1]
+f_elements_vec(case::Case) = case.elements
 
 """
-    f_couplings(case::EMXCase)
+    f_nodes(case::Case)
 
-Returns the vector of coupling vectors of the EMXCase `case`.
+Returns the vector of nodes of the Case `case`.
 """
-f_couplings(case::EMXCase) = case.couplings
+f_nodes(case::Case) = filter(el -> isa(el, Vector{<:Node}), f_elements_vec(case))[1]
 
-function EMXCase(
+"""
+    f_links(case::Case)
+
+Returns the vector of links of the Case `case`.
+"""
+f_links(case::Case) = filter(el -> isa(el, Vector{<:Link}), f_elements_vec(case))[1]
+
+"""
+    f_couplings(case::Case)
+
+Returns the vector of coupling vectors of the Case `case`.
+"""
+f_couplings(case::Case) = case.couplings
+
+function Case(
     T::TimeStructure,
     products::Vector{<:Resource},
     elements::Vector{Vector},
     )
     couplings = [[f_nodes, f_links]]
-    return EMXCase(T, products, elements, couplings, Dict())
+    return Case(T, products, elements, couplings, Dict())
 end
-function EMXCase(
+function Case(
     T::TimeStructure,
     products::Vector{<:Resource},
     elements::Vector{Vector},
     misc::Dict,
     )
     couplings = [[f_nodes, f_links]]
-    return EMXCase(T, products, elements, couplings, misc)
+    return Case(T, products, elements, couplings, misc)
 end

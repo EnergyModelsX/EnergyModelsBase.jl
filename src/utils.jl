@@ -1,11 +1,11 @@
 """
-    run_model(case::EMXCase, model::EnergyModel, optimizer; check_timeprofiles = true)
+    run_model(case::Case, model::EnergyModel, optimizer; check_timeprofiles = true)
 
 Take the `case` data, the `model` description, and an `optimizer` to build and optimize the
 model.
 Returns the solved JuMP model.
 """
-function run_model(case::EMXCase, model, optimizer; check_timeprofiles = true)
+function run_model(case::Case, model, optimizer; check_timeprofiles = true)
     @debug "Run model" optimizer
 
     m = create_model(case, model; check_timeprofiles)
@@ -24,7 +24,7 @@ end
 function run_model(case::Dict, model, optimizer; check_timeprofiles = true)
     @debug "Run model" optimizer
 
-    case_new = EMXCase(case[:T], case[:products], [case[:nodes], case[:links]])
+    case_new = Case(case[:T], case[:products], [case[:nodes], case[:links]])
     m = run_model(case_new, model, optimizer; check_timeprofiles)
 
     return m
