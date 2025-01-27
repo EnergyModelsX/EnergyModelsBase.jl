@@ -1,5 +1,17 @@
 # Release notes
 
+## Unversioned
+
+### Major rework of input data structure
+
+* Set links and nodes as subtype of a new `AbstractElement` type.
+* Moved from a dictionary to a type called `Case`.
+* The type allows extensions without having to create a new `create_model` function, and hence, run in potential problems with several extensions packages.
+
+### Minor updates
+
+* Allow for checks for links.
+
 ## Version 0.8.3 (2024-11-29)
 
 ### Reference checks possible to be called
