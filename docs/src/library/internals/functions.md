@@ -13,7 +13,9 @@ CurrentModule = EnergyModelsBase
 ## [Extension functions](@id lib-int-fun-ext)
 
 ```@docs
+create_element
 create_link
+variables_element
 objective(m, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
 objective_operational
 emissions_operational

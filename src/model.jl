@@ -377,13 +377,56 @@ function variables_emission(m, 𝒫, 𝒯, modeltype::EnergyModel)
 end
 
 """
-    variables_elements(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
-    variables_elements(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
+    variables_elements(m, 𝒳::Vector{<:AbstractElement}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
 
-Loop through all element types and create variables specific to each type. It starts at the
-top level and subsequently move through the branches until it reaches a leave. That is,
-node nodes, [`variables_node`](@ref) will be called on a
- [`Node`](@ref EnergyModelsBase.Node) before it is called on [`NetworkNode`](@ref)-nodes.
+Loop through all element subtypes and create variables specific to each subtype. It starts
+at the top level and subsequently move through the branches until it reaches a leave.
+
+That is, for nodes, [`variables_element`](@ref) will be called on a [`Node`](@ref EnergyModelsBase.Node)
+before it is called on [`NetworkNode`](@ref)-nodes.
+
+The function subsequently calls the subroutine [`variables_element`](@ref) for creating the
+variables only for a subset of the elements.
+"""
+function variables_elements(m, 𝒳::Vector{<:AbstractElement}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
+    # Vector of the unique node types in 𝒩.
+    element_composite_types = unique(map(x -> typeof(x), 𝒳))
+    # Get all `Node`-types in the type-hierarchy that the nodes 𝒩 represents.
+    element_types = collect_types(element_composite_types)
+    # Sort the node-types such that a supertype will always come its subtypes.
+    element_types = sort_types(element_types)
+
+    for element_type ∈ element_types
+        # All nodes of the given sub type.
+        𝒳ˢᵘᵇ = filter(n -> isa(n, element_type), 𝒳)
+        # Convert to a Vector of common-type instad of Any.
+        𝒳ˢᵘᵇ = convert(Vector{element_type}, 𝒳ˢᵘᵇ)
+        try
+            variables_element(m, 𝒳ˢᵘᵇ, 𝒯, modeltype)
+        catch e
+            # Parts of the exception message we are looking for.
+            pre1 = "An object of name"
+            pre2 = "is already attached to this model."
+            if isa(e, ErrorException)
+                if occursin(pre1, e.msg) && occursin(pre2, e.msg)
+                    # 𝒳ˢᵘᵇ was already registered by a call to a supertype, so just continue.
+                    continue
+                end
+            end
+            # If we make it to this point, this means some other error occured. This should
+            # not be ignored.
+            throw(e)
+        end
+    end
+end
+
+"""
+    variables_element(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
+    variables_element(m, ℒˢᵘᵇ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
+
+Default fallback method for a vector of elements if no other method is defined for a given
+vector of element subtypes. This function calls subfunctions to maintain backwards
+compatibility and simplify the differentiation in extension packages.
 
 `EnergyModelsBase` provides the user with two element types, [`Link`](@ref) and
 [`Node`](@ref EnergyModelsBase.Node):
@@ -391,68 +434,10 @@ node nodes, [`variables_node`](@ref) will be called on a
 - `Node` - the subfunction is [`variables_node`](@ref).
 - `Link` - the subfunction is [`variables_link`](@ref).
 """
-function variables_elements(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
-    # Vector of the unique node types in 𝒩.
-    node_composite_types = unique(map(n -> typeof(n), 𝒩))
-    # Get all `Node`-types in the type-hierarchy that the nodes 𝒩 represents.
-    node_types = collect_types(node_composite_types)
-    # Sort the node-types such that a supertype will always come its subtypes.
-    node_types = sort_types(node_types)
-
-    for node_type ∈ node_types
-        # All nodes of the given sub type.
-        𝒩ˢᵘᵇ = filter(n -> isa(n, node_type), 𝒩)
-        # Convert to a Vector of common-type instad of Any.
-        𝒩ˢᵘᵇ = convert(Vector{node_type}, 𝒩ˢᵘᵇ)
-        try
-            variables_node(m, 𝒩ˢᵘᵇ, 𝒯, modeltype)
-        catch e
-            # Parts of the exception message we are looking for.
-            pre1 = "An object of name"
-            pre2 = "is already attached to this model."
-            if isa(e, ErrorException)
-                if occursin(pre1, e.msg) && occursin(pre2, e.msg)
-                    # 𝒩ˢᵘᵇ was already registered by a call to a supertype, so just continue.
-                    continue
-                end
-            end
-            # If we make it to this point, this means some other error occured. This should
-            # not be ignored.
-            throw(e)
-        end
-    end
-end
-function variables_elements(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
-    # Vector of the unique link types in ℒ.
-    link_composite_types = unique(map(l -> typeof(l), ℒ))
-    # Get all `link`-types in the type-hierarchy that the links ℒ represents.
-    link_types = collect_types(link_composite_types)
-    # Sort the link-types such that a supertype will always come its subtypes.
-    link_types = sort_types(link_types)
-
-    for link_type ∈ link_types
-        # All links of the given sub type.
-        ℒˢᵘᵇ = filter(l -> isa(l, link_type), ℒ)
-        # Convert to a Vector of common-type instad of Any.
-        ℒˢᵘᵇ = convert(Vector{link_type}, ℒˢᵘᵇ)
-        try
-            variables_link(m, ℒˢᵘᵇ, 𝒯, modeltype)
-        catch e
-            # Parts of the exception message we are looking for.
-            pre1 = "An object of name"
-            pre2 = "is already attached to this model."
-            if isa(e, ErrorException)
-                if occursin(pre1, e.msg) && occursin(pre2, e.msg)
-                    # 𝒩ˢᵘᵇ was already registered by a call to a supertype, so just continue.
-                    continue
-                end
-            end
-            # If we make it to this point, this means some other error occured. This should
-            # not be ignored.
-            throw(e)
-        end
-    end
-end
+variables_element(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, modeltype::EnergyModel) =
+    variables_node(m, 𝒩ˢᵘᵇ, 𝒯, modeltype)
+variables_element(m, ℒˢᵘᵇ::Vector{<:Link}, 𝒯, modeltype::EnergyModel) =
+    variables_link(m, ℒˢᵘᵇ, 𝒯, modeltype)
 
 """
     variables_node(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
@@ -477,16 +462,31 @@ end
 """
     variables_link(m, ℒˢᵘᵇ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
 
-Default fallback method when no method is defined for a [`Link`](@ref) type.
+Default fallback method when no method is defined for a [`Link`](@ref) type. No variables
+are created in this case.
 """
 function variables_link(m, ℒˢᵘᵇ::Vector{<:Link}, 𝒯, modeltype::EnergyModel) end
 
 """
-    constraints_elements(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
-    constraints_elements(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
+    constraints_elements(m, 𝒳::Vector{<:AbstractElement}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
 
-Loop through all entries of the elements vector and call a subfunction for creating the
-internal constraints of the entries of the elements vector.
+Loop through all entries of the elements vector and call the subfunction
+[`create_element`](@ref) for creating the internal constraints of the entries of the
+elements vector.
+"""
+function constraints_elements(m, 𝒳::Vector{<:AbstractElement}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
+    for x ∈ 𝒳
+        create_element(m, x, 𝒯, 𝒫, modeltype)
+    end
+end
+
+"""
+    create_element(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel)
+    create_element(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel)
+
+Default fallback method for an element type if no other method is defined for a given type.
+This function calls subfunctions to maintain backwards compatibility and simplify the
+differentiation in extension packages.
 
 `EnergyModelsBase` provides the user with two element types, [`Link`](@ref) and
 [`Node`](@ref EnergyModelsBase.Node):
@@ -494,16 +494,10 @@ internal constraints of the entries of the elements vector.
 - `Node` - the subfunction is [`create_node`](@ref).
 - `Link` - the subfunction is [`create_link`](@ref).
 """
-function constraints_elements(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
-    for n ∈ 𝒩
-        create_node(m, n, 𝒯, 𝒫, modeltype)
-    end
-end
-function constraints_elements(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
-    for l ∈ ℒ
-        create_link(m, 𝒯, 𝒫, l, modeltype, formulation(l))
-    end
-end
+create_element(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel) =
+    create_node(m, n, 𝒯, 𝒫, modeltype)
+create_element(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel) =
+    create_link(m, 𝒯, 𝒫, l, modeltype, formulation(l))
 
 """
     constraints_couple(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫, 𝒯, modeltype::EnergyModel)
