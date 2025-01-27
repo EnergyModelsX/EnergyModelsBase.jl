@@ -428,6 +428,28 @@ is_sink(n::Node) = false
 is_sink(n::Sink) = true
 
 """
+    has_capacity(n::Node)
+
+Checks whether node `n` has a standard capacity.
+
+By default, [`Storage`](@ref) and [`Availability`](@ref) nodes are excluded as they either
+have multiple capacities (`Storage`) or non (`Availability`).
+"""
+has_capacity(n::Node) = true
+has_capacity(n::Storage) = false
+has_capacity(n::Availability) = false
+
+"""
+    has_opex(n::Node)
+
+Checks whether node `n` has operational expenses.
+
+By default, all nodes except for [`Availability`](@ref) nodes do have operational expenses.
+"""
+has_opex(n::Node) = true
+has_opex(n::Availability) = false
+
+"""
     has_emissions(n::Node)
 
 Checks whether node `n` has emissions.
@@ -449,20 +471,6 @@ nodes_emissions(𝒩::Array{<:Node}) = filter(has_emissions, 𝒩)
 Returns nodes that are of type `sub` for a given Array `𝒩::Array{<:Node}`.
 """
 nodes_sub(𝒩::Array{<:Node}, sub = NetworkNode) = filter(x -> isa(x, sub), 𝒩)
-
-"""
-    nodes_not_sub(𝒩::Array{<:Node}, sub)
-
-Returns nodes that are not of type `sub` for a given Array `𝒩::Array{<:Node}`.
-"""
-nodes_not_sub(𝒩::Array{<:Node}, sub = NetworkNode) = filter(x -> ~isa(x, sub), 𝒩)
-
-"""
-    nodes_not_av(𝒩::Array{<:Node})
-
-Returns nodes that are not `Availability` nodes for a given Array `𝒩::Array{<:Node}`.
-"""
-nodes_not_av(𝒩::Array{<:Node}) = filter(x -> ~isa(x, Availability), 𝒩)
 
 """
     nodes_input(𝒩::Array{<:Node}, sub)

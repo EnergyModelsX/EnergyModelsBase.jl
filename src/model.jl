@@ -173,14 +173,14 @@ hence, provides the user with two individual methods:
     - `link_cap_inst[l, t]` is the installed capacity of link `l` in operational period `t`.
 """
 function variables_capacity(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
-    𝒩ⁿᵒᵗ = nodes_not_sub(𝒩, Union{Storage,Availability})
+    𝒩ᶜᵃᵖ = filter(has_capacity, 𝒩)
     𝒩ˢᵗᵒʳ = filter(is_storage, 𝒩)
     𝒩ˢᵗᵒʳ⁻ᶜ = filter(has_charge, 𝒩ˢᵗᵒʳ)
     𝒩ˢᵗᵒʳ⁻ᵈᶜ = filter(has_discharge, 𝒩ˢᵗᵒʳ)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    @variable(m, cap_use[𝒩ⁿᵒᵗ, 𝒯] >= 0)
-    @variable(m, cap_inst[𝒩ⁿᵒᵗ, 𝒯] >= 0)
+    @variable(m, cap_use[𝒩ᶜᵃᵖ, 𝒯] >= 0)
+    @variable(m, cap_inst[𝒩ᶜᵃᵖ, 𝒯] >= 0)
 
     @variable(m, stor_level[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_level_inst[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
@@ -276,14 +276,18 @@ Declaration of different OPEX variables for the element types introduced in
 hence, provides the user with two individual methods:
 
 !!! note "Node variables"
+    The OPEX variables are only created for nodes, if the function [`has_opex(n::Node)`](@ref)
+    has received an additional method for a given nodes `n` returning the value `true`.
+    By default, this corresponds to all nodes except for [`Availability`](@ref) nodes.
+
     - `opex_var[n, t_inv]` are the variable operating expenses of node `n` in investment
       period `t_inv`. The values can be negative to account for revenue streams
     - `opex_fixed[n, t_inv]` are the fixed operating expenses of node `n` in investment
       period `t_inv`.
 
 !!! tip "Link variables"
-    The OPEX variables are only created for links, if the function [`has_opex`](@ref) has
-    received an additional method for a given link `l` returning the value `true`.
+    The OPEX variables are only created for links, if the function [`has_opex(l::Link)`](@ref)
+    has received an additional method for a given link `l` returning the value `true`.
 
     - `link_opex_var[n, t_inv]` are the variable operating expenses of link `l` in investment
       period `t_inv`. The values can be negative to account for revenue streams
@@ -291,11 +295,11 @@ hence, provides the user with two individual methods:
       period `t_inv`.
 """
 function variables_opex(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
-    𝒩ⁿᵒᵗ = nodes_not_av(𝒩)
+    𝒩ᵒᵖᵉˣ = filter(has_opex, 𝒩)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    @variable(m, opex_var[𝒩ⁿᵒᵗ, 𝒯ᴵⁿᵛ])
-    @variable(m, opex_fixed[𝒩ⁿᵒᵗ, 𝒯ᴵⁿᵛ] >= 0)
+    @variable(m, opex_var[𝒩ᵒᵖᵉˣ, 𝒯ᴵⁿᵛ])
+    @variable(m, opex_fixed[𝒩ᵒᵖᵉˣ, 𝒯ᴵⁿᵛ] >= 0)
 end
 function variables_opex(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
     ℒᵒᵖᵉˣ = filter(has_opex, ℒ)
@@ -650,10 +654,10 @@ function objective_operational(
     modeltype::EnergyModel,
 )
     # Declaration of the required subsets
-    𝒩ⁿᵒᵗ = nodes_not_av(𝒩)
+    𝒩ᵒᵖᵉˣ = filter(has_opex, 𝒩)
 
     return @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
-        sum((m[:opex_var][n, t_inv] + m[:opex_fixed][n, t_inv]) for n ∈ 𝒩ⁿᵒᵗ)
+        sum((m[:opex_var][n, t_inv] + m[:opex_fixed][n, t_inv]) for n ∈ 𝒩ᵒᵖᵉˣ)
     )
 end
 function objective_operational(

@@ -81,8 +81,6 @@ has_discharge_OPEX_var
 has_discharge_cap
 has_level_OPEX_fixed
 has_level_OPEX_var
-nodes_not_av
-nodes_not_sub
 nodes_sub
 link_res
 link_sub
