@@ -98,17 +98,21 @@ get_elements_vec(case::Case) = case.elements
 
 """
     get_nodes(case::Case)
+    get_nodes(𝒳ᵛᵉᶜ::Vector{Vector})
 
-Returns the vector of nodes of the Case `case`.
+Returns the vector of nodes of the Case `case` or the vector of elements vectors 𝒳ᵛᵉᶜ.
 """
 get_nodes(case::Case) = filter(el -> isa(el, Vector{<:Node}), get_elements_vec(case))[1]
+get_nodes(𝒳ᵛᵉᶜ::Vector{Vector}) = filter(el -> isa(el, Vector{<:Node}), 𝒳ᵛᵉᶜ)[1]
 
 """
     get_links(case::Case)
+    get_links(𝒳ᵛᵉᶜ::Vector{Vector})
 
-Returns the vector of links of the Case `case`.
+Returns the vector of links of the Case `case` or the vector of elements vectors 𝒳ᵛᵉᶜ.
 """
 get_links(case::Case) = filter(el -> isa(el, Vector{<:Link}), get_elements_vec(case))[1]
+get_links(𝒳ᵛᵉᶜ::Vector{Vector}) = filter(el -> isa(el, Vector{<:Link}), 𝒳ᵛᵉᶜ)[1]
 
 """
     get_couplings(case::Case)

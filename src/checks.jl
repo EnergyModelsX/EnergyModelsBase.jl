@@ -71,7 +71,7 @@ function check_data(case, modeltype::EnergyModel, check_timeprofiles::Bool)
     𝒳ᵛᵉᶜ = get_elements_vec(case)
     𝒯 = get_time_struct(case)
     for elements ∈ 𝒳ᵛᵉᶜ
-        check_elements(log_by_element, elements, case, 𝒯, modeltype, check_timeprofiles)
+        check_elements(log_by_element, elements, 𝒳ᵛᵉᶜ, 𝒯, modeltype, check_timeprofiles)
     end
 
     logs = []
@@ -159,9 +159,9 @@ function check_case_data(case)
 end
 
 """
-    check_elements(log_by_element, _::Vector{<:AbstractElement}, case::Case, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
-    check_elements(log_by_element, 𝒩::Vector{<:Node}, case::Case, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
-    check_elements(log_by_element, ℒ::Vector{<:Link}}, case::Case, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+    check_elements(log_by_element, _::Vector{<:AbstractElement}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+    check_elements(log_by_element, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+    check_elements(log_by_element, ℒ::Vector{<:Link}}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
 Checks the individual elements vector. It has implemented methods for both `Vector{<:Node}`
 and Vector{<:Link}.
@@ -190,7 +190,7 @@ and Vector{<:Link}.
 function check_elements(
     log_by_element,
     _::Vector{<:AbstractElement},
-    case::Case,
+    𝒳ᵛᵉᶜ,
     𝒯,
     modeltype::EnergyModel,
     check_timeprofiles::Bool
@@ -199,7 +199,7 @@ end
 function check_elements(
     log_by_element,
     𝒩::Vector{<:Node},
-    case::Case,
+    𝒳ᵛᵉᶜ,
     𝒯,
     modeltype::EnergyModel,
     check_timeprofiles::Bool
@@ -222,7 +222,7 @@ end
 function check_elements(
     log_by_element,
     ℒ::Vector{<:Link},
-    case::Case,
+    𝒳ᵛᵉᶜ,
     𝒯,
     modeltype::EnergyModel,
     check_timeprofiles::Bool
@@ -232,7 +232,7 @@ function check_elements(
         global logs = []
 
         # Check the connections of the link
-        𝒩  = get_nodes(case)
+        𝒩  = get_nodes(𝒳ᵛᵉᶜ)
         @assert_or_log(
             l.from ∈ 𝒩,
             "The node in the field `:from` is not included in the Node vector. As a consequence," *
