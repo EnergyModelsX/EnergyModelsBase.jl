@@ -32,7 +32,7 @@ check_inv_data
 ### [Methods](@id lib-int-EMIext-met)
 
 ```@docs
-EMB.variables_capex(m, _::Vector{<:AbstractElement}, 𝒳, 𝒯, modeltype::AbstractInvestmentModel)
+EMB.variables_capex(m, 𝒩::Vector{<:EMB.Node}, 𝒳, 𝒯, modeltype::AbstractInvestmentModel)
 EMB.objective_invest(m, 𝒩::Vector{<:EMB.Node}, 𝒯ᴵⁿᵛ::TS.AbstractStratPers, modeltype::AbstractInvestmentModel)
 EMB.constraints_capacity_installed(m, n::EMB.Node, 𝒯::TimeStructure, modeltype::AbstractInvestmentModel)
 EMB.check_node_data(n::EMB.Node, data::InvestmentData, 𝒯, modeltype::AbstractInvestmentModel, check_timeprofiles::Bool)

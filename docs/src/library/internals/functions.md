@@ -37,7 +37,7 @@ constraints_level_bounds
 variables_capacity
 variables_flow
 variables_opex
-variables_capex(m, _, 𝒳, 𝒯, modeltype::EnergyModel)
+variables_capex(m, 𝒩::Vector{<:Node}, 𝒳, 𝒯, modeltype::EnergyModel)
 variables_emission
 variables_elements
 ```
