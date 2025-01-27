@@ -47,7 +47,7 @@ EMB.TEST_ENV = true
 
     # Check that the couplings return non_empty vectors
     # - EMB.check_case_data(case)
-    case_test = Case(T, resources, [nodes, Link[]], [[f_nodes, f_links]])
+    case_test = Case(T, resources, [nodes, Link[]], [[get_nodes, get_links]])
     @test_throws AssertionError create_model(case_test, model)
 end
 
@@ -81,7 +81,7 @@ end
 
         nodes = [source, sink]
         links = [Direct(12, source, sink)]
-        case = Case(T, resources, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, resources, [nodes, links], [[get_nodes, get_links]])
         return case
     end
 
@@ -177,7 +177,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = Case(T, resources, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, resources, [nodes, links], [[get_nodes, get_links]])
         return case, model
     end
 
@@ -250,7 +250,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = Case(T, resources, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, resources, [nodes, links], [[get_nodes, get_links]])
         return case, model
     end
 
@@ -379,7 +379,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = Case(T, resources, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, resources, [nodes, links], [[get_nodes, get_links]])
         return create_model(case, model), case, model
     end
 
@@ -534,7 +534,7 @@ end
             Dict(CO2 => FixedProfile(0), NG => FixedProfile(0)),
             CO2,
         )
-        case = Case(T, resources, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, resources, [nodes, links], [[get_nodes, get_links]])
         return create_model(case, model), case, model
     end
 
@@ -641,7 +641,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = Case(T, resources, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, resources, [nodes, links], [[get_nodes, get_links]])
         return create_model(case, model), case, model
     end
 
@@ -761,17 +761,17 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = Case(T, resources, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, resources, [nodes, links], [[get_nodes, get_links]])
         return case, model
     end
 
     # Test that the from and to fields are correctly checked
     # - check_elements(log_by_element, ℒ::Vector{<:Link}}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     case, model = simple_graph()
-    av, source, sink = f_nodes(case)
-    case.elements[2] = [Direct(12, GenAvailability("test", f_products(case)), sink)]
+    av, source, sink = get_nodes(case)
+    case.elements[2] = [Direct(12, GenAvailability("test", get_products(case)), sink)]
     @test_throws AssertionError create_model(case, model)
-    case.elements[2] = [Direct(12, source, GenAvailability("test", f_products(case)))]
+    case.elements[2] = [Direct(12, source, GenAvailability("test", get_products(case)))]
     @test_throws AssertionError create_model(case, model)
     case.elements[2] = [Direct(12, av, source)]
     @test_throws AssertionError create_model(case, model)

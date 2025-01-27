@@ -71,7 +71,7 @@ function generate_example_ss()
     ]
 
     # Input data structure
-    case = Case(T, products, [nodes, links], [[f_nodes, f_links]])
+    case = Case(T, products, [nodes, links], [[get_nodes, get_links]])
     return case, model
 end
 
@@ -81,7 +81,7 @@ optimizer = optimizer_with_attributes(HiGHS.Optimizer, MOI.Silent() => true)
 m = run_model(case, model, optimizer)
 
 # Display some results
-source, sink = f_nodes(case)
+source, sink = get_nodes(case)
 @info "Capacity usage of the power source"
 pretty_table(
     JuMP.Containers.rowtable(

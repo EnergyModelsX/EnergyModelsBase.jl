@@ -68,8 +68,8 @@ function check_data(case, modeltype::EnergyModel, check_timeprofiles::Bool)
     end
 
     # Check the individual elements vector
-    𝒳ᵛᵉᶜ = f_elements_vec(case)
-    𝒯 = f_time_struct(case)
+    𝒳ᵛᵉᶜ = get_elements_vec(case)
+    𝒯 = get_time_struct(case)
     for elements ∈ 𝒳ᵛᵉᶜ
         check_elements(log_by_element, elements, case, 𝒯, modeltype, check_timeprofiles)
     end
@@ -131,7 +131,7 @@ Checks the `case` dictionary is in the correct format.
 - Check that the coupling functions do return elements and not only an empty vector
 """
 function check_case_data(case)
-    𝒳ᵛᵉᶜ = f_elements_vec(case)
+    𝒳ᵛᵉᶜ = get_elements_vec(case)
     get_vect_type(vec::Vector{T}) where {T} = T
     vec_types = [get_vect_type(x) for x ∈ 𝒳ᵛᵉᶜ]
 
@@ -146,7 +146,7 @@ function check_case_data(case)
         end
     end
 
-    𝒳ᵛᵉᶜ_𝒳ᵛᵉᶜ = f_couplings(case)
+    𝒳ᵛᵉᶜ_𝒳ᵛᵉᶜ = get_couplings(case)
     for couple ∈ 𝒳ᵛᵉᶜ_𝒳ᵛᵉᶜ
         for cpl ∈ couple
             @assert_or_log(
@@ -184,7 +184,7 @@ and Vector{<:Link}.
       are not equivalent to the provided timestructure.
 
     In addition, all links are directly checked to have in the fields `:from` and `:to` nodes
-    that are present in the Node vector as extracted through the function [`f_nodes`](@ref)
+    that are present in the Node vector as extracted through the function [`get_nodes`](@ref)
     and that these nodes have input (`:to`) or output (`:from`).
 """
 function check_elements(
@@ -232,7 +232,7 @@ function check_elements(
         global logs = []
 
         # Check the connections of the link
-        𝒩  = f_nodes(case)
+        𝒩  = get_nodes(case)
         @assert_or_log(
             l.from ∈ 𝒩,
             "The node in the field `:from` is not included in the Node vector. As a consequence," *
@@ -282,10 +282,10 @@ Checks the `modeltype` .
   periods.
 """
 function check_model(case, modeltype::EnergyModel, check_timeprofiles::Bool)
-    𝒯ᴵⁿᵛ = strategic_periods(f_time_struct(case))
+    𝒯ᴵⁿᵛ = strategic_periods(get_time_struct(case))
 
     # Check for inclusion of all emission resources
-    for p ∈ f_products(case)
+    for p ∈ get_products(case)
         if isa(p, ResourceEmit)
             @assert_or_log(
                 haskey(emission_limit(modeltype::EnergyModel), p),

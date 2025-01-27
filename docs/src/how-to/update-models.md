@@ -21,7 +21,7 @@ case = Dict(
 )
 
 # New structure:
-case = Case(T, products, [nodes, links], [[f_nodes, f_links]]) # or
+case = Case(T, products, [nodes, links], [[get_nodes, get_links]]) # or
 case = Case(T, products, [nodes, links])
 ```
 

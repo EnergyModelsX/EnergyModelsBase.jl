@@ -52,10 +52,10 @@ function create_model(
     end
 
     # WIP Data structure
-    𝒯 = f_time_struct(case)
-    𝒫 = f_products(case)
-    𝒳ᵛᵉᶜ = f_elements_vec(case)
-    𝒳ᵛᵉᶜ_𝒳ᵛᵉᶜ = f_couplings(case)
+    𝒯 = get_time_struct(case)
+    𝒫 = get_products(case)
+    𝒳ᵛᵉᶜ = get_elements_vec(case)
+    𝒳ᵛᵉᶜ_𝒳ᵛᵉᶜ = get_couplings(case)
 
     # Declaration of element variables and constraints of the problem
     for 𝒳 ∈ 𝒳ᵛᵉᶜ

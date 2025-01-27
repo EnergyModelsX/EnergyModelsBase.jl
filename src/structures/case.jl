@@ -26,7 +26,7 @@ for providing the input to a model.
   links for an analysis to be useful.
 - **`couplings::Vector{Vector{Function}}`** are the couplings between the individual function
   element types. These elements are represented through a corresponding function, *e.g.*,
-  [`f_nodes`](@ref) or [`f_links`](@ref)
+  [`get_nodes`](@ref) or [`get_links`](@ref)
 - **`misc::Dict`** is a dictionary that can be utilized for providing additional high level
   data in the existing format in the case of a new function for case creation. It is
   conditional through the application of a constructor.
@@ -36,7 +36,7 @@ for providing the input to a model.
     approach, it adds the coupling
 
     ```julia
-    couplings = [[f_nodes, f_links]]
+    couplings = [[get_nodes, get_links]]
     ```
 
     in an external constructor if the couplings are not specified.
@@ -76,53 +76,53 @@ function Case(
 end
 
 """
-    f_time_struct(case::Case)
+    get_time_struct(case::Case)
 
 Returns the time structure of the Case `case`.
 """
-f_time_struct(case::Case) = case.T
+get_time_struct(case::Case) = case.T
 
 """
-    f_products(case::Case)
+    get_products(case::Case)
 
 Returns the vector of products of the Case `case`.
 """
-f_products(case::Case) = case.products
+get_products(case::Case) = case.products
 
 """
-    f_elements_vec(case::Case)
+    get_elements_vec(case::Case)
 
 Returns the vector of element vectors of the Case `case`.
 """
-f_elements_vec(case::Case) = case.elements
+get_elements_vec(case::Case) = case.elements
 
 """
-    f_nodes(case::Case)
+    get_nodes(case::Case)
 
 Returns the vector of nodes of the Case `case`.
 """
-f_nodes(case::Case) = filter(el -> isa(el, Vector{<:Node}), f_elements_vec(case))[1]
+get_nodes(case::Case) = filter(el -> isa(el, Vector{<:Node}), get_elements_vec(case))[1]
 
 """
-    f_links(case::Case)
+    get_links(case::Case)
 
 Returns the vector of links of the Case `case`.
 """
-f_links(case::Case) = filter(el -> isa(el, Vector{<:Link}), f_elements_vec(case))[1]
+get_links(case::Case) = filter(el -> isa(el, Vector{<:Link}), get_elements_vec(case))[1]
 
 """
-    f_couplings(case::Case)
+    get_couplings(case::Case)
 
 Returns the vector of coupling vectors of the Case `case`.
 """
-f_couplings(case::Case) = case.couplings
+get_couplings(case::Case) = case.couplings
 
 function Case(
     T::TimeStructure,
     products::Vector{<:Resource},
     elements::Vector{Vector},
     )
-    couplings = [[f_nodes, f_links]]
+    couplings = [[get_nodes, get_links]]
     return Case(T, products, elements, couplings, Dict())
 end
 function Case(
@@ -131,6 +131,6 @@ function Case(
     elements::Vector{Vector},
     misc::Dict,
     )
-    couplings = [[f_nodes, f_links]]
+    couplings = [[get_nodes, get_links]]
     return Case(T, products, elements, couplings, misc)
 end

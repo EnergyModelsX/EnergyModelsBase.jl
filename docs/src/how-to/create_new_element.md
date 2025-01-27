@@ -62,7 +62,7 @@ You have to be aware of the following requirements.
    It is the only exception as it is not necessary to implement checks.
 
 3. If you plan to introduce coupling constraints between the `NewElement` and other `AbstractElement`s, you must create a new method for [`constraints_couple`](@ref) and supply a function for extracting the element from the case instance.
-   The latter can be inspired by [`f_nodes`](@ref) and [`f_links`](@ref).
+   The latter can be inspired by [`get_nodes`](@ref) and [`get_links`](@ref).
 
    !!! danger "Couplings with existing elements"
        Coupling a new element with existing elements is highly dangereous.

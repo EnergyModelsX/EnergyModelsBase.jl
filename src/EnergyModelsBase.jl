@@ -36,7 +36,7 @@ include("legacy_constructor.jl")
 
 # Export the case type and its functions
 export AbstractCase, Case
-export f_time_struct, f_products, f_elements_vec, f_nodes, f_links, f_couplings
+export get_time_struct, get_products, get_elements_vec, get_nodes, get_links, get_couplings
 
 # Export the general classes
 export EnergyModel, OperationalModel

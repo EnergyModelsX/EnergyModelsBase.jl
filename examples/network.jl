@@ -134,7 +134,7 @@ function generate_example_network()
     ]
 
     # Input data structure
-    case = Case(T, products, [nodes, links], [[f_nodes, f_links]])
+    case = Case(T, products, [nodes, links], [[get_nodes, get_links]])
     return case, model
 end
 
@@ -144,7 +144,7 @@ optimizer = optimizer_with_attributes(HiGHS.Optimizer, MOI.Silent() => true)
 m = run_model(case, model, optimizer)
 
 # Display some results
-ng_ccs_pp, coal_pp, = f_nodes(case)[[4, 5]]
+ng_ccs_pp, coal_pp, = get_nodes(case)[[4, 5]]
 @info "Capacity usage of the coal power plant"
 pretty_table(
     JuMP.Containers.rowtable(

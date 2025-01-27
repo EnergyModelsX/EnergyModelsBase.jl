@@ -48,7 +48,7 @@ The fields of the case dictionary correspond to:
 4. **`couplings::Vector{Vector{Function}}`** is a vector of vector of functions.
    The couplings include connections between two distinctive `AbstractElement` types.
    Coupling implies in this context that two `AbstractElement` type, *i.e.*, [`Link`](@ref) and [`Node`](@ref EnergyModelsBase.Node) have common constraints.
-   `EnergyModelsBase` provides as potential functions [`f_nodes`](@ref) and [`f_links`](@ref) in the coupling.
+   `EnergyModelsBase` provides as potential functions [`get_nodes`](@ref) and [`get_links`](@ref) in the coupling.
 
 ```@docs
 AbstractCase
@@ -58,10 +58,10 @@ Case
 ## [Functions for accessing different information](@id lib-pub-links-fun_field)
 
 ```@docs
-f_time_struct
-f_products
-f_elements_vec
-f_couplings
-f_nodes
-f_links
+get_time_struct
+get_products
+get_elements_vec
+get_couplings
+get_nodes
+get_links
 ```

@@ -38,7 +38,7 @@
             T,
             resources,
             [nodes, links],
-            [[f_nodes, f_links]],
+            [[get_nodes, get_links]],
         )
         return case_new, case_old, model
     end

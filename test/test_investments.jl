@@ -212,7 +212,7 @@ using EnergyModelsInvestments
         modeltype = InvestmentModel(em_limits, em_cost, CO2, 0.07)
 
         # Input data structure
-        case = Case(T, products, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, products, [nodes, links], [[get_nodes, get_links]])
         return case, modeltype
     end
 
@@ -230,8 +230,8 @@ using EnergyModelsInvestments
     @test round(objective_value(m)) ≈ -302624
 
     # Test that investments are happening
-    𝒯ᴵⁿᵛ = strategic_periods(f_time_struct(case))
-    𝒩 = f_nodes(case)
+    𝒯ᴵⁿᵛ = strategic_periods(get_time_struct(case))
+    𝒩 = get_nodes(case)
     𝒩ᴵⁿᵛ = filter(has_investment, filter(!EMB.is_storage, 𝒩))
     𝒩ˢᵗᵒʳ = filter(EMB.is_storage, 𝒩)
     𝒩ˡᵉᵛᵉˡ = filter(n -> has_investment(n, :level), 𝒩ˢᵗᵒʳ)
@@ -327,14 +327,14 @@ end
         modeltype = InvestmentModel(em_limits, em_cost, CO2, 0.0)
 
         # Input data structure
-        case = Case(T, products, [nodes, links], [[f_nodes, f_links]])
+        case = Case(T, products, [nodes, links], [[get_nodes, get_links]])
         return run_model(case, modeltype, HiGHS.Optimizer), case, modeltype
     end
 
     m, case, model = link_inv_graph()
-    ℒ = f_links(case)
-    𝒩 = f_nodes(case)
-    𝒯 = f_time_struct(case)
+    ℒ = get_links(case)
+    𝒩 = get_nodes(case)
+    𝒯 = get_time_struct(case)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Test for the total number of variables
@@ -417,7 +417,7 @@ EMB.TEST_ENV = true
             nodes = [source, sink]
             links = [Direct("scr-sink", nodes[1], nodes[2], Linear())]
             T = TwoLevel(4, 10, SimpleTimes(4, 1))
-            case = Case(T, products, [nodes, links], [[f_nodes, f_links]])
+            case = Case(T, products, [nodes, links], [[get_nodes, get_links]])
 
             em_limits = Dict(CO2 => StrategicProfile([450, 400, 350, 300]))
             em_cost = Dict(CO2 => FixedProfile(0))
@@ -554,7 +554,7 @@ EMB.TEST_ENV = true
                 Direct("stor-snk", nodes[2], nodes[3], Linear())
             ]
             T = TwoLevel(4, 10, SimpleTimes(4, 1))
-            case = Case(T, products, [nodes, links], [[f_nodes, f_links]])
+            case = Case(T, products, [nodes, links], [[get_nodes, get_links]])
 
             em_limits = Dict(CO2 => StrategicProfile([450, 400, 350, 300]))
             em_cost = Dict(CO2 => FixedProfile(0))
@@ -681,7 +681,7 @@ EMB.TEST_ENV = true
             nodes = [source, sink]
             links = [InvDirect("scr-sink", nodes[1], nodes[2], Linear(), inv_data)]
             T = TwoLevel(4, 10, SimpleTimes(4, 1))
-            case = Case(T, products, [nodes, links], [[f_nodes, f_links]])
+            case = Case(T, products, [nodes, links], [[get_nodes, get_links]])
 
             em_limits = Dict(CO2 => StrategicProfile([450, 400, 350, 300]))
             em_cost = Dict(CO2 => FixedProfile(0))
