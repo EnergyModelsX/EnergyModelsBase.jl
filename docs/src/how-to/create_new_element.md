@@ -41,7 +41,7 @@ You have to be aware of the following requirements.
 
    - `m` is the `JuMP.Model` instance,
    - `elements::Vector{<:NewElement}` is the vector for your `NewElement`s included in the model,
-   - `𝒳::Vector{Vector}` is a vector of all elements vector, required in certain instances to access other elements,
+   - `𝒳ᵛᵉᶜ::Vector{Vector}` is a vector of all elements vector, required in certain instances to access other elements,
    - `𝒯::TimeStructure` is the time structure used in the model run, and
    - `modeltype` is the [`EneryModel`](@ref EnergyModelsBase.EnergyModel) instance.
 

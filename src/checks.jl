@@ -68,9 +68,9 @@ function check_data(case, modeltype::EnergyModel, check_timeprofiles::Bool)
     end
 
     # Check the individual elements vector
-    𝒳 = f_elements_vec(case)
+    𝒳ᵛᵉᶜ = f_elements_vec(case)
     𝒯 = f_time_struct(case)
-    for elements ∈ 𝒳
+    for elements ∈ 𝒳ᵛᵉᶜ
         check_elements(log_by_element, elements, case, 𝒯, modeltype, check_timeprofiles)
     end
 
@@ -131,9 +131,9 @@ Checks the `case` dictionary is in the correct format.
 - Check that the coupling functions do return elements and not only an empty vector
 """
 function check_case_data(case)
-    𝒳 = f_elements_vec(case)
+    𝒳ᵛᵉᶜ = f_elements_vec(case)
     get_vect_type(vec::Vector{T}) where {T} = T
-    vec_types = [get_vect_type(x) for x ∈ 𝒳]
+    vec_types = [get_vect_type(x) for x ∈ 𝒳ᵛᵉᶜ]
 
     for type_1 ∈ vec_types
         for type_2 ∈ vec_types
@@ -146,8 +146,8 @@ function check_case_data(case)
         end
     end
 
-    𝒳_𝒳 = f_couplings(case)
-    for couple ∈ 𝒳_𝒳
+    𝒳ᵛᵉᶜ_𝒳ᵛᵉᶜ = f_couplings(case)
+    for couple ∈ 𝒳ᵛᵉᶜ_𝒳ᵛᵉᶜ
         for cpl ∈ couple
             @assert_or_log(
                 !isempty(cpl(case)),

@@ -11,7 +11,7 @@ Create the model and call all required functions.
 
 ## Arguments
 - `case::Case` - The case type represents the chosen time structure, the included
-  [`Resource`](@ref)s and the elements and potential coupling between the elements.
+  [`Resource`](@ref)s and the 𝒳 and potential coupling between the 𝒳.
   It is explained in more detail in its *[docstring](@ref Case)*.
 - `modeltype` - Used modeltype, that is a subtype of the type `EnergyModel`.
 - `m` - the empty `JuMP.Model` instance. If it is not provided, then it is assumed that the
@@ -54,33 +54,33 @@ function create_model(
     # WIP Data structure
     𝒯 = f_time_struct(case)
     𝒫 = f_products(case)
-    𝒳 = f_elements_vec(case)
-    𝒳_𝒳 = f_couplings(case)
+    𝒳ᵛᵉᶜ = f_elements_vec(case)
+    𝒳ᵛᵉᶜ_𝒳ᵛᵉᶜ = f_couplings(case)
 
     # Declaration of element variables and constraints of the problem
-    for elements ∈ 𝒳
-        variables_capacity(m, elements, 𝒳, 𝒯, modeltype)
-        variables_flow(m, elements, 𝒳, 𝒯, modeltype)
-        variables_opex(m, elements, 𝒳, 𝒯, modeltype)
-        variables_capex(m, elements, 𝒳, 𝒯, modeltype)
-        variables_emission(m, elements, 𝒳, 𝒫, 𝒯, modeltype)
-        variables_elements(m, elements, 𝒳, 𝒯, modeltype)
+    for 𝒳 ∈ 𝒳ᵛᵉᶜ
+        variables_capacity(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, modeltype)
+        variables_flow(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, modeltype)
+        variables_opex(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, modeltype)
+        variables_capex(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, modeltype)
+        variables_emission(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype)
+        variables_elements(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, modeltype)
 
-        constraints_elements(m, elements, 𝒳, 𝒫, 𝒯, modeltype)
+        constraints_elements(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype)
     end
 
     # Declaration of coupling constraints of the problem
-    for couple ∈ 𝒳_𝒳
+    for couple ∈ 𝒳ᵛᵉᶜ_𝒳ᵛᵉᶜ
         elements_vec = [cpl(case) for cpl ∈ couple]
         constraints_couple(m, elements_vec..., 𝒫, 𝒯, modeltype)
     end
 
     # Declaration of global vairables and constraints
     variables_emission(m, 𝒫, 𝒯, modeltype)
-    constraints_emissions(m, 𝒳, 𝒫, 𝒯, modeltype)
+    constraints_emissions(m, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype)
 
     # Construction of the objective function
-    objective(m, 𝒳, 𝒫, 𝒯, modeltype)
+    objective(m, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype)
 
     return m
 end
@@ -114,8 +114,8 @@ function create_model(
 end
 
 """
-    variables_capacity(m, 𝒩::Vector{<:Node}, 𝒳, 𝒯, modeltype::EnergyModel)
-    variables_capacity(m, ℒ::Vector{<:Link}, 𝒳, 𝒯, modeltype::EnergyModel)
+    variables_capacity(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
+    variables_capacity(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
 
 Declaration of different capacity variables for the element types introduced in
 `EnergyModelsBase`. `EnergyModelsBase` introduces two elements for an energy system, and
@@ -172,7 +172,7 @@ hence, provides the user with two individual methods:
 
     - `link_cap_inst[l, t]` is the installed capacity of link `l` in operational period `t`.
 """
-function variables_capacity(m, 𝒩::Vector{<:Node}, 𝒳, 𝒯, modeltype::EnergyModel)
+function variables_capacity(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
     𝒩ⁿᵒᵗ = nodes_not_sub(𝒩, Union{Storage,Availability})
     𝒩ˢᵗᵒʳ = filter(is_storage, 𝒩)
     𝒩ˢᵗᵒʳ⁻ᶜ = filter(has_charge, 𝒩ˢᵗᵒʳ)
@@ -195,15 +195,15 @@ function variables_capacity(m, 𝒩::Vector{<:Node}, 𝒳, 𝒯, modeltype::Ener
     @variable(m, stor_discharge_use[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_discharge_inst[𝒩ˢᵗᵒʳ⁻ᵈᶜ, 𝒯] >= 0)
 end
-function variables_capacity(m, ℒ::Vector{<:Link}, 𝒳, 𝒯, modeltype::EnergyModel)
+function variables_capacity(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
     ℒᶜᵃᵖ = filter(has_capacity, ℒ)
 
     @variable(m, link_cap_inst[ℒᶜᵃᵖ, 𝒯])
 end
 
 """
-    variables_flow(m, 𝒩::Vector{<:Node}, 𝒳, 𝒯, modeltype::EnergyModel)
-    variables_flow(m, ℒ::Vector{<:Link}, 𝒳, 𝒯, modeltype::EnergyModel)
+    variables_flow(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
+    variables_flow(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
 
 Declaration of flow OPEX variables for the element types introduced in
 `EnergyModelsBase`. `EnergyModelsBase` introduces two elements for an energy system, and
@@ -229,7 +229,7 @@ By default, all nodes `𝒩` and links `ℒ` only allow for unidirectional flow.
 bidirectional flow through providing a method to the function [`is_unidirectional`](@ref)
 for new link/node types.
 """
-function variables_flow(m, 𝒩::Vector{<:Node}, 𝒳, 𝒯, modeltype::EnergyModel)
+function variables_flow(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
     # Extract the nodes with inputs and outputs
     𝒩ⁱⁿ = filter(has_input, 𝒩)
     𝒩ᵒᵘᵗ = filter(has_output, 𝒩)
@@ -249,7 +249,7 @@ function variables_flow(m, 𝒩::Vector{<:Node}, 𝒳, 𝒯, modeltype::EnergyMo
         set_lower_bound(m[:flow_out][n_out, t, p], 0)
     end
 end
-function variables_flow(m, ℒ::Vector{<:Link}, 𝒳, 𝒯, modeltype::EnergyModel)
+function variables_flow(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
     # Create the link flow variables
     @variable(m, link_in[l ∈ ℒ, 𝒯, inputs(l)])
     @variable(m, link_out[l ∈ ℒ, 𝒯, outputs(l)])
@@ -268,8 +268,8 @@ function variables_flow(m, ℒ::Vector{<:Link}, 𝒳, 𝒯, modeltype::EnergyMod
 end
 
 """
-    variables_opex(m, 𝒩::Vector{<:Node}, 𝒳, 𝒯, modeltype::EnergyModel)
-    variables_opex(m, ℒ::Vector{<:Link}, 𝒳, 𝒯, modeltype::EnergyModel)
+    variables_opex(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
+    variables_opex(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
 
 Declaration of different OPEX variables for the element types introduced in
 `EnergyModelsBase`. `EnergyModelsBase` introduces two elements for an energy system, and
@@ -290,14 +290,14 @@ hence, provides the user with two individual methods:
     - `link_opex_fixed[n, t_inv]` are the fixed operating expenses of node `n` in investment
       period `t_inv`.
 """
-function variables_opex(m, 𝒩::Vector{<:Node}, 𝒳, 𝒯, modeltype::EnergyModel)
+function variables_opex(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
     𝒩ⁿᵒᵗ = nodes_not_av(𝒩)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     @variable(m, opex_var[𝒩ⁿᵒᵗ, 𝒯ᴵⁿᵛ])
     @variable(m, opex_fixed[𝒩ⁿᵒᵗ, 𝒯ᴵⁿᵛ] >= 0)
 end
-function variables_opex(m, ℒ::Vector{<:Link}, 𝒳, 𝒯, modeltype::EnergyModel)
+function variables_opex(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
     ℒᵒᵖᵉˣ = filter(has_opex, ℒ)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
@@ -306,8 +306,8 @@ function variables_opex(m, ℒ::Vector{<:Link}, 𝒳, 𝒯, modeltype::EnergyMod
 end
 
 """
-    variables_capex(m, 𝒩::Vector{<:Node}, 𝒳, 𝒯, modeltype::EnergyModel)
-    variables_capex(m, ℒ::Vector{<:Link}, 𝒳, 𝒯, modeltype::EnergyModel)
+    variables_capex(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
+    variables_capex(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
 
 Declaration of different capital expenditures variables for the element types introduced in
 `EnergyModelsBase`. `EnergyModelsBase` introduces two elements for an energy system, and
@@ -315,8 +315,8 @@ hence, provides the user with two individual methods:
 
 The default method is empty but it is required for multiple dispatch in investment models.
 """
-function variables_capex(m, 𝒩::Vector{<:Node}, 𝒳, 𝒯, modeltype::EnergyModel) end
-function variables_capex(m, ℒ::Vector{<:Link}, 𝒳, 𝒯, modeltype::EnergyModel) end
+function variables_capex(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel) end
+function variables_capex(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel) end
 
 """
     variables_emission(m, ℒ::Vector{<:Node}, 𝒫, 𝒯, modeltype::EnergyModel)
@@ -354,13 +354,13 @@ The inclusion of node and link emissions require that the function `has_emission
 of `EmissionData` in nodes while links require you to explicitly provide a method for your
 link type.
 """
-function variables_emission(m, 𝒩::Vector{<:Node}, 𝒳, 𝒫, 𝒯, modeltype::EnergyModel)
+function variables_emission(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
     𝒩ᵉᵐ = filter(has_emissions, 𝒩)
     𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
 
     @variable(m, emissions_node[𝒩ᵉᵐ, 𝒯, 𝒫ᵉᵐ])
 end
-function variables_emission(m, ℒ::Vector{<:Link}, 𝒳, 𝒫, 𝒯, modeltype::EnergyModel)
+function variables_emission(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
     ℒᵉᵐ = filter(has_emissions, ℒ)
     𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
 
@@ -377,8 +377,8 @@ function variables_emission(m, 𝒫, 𝒯, modeltype::EnergyModel)
 end
 
 """
-    variables_elements(m, 𝒩::Vector{<:Node}, 𝒳, 𝒯, modeltype::EnergyModel)
-    variables_elements(m, ℒ::Vector{<:Link}, 𝒳, 𝒯, modeltype::EnergyModel)
+    variables_elements(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
+    variables_elements(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
 
 Loop through all element types and create variables specific to each type. It starts at the
 top level and subsequently move through the branches until it reaches a leave. That is,
@@ -391,7 +391,7 @@ node nodes, [`variables_node`](@ref) will be called on a
 - `Node` - the subfunction is [`variables_node`](@ref).
 - `Link` - the subfunction is [`variables_link`](@ref).
 """
-function variables_elements(m, 𝒩::Vector{<:Node}, 𝒳, 𝒯, modeltype::EnergyModel)
+function variables_elements(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
     # Vector of the unique node types in 𝒩.
     node_composite_types = unique(map(n -> typeof(n), 𝒩))
     # Get all `Node`-types in the type-hierarchy that the nodes 𝒩 represents.
@@ -422,7 +422,7 @@ function variables_elements(m, 𝒩::Vector{<:Node}, 𝒳, 𝒯, modeltype::Ener
         end
     end
 end
-function variables_elements(m, ℒ::Vector{<:Link}, 𝒳, 𝒯, modeltype::EnergyModel)
+function variables_elements(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
     # Vector of the unique link types in ℒ.
     link_composite_types = unique(map(l -> typeof(l), ℒ))
     # Get all `link`-types in the type-hierarchy that the links ℒ represents.
@@ -482,8 +482,8 @@ Default fallback method when no method is defined for a [`Link`](@ref) type.
 function variables_link(m, ℒˢᵘᵇ::Vector{<:Link}, 𝒯, modeltype::EnergyModel) end
 
 """
-    constraints_elements(m, 𝒩::Vector{<:Node}, 𝒳, 𝒫, 𝒯, modeltype::EnergyModel)
-    constraints_elements(m, ℒ::Vector{<:Link}, 𝒳, 𝒫, 𝒯, modeltype::EnergyModel)
+    constraints_elements(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
+    constraints_elements(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
 
 Loop through all entries of the elements vector and call a subfunction for creating the
 internal constraints of the entries of the elements vector.
@@ -494,12 +494,12 @@ internal constraints of the entries of the elements vector.
 - `Node` - the subfunction is [`create_node`](@ref).
 - `Link` - the subfunction is [`create_link`](@ref).
 """
-function constraints_elements(m, 𝒩::Vector{<:Node}, 𝒳, 𝒫, 𝒯, modeltype::EnergyModel)
+function constraints_elements(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
     for n ∈ 𝒩
         create_node(m, n, 𝒯, 𝒫, modeltype)
     end
 end
-function constraints_elements(m, ℒ::Vector{<:Link}, 𝒳, 𝒫, 𝒯, modeltype::EnergyModel)
+function constraints_elements(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
     for l ∈ ℒ
         create_link(m, 𝒯, 𝒫, l, modeltype, formulation(l))
     end
@@ -539,18 +539,18 @@ function constraints_couple(m, ℒ::Vector{<:Link}, 𝒩::Vector{<:Node}, 𝒫, 
 end
 
 """
-    constraints_emissions(m, 𝒳, 𝒫, 𝒯, modeltype::EnergyModel)
+    constraints_emissions(m, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
 
 Create constraints for the emissions accounting for both operational and strategic periods.
 """
-function constraints_emissions(m, 𝒳, 𝒫, 𝒯, modeltype::EnergyModel)
+function constraints_emissions(m, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
     # Declaration of the required subsets
     𝒫ᵉᵐ = filter(is_resource_emit, 𝒫)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     emissions = JuMP.Containers.DenseAxisArray[]
-    for elements ∈ 𝒳
-        push!(emissions, emissions_operational(m, elements, 𝒫ᵉᵐ, 𝒯, modeltype))
+    for 𝒳 ∈ 𝒳ᵛᵉᶜ
+        push!(emissions, emissions_operational(m, 𝒳, 𝒫ᵉᵐ, 𝒯, modeltype))
     end
 
     # Creation of the individual constraints.
@@ -564,16 +564,16 @@ function constraints_emissions(m, 𝒳, 𝒫, 𝒯, modeltype::EnergyModel)
     )
 end
 """
-    emissions_operational(m, elements, 𝒫ᵉᵐ, 𝒯, modeltype::EnergyModel)
+    emissions_operational(m, 𝒳, 𝒫ᵉᵐ, 𝒯, modeltype::EnergyModel)
 
-Create JuMP expressions indexed over the operational periods `𝒯` for different elements.
-The expressions correspond to the total emissions of a given type.
+Create JuMP expressions indexed over the operational periods `𝒯` for different elements 𝒳.
+The expressions correspond to the total emissions of a given element type.
 
 By default, objective expressions are included for:
-- `elements = 𝒩::Vector{<:Node}`. In the case of a vector of nodes, the function returns the
+- `𝒳 = 𝒩::Vector{<:Node}`. In the case of a vector of nodes, the function returns the
   sum of the emissions of all nodes whose method of the function [`has_emissions`](@ref)
   returns true. These nodes should be automatically identified without user intervention.
-- `elements = 𝒩::Vector{<:Link}`. In the case of a vector of links, the function returns the
+- `𝒳 = 𝒩::Vector{<:Link}`. In the case of a vector of links, the function returns the
   sum of the emissions of all links whose method of the function [`has_emissions`](@ref)
   returns true.
 """
@@ -595,7 +595,7 @@ function emissions_operational(m, ℒ::Vector{<:Link}, 𝒫ᵉᵐ, 𝒯, modelty
 end
 
 """
-    objective(m, 𝒳, 𝒫, 𝒯, modeltype::EnergyModel)
+    objective(m, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
 
 Create the objective for the optimization problem for a given modeltype.
 
@@ -609,43 +609,43 @@ The values are not discounted.
 This function serve as fallback option if no other method is specified for a specific
 `modeltype`.
 """
-function objective(m, 𝒳, 𝒫, 𝒯, modeltype::EnergyModel)
+function objective(m, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
     # Declaration of the required subsets
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     opex = JuMP.Containers.DenseAxisArray[]
-    for elements ∈ 𝒳
-        push!(opex, objective_operational(m, elements, 𝒯ᴵⁿᵛ, modeltype))
+    for 𝒳 ∈ 𝒳ᵛᵉᶜ
+        push!(opex, objective_operational(m, 𝒳, 𝒯ᴵⁿᵛ, modeltype))
     end
     push!(opex, objective_operational(m, 𝒫, 𝒯ᴵⁿᵛ, modeltype))
 
     # Calculation of the objective function.
     @objective(m, Max,
         -sum(
-            sum(elements[t_inv] for elements ∈ opex) * duration_strat(t_inv)
+            sum(𝒳[t_inv] for 𝒳 ∈ opex) * duration_strat(t_inv)
         for t_inv ∈ 𝒯ᴵⁿᵛ)
     )
 end
 """
-    objective_operational(m, elements, 𝒯ᴵⁿᵛ::TS.AbstractStratPers, modeltype::EnergyModel)
+    objective_operational(m, 𝒳, 𝒯ᴵⁿᵛ::TS.AbstractStratPers, modeltype::EnergyModel)
 
-Create JuMP expressions indexed over the investment periods `𝒯ᴵⁿᵛ` for different elements.
+Create JuMP expressions indexed over the investment periods `𝒯ᴵⁿᵛ` for different elements 𝒳.
 The expressions correspond to the operational expenses of the different elements.
 The expressions are not discounted and do not take the duration of the investment periods
 into account.
 
 By default, objective expressions are included for:
-- `elements = 𝒩::Vector{<:Node}`. In the case of a vector of nodes, the function returns the
+- `𝒳 = 𝒩::Vector{<:Node}`. In the case of a vector of nodes, the function returns the
   sum of the variable and fixed OPEX for all nodes whose method of the function [`has_opex`](@ref)
   returns true.
-- `elements = 𝒩::Vector{<:Link}`. In the case of a vector of links, the function returns the
+- `𝒳 = 𝒩::Vector{<:Link}`. In the case of a vector of links, the function returns the
   sum of the variable and fixed OPEX for all links whose method of the function [`has_opex`](@ref)
   returns true.
-- `elements = 𝒩::Vector{<:Resource}`. In the case of a vector of resources, the function
+- `𝒳 = 𝒩::Vector{<:Resource}`. In the case of a vector of resources, the function
   returns the costs associated to the emissions using the function [`emission_price`](@ref).
 
 !!! note "Default function"
-    It is also possible to provide a tuple `𝒳` for only operational or only investment
+    It is also possible to provide a tuple `𝒳ᵛᵉᶜ` for only operational or only investment
     objective contributions. In this situation, the expression returns a value of 0 for all
     investment periods.
 """

@@ -766,7 +766,7 @@ end
     end
 
     # Test that the from and to fields are correctly checked
-    # - check_elements(log_by_element, ℒ::Vector{<:Link}}, 𝒳, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+    # - check_elements(log_by_element, ℒ::Vector{<:Link}}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     case, model = simple_graph()
     av, source, sink = f_nodes(case)
     case.elements[2] = [Direct(12, GenAvailability("test", f_products(case)), sink)]

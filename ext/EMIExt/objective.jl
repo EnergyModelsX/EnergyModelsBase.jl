@@ -1,5 +1,5 @@
 """
-    EMB.objective(m, 𝒳, 𝒫, 𝒯, modeltype::AbstractInvestmentModel)
+    EMB.objective(m, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::AbstractInvestmentModel)
 
 Create objective function overloading the default from EMB for `AbstractInvestmentModel`.
 
@@ -14,7 +14,7 @@ These variables would need to be introduced through the package `SparsVariables`
 Both are not necessary, as it is possible to include them through the OPEX values, but it
 would be beneficial for a better separation and simpler calculations from the results.
 """
-function EMB.objective(m, 𝒳, 𝒫, 𝒯, modeltype::AbstractInvestmentModel)
+function EMB.objective(m, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::AbstractInvestmentModel)
 
     # Extraction of the individual subtypes for investments in nodes
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -25,9 +25,9 @@ function EMB.objective(m, 𝒳, 𝒫, 𝒯, modeltype::AbstractInvestmentModel)
     # Calculation of the OPEX and CAPEX contributions
     opex = JuMP.Containers.DenseAxisArray[]
     capex = JuMP.Containers.DenseAxisArray[]
-    for elements ∈ 𝒳
-        push!(opex, EMB.objective_operational(m, elements, 𝒯ᴵⁿᵛ, modeltype))
-        push!(capex, EMB.objective_invest(m, elements, 𝒯ᴵⁿᵛ, modeltype))
+    for 𝒳 ∈ 𝒳ᵛᵉᶜ
+        push!(opex, EMB.objective_operational(m, 𝒳, 𝒯ᴵⁿᵛ, modeltype))
+        push!(capex, EMB.objective_invest(m, 𝒳, 𝒯ᴵⁿᵛ, modeltype))
     end
     push!(opex, EMB.objective_operational(m, 𝒫, 𝒯ᴵⁿᵛ,modeltype))
 
@@ -42,23 +42,23 @@ function EMB.objective(m, 𝒳, 𝒫, 𝒯, modeltype::AbstractInvestmentModel)
     )
 end
 """
-    EMB.objective_invest(m, elements, 𝒯ᴵⁿᵛ::TS.AbstractStratPers, modeltype::EnergyModel)
+    EMB.objective_invest(m, 𝒳, 𝒯ᴵⁿᵛ::TS.AbstractStratPers, modeltype::EnergyModel)
 
 Create JuMP expressions indexed over the investment periods `𝒯ᴵⁿᵛ` for different elements.
 The expressions correspond to the investments into the different elements. They are not
 discounted and do not take the duration of the investment periods into account.
 
 By default, objective expressions are included for:
-- `elements = 𝒩::Vector{<:Node}`. In the case of a vector of nodes, the function returns the
+- `𝒳 = 𝒩::Vector{<:Node}`. In the case of a vector of nodes, the function returns the
   sum of the capital expenditures for all nodes whose method of the function
   [`has_investment`](@ref) returns true. In the case of [`Storage`](@ref) nodes, all capacity
   investments are considired
-- `elements = 𝒩::Vector{<:Link}`. In the case of a vector of links, the function returns the
+- `𝒳 = 𝒩::Vector{<:Link}`. In the case of a vector of links, the function returns the
   sum of the capital expenditures for all links whose method of the function
   [`has_investment`](@ref) returns true.
 
 !!! note "Default function"
-    It is also possible to provide a tuple `𝒳` for only operational or only investment
+    It is also possible to provide a tuple `𝒳ᵛᵉᶜ` for only operational or only investment
     objective contributions. In this situation, the expression returns a value of 0 for all
     investment periods.
 """
