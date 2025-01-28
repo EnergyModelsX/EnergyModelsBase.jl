@@ -4,11 +4,16 @@ abstract type Formulation end
 """ Linear `Formulation`, that is input equals output."""
 struct Linear <: Formulation end
 
-""" Declaration of the general type for links connecting nodes."""
-abstract type Link end
+"""
+    abstract type Link <: AbstractElement
+
+Declaration of the general type for links connecting nodes.
+"""
+abstract type Link <: AbstractElement end
 Base.show(io::IO, l::Link) = print(io, "l_$(l.from)-$(l.to)")
 
-""" `Direct <: Link`
+"""
+    struct Direct <: Link
 
 A direct link between two nodes.
 
@@ -121,6 +126,6 @@ formulation(l::Link) = l.formulation
 
 Returns the [`Data`](@ref) array of link `l`.
 
-The default options returns nothing.
+The default options returns an empty `Data` vector.
 """
-link_data(l::Link) = nothing
+link_data(l::Link) = Data[]

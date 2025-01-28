@@ -1,71 +1,57 @@
 # Set the global to true to suppress the error message
 EMB.TEST_ENV = true
 
-@testset "Test checks - case dictionary" begin
+@testset "Checks - case type" begin
     # Resources used in the analysis
     Power = ResourceCarrier("Power", 0.0)
     CO2 = ResourceEmit("CO2", 1.0)
 
-    # Function for setting up the system
-    function simple_graph()
-        resources = [Power, CO2]
-        ops = SimpleTimes(5, 2)
-        T = TwoLevel(2, 2, ops; op_per_strat = 10)
+    # Setting up the system
+    resources = [Power, CO2]
+    ops = SimpleTimes(5, 2)
+    T = TwoLevel(2, 2, ops; op_per_strat = 10)
 
-        source = RefSource(
-            "source_emit",
-            FixedProfile(4),
-            FixedProfile(0),
-            FixedProfile(10),
-            Dict(Power => 1),
-        )
-        sink = RefSink(
-            "sink",
-            FixedProfile(3),
-            Dict(:surplus => FixedProfile(-4), :deficit => FixedProfile(4)),
-            Dict(Power => 1),
-        )
+    source = RefSource(
+        "source_emit",
+        FixedProfile(4),
+        FixedProfile(0),
+        FixedProfile(10),
+        Dict(Power => 1),
+    )
+    sink = RefSink(
+        "sink",
+        FixedProfile(3),
+        Dict(:surplus => FixedProfile(-4), :deficit => FixedProfile(4)),
+        Dict(Power => 1),
+    )
 
-        ops = SimpleTimes(5, 2)
-        T = TwoLevel(2, 2, ops; op_per_strat = 10)
+    ops = SimpleTimes(5, 2)
+    T = TwoLevel(2, 2, ops; op_per_strat = 10)
 
-        nodes = [source, sink]
-        links = [Direct(12, source, sink)]
-        model = OperationalModel(
-            Dict(CO2 => FixedProfile(100)),
-            Dict(CO2 => FixedProfile(0)),
-            CO2,
-        )
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
-        return case, model
-    end
+    nodes = [source, sink]
+    links = Link[Direct(12, source, sink)]
+    model = OperationalModel(
+        Dict(CO2 => FixedProfile(100)),
+        Dict(CO2 => FixedProfile(0)),
+        CO2,
+    )
 
-    # Check that the keys are present
+    # Check that the individual elements vector are unique
     # - EMB.check_case_data(case)
-    case, model = simple_graph()
-    for key ∈ keys(case)
-        case_test = deepcopy(case)
-        pop!(case_test, key)
-        @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
-    end
+    case_test = Case(T, resources, [nodes, [nodes[1]], links])
+    @test_throws AssertionError create_model(case_test, model)
+    case_test = Case(T, resources, [nodes, [nodes[2]], links])
+    @test_throws AssertionError create_model(case_test, model)
+    case_test = Case(T, resources, [nodes, [links[1]], links])
+    @test_throws AssertionError create_model(case_test, model)
 
-    # Check that the keys are of the correct format and do not include any unwanted types
+    # Check that the couplings return non_empty vectors
     # - EMB.check_case_data(case)
-    case_test = deepcopy(case)
-    case_test[:T] = 10
-    @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
-    case_test = deepcopy(case)
-    case_test[:nodes] = [case[:nodes], case[:nodes], 10]
-    @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
-    case_test = deepcopy(case)
-    case_test[:links] = [case[:links], 10]
-    @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
-    case_test = deepcopy(case)
-    case_test[:products] = [case[:products], case[:products], 10]
-    @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
+    case_test = Case(T, resources, [nodes, Link[]], [[get_nodes, get_links]])
+    @test_throws AssertionError create_model(case_test, model)
 end
 
-@testset "Test checks - modeltype" begin
+@testset "Checks - modeltype" begin
     # Resources used in the analysis
     Power = ResourceCarrier("Power", 0.0)
     CO2 = ResourceEmit("CO2", 1.0)
@@ -95,7 +81,7 @@ end
 
         nodes = [source, sink]
         links = [Direct(12, source, sink)]
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+        case = Case(T, resources, [nodes, links], [[get_nodes, get_links]])
         return case
     end
 
@@ -114,7 +100,7 @@ end
     # Check that all resources present in the case data are included in the emission limit
     # - EMB.check_model(case, modeltype::EnergyModel, check_timeprofiles)
     case_test = deepcopy(case)
-    case_test[:products] = [Power, CO2, ResourceEmit("NG", 0.06)]
+    append!(case_test.products, [ResourceEmit("NG", 0.06)])
     @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
 
     # Check that the timeprofiles for emission limit and price are correct
@@ -124,13 +110,13 @@ end
         Dict(CO2 => FixedProfile(0)),
         CO2,
     )
-    @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
+    @test_throws AssertionError run_model(case, model, HiGHS.Optimizer)
     model = OperationalModel(
         Dict(CO2 => FixedProfile(0)),
         Dict(CO2 => StrategicProfile([100])),
         CO2,
     )
-    @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
+    @test_throws AssertionError run_model(case, model, HiGHS.Optimizer)
 
     # Check that we receive an error if the profiles are wrong
     # - EMB.check_strategic_profile(time_profile, message)
@@ -155,7 +141,7 @@ end
     @test_throws AssertionError run_simple_graph(co2_limit)
 end
 
-@testset "Test checks - emission data" begin
+@testset "Checks - emission data" begin
     # Resources used in the analysis
     Power = ResourceCarrier("Power", 0.0)
     CO2 = ResourceEmit("CO2", 1.0)
@@ -191,7 +177,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+        case = Case(T, resources, [nodes, links], [[get_nodes, get_links]])
         return case, model
     end
 
@@ -233,7 +219,7 @@ end
     end
 end
 
-@testset "Test checks - timeprofiles" begin
+@testset "Checks - timeprofiles" begin
 
     # Resources used in the analysis
     Power = ResourceCarrier("Power", 0.0)
@@ -264,7 +250,7 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+        case = Case(T, resources, [nodes, links], [[get_nodes, get_links]])
         return case, model
     end
 
@@ -372,7 +358,7 @@ end
     EMB.ASSERTS_AS_LOG = true
 end
 
-@testset "Test checks - Nodes" begin
+@testset "Checks - Nodes" begin
 
     # Resources used in the checks
     NG = ResourceEmit("NG", 0.2)
@@ -393,13 +379,13 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+        case = Case(T, resources, [nodes, links], [[get_nodes, get_links]])
         return create_model(case, model), case, model
     end
 
     # Test that the fields of a Source are correctly checked
     # - check_node(n::Source, 𝒯, modeltype::EnergyModel)
-    @testset "Checks Source" begin
+    @testset "Source" begin
         # Sink used in the analysis
         sink = RefSink(
             "sink",
@@ -464,7 +450,7 @@ end
 
     # Test that the fields of a Sink are correctly checked
     # - check_node(n::Sink, 𝒯, modeltype::EnergyModel)
-    @testset "Checks Sink" begin
+    @testset "Sink" begin
         # Source used in the analysis
         source = RefSource(
             "source",
@@ -548,13 +534,13 @@ end
             Dict(CO2 => FixedProfile(0), NG => FixedProfile(0)),
             CO2,
         )
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+        case = Case(T, resources, [nodes, links], [[get_nodes, get_links]])
         return create_model(case, model), case, model
     end
 
     # Test that the fields of a NetworkNode are correctly checked
     # - check_node(n::NetworkNode, 𝒯, modeltype::EnergyModel)
-    @testset "Test checks - NetworkNode" begin
+    @testset "NetworkNode" begin
 
         # Test that a wrong capacity is caught by the checks.
         network = RefNetworkNode(
@@ -655,13 +641,13 @@ end
             Dict(CO2 => FixedProfile(0)),
             CO2,
         )
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+        case = Case(T, resources, [nodes, links], [[get_nodes, get_links]])
         return create_model(case, model), case, model
     end
 
     # Test that the fields of a Storage are correctly checked
     # - check_node(n::Storage, 𝒯, modeltype::EnergyModel)
-    @testset "Test checks - Storage" begin
+    @testset "Storage" begin
 
         # Test that a wrong capacities are caught by the checks.
         storage = RefStorage{CyclicStrategic}(
@@ -738,6 +724,59 @@ end
         m = run_model(case, model, HiGHS.Optimizer)
         @test termination_status(m) == MOI.OPTIMAL
     end
+end
+
+@testset "Checks - Links" begin
+
+    # Resources used in the checks
+    Power = ResourceCarrier("Power", 0.0)
+    CO2 = ResourceEmit("CO2", 1.0)
+
+    # Function for setting up the system for testing `Sink` and `Source`
+    function simple_graph()
+        resources = [Power, CO2]
+        ops = SimpleTimes(5, 2)
+        T = TwoLevel(2, 2, ops; op_per_strat = 10)
+
+        av = GenAvailability("av", resources)
+        sink = RefSink(
+            "sink",
+            OperationalProfile([6, 8, 10, 6, 8]),
+            Dict(:surplus => FixedProfile(4), :deficit => FixedProfile(10)),
+            Dict(Power => 1),
+        )
+
+        # Test that a wrong capacity is caught by the checks.
+        source = RefSource(
+            "source",
+            FixedProfile(4),
+            FixedProfile(10),
+            FixedProfile(0),
+            Dict(Power => 1),
+        )
+        nodes = [av, source, sink]
+        links = [Direct(12, source, sink)]
+        model = OperationalModel(
+            Dict(CO2 => FixedProfile(100)),
+            Dict(CO2 => FixedProfile(0)),
+            CO2,
+        )
+        case = Case(T, resources, [nodes, links], [[get_nodes, get_links]])
+        return case, model
+    end
+
+    # Test that the from and to fields are correctly checked
+    # - check_elements(log_by_element, ℒ::Vector{<:Link}}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+    case, model = simple_graph()
+    av, source, sink = get_nodes(case)
+    case.elements[2] = [Direct(12, GenAvailability("test", get_products(case)), sink)]
+    @test_throws AssertionError create_model(case, model)
+    case.elements[2] = [Direct(12, source, GenAvailability("test", get_products(case)))]
+    @test_throws AssertionError create_model(case, model)
+    case.elements[2] = [Direct(12, av, source)]
+    @test_throws AssertionError create_model(case, model)
+    case.elements[2] = [Direct(12, sink, av)]
+    @test_throws AssertionError create_model(case, model)
 end
 
 # Set the global again to false

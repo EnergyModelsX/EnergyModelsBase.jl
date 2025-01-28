@@ -67,26 +67,15 @@ function check_data(case, modeltype::EnergyModel, check_timeprofiles::Bool)
         compile_logs(case, log_by_element)
     end
 
-    𝒯 = case[:T]
-
-    for n ∈ case[:nodes]
-
-        # Empty the logs list before each check.
-        global logs = []
-        check_node(n, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
-        for data ∈ node_data(n)
-            check_node_data(n, data, 𝒯, modeltype, check_timeprofiles)
-        end
-
-        if check_timeprofiles
-            check_time_structure(n, 𝒯)
-        end
-        # Put all log messages that emerged during the check, in a dictionary with the node as key.
-        log_by_element[n] = logs
+    # Check the individual elements vector
+    𝒳ᵛᵉᶜ = get_elements_vec(case)
+    𝒯 = get_time_struct(case)
+    for elements ∈ 𝒳ᵛᵉᶜ
+        check_elements(log_by_element, elements, 𝒳ᵛᵉᶜ, 𝒯, modeltype, check_timeprofiles)
     end
 
     logs = []
-    check_model(case, modeltype::EnergyModel, check_timeprofiles)
+    check_model(case, modeltype, check_timeprofiles)
     log_by_element["Modeltype"] = logs
 
     if ASSERTS_AS_LOG
@@ -137,38 +126,142 @@ end
 Checks the `case` dictionary is in the correct format.
 
 ## Checks
-- The dictionary requires the keys `:T`, `:nodes`, `:links`, and `:products`.
-- The individual keys are of the correct type, that is
-  - `:T::TimeStructure`,
-  - `:nodes::Vector{<:Node}`,
-  - `:links::Vector{<:Link}`, and
-  - `:products::Vector{<:Resource}`.
+- The individual elements vector must be unique, that it is not possible to have two vector
+  of nodes within the elements vector.
+- Check that the coupling functions do return elements and not only an empty vector
 """
 function check_case_data(case)
-    case_keys = [:T, :nodes, :links, :products]
-    key_map = Dict(
-        :T => TimeStructure,
-        :nodes => Vector{<:Node},
-        :links => Vector{<:Link},
-        :products => Vector{<:Resource},
-    )
-    for key ∈ case_keys
-        @assert_or_log(
-            haskey(case, key),
-            "The `case` dictionary requires the key `:" *
-            string(key) *
-            "` which is " *
-            "not included."
-        )
-        if haskey(case, key)
+    𝒳ᵛᵉᶜ = get_elements_vec(case)
+    get_vect_type(vec::Vector{T}) where {T} = T
+    vec_types = [get_vect_type(x) for x ∈ 𝒳ᵛᵉᶜ]
+
+    for type_1 ∈ vec_types
+        for type_2 ∈ vec_types
+            if type_1 ≠ type_2
+                @assert_or_log(
+                    !(type_1 <: type_2),
+                    "It is not possible to have both `$(type_1)` and `$(type_2)` vectors in the case file."
+                )
+            end
+        end
+    end
+
+    𝒳ᵛᵉᶜ_𝒳ᵛᵉᶜ = get_couplings(case)
+    for couple ∈ 𝒳ᵛᵉᶜ_𝒳ᵛᵉᶜ
+        for cpl ∈ couple
             @assert_or_log(
-                isa(case[key], key_map[key]),
-                "The key `" *
-                string(key) *
-                "` in the `case` dictionary contains " *
-                "other types than the allowed."
+                !isempty(cpl(case)),
+                "The function `$cpl` in the couplings field returns an empty vector."
             )
         end
+    end
+
+end
+
+"""
+    check_elements(log_by_element, _::Vector{<:AbstractElement}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+    check_elements(log_by_element, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+    check_elements(log_by_element, ℒ::Vector{<:Link}}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+
+Checks the individual elements vector. It has implemented methods for both `Vector{<:Node}`
+and Vector{<:Link}.
+
+
+!!! note "Node methods"
+    All nodes are checked through the functions
+    - [`check_node`](@ref) to identify problematic input,
+    - [`check_node_data`](@ref EnergyModelsBase.check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool))
+      issues in the provided additional data, and
+    - [`check_time_structure`](@ref) to identify time profiles at the highest level that
+      are not equivalent to the provided timestructure.
+
+!!! note "Links methods"
+    All links are checked through the functions
+    - [`check_link`](@ref) to identify problematic input,
+    - [`check_link_data`](@ref EnergyModelsBase.check_link_data(l::Link, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool))
+      to identify issues in the provided additional data, and
+    - [`check_time_structure`](@ref) to identify time profiles at the highest level that
+      are not equivalent to the provided timestructure.
+
+    In addition, all links are directly checked to have in the fields `:from` and `:to` nodes
+    that are present in the Node vector as extracted through the function [`get_nodes`](@ref)
+    and that these nodes have input (`:to`) or output (`:from`).
+"""
+function check_elements(
+    log_by_element,
+    _::Vector{<:AbstractElement},
+    𝒳ᵛᵉᶜ,
+    𝒯,
+    modeltype::EnergyModel,
+    check_timeprofiles::Bool
+)
+end
+function check_elements(
+    log_by_element,
+    𝒩::Vector{<:Node},
+    𝒳ᵛᵉᶜ,
+    𝒯,
+    modeltype::EnergyModel,
+    check_timeprofiles::Bool
+)
+    for n ∈ 𝒩
+        # Empty the logs list before each check.
+        global logs = []
+        check_node(n, 𝒯, modeltype, check_timeprofiles)
+        for data ∈ node_data(n)
+            check_node_data(n, data, 𝒯, modeltype, check_timeprofiles)
+        end
+
+        if check_timeprofiles
+            check_time_structure(n, 𝒯)
+        end
+        # Put all log messages that emerged during the check, in a dictionary with the node as key.
+        log_by_element[n] = logs
+    end
+end
+function check_elements(
+    log_by_element,
+    ℒ::Vector{<:Link},
+    𝒳ᵛᵉᶜ,
+    𝒯,
+    modeltype::EnergyModel,
+    check_timeprofiles::Bool
+)
+    for l ∈ ℒ
+        # Empty the logs list before each check.
+        global logs = []
+
+        # Check the connections of the link
+        𝒩  = get_nodes(𝒳ᵛᵉᶜ)
+        @assert_or_log(
+            l.from ∈ 𝒩,
+            "The node in the field `:from` is not included in the Node vector. As a consequence," *
+            "the link would not be utilized in the model."
+        )
+        @assert_or_log(
+            l.to ∈ 𝒩,
+            "The node in the field `:to` is not included in the Node vector. As a consequence," *
+            "the link would not be utilized in the model."
+        )
+        @assert_or_log(
+            has_output(l.from),
+            "The node in the field `:from` does not allow for outputs."
+        )
+        @assert_or_log(
+            has_input(l.to),
+            "The node in the field `:to` does not allow for inputs."
+        )
+
+        # Check the links, the link data, and the time structure
+        check_link(l, 𝒯, modeltype, check_timeprofiles)
+        for data ∈ link_data(l)
+            check_link_data(l, data, 𝒯, modeltype, check_timeprofiles)
+        end
+        if check_timeprofiles
+            check_time_structure(l, 𝒯)
+        end
+        # Put all log messages that emerged during the check, in a dictionary with the node as key.
+        log_by_element[l] = logs
     end
 end
 
@@ -189,10 +282,10 @@ Checks the `modeltype` .
   periods.
 """
 function check_model(case, modeltype::EnergyModel, check_timeprofiles::Bool)
-    𝒯ᴵⁿᵛ = strategic_periods(case[:T])
+    𝒯ᴵⁿᵛ = strategic_periods(get_time_struct(case))
 
     # Check for inclusion of all emission resources
-    for p ∈ case[:products]
+    for p ∈ get_products(case)
         if isa(p, ResourceEmit)
             @assert_or_log(
                 haskey(emission_limit(modeltype::EnergyModel), p),
@@ -248,14 +341,14 @@ function check_model(case, modeltype::EnergyModel, check_timeprofiles::Bool)
 end
 
 """
-    check_time_structure(n::Node, 𝒯)
+    check_time_structure(x::AbstractElement, 𝒯)
 
-Check that all fields of a `Node` that are of type `TimeProfile` correspond to the time
-structure `𝒯`.
+Check that all fields of a `AbstractElement` that are of type `TimeProfile` correspond to
+the time structure `𝒯`.
 """
-function check_time_structure(n::Node, 𝒯)
-    for fieldname ∈ fieldnames(typeof(n))
-        value = getfield(n, fieldname)
+function check_time_structure(x::AbstractElement, 𝒯)
+    for fieldname ∈ fieldnames(typeof(x))
+        value = getfield(x, fieldname)
         if isa(value, TimeProfile)
             check_profile(fieldname, value, 𝒯)
         end
@@ -776,9 +869,7 @@ end
     check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
-Check that the included `Data` types of a `Node` corresponds to required structure.
-This function will always result in a multiple error message, if several instances of the
-same supertype is loaded.
+Check that the included `Data` types of a `Node` correspond to required structure.
 
 ## Checks `EmissionsData`
 - Each node can only have a single `EmissionsData`.
@@ -786,6 +877,8 @@ same supertype is loaded.
 - The value of the field `co2_capture` is required to be in the range ``[0, 1]``, if
   [`CaptureData`](@ref) is used.
 """
+check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) =
+    nothing
 function check_node_data(
     n::Node,
     data::EmissionsData,
@@ -837,5 +930,23 @@ function check_node_data(
         "The field `co2_capture` in `CaptureData` must be non-negative."
     )
 end
-check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) =
+
+"""
+    check_link(n::Link, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+
+Check that the fields of a [`Link`](@ref) corresponds to required structure. The default
+functionality does not check anthing, aside from the checks performed in [`check_elements`](@ref).
+
+!!! tip "Creating a new link type"
+    When developing a new link with new checks, it is important to create a new method for
+    `check_link`.
+"""
+check_link(n::Link, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) = nothing
+
+"""
+    check_link_data(l::Link, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+
+Check that the included `Data` types of a `Link` correspond to required structure.
+"""
+check_link_data(l::Link, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) =
     nothing

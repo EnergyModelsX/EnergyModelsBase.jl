@@ -174,3 +174,29 @@ function check_inv_data(
         )
     end
 end
+
+"""
+    EMB.check_link_data(l::Link, data::InvestmentData, 𝒯, modeltype::AbstractInvestmentModel, check_timeprofiles::Bool)
+
+Performs various checks on investment data for [`Link`](@ref)s.
+
+## Checks for standard nodes
+- Each link can only have a single `InvestmentData`.
+- All checks incorporated in the function [`check_inv_data`](@ref).
+"""
+function EMB.check_link_data(
+    l::Link,
+    data::InvestmentData,
+    𝒯,
+    modeltype::AbstractInvestmentModel,
+    check_timeprofiles::Bool,
+)
+    inv_data = filter(data -> typeof(data) <: InvestmentData, link_data(l))
+
+    @assert_or_log(
+        length(inv_data) ≤ 1,
+        "Only one `InvestmentData` can be added to each node."
+    )
+
+    check_inv_data(EMI.investment_data(data), EMB.capacity(l), 𝒯, "", check_timeprofiles)
+end

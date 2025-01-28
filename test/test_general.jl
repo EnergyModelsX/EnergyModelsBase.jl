@@ -72,8 +72,8 @@ function generate_data()
         CO2,
     )
 
-    # WIP data structure
-    case = Dict(:nodes => nodes, :links => links, :products => products, :T => T)
+    # Input data structure
+    case = Case(T, products, [nodes, links], [[get_nodes, get_links]])
     return case, model
 end
 
@@ -82,14 +82,14 @@ end
     m = run_model(case, model, HiGHS.Optimizer)
 
     # Retrieve data from the case structure
-    𝒫 = case[:products]
+    𝒫 = get_products(case)
     NG = 𝒫[1]
     CO2 = 𝒫[4]
 
-    𝒯 = case[:T]
+    𝒯 = get_time_struct(case)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    𝒩 = case[:nodes]
+    𝒩 = get_nodes(case)
     𝒩ⁿᵒᵗ = EMB.nodes_not_av(𝒩)
     𝒩ᵉᵐ = nodes_emissions(𝒩)
     avail = 𝒩[1]
@@ -98,7 +98,7 @@ end
     CO2_stor = 𝒩[6]
     demand = 𝒩[7]
 
-    ℒ = case[:links]
+    ℒ = get_links(case)
 
     # Check for the objective value
     # (*2 compared to 0.6.0 due to change in strategic period duration)

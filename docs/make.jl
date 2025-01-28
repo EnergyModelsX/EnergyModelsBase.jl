@@ -56,6 +56,7 @@ makedocs(
             "Availability"=>"nodes/availability.md",
         ],
         "How to" => Any[
+            "Create a new element"=>"how-to/create_new_element.md",
             "Create a new node"=>"how-to/create-new-node.md",
             "Utilize TimeStruct"=>"how-to/utilize-timestruct.md",
             "Update models"=>"how-to/update-models.md",
@@ -67,6 +68,7 @@ makedocs(
                 "Modeltype and Data"=>"library/public/model_data.md",
                 "Nodes"=>"library/public/nodes.md",
                 "Links"=>"library/public/links.md",
+                "Case"=>"library/public/case_element.md",
                 "Functions"=>"library/public/functions.md",
                 "Miscellaneous"=>"library/public/misc.md",
                 "EMI extension"=>"library/public/emi_extension.md",

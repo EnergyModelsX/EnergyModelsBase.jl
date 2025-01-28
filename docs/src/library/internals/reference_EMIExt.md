@@ -25,7 +25,6 @@ StorageInvData
 
 ```@docs
 check_inv_data
-objective_invest
 ```
 
 ## [EnergyModelsBase](@id lib-int-EMIext-EMB)
@@ -33,10 +32,11 @@ objective_invest
 ### [Methods](@id lib-int-EMIext-met)
 
 ```@docs
-EMB.variables_capex(m, 𝒩::Vector{<:EMB.Node}, 𝒯, modeltype::AbstractInvestmentModel)
-EMB.objective(m, 𝒳, 𝒫, 𝒯, modeltype::AbstractInvestmentModel)
+EMB.variables_capex(m, 𝒩::Vector{<:EMB.Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::AbstractInvestmentModel)
+EMB.objective_invest(m, 𝒩::Vector{<:EMB.Node}, 𝒯ᴵⁿᵛ::TS.AbstractStratPers, modeltype::AbstractInvestmentModel)
 EMB.constraints_capacity_installed(m, n::EMB.Node, 𝒯::TimeStructure, modeltype::AbstractInvestmentModel)
 EMB.check_node_data(n::EMB.Node, data::InvestmentData, 𝒯, modeltype::AbstractInvestmentModel, check_timeprofiles::Bool)
+EMB.check_link_data(l::Link, data::InvestmentData, 𝒯, modeltype::AbstractInvestmentModel, check_timeprofiles::Bool)
 ```
 
 ## [EnergyModelsInvestments](@id lib-int-EMIext-EMI)

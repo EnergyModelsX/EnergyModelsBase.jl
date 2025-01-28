@@ -4,8 +4,8 @@ Main module for `EnergyModelsBase` a framework for building flexible energy syst
 It exports several types and associated functions for accessing fields.
 In addition, all required functions for creaeting and running the model are exported.
 
-You can find the exported types and functions below or on the pages \
-*[Constraint functions](@ref man-con)* and \
+You can find the exported types and functions below or on the pages
+*[Constraint functions](@ref man-con)* and
 *[Data functions](@ref man-data_fun)*.
 """
 module EnergyModelsBase
@@ -16,12 +16,14 @@ using TimeStruct
 const TS = TimeStruct
 
 # Different introduced types
+include(joinpath("structures", "element.jl"))
 include(joinpath("structures", "resource.jl"))
 include(joinpath("structures", "data.jl"))
 include(joinpath("structures", "node.jl"))
 include(joinpath("structures", "link.jl"))
 include(joinpath("structures", "model.jl"))
 include(joinpath("structures", "misc.jl"))
+include(joinpath("structures", "case.jl"))
 
 include("utils.jl")
 include("model.jl")
@@ -32,9 +34,14 @@ include("data_functions.jl")
 # Legacy constructors for node types
 include("legacy_constructor.jl")
 
+# Export the case type and its functions
+export AbstractCase, Case
+export get_time_struct, get_products, get_elements_vec, get_nodes, get_links, get_couplings
+
 # Export the general classes
 export EnergyModel, OperationalModel
 export Resource, ResourceCarrier, ResourceEmit
+export AbstractElement
 
 # Export the different node types
 export Source, NetworkNode, Sink, Storage, Availability

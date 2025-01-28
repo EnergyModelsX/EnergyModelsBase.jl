@@ -70,13 +70,8 @@ function generate_example_ss()
         Direct("source-demand", nodes[1], nodes[2], Linear()),
     ]
 
-    # WIP data structure
-    case = Dict(
-        :nodes => nodes,
-        :links => links,
-        :products => products,
-        :T => T,
-    )
+    # Input data structure
+    case = Case(T, products, [nodes, links], [[get_nodes, get_links]])
     return case, model
 end
 
@@ -86,7 +81,7 @@ optimizer = optimizer_with_attributes(HiGHS.Optimizer, MOI.Silent() => true)
 m = run_model(case, model, optimizer)
 
 # Display some results
-source, sink = case[:nodes]
+source, sink = get_nodes(case)
 @info "Capacity usage of the power source"
 pretty_table(
     JuMP.Containers.rowtable(

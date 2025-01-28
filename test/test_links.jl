@@ -48,13 +48,13 @@
             Dict(CO2 => FixedProfile(0), NG => FixedProfile(0)),
             CO2,
         )
-        case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+        case = Case(T, resources, [nodes, links], [[get_nodes, get_links]])
         return case, model
     end
 
     @testset "Identification functions" begin
         case, model = simple_graph()
-        ℒ = case[:links]
+        ℒ = get_links(case)
 
         # Test that all links are identified as unidirectional
         @test all(is_unidirectional(l) for l ∈ ℒ)
@@ -68,8 +68,8 @@
 
     @testset "Access functions" begin
         case, model = simple_graph()
-        ℒ = case[:links]
-        𝒩 = case[:nodes]
+        ℒ = get_links(case)
+        𝒩 = get_nodes(case)
 
         # Test that the tranported resources are correctly identified
         @test inputs(ℒ[1]) == outputs(𝒩[1])
@@ -88,8 +88,8 @@
     @testset "Variable declaration" begin
         case, model = simple_graph()
         m = create_model(case, model)
-        ℒ = case[:links]
-        𝒯 = case[:T]
+        ℒ = get_links(case)
+        𝒯 = get_time_struct(case)
 
         # Test that all link variables have a lower bound of 0
         @test all(
@@ -143,7 +143,7 @@ function link_graph(LinkType::Vector{DataType})
         Dict(CO2 => FixedProfile(0)),
         CO2,
     )
-    case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
+    case = Case(T, resources, [nodes, links], [[get_nodes, get_links]])
     return run_model(case, model, HiGHS.Optimizer), case, model
 end
 
@@ -171,9 +171,9 @@ end
 
     # Create and solve the system
     m, case, model = link_graph([EmissionDirect])
-    ℒ = case[:links]
-    𝒩 = case[:nodes]
-    𝒯 = case[:T]
+    ℒ = get_links(case)
+    𝒩 = get_nodes(case)
+    𝒯 = get_time_struct(case)
 
     # Test that `emissions_link` variable is not empty
     @test !isempty(m[:emissions_link])
@@ -210,9 +210,9 @@ end
 
     # Create and solve the system
     m, case, model = link_graph([OpexDirect])
-    ℒ = case[:links]
-    𝒩 = case[:nodes]
-    𝒯 = case[:T]
+    ℒ = get_links(case)
+    𝒩 = get_nodes(case)
+    𝒯 = get_time_struct(case)
 
     # Test that `link_opex_var` and `link_opex_fixed` are not empty
     @test !isempty(m[:link_opex_var])
@@ -252,9 +252,9 @@ end
 
     # Create and solve the system
     m, case, model = link_graph([CapDirect])
-    ℒ = case[:links]
-    𝒩 = case[:nodes]
-    𝒯 = case[:T]
+    ℒ = get_links(case)
+    𝒩 = get_nodes(case)
+    𝒯 = get_time_struct(case)
 
     # Helper for usage
     cap = OperationalProfile([2, 3, 3, 2, 1])
@@ -306,9 +306,9 @@ end
 
     # Create and solve the system
     m, case, model = link_graph([DirectSub1, DirectSub2, Direct1])
-    ℒ = case[:links]
-    𝒩 = case[:nodes]
-    𝒯 = case[:T]
+    ℒ = get_links(case)
+    𝒩 = get_nodes(case)
+    𝒯 = get_time_struct(case)
 
     # Test that `test_var_sub`, `test_var_sub_1`, and `test_var_1` are created
     @test haskey(object_dictionary(m), :test_var_sub)

@@ -5,7 +5,27 @@ Hence, there are frequently breaking changes occuring, although we plan to keep 
 This document is designed to provide users with information regarding how they have to adjust their models to keep compatibility to the latest changes.
 We will as well implement information regarding the adjustment of extension packages, although this is more difficult due to the vast majority of potential changes.
 
-## [Adjustments from 0.6.x](@id how_to-update-06)
+## [Adjustments from 0.8.x](@id how_to-update-08)
+
+Starting from version 0.9.0, we introduced a new input format to the function `create_model`.
+The original case dictionary is replaced with a new type, [`Case`](@ref).
+We introduced deprecated methods that can be utilized with the original dictionary, but it is advisable to switch to the new type as:
+
+```julia
+# Old structure:
+case = Dict(
+    :nodes => nodes,
+    :links => links,
+    :products => products,
+    :T => T,
+)
+
+# New structure:
+case = Case(T, products, [nodes, links], [[get_nodes, get_links]]) # or
+case = Case(T, products, [nodes, links])
+```
+
+## [Adjustments from 0.6.x to 0.8.x](@id how_to-update-06)
 
 ### [Key changes for nodal descriptions](@id how_to-update-06-nodes)
 

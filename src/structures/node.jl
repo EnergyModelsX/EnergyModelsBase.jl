@@ -1,8 +1,10 @@
 """ `Node` as supertype for all technologies."""
-abstract type Node end
+abstract type Node <: AbstractElement end
 Base.show(io::IO, n::Node) = print(io, "n_$(n.id)")
 
 """
+    abstract type StorageBehavior
+
 `StorageBehavior` as supertype for individual storage behaviours.
 
 Storage behaviour is used to identify how a storage node should behave within the individual
@@ -11,7 +13,7 @@ Storage behaviour is used to identify how a storage node should behave within th
 abstract type StorageBehavior end
 
 """
-    Accumulating <: StorageBehavior
+    abstract type Accumulating <: StorageBehavior
 
 `Accumulating` as supertype for an accumulating storage level.
 
@@ -24,7 +26,7 @@ permanently stored or multi year hydropower magazines.
 abstract type Accumulating <: StorageBehavior end
 
 """
-    Cyclic <: StorageBehavior
+    abstract type Cyclic <: StorageBehavior
 
 `Cyclic` as supertype for a cyclic storage level.
 
@@ -34,7 +36,7 @@ period behaves cyclic.
 abstract type Cyclic <: StorageBehavior end
 
 """
-    AccumulatingEmissions <: Accumulating
+    struct AccumulatingEmissions <: Accumulating
 
 `StorageBehavior` which accumulates all inflow witin a strategic period.
 `AccumulatingEmissions` allows as well to serve as a [`ResourceEmit`](@ref) emission point to
@@ -43,7 +45,7 @@ represent a soft constraint on storing the captured emissions.
 struct AccumulatingEmissions <: Accumulating end
 
 """
-    CyclicRepresentative <: Cyclic
+    struct CyclicRepresentative <: Cyclic
 
 `StorageBehavior` in which cyclic behaviour is achieved within the lowest time structure
 excluding operational times.
@@ -55,7 +57,7 @@ In the case of `TwoLevel{RepresentativePeriods{SimpleTimes}}`, this approach dif
 struct CyclicRepresentative <: Cyclic end
 
 """
-    CyclicStrategic <: Cyclic
+    struct CyclicStrategic <: Cyclic
 
 `StorageBehavior` in which the the cyclic behaviour is achieved within a strategic period.
 This implies that the initial level in individual representative periods can be different
@@ -73,7 +75,7 @@ discharging.
 abstract type AbstractStorageParameters end
 
 """
-    StorCapOpex <: AbstractStorageParameters
+    struct StorCapOpex <: AbstractStorageParameters
 
 A storage parameter type for including a capacity as well as variable and fixed operational
 expenditures.
@@ -92,7 +94,7 @@ struct StorCapOpex <: AbstractStorageParameters
 end
 
 """
-    StorCap <: AbstractStorageParameters
+    struct StorCap <: AbstractStorageParameters
 
 A storage parameter type for including only a capacity. This implies that neither the usage
 of the [`Storage`](@ref), nor the installed capacity have a direct impact on the objective function.
@@ -105,7 +107,7 @@ struct StorCap <: AbstractStorageParameters
 end
 
 """
-    StorCap <: AbstractStorageParameters
+    struct StorCapOpexVar <: AbstractStorageParameters
 
 A storage parameter type for including a capacity and variable operational expenditures.
 This implies that the installed capacity has no direct impact on the objective function.
@@ -121,7 +123,7 @@ struct StorCapOpexVar <: AbstractStorageParameters
 end
 
 """
-    StorCapOpexFixed <: AbstractStorageParameters
+    struct StorCapOpexFixed <: AbstractStorageParameters
 
 A storage parameter type for including a capacity and fixed operational expenditures.
 This implies that the installed capacity has no direct impact on the objective function.
@@ -137,7 +139,7 @@ struct StorCapOpexFixed <: AbstractStorageParameters
 end
 
 """
-    StorCap <: AbstractStorageParameters
+    struct StorOpexVar <: AbstractStorageParameters
 
 A storage parameter type for including variable operational expenditures.
 This implies that the charge or discharge rate do not have a capacity and the [`Storage`](@ref)
@@ -174,19 +176,39 @@ Union for simpler dispatching for storage parameters that include a capacity.
 """
 UnionCapacity = Union{StorCapOpex,StorCap,StorCapOpexVar,StorCapOpexFixed}
 
-""" `Source` node with only output."""
+"""
+    abstract type Source <: Node
+
+A `Node` with only output.
+"""
 abstract type Source <: Node end
-""" `NetworkNode` node with both input and output."""
+"""
+    abstract type NetworkNode <: Node
+
+A `Node` with both input and output.
+"""
 abstract type NetworkNode <: Node end
-""" `Sink` node with only input."""
+"""
+    abstract type Sink <: Node
+
+A `Node` with only input.
+"""
 abstract type Sink <: Node end
-""" `Storage` node with level."""
+"""
+    abstract type Storage{T<:StorageBehavior} <: NetworkNode
+
+A `NetworkNode` with a storage level.
+"""
 abstract type Storage{T<:StorageBehavior} <: NetworkNode end
-""" `Availability` node as routing node."""
+"""
+    abstract type Availability <: NetworkNode
+
+A `NetworkNode` as routing node.
+"""
 abstract type Availability <: NetworkNode end
 
 """
-    RefSource <: Source
+    struct RefSource <: Source
 
 A reference [`Source`](@ref) node.
 The reference [`Source`](@ref) node allows for a time varying capacity which is normalized to a
@@ -225,7 +247,7 @@ function RefSource(
 end
 
 """
-    RefNetworkNode <: NetworkNode
+    struct RefNetworkNode <: NetworkNode
 
 A reference [`NetworkNode`](@ref) node.
 The `RefNetworkNode` utilizes a linear, time independent conversion rate of the `input`
@@ -268,7 +290,7 @@ function RefNetworkNode(
 end
 
 """
-    GenAvailability <: Availability
+    struct GenAvailability <: Availability
 
 A reference `Availability` node.
 The reference `Availability` node solves the energy balance for all connected flows.
@@ -290,7 +312,7 @@ end
 GenAvailability(id, 𝒫::Vector{<:Resource}) = GenAvailability(id, 𝒫, 𝒫)
 
 """
-    RefStorage{T} <: Storage{T}
+    struct RefStorage{T} <: Storage{T}
 
 A reference [`Storage`](@ref) node.
 
@@ -341,7 +363,7 @@ function RefStorage{T}(
 end
 
 """
-    RefSink <: Sink
+    struct RefSink <: Sink
 
 A reference [`Sink`](@ref) node. This node corresponds to a demand given by the field `cap`.
 The penalties introduced in the field `penalty` affect the variable OPEX for both a surplus
