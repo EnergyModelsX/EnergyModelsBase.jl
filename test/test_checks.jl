@@ -86,9 +86,12 @@ end
     end
 
     # Create a function for running the simple graph
-    function run_simple_graph(co2_limit::TS.TimeProfile)
+    function create_simple_graph(;
+        co2_limit::TS.TimeProfile = FixedProfile(100),
+        co2_price::TS.TimeProfile = FixedProfile(0),
+    )
         case = simple_graph()
-        model = OperationalModel(Dict(CO2 => co2_limit), Dict(CO2 => FixedProfile(0)), CO2)
+        model = OperationalModel(Dict(CO2 => co2_limit), Dict(CO2 => co2_price), CO2)
         return create_model(case, model), case, model
     end
 
@@ -98,10 +101,17 @@ end
         OperationalModel(Dict(CO2 => FixedProfile(100)), Dict(CO2 => FixedProfile(0)), CO2)
 
     # Check that all resources present in the case data are included in the emission limit
+    # and emission price
     # - EMB.check_model(case, modeltype::EnergyModel, check_timeprofiles)
     case_test = deepcopy(case)
-    append!(case_test.products, [ResourceEmit("NG", 0.06)])
-    @test_throws AssertionError run_model(case_test, model, HiGHS.Optimizer)
+    ng = ResourceEmit("NG", 0.06)
+    append!(case_test.products, [ng])
+    model = OperationalModel(
+        Dict(CO2 => FixedProfile(100)),
+        Dict(CO2 => FixedProfile(0), ng => FixedProfile(10)),
+        CO2,
+    )
+    @test_throws AssertionError create_model(case_test, model)
 
     # Check that the timeprofiles for emission limit and price are correct
     # - EMB.check_model(case, modeltype::EnergyModel, check_timeprofiles)
@@ -110,35 +120,39 @@ end
         Dict(CO2 => FixedProfile(0)),
         CO2,
     )
-    @test_throws AssertionError run_model(case, model, HiGHS.Optimizer)
+    @test_throws AssertionError create_model(case, model)
     model = OperationalModel(
         Dict(CO2 => FixedProfile(0)),
         Dict(CO2 => StrategicProfile([100])),
         CO2,
     )
-    @test_throws AssertionError run_model(case, model, HiGHS.Optimizer)
+    @test_throws AssertionError create_model(case, model)
 
-    # Check that we receive an error if the profiles are wrong
+    # Check that we receive an error if the profiles are wrong. For emission price, it is
+    # only necessary to check that it provides an error for a single case.
     # - EMB.check_strategic_profile(time_profile, message)
     rprofile = RepresentativeProfile([FixedProfile(100)])
     scprofile = ScenarioProfile([FixedProfile(100)])
     oprofile = OperationalProfile(ones(100))
 
     co2_limit = oprofile
-    @test_throws AssertionError run_simple_graph(co2_limit)
+    @test_throws AssertionError create_simple_graph(;co2_limit)
     co2_limit = scprofile
-    @test_throws AssertionError run_simple_graph(co2_limit)
+    @test_throws AssertionError create_simple_graph(;co2_limit)
     co2_limit = rprofile
-    @test_throws AssertionError run_simple_graph(co2_limit)
+    @test_throws AssertionError create_simple_graph(;co2_limit)
     co2_limit = StrategicProfile([4])
-    @test_throws AssertionError run_simple_graph(co2_limit)
+    @test_throws AssertionError create_simple_graph(;co2_limit)
 
     co2_limit = StrategicProfile([oprofile, oprofile, oprofile, oprofile])
-    @test_throws AssertionError run_simple_graph(co2_limit)
+    @test_throws AssertionError create_simple_graph(;co2_limit)
     co2_limit = StrategicProfile([scprofile, scprofile, scprofile, scprofile])
-    @test_throws AssertionError run_simple_graph(co2_limit)
+    @test_throws AssertionError create_simple_graph(;co2_limit)
     co2_limit = StrategicProfile([rprofile, rprofile, rprofile, rprofile])
-    @test_throws AssertionError run_simple_graph(co2_limit)
+    @test_throws AssertionError create_simple_graph(;co2_limit)
+
+    co2_price = oprofile
+    @test_throws AssertionError create_simple_graph(;co2_price)
 end
 
 @testset "Checks - emission data" begin

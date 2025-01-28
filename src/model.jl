@@ -567,7 +567,7 @@ end
 Create JuMP expressions indexed over the operational periods `𝒯` for different elements 𝒳.
 The expressions correspond to the total emissions of a given element type.
 
-By default, objective expressions are included for:
+By default, emissions expressions are included for:
 - `𝒳 = 𝒩::Vector{<:Node}`. In the case of a vector of nodes, the function returns the
   sum of the emissions of all nodes whose method of the function [`has_emissions`](@ref)
   returns true. These nodes should be automatically identified without user intervention.
@@ -684,8 +684,8 @@ function objective_operational(
 
     return @expression(m, [t_inv ∈ 𝒯ᴵⁿᵛ],
         sum(
-            m[:emissions_strategic][t_inv, p] * emission_price(modeltype, p, t_inv) for
-            p ∈ 𝒫ᵉᵐ
+            m[:emissions_total][t, p] * emission_price(modeltype, p, t) *
+            scale_op_sp(t_inv, t) for t ∈ t_inv, p ∈ 𝒫ᵉᵐ
         )
     )
 end

@@ -36,17 +36,17 @@ emission_limit(modeltype, p::ResourceEmit, t_inv::TS.AbstractStrategicPeriod) =
 """
     emission_price(modeltype::EnergyModel)
     emission_price(modeltype, p::ResourceEmit)
-    emission_price(modeltype, p::ResourceEmit, t_inv::TS.AbstractStrategicPeriod)
+    emission_price(modeltype, p::ResourceEmit, t_inv::TS.TimePeriod)
 
 Returns the emission price of EnergyModel `model` as dictionary with `TimeProfile`s for
 each [`ResourceEmit`](@ref), as `TimeProfile` for [`ResourceEmit`](@ref) `p` or, in
-strategic period `t_inv` for [`ResourceEmit`](@ref) `p`.
+operational period `t` for [`ResourceEmit`](@ref) `p`.
 """
 emission_price(modeltype::EnergyModel) = modeltype.emission_price
 emission_price(modeltype, p::ResourceEmit) =
     haskey(modeltype.emission_price, p) ? modeltype.emission_price[p] : 0
-emission_price(modeltype, p::ResourceEmit, t_inv::TS.AbstractStrategicPeriod) =
-    haskey(modeltype.emission_price, p) ? modeltype.emission_price[p][t_inv] : 0
+emission_price(modeltype, p::ResourceEmit, t::TS.TimePeriod) =
+    haskey(modeltype.emission_price, p) ? modeltype.emission_price[p][t] : 0
 
 """
     co2_instance(modeltype::EnergyModel)

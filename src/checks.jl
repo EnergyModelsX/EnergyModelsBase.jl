@@ -40,7 +40,7 @@ function check_data(case, modeltype::EnergyModel, check_timeprofiles::Bool)
     # TODO would it be useful to create an actual type for case, instead of using a Dict with
     # naming conventions? Could be implemented as a mutable in energymodelsbase.jl maybe?
 
-    # TODO this usage of the global vector 'logs' doesn't seem optimal. Should consider using
+    # TODO this usage of the global vector `logs` doesn't seem optimal. Should consider using
     #   the actual logging macros underneath instead.
     global logs = []
     log_by_element = Dict()
@@ -273,29 +273,29 @@ Checks the `modeltype` .
 ## Checks
 - All `ResourceEmit`s require a corresponding value in the field `emission_limit`.
 - The `emission_limit` time profiles cannot have a finer granulation than `StrategicProfile`.
-- The `emission_price` time profiles cannot have a finer granulation than `StrategicProfile`.
 
 ## Conditional checks (if `check_timeprofiles=true`)
 - The profiles in `emission_limit` have to have the same length as the number of strategic
   periods.
-- The profiles in `emission_price` have to have the same length as the number of strategic
-  periods.
+- The profiles in `emission_price` have to follow the time structure as outlined in
+  [`check_profile`](@ref).
 """
 function check_model(case, modeltype::EnergyModel, check_timeprofiles::Bool)
-    𝒯ᴵⁿᵛ = strategic_periods(get_time_struct(case))
+    𝒯 = get_time_struct(case)
+    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Check for inclusion of all emission resources
     for p ∈ get_products(case)
         if isa(p, ResourceEmit)
             @assert_or_log(
-                haskey(emission_limit(modeltype::EnergyModel), p),
+                haskey(emission_limit(modeltype), p),
                 "All `ResourceEmit`s require an entry in the dictionary " *
                 "`emission_limit`. For $p there is none."
             )
         end
     end
 
-    for p ∈ keys(emission_limit(modeltype::EnergyModel))
+    for p ∈ keys(emission_limit(modeltype))
         em_limit = emission_limit(modeltype, p)
         # Check for the strategic periods
         if isa(em_limit, StrategicProfile) && check_timeprofiles
@@ -310,33 +310,18 @@ function check_model(case, modeltype::EnergyModel, check_timeprofiles::Bool)
 
         # Check for potential indexing problems
         message =
-            "are not allowed for the resource: " *
+            "are not allowed for the resource `" *
             string(p) *
-            " in the Dictionary " *
+            "` in the dictionary " *
             "`emission_limit`."
         check_strategic_profile(em_limit, message)
     end
 
-    for p ∈ keys(emission_price(modeltype::EnergyModel))
-        em_limit = emission_price(modeltype, p)
-        # Check for the strategic periods
-        if isa(em_limit, StrategicProfile) && check_timeprofiles
-            @assert_or_log(
-                length(em_limit.vals) == length(𝒯ᴵⁿᵛ),
-                "The timeprofile provided for resource `" *
-                string(p) *
-                "` in the field " *
-                "`emission_price` does not match the strategic structure."
-            )
-        end
-
-        # Check for potential indexing problems
-        message =
-            "are not allowed for the resource: " *
-            string(p) *
-            " in the Dictionary " *
-            "`emission_price`."
-        check_strategic_profile(em_limit, message)
+    for p ∈ keys(emission_price(modeltype))
+        em_price = emission_price(modeltype, p)
+        !check_timeprofiles && continue
+        println(p)
+        check_profile("emission_price[" * string(p) * "]", em_price, 𝒯)
     end
 end
 
@@ -367,13 +352,13 @@ function check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel)
     len_vals = length(value.vals)
     len_simp = length(𝒯ᴵⁿᵛ)
     if len_vals > len_simp
-        message = "' is longer than the strategic time structure. \
+        message = "` is longer than the strategic time structure. \
         Its last $(len_vals - len_simp) value(s) will be omitted."
     elseif len_vals < len_simp
-        message = "' is shorter than the strategic time structure. It will use the last \
+        message = "` is shorter than the strategic time structure. It will use the last \
         value for the last $(len_simp - len_vals) strategic period(s)."
     end
-    @assert_or_log len_vals == len_simp "Field '" * string(fieldname) * message
+    @assert_or_log len_vals == len_simp "Field `" * string(fieldname) * message
     for t_inv ∈ 𝒯ᴵⁿᵛ
         check_profile(
             fieldname,
@@ -420,16 +405,16 @@ function check_profile(fieldname, value::OperationalProfile, ts::SimpleTimes, sp
     len_simp = length(ts)
     if len_vals > len_simp
         message =
-            "' in strategic period $(sp) is longer " *
+            "` in strategic period $(sp) is longer " *
             "than the operational time structure. " *
             "Its last $(len_vals - len_simp) value(s) will be omitted."
     elseif len_vals < len_simp
         message =
-            "' in strategic period $(sp) is shorter " *
+            "` in strategic period $(sp) is shorter " *
             "than the operational time structure. It will use the last value for the last " *
             "$(len_simp - len_vals + 1) operational period(s)."
     end
-    @assert_or_log len_vals == len_simp "Field '" * string(fieldname) * message
+    @assert_or_log len_vals == len_simp "Field `" * string(fieldname) * message
 end
 function check_profile(fieldname, value::OperationalProfile, ts::RepresentativePeriods, sp)
     for t_rp ∈ repr_periods(ts)
@@ -457,17 +442,17 @@ function check_profile(
     len_simp = length(repr_periods(ts))
     if len_vals > len_simp
         message =
-            "' in strategic period $(sp) is longer " *
+            "` in strategic period $(sp) is longer " *
             "than the representative time structure in strategic period $(sp). " *
             "Its last values $(len_vals - len_simp) will be omitted."
     elseif len_vals < len_simp
         message =
-            "' in strategic period $(sp) is longer " *
+            "` in strategic period $(sp) is longer " *
             "than the representative time structure in strategic period $(sp). " *
             "It will use the last value for the last $(len_simp - len_vals + 1) " *
             "representative period(s)."
     end
-    @assert_or_log len_vals == len_simp "Field '" * string(fieldname) * message
+    @assert_or_log len_vals == len_simp "Field `" * string(fieldname) * message
     for t_rp ∈ repr_periods(ts)
         check_profile(
             fieldname,
