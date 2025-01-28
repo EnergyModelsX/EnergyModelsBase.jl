@@ -49,6 +49,7 @@ The fields of the case dictionary correspond to:
    The couplings include connections between two distinctive `AbstractElement` types.
    Coupling implies in this context that two `AbstractElement` type, *i.e.*, [`Link`](@ref) and [`Node`](@ref EnergyModelsBase.Node) have common constraints.
    `EnergyModelsBase` provides as potential functions [`get_nodes`](@ref) and [`get_links`](@ref) in the coupling.
+   In this case, the Vector would be given as `[[get_nodes, get_links]]`.
 
 ```@docs
 AbstractCase

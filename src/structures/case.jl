@@ -26,7 +26,7 @@ for providing the input to a model.
   links for an analysis to be useful.
 - **`couplings::Vector{Vector{Function}}`** are the couplings between the individual function
   element types. These elements are represented through a corresponding function, *e.g.*,
-  [`get_nodes`](@ref) or [`get_links`](@ref)
+  [`get_nodes`](@ref) or [`get_links`](@ref).
 - **`misc::Dict`** is a dictionary that can be utilized for providing additional high level
   data in the existing format in the case of a new function for case creation. It is
   conditional through the application of a constructor.

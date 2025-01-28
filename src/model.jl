@@ -55,7 +55,7 @@ function create_model(
     𝒯 = get_time_struct(case)
     𝒫 = get_products(case)
     𝒳ᵛᵉᶜ = get_elements_vec(case)
-    𝒳ᵛᵉᶜ_𝒳ᵛᵉᶜ = get_couplings(case)
+    𝒳_𝒳 = get_couplings(case)
 
     # Declaration of element variables and constraints of the problem
     for 𝒳 ∈ 𝒳ᵛᵉᶜ
@@ -70,7 +70,7 @@ function create_model(
     end
 
     # Declaration of coupling constraints of the problem
-    for couple ∈ 𝒳ᵛᵉᶜ_𝒳ᵛᵉᶜ
+    for couple ∈ 𝒳_𝒳
         elements_vec = [cpl(case) for cpl ∈ couple]
         constraints_couple(m, elements_vec..., 𝒫, 𝒯, modeltype)
     end

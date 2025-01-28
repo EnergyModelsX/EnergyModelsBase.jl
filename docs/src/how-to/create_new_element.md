@@ -8,6 +8,9 @@ CurrentModule = EMB
 
 `EnergyModelsBase` allows incorporating new elements.
 These elements can have distinctive variables and constraints that are not inherited from the [`Link`](@ref) or [`Node`](@ref) types.
+New  elements can be coupled to the existing elements through the introduction of so-called *coupling constraints*.
+An example for coupling constraints is provided by [`constraints_couple`](@ref) in which we include the coupling between nodes and links.
+In this case, the flow into a [`Node`](@ref) corresponds to the sum of all flows from the connected [`Link`](@ref)s while the flow from a [`Node`](@ref) corresponds to the flow into the connected [`Link`](@ref)s.
 
 !!! warning "Introducing new Elements"
    Creating new elements should only be considered in cases where the functionality of [`Link`](@ref) or [`Node`](@ref) types is not sufficient for representing new concepts.
