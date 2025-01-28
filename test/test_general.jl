@@ -68,7 +68,7 @@ function generate_data()
     T = TwoLevel(4, 2, SimpleTimes(4, 2), op_per_strat = 8)
     model = OperationalModel(
         Dict(CO2 => StrategicProfile([160, 140, 120, 100]), NG => FixedProfile(1e6)),
-        Dict(CO2 => FixedProfile(0)),
+        Dict(CO2 => FixedProfile(10)),
         CO2,
     )
 
@@ -102,7 +102,8 @@ end
 
     # Check for the objective value
     # (*2 compared to 0.6.0 due to change in strategic period duration)
-    @test objective_value(m) ≈ -88983.386
+    # (+10400 = 2*10*(160+140+120+100) compared to 0.8.3 due to inclusion of co2 emissions)
+    @test objective_value(m) ≈ -99383.3860
 
     # Check for the total number of variables
     # (+ 16 compared to 0.6.x as increase in storage variables)
@@ -134,8 +135,14 @@ end
     # Check that the objective value is properly calculated
     # - objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
     @test -sum(
-        (value.(m[:opex_var][n, t_inv]) + value.(m[:opex_fixed][n, t_inv])) *
-        duration_strat(t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ᵒᵖᵉˣ
+        (
+            sum(
+                value.(m[:opex_var][n, t_inv]) + value.(m[:opex_fixed][n, t_inv])
+            for n ∈ 𝒩ᵒᵖᵉˣ) +
+            sum(
+                value.(m[:emissions_total][t, CO2]) * emission_price(model, CO2, t) *
+                scale_op_sp(t_inv, t) for t ∈ t_inv)
+        ) * duration_strat(t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ
     ) ≈ objective_value(m) atol = TEST_ATOL
 
     # Check that the inlet and outlet flowrates in the links are correctly calculated
