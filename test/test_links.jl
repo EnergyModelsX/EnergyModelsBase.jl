@@ -155,7 +155,7 @@ end
         to::EMB.Node
         formulation::EMB.Formulation
     end
-    function EMB.create_link(m, 𝒯, 𝒫, l::EmissionDirect, modeltype::EnergyModel, formulation::EMB.Formulation)
+    function EMB.create_link(m, l::EmissionDirect, 𝒯, 𝒫, modeltype::EnergyModel)
         # Generic link in which each output corresponds to the input
         @constraint(m, [t ∈ 𝒯, p ∈ EMB.link_res(l)],
             m[:link_out][l, t, p] == m[:link_in][l, t, p]
@@ -194,7 +194,7 @@ end
         to::EMB.Node
         formulation::EMB.Formulation
     end
-    function EMB.create_link(m, 𝒯, 𝒫, l::OpexDirect, modeltype::EnergyModel, formulation::EMB.Formulation)
+    function EMB.create_link(m, l::OpexDirect, 𝒯, 𝒫, modeltype::EnergyModel)
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
         # Generic link in which each output corresponds to the input
@@ -234,7 +234,7 @@ end
         to::EMB.Node
         formulation::EMB.Formulation
     end
-    function EMB.create_link(m, 𝒯, 𝒫, l::CapDirect, modeltype::EnergyModel, formulation::EMB.Formulation)
+    function EMB.create_link(m, l::CapDirect, 𝒯, 𝒫, modeltype::EnergyModel)
 
         # Generic link in which each output corresponds to the input
         @constraint(m, [t ∈ 𝒯, p ∈ EMB.link_res(l)],

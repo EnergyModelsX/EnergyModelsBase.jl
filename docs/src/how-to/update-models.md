@@ -7,6 +7,8 @@ We will as well implement information regarding the adjustment of extension pack
 
 ## [Adjustments from 0.8.x](@id how_to-update-08)
 
+### [Case input data](@id how_to-update-08-case)
+
 Starting from version 0.9.0, we introduced a new input format to the function `create_model`.
 The original case dictionary is replaced with a new type, [`Case`](@ref).
 We introduced deprecated methods that can be utilized with the original dictionary, but it is advisable to switch to the new type as:
@@ -24,6 +26,22 @@ case = Dict(
 case = Case(T, products, [nodes, links], [[get_nodes, get_links]]) # or
 case = Case(T, products, [nodes, links])
 ```
+
+### [`create_link` arguments](@id how_to-update-08-link)
+
+We restructured the function call arguments for links through the function [`create_link`](@ref EnergyModelsBase.create_link):
+
+```julia
+# Old structure:
+create_link(m, 𝒯, 𝒫, l::Link, modeltype::EnergyModel, formulation::Formulation)
+
+# New structure:
+create_link(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel)
+```
+
+This implies that we removed the argument `formulation::Formulation` and reordered the individual arguments to be consistent with [`create_node`](@ref).
+The field `formulation` still exists for `Direct`.
+It can be used to provide differnet submethods, *e.g.*, when creating capacity constraints.
 
 ## [Adjustments from 0.6.x to 0.8.x](@id how_to-update-06)
 

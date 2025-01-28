@@ -501,7 +501,7 @@ differentiation in extension packages.
 create_element(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel) =
     create_node(m, n, 𝒯, 𝒫, modeltype)
 create_element(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel) =
-    create_link(m, 𝒯, 𝒫, l, modeltype, formulation(l))
+    create_link(m, l, 𝒯, 𝒫, modeltype)
 
 """
     constraints_couple(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫, 𝒯, modeltype::EnergyModel)
@@ -856,15 +856,31 @@ function create_node(m, n::Availability, 𝒯, 𝒫, modeltype::EnergyModel)
 end
 
 """
-    create_link(m, 𝒯, 𝒫, l::Link, formulation::Formulation)
+    create_link(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel)
+    create_link(m, l::Direct, 𝒯, 𝒫, modeltype::EnergyModel)
+    create_link(m, 𝒯, 𝒫, l::Link, modeltype::EnergyModel, formulation::Formulation)
 
-Set the constraints for a simple `Link` (input = output). Can serve as fallback option for
-all unspecified subtypes of `Link`.
+Set the constraints for a `Link`.
 
-All links with capacity, as indicated through the function [`has_capacity`](@ref) call
-furthermore the function [`constraints_capacity_installed`](@ref) for limiting the capacity
-to the installed capacity.
+!!! note "Deprecated arguments order"
+    The argument order `(m, 𝒯, 𝒫, l::Link, modeltype::EnergyModel, formulation::Formulation)`
+    is deprecated. It will be removed in the near future. It remains to provide the user
+    with the potential for a simple adjustment of the links
 """
+function create_link(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel)
+    @warn(
+        "`create_link(m, 𝒯, 𝒫, l::Link, modeltype::EnergyModel, formulation::Formulation)` " *
+        "is deprecated, use `create_link(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel)` instead.",
+        maxlog = 1
+    )
+    return create_link(m, 𝒯, 𝒫, l, modeltype, formulation(l))
+end
+function create_link(m, l::Direct, 𝒯, 𝒫, modeltype::EnergyModel)
+    # Generic link in which each output corresponds to the input
+    @constraint(m, [t ∈ 𝒯, p ∈ link_res(l)],
+        m[:link_out][l, t, p] == m[:link_in][l, t, p]
+    )
+end
 function create_link(m, 𝒯, 𝒫, l::Link, modeltype::EnergyModel, formulation::Formulation)
 
     # Generic link in which each output corresponds to the input
