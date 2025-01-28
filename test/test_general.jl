@@ -90,7 +90,7 @@ end
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     𝒩 = get_nodes(case)
-    𝒩ⁿᵒᵗ = EMB.nodes_not_av(𝒩)
+    𝒩ᵒᵖᵉˣ = filter(EMB.has_opex, 𝒩)
     𝒩ᵉᵐ = nodes_emissions(𝒩)
     avail = 𝒩[1]
     NG_PP = 𝒩[4]
@@ -135,7 +135,7 @@ end
     # - objective(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
     @test -sum(
         (value.(m[:opex_var][n, t_inv]) + value.(m[:opex_fixed][n, t_inv])) *
-        duration_strat(t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ⁿᵒᵗ
+        duration_strat(t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ, n ∈ 𝒩ᵒᵖᵉˣ
     ) ≈ objective_value(m) atol = TEST_ATOL
 
     # Check that the inlet and outlet flowrates in the links are correctly calculated

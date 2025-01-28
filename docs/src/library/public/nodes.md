@@ -130,6 +130,8 @@ nodes_output
 nodes_emissions
 has_input
 has_output
+has_capacity(n::EnergyModelsBase.Node)
+has_opex(n::EnergyModelsBase.Node)
 has_emissions(n::EnergyModelsBase.Node)
 has_charge
 has_discharge
