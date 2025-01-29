@@ -102,7 +102,7 @@ end
 
     # Check for the objective value
     # (*2 compared to 0.6.0 due to change in strategic period duration)
-    # (+10400 = 2*10*(160+140+120+100) compared to 0.8.3 due to inclusion of co2 emissions)
+    # (-10400 = 2*10*(160+140+120+100) compared to 0.8.3 due to inclusion of co2 emissions)
     @test objective_value(m) ≈ -99383.3860
 
     # Check for the total number of variables
