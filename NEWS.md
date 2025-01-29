@@ -13,6 +13,7 @@
 * Allow for checks for links.
 * Changed functions to allow for nodes without OPEX that are not `Availability` nodes and nodes without capacity that are not `Availability` nodes.
 * Restructured the arguments in `create_link` to be consistent with `create_node`.
+* Allow for `OperationalProfile` in emission prices.
 
 ## Version 0.8.3 (2024-11-29)
 
