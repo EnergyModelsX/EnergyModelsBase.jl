@@ -212,9 +212,8 @@ function check_elements(
             check_node_data(n, data, 𝒯, modeltype, check_timeprofiles)
         end
 
-        if check_timeprofiles
-            check_time_structure(n, 𝒯)
-        end
+        check_timeprofiles && check_time_structure(n, 𝒯)
+
         # Put all log messages that emerged during the check, in a dictionary with the node as key.
         log_by_element[n] = logs
     end
@@ -257,9 +256,7 @@ function check_elements(
         for data ∈ link_data(l)
             check_link_data(l, data, 𝒯, modeltype, check_timeprofiles)
         end
-        if check_timeprofiles
-            check_time_structure(l, 𝒯)
-        end
+        check_timeprofiles && check_time_structure(l, 𝒯)
         # Put all log messages that emerged during the check, in a dictionary with the node as key.
         log_by_element[l] = logs
     end
@@ -319,8 +316,7 @@ function check_model(case, modeltype::EnergyModel, check_timeprofiles::Bool)
 
     for p ∈ keys(emission_price(modeltype))
         em_price = emission_price(modeltype, p)
-        !check_timeprofiles && continue
-        println(p)
+        check_timeprofiles || continue
         check_profile("emission_price[" * string(p) * "]", em_price, 𝒯)
     end
 end
@@ -350,33 +346,36 @@ function check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     len_vals = length(value.vals)
-    len_simp = length(𝒯ᴵⁿᵛ)
-    if len_vals > len_simp
+    len_ts = length(𝒯ᴵⁿᵛ)
+    if len_vals > len_ts
         message = "` is longer than the strategic time structure. \
-        Its last $(len_vals - len_simp) value(s) will be omitted."
-    elseif len_vals < len_simp
+        Its last $(len_vals - len_ts) value(s) will be omitted."
+    elseif len_vals < len_ts
         message = "` is shorter than the strategic time structure. It will use the last \
-        value for the last $(len_simp - len_vals) strategic period(s)."
+        value for the last $(len_ts - len_vals) strategic period(s)."
     end
-    @assert_or_log len_vals == len_simp "Field `" * string(fieldname) * message
+    @assert_or_log len_vals ==
+        len_ts "The `TimeProfile` of field `" * string(fieldname) * message
     for t_inv ∈ 𝒯ᴵⁿᵛ
+        p_msg = "strategic period $(t_inv.sp)"
         check_profile(
             fieldname,
             value.vals[minimum([t_inv.sp, length(value.vals)])],
             t_inv.operational,
-            t_inv.sp,
+            p_msg,
         )
     end
 end
 function check_profile(fieldname, value, 𝒯::TwoLevel)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
     for t_inv ∈ 𝒯ᴵⁿᵛ
-        check_profile(fieldname, value, t_inv.operational, t_inv.sp)
+        p_msg = "strategic period $(t_inv.sp)"
+        check_profile(fieldname, value, t_inv.operational, p_msg)
     end
 end
 
 """
-    check_profile(fieldname, value::TimeProfile, ts::TimeStructure, sp)
+    check_profile(fieldname, value::TimeProfile, ts::TimeStructure, p_msg)
 
 Check that an individual `TimeProfile` corresponds to the time structure `ts` in strategic
 period `sp`. The function flow is designed to provide errors in all situations in which the
@@ -395,74 +394,134 @@ value = OperationalProfile([1, 2, 3, 4, 5])
 value = OperationalProfile([1, 2])
 ```
 
-If you use a more detailed TimeProfile than the TimeStructure, it will you provide you with
+If you use a more detailed `TimeProfile` than the `TimeStructure`, it will provide you with
 a warning, *e.g.*, using `RepresentativeProfile` without `RepresentativePeriods`.
-
-It currently does not include support for identifying `OperationalProfile`s.
 """
-function check_profile(fieldname, value::OperationalProfile, ts::SimpleTimes, sp)
+function check_profile(fieldname, value::OperationalProfile, ts::SimpleTimes, p_msg)
     len_vals = length(value.vals)
-    len_simp = length(ts)
-    if len_vals > len_simp
+    len_ts = length(ts)
+    if len_vals > len_ts
         message =
-            "` in strategic period $(sp) is longer " *
-            "than the operational time structure. " *
-            "Its last $(len_vals - len_simp) value(s) will be omitted."
-    elseif len_vals < len_simp
+            "` in " * p_msg * " is longer than the operational time structure. " *
+            "Its last $(len_vals - len_ts) value(s) will be omitted."
+    elseif len_vals < len_ts
         message =
-            "` in strategic period $(sp) is shorter " *
-            "than the operational time structure. It will use the last value for the last " *
-            "$(len_simp - len_vals + 1) operational period(s)."
+            "` in " * p_msg * " is shorter than the operational time structure. " *
+            "It will use the last value for the last $(len_ts - len_vals + 1) " *
+            "operational period(s)."
     end
-    @assert_or_log len_vals == len_simp "Field `" * string(fieldname) * message
+    @assert_or_log(
+        len_vals == len_ts,
+        "The `TimeProfile` of field `" * string(fieldname) * message
+    )
 end
-function check_profile(fieldname, value::OperationalProfile, ts::RepresentativePeriods, sp)
+function check_profile(fieldname, value::OperationalProfile, ts::OperationalScenarios, p_msg)
+    for t_osc ∈ opscenarios(ts)
+        p_msg_osc = "operational scenario $(t_osc.scen) in " * p_msg
+        check_profile(fieldname, value, t_osc.operational, p_msg_osc)
+    end
+end
+function check_profile(fieldname, value::OperationalProfile, ts::RepresentativePeriods, p_msg)
     for t_rp ∈ repr_periods(ts)
-        check_profile(fieldname, value, t_rp.operational, sp)
+        p_msg_rp = "representative period $(t_rp.rp) in " * p_msg
+        check_profile(fieldname, value, t_rp.operational, p_msg_rp)
     end
 end
 
-function check_profile(fieldname, value::RepresentativeProfile, ts::SimpleTimes, sp)
-    if sp == 1
-        @warn(
-            "Using `RepresentativeProfile` with `SimpleTimes` is dangerous, as it may " *
-            "lead to unexpected behaviour. " *
-            "In this case, only the first profile is used in the model and tested."
+function check_profile(fieldname, value::ScenarioProfile, ts::SimpleTimes, p_msg)
+    @warn(
+        "Using `ScenarioProfile` with `SimpleTimes` is dangerous, " *
+        "as it may lead to unexpected behaviour. " *
+        "In this case, only the first profile is used in the model and tested.",
+        maxlog = 1
+    )
+    check_profile(fieldname, value.vals[1], ts, p_msg)
+end
+function check_profile(fieldname, value::ScenarioProfile, ts::OperationalScenarios, p_msg)
+    len_vals = length(value.vals)
+    len_ts = length(opscenarios(ts))
+    if len_vals > len_ts
+        message =
+            "` in " * p_msg * " is longer than the operational scenario time structure. " *
+            "Its last $(len_vals - len_ts) value(s) will be omitted."
+    elseif len_vals < len_ts
+        message =
+            "` in " * p_msg * " is shorter than the operational scenario time structure. " *
+            "It will use the last value for the last $(len_ts - len_vals + 1) " *
+            "operational period(s)."
+    end
+    @assert_or_log(
+        len_vals == len_ts,
+        "The `TimeProfile` of field `" * string(fieldname) * message
+    )
+    for t_osc ∈ opscenarios(ts)
+        p_msg_osc = "operational scenario $(t_osc.scen) in " * p_msg
+        check_profile(
+            fieldname,
+            value.vals[minimum([t_osc.scen, length(value.vals)])],
+            t_osc.operational,
+            p_msg_osc,
         )
     end
-    check_profile(fieldname, value.vals[1], ts, sp)
+end
+function check_profile(fieldname, value::ScenarioProfile, ts::RepresentativePeriods, p_msg)
+    for t_rp ∈ repr_periods(ts)
+        p_msg_rp = "representative period $(t_rp.rp) in " * p_msg
+        check_profile(fieldname, value, t_rp.operational, p_msg_rp)
+    end
+end
+
+function check_profile(fieldname, value::RepresentativeProfile, ts::SimpleTimes, p_msg)
+    @warn(
+        "Using `RepresentativeProfile` with `SimpleTimes` is dangerous, " *
+        "as it may lead to unexpected behaviour. " *
+        "In this case, only the first profile is used in the model and tested.",
+        maxlog = 1
+    )
+    check_profile(fieldname, value.vals[1], ts, p_msg)
+end
+function check_profile(fieldname, value::RepresentativeProfile, ts::OperationalScenarios, p_msg)
+    @warn(
+        "Using `RepresentativeProfile` with `OperationalScenarios` is dangerous, " *
+        "as it may lead to unexpected behaviour. " *
+        "In this case, only the first profile is used in the model and tested.",
+        maxlog = 1
+    )
+    check_profile(fieldname, value.vals[1], ts, p_msg)
 end
 function check_profile(
     fieldname,
     value::RepresentativeProfile,
     ts::RepresentativePeriods,
-    sp,
+    p_msg,
 )
     len_vals = length(value.vals)
-    len_simp = length(repr_periods(ts))
-    if len_vals > len_simp
+    len_ts = length(repr_periods(ts))
+    if len_vals > len_ts
         message =
-            "` in strategic period $(sp) is longer " *
-            "than the representative time structure in strategic period $(sp). " *
-            "Its last values $(len_vals - len_simp) will be omitted."
-    elseif len_vals < len_simp
+        "` in " * p_msg * " is longer than the representative time structure. " *
+        "Its last $(len_vals - len_ts) value(s) will be omitted."
+    elseif len_vals < len_ts
         message =
-            "` in strategic period $(sp) is longer " *
-            "than the representative time structure in strategic period $(sp). " *
-            "It will use the last value for the last $(len_simp - len_vals + 1) " *
-            "representative period(s)."
+        "` in " * p_msg * " is shorter than the representative time structure. " *
+        "It will use the last value for the last $(len_ts - len_vals + 1) " *
+        "operational period(s)."
     end
-    @assert_or_log len_vals == len_simp "Field `" * string(fieldname) * message
+    @assert_or_log(
+        len_vals == len_ts,
+        "The `TimeProfile` of field `" * string(fieldname) * message
+    )
     for t_rp ∈ repr_periods(ts)
+        p_msg_rp = "in representative period $(t_rp.rp) in " * p_msg
         check_profile(
             fieldname,
             value.vals[minimum([t_rp.rp, length(value.vals)])],
             t_rp.operational,
-            sp,
+            p_msg_rp,
         )
     end
 end
-check_profile(fieldname, value, ts, sp) = nothing
+check_profile(fieldname, value, ts, p_msg) = nothing
 
 """
     check_strategic_profile(time_profile::TimeProfile, message::String)
@@ -882,8 +941,8 @@ function check_node_data(
 
     for p ∈ process_emissions(data)
         value = process_emissions(data, p)
-        !check_timeprofiles && continue
-        !isa(value, TimeProfile) && continue
+        check_timeprofiles || continue
+        isa(value, TimeProfile) || continue
         check_profile(string(p) * " process emissions", value, 𝒯)
     end
 end
@@ -902,8 +961,8 @@ function check_node_data(
 
     for p ∈ process_emissions(data)
         value = process_emissions(data, p)
-        !check_timeprofiles && continue
-        !isa(value, TimeProfile) && continue
+        check_timeprofiles || continue
+        isa(value, TimeProfile) || continue
         check_profile(string(p) * " process emissions", value, 𝒯)
     end
     @assert_or_log(

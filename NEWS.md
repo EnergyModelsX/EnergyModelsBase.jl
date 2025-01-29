@@ -1,6 +1,6 @@
 # Release notes
 
-## Unversioned
+## Version 0.9.0 (2025-01-29)
 
 ### Major rework of input data structure
 
@@ -14,6 +14,7 @@
 * Changed functions to allow for nodes without OPEX that are not `Availability` nodes and nodes without capacity that are not `Availability` nodes.
 * Restructured the arguments in `create_link` to be consistent with `create_node`.
 * Allow for `OperationalProfile` in emission prices.
+* Updated the time profile checks to include also check operational scenarios.
 
 ## Version 0.8.3 (2024-11-29)
 
