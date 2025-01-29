@@ -212,9 +212,8 @@ function check_elements(
             check_node_data(n, data, 𝒯, modeltype, check_timeprofiles)
         end
 
-        if check_timeprofiles
-            check_time_structure(n, 𝒯)
-        end
+        check_timeprofiles && check_time_structure(n, 𝒯)
+
         # Put all log messages that emerged during the check, in a dictionary with the node as key.
         log_by_element[n] = logs
     end
@@ -257,9 +256,7 @@ function check_elements(
         for data ∈ link_data(l)
             check_link_data(l, data, 𝒯, modeltype, check_timeprofiles)
         end
-        if check_timeprofiles
-            check_time_structure(l, 𝒯)
-        end
+        check_timeprofiles && check_time_structure(l, 𝒯)
         # Put all log messages that emerged during the check, in a dictionary with the node as key.
         log_by_element[l] = logs
     end
@@ -319,8 +316,7 @@ function check_model(case, modeltype::EnergyModel, check_timeprofiles::Bool)
 
     for p ∈ keys(emission_price(modeltype))
         em_price = emission_price(modeltype, p)
-        !check_timeprofiles && continue
-        println(p)
+        check_timeprofiles || continue
         check_profile("emission_price[" * string(p) * "]", em_price, 𝒯)
     end
 end
@@ -882,8 +878,8 @@ function check_node_data(
 
     for p ∈ process_emissions(data)
         value = process_emissions(data, p)
-        !check_timeprofiles && continue
-        !isa(value, TimeProfile) && continue
+        check_timeprofiles || continue
+        isa(value, TimeProfile) || continue
         check_profile(string(p) * " process emissions", value, 𝒯)
     end
 end
@@ -902,8 +898,8 @@ function check_node_data(
 
     for p ∈ process_emissions(data)
         value = process_emissions(data, p)
-        !check_timeprofiles && continue
-        !isa(value, TimeProfile) && continue
+        check_timeprofiles || continue
+        isa(value, TimeProfile) || continue
         check_profile(string(p) * " process emissions", value, 𝒯)
     end
     @assert_or_log(
