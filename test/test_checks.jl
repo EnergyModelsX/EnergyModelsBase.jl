@@ -269,7 +269,7 @@ end
     end
 
     # Create a function for running the simple graph
-    function run_simple_graph(T::TimeStructure, tp::TimeProfile)
+    function create_simple_graph(T::TimeStructure, tp::TimeProfile)
         case, model = simple_graph(T, tp)
         return create_model(case, model), case, model
     end
@@ -280,32 +280,101 @@ end
     # - EMB.check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel)
     ts = TwoLevel(2, 1, day)
     ops = OperationalProfile(ones(24))
-    tp = StrategicProfile([ops, ops, ops])
-    @test_throws AssertionError run_simple_graph(ts, tp)
+    profiles = [
+        StrategicProfile([ops, ops, ops]),
+        StrategicProfile([ops]),
+    ]
+    for tp ∈ profiles
+        @test_throws AssertionError create_simple_graph(ts, tp)
+    end
 
-    # Test that there is an error with wrong operational profiles
+    # Test that there is an error with wrong `OperationalProfile`s
     # - EMB.check_profile(fieldname, value::OperationalProfile, ts::SimpleTimes, sp)
-    ts = TwoLevel(2, 1, day)
-    tp = OperationalProfile(ones(20))
-    @test_throws AssertionError run_simple_graph(ts, tp)
-    tp = OperationalProfile(ones(30))
-    @test_throws AssertionError run_simple_graph(ts, tp)
+    profiles = [
+        OperationalProfile(ones(20)),
+        OperationalProfile(ones(30)),
+    ]
+    for tp ∈ profiles
+        @test_throws AssertionError create_simple_graph(ts, tp)
+    end
 
-    # Test that there is warning when using RepresentativeProfile without RepresentativePeriods
+    # Test that there is an error with wrong `OperationalProfile`s in operational scenarios
+    # - EMB.check_profile(fieldname, value::OperationalProfile, ts::OperationalScenarios, sp)
+    oscs = OperationalScenarios(3, day)
+    ts =  TwoLevel(2, 1, oscs)
+    for tp ∈ profiles
+        @test_throws AssertionError create_simple_graph(ts, tp)
+    end
+
+    # Test that there is an error with wrong `OperationalProfile`s in representative periods
+    # - EMB.check_profile(fieldname, value::OperationalProfile, ts::RepresentativePeriods, sp)
+    ts =  TwoLevel(2, 1, RepresentativePeriods(2, [.5, .5], day))
+    for tp ∈ profiles
+        @test_throws AssertionError create_simple_graph(ts, tp)
+    end
+
+    # Test that there is an error with wrong `OperationalProfile`s in operational scenarios
+    # in representative periods
+    # - EMB.check_profile(fieldname, value::OperationalProfile, ts::OperationalScenarios, sp)
+    # - EMB.check_profile(fieldname, value::OperationalProfile, ts::RepresentativePeriods, sp)
+    ts =  TwoLevel(2, 1, RepresentativePeriods(2, [.5, .5], oscs))
+    for tp ∈ profiles
+        @test_throws AssertionError create_simple_graph(ts, tp)
+    end
+
+    # Test that there is warning when using `ScenarioProfile` without `OperationalScenarios`
     # - EMB.check_profile(fieldname, value::RepresentativeProfile, ts::SimpleTimes, sp)
-    ts = TwoLevel(1, 1, day)
-    tp = RepresentativeProfile([FixedProfile(5), FixedProfile(10)])
+    ts = TwoLevel(2, 1, day)
+    ops = FixedProfile(5)
+    profiles = [ScenarioProfile([ops, ops]), ScenarioProfile([ops, ops, ops, ops])]
+    msg =
+        "Using `ScenarioProfile` with `SimpleTimes` is dangerous, as it may " *
+        "lead to unexpected behaviour. " *
+        "In this case, only the first profile is used in the model and tested."
+    @test_logs (:warn, msg) create_simple_graph(ts, profiles[1]);
+
+    # Test that there is an error with wrong `ScenarioProfile`s
+    # - EMB.check_profile(fieldname, value::ScenarioProfile, ts::SimpleTimes, sp)
+    ts =  TwoLevel(2, 1, oscs)
+    for tp ∈ profiles
+        @test_throws AssertionError create_simple_graph(ts, tp)
+    end
+
+    # Test that there is an error with wrong `OperationalProfile`s in representative periods
+    # - EMB.check_profile(fieldname, value::OperationalProfile, ts::RepresentativePeriods, sp)
+    ts =  TwoLevel(2, 1, RepresentativePeriods(2, [.5, .5], oscs))
+    for tp ∈ profiles
+        @test_throws AssertionError create_simple_graph(ts, tp)
+    end
+
+    # Test that there is warning when using `RepresentativeProfile` without
+    # `RepresentativePeriods`
+    # - EMB.check_profile(fieldname, value::RepresentativeProfile, ts::SimpleTimes, sp)
+    ts = TwoLevel(2, 1, day)
+    tp = RepresentativeProfile([ops, ops])
     msg =
         "Using `RepresentativeProfile` with `SimpleTimes` is dangerous, as it may " *
         "lead to unexpected behaviour. " *
         "In this case, only the first profile is used in the model and tested."
-    @test_logs (:warn, msg) run_simple_graph(ts, tp)
+    @test_logs (:warn, msg) create_simple_graph(ts, tp);
+    # - EMB.check_profile(fieldname, value::RepresentativeProfile, ts::OperationalScenarios, sp)
+    ts =  TwoLevel(2, 1, OperationalScenarios(2, day))
+    msg =
+        "Using `RepresentativeProfile` with `OperationalScenarios` is dangerous, as it may " *
+        "lead to unexpected behaviour. " *
+        "In this case, only the first profile is used in the model and tested."
+    @test_logs (:warn, msg) create_simple_graph(ts, tp);
 
-    # Test that there is an error when `RepresentativeProfile` have a different length than
-    # the corresponding `RepresentativePeriods`
+    # Test that there is an error with wrong `RepresentativeProfile`s
     # - EMB.check_profile(fieldname, value::RepresentativeProfile, ts::SimpleTimes, sp)
-    ts = TwoLevel(2, 1, RepresentativePeriods(3, 8760, ones(3) / 3, [day, day, day]))
-    @test_throws AssertionError run_simple_graph(ts, tp)
+    ts = TwoLevel(2, 1, RepresentativePeriods(2, ones(3) / 3, [day, day, day]))
+    profiles = [
+        RepresentativeProfile([ops, ops]),
+        RepresentativeProfile([ops, ops, ops, ops]),
+    ]
+    for tp ∈ profiles
+        @test_throws AssertionError create_simple_graph(ts, tp)
+    end
 
     # Check that turning of the timeprofile checks leads to a warning
     case, model = simple_graph(ts, tp)
