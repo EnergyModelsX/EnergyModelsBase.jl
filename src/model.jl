@@ -238,6 +238,10 @@ function variables_flow(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype:
     @variable(m, flow_in[n_in ∈ 𝒩ⁱⁿ, 𝒯, inputs(n_in)])
     @variable(m, flow_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯, outputs(n_out)])
 
+    # Create the node potential variables
+    @variable(m, potential_in[n_in ∈ 𝒩ⁱⁿ, 𝒯,  res_sub(inputs(n), CompundResource)] ≥ 0)
+    @variable(m, potential_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯,  res_sub(outputs(n), CompundResource) ≥ 0])
+
     # Set the bounds for unidirectional nodes
     𝒩ⁱⁿ⁻ᵘⁿⁱ = filter(is_unidirectional, 𝒩ⁱⁿ)
     𝒩ᵒᵘᵗ⁻ᵘⁿⁱ = filter(is_unidirectional, 𝒩ᵒᵘᵗ)
@@ -253,6 +257,10 @@ function variables_flow(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::
     # Create the link flow variables
     @variable(m, link_in[l ∈ ℒ, 𝒯, inputs(l)])
     @variable(m, link_out[l ∈ ℒ, 𝒯, outputs(l)])
+
+    # Create the node potential variables
+    @variable(m, potential_in[l ∈ ℒ, 𝒯,  res_sub(inputs(l), CompundResource)] ≥ 0)
+    @variable(m, potential_out[l ∈ ℒ, 𝒯,  res_sub(outputs(l), CompundResource) ≥ 0])
 
     # Set the bounds for unidirectional links
     ℒᵘⁿⁱ = filter(is_unidirectional, ℒ)
@@ -522,12 +530,20 @@ function constraints_couple(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫, 
                 m[:flow_out][n, t, p] ==
                 sum(m[:link_in][l, t, p] for l ∈ ℒᶠʳᵒᵐ if p ∈ outputs(l))
             )
+            # Set the potential for incoming resources with potential
+            @constraint(m, [t ∈ 𝒯, l ∈ ℒᶠʳᵒᵐ, p ∈ res_sub(outputs(n), CompoundResource)],
+                m[:potential_out][n, t, p] == m[:potential_in][l, t, p]
+            )
         end
         # Constraint for input flowrate and output links.
         if has_input(n)
             @constraint(m, [t ∈ 𝒯, p ∈ inputs(n)],
                 m[:flow_in][n, t, p] ==
                 sum(m[:link_out][l, t, p] for l ∈ ℒᵗᵒ if p ∈ inputs(l))
+            )
+            # Set the potential for outgoing resources with potential
+            @constraint(m, [t ∈ 𝒯, l ∈ ℒᵗᵒ, p ∈ res_sub(inputs(n), CompoundResource)],
+                m[:potential_in][n, t, p] == m[:potential_out][l, t, p]
             )
         end
     end
@@ -719,6 +735,9 @@ function create_node(m, n::Source, 𝒯, 𝒫, modeltype::EnergyModel)
     # Call of the function for the outlet flow from the `Source` node
     constraints_flow_out(m, n, 𝒯, modeltype)
 
+    # Call of the function for the potential of the `Source` node.
+    constraints_potential(m, n, 𝒯, modeltype)
+
     # Call of the function for limiting the capacity to the maximum installed capacity
     constraints_capacity(m, n, 𝒯, modeltype)
 
@@ -754,6 +773,9 @@ function create_node(m, n::NetworkNode, 𝒯, 𝒫, modeltype::EnergyModel)
     # Call of the function for the inlet flow to and outlet flow from the `NetworkNode` node
     constraints_flow_in(m, n, 𝒯, modeltype)
     constraints_flow_out(m, n, 𝒯, modeltype)
+
+    # Call of the function for the potential of the `Network` node.
+    constraints_potential(m, n, 𝒯, modeltype)
 
     # Call of the function for limiting the capacity to the maximum installed capacity
     constraints_capacity(m, n, 𝒯, modeltype)
@@ -795,6 +817,9 @@ function create_node(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
     constraints_flow_in(m, n, 𝒯, modeltype)
     constraints_flow_out(m, n, 𝒯, modeltype)
 
+    # Call of the function for the potential of the `Storage` node.
+    constraints_potential(m, n, 𝒯, modeltype)
+
     # Call of the function for limiting the capacity to the maximum installed capacity
     constraints_capacity(m, n, 𝒯, modeltype)
 
@@ -829,6 +854,9 @@ function create_node(m, n::Sink, 𝒯, 𝒫, modeltype::EnergyModel)
     # Call of the function for the inlet flow to the `Sink` node
     constraints_flow_in(m, n, 𝒯, modeltype)
 
+    # Call of the function for the potential of the `Sink` node.
+    constraints_potential(m, n, 𝒯, modeltype)
+
     # Call of the function for limiting the capacity to the maximum installed capacity
     constraints_capacity(m, n, 𝒯, modeltype)
 
@@ -852,6 +880,11 @@ function create_node(m, n::Availability, 𝒯, 𝒫, modeltype::EnergyModel)
     # Mass/energy balance constraints for an availability node.
     @constraint(m, [t ∈ 𝒯, p ∈ inputs(n)],
         m[:flow_in][n, t, p] == m[:flow_out][n, t, p]
+    )
+
+    # Potential balance constraints for an availability node.
+    @constraint(m, [t ∈ 𝒯, p ∈ res_sub(inputs(n), CompoundResource)],
+        m[:potential_in][n, t, p] == m[:potential_out][n, t, p]
     )
 end
 
@@ -880,12 +913,22 @@ function create_link(m, l::Direct, 𝒯, 𝒫, modeltype::EnergyModel)
     @constraint(m, [t ∈ 𝒯, p ∈ link_res(l)],
         m[:link_out][l, t, p] == m[:link_in][l, t, p]
     )
+
+    # Potential balance constraints for an availability node.
+    @constraint(m, [t ∈ 𝒯, p ∈ res_sub(link_res(l), CompoundResource)],
+        m[:potential_in][l, t, p] == m[:potential_out][l, t, p]
+    )
 end
 function create_link(m, 𝒯, 𝒫, l::Link, modeltype::EnergyModel, formulation::Formulation)
 
     # Generic link in which each output corresponds to the input
     @constraint(m, [t ∈ 𝒯, p ∈ link_res(l)],
         m[:link_out][l, t, p] == m[:link_in][l, t, p]
+    )
+
+    # Potential balance constraints for an availability node.
+    @constraint(m, [t ∈ 𝒯, p ∈ res_sub(link_res(l), CompoundResource)],
+        m[:potential_in][l, t, p] == m[:potential_out][l, t, p]
     )
 
     # Call of the function for limiting the capacity to the maximum installed capacity

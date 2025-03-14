@@ -185,6 +185,14 @@ function constraints_flow_out(m, n::Storage, 𝒯::TimeStructure, modeltype::Ene
 end
 
 """
+    constraints_potential(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)
+
+Function for creating the constraint on the potential at a generic `Node`.
+This function serves as fallback option if no other function is specified for a `Node`.
+"""
+function constraints_potential(m, n::Node, 𝒯::TimeStructure, modeltype::EnergyModel)end
+
+"""
     constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Function for creating the level constraints of a `Storage` node. If you create a new
