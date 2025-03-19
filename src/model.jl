@@ -259,7 +259,7 @@ function variables_flow(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, model
     # Create the link flow variables
     @variable(m, link_in[l ∈ ℒ, 𝒯, inputs(l)])
     @variable(m, link_out[l ∈ ℒ, 𝒯, outputs(l)])
-    
+
     # Set the bounds for unidirectional links
     ℒᵘⁿⁱ = filter(is_unidirectional, ℒ)
 
@@ -544,7 +544,7 @@ function constraints_couple(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫, 
                 m[:flow_out][n, t, p] ==
                 sum(m[:link_in][l, t, p] for l ∈ ℒᶠʳᵒᵐ if p ∈ outputs(l))
             )
-            # Set constraints incoming resources types
+            # Additional constraints based on resources types
             for rt in res_types(𝒫)
                 constraints_couple_resource_from(m, n, ℒᶠʳᵒᵐ, rt, 𝒯, modeltype)
             end
@@ -555,7 +555,7 @@ function constraints_couple(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫, 
                 m[:flow_in][n, t, p] ==
                 sum(m[:link_out][l, t, p] for l ∈ ℒᵗᵒ if p ∈ inputs(l))
             )
-            # Set constraints for outgoing resource types
+            # Additional constraints based on resource types
             for rt in res_types(𝒫)
                 constraints_couple_resource_to(m, n, ℒᵗᵒ, rt, 𝒯, modeltype)
             end
