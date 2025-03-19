@@ -107,3 +107,10 @@ Returns all emission resources for a
 """
 res_em(𝒫::Array{<:Resource}) = filter(is_resource_emit, 𝒫)
 res_em(𝒫::Dict) = filter(p -> is_resource_emit(first(p)), 𝒫)
+
+"""
+    res_types(ℒ::Array{<:Link})
+
+Return the unique resource types transported for a Array of resources `𝒫`.
+"""
+res_types(𝒫::Array{<:Resource}) = unique([typeof(p) for p in 𝒫])

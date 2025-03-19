@@ -60,7 +60,7 @@ function create_model(
     # Declaration of element variables and constraints of the problem
     for 𝒳 ∈ 𝒳ᵛᵉᶜ
         variables_capacity(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, modeltype)
-        variables_flow(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, modeltype)
+        variables_flow(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype)
         variables_opex(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, modeltype)
         variables_capex(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, modeltype)
         variables_emission(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype)
@@ -229,7 +229,7 @@ By default, all nodes `𝒩` and links `ℒ` only allow for unidirectional flow.
 bidirectional flow through providing a method to the function [`is_unidirectional`](@ref)
 for new link/node types.
 """
-function variables_flow(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
+function variables_flow(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
     # Extract the nodes with inputs and outputs
     𝒩ⁱⁿ = filter(has_input, 𝒩)
     𝒩ᵒᵘᵗ = filter(has_output, 𝒩)
@@ -237,10 +237,6 @@ function variables_flow(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype:
     # Create the node flow variables
     @variable(m, flow_in[n_in ∈ 𝒩ⁱⁿ, 𝒯, inputs(n_in)])
     @variable(m, flow_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯, outputs(n_out)])
-
-    # Create the node potential variables
-    @variable(m, potential_in[n_in ∈ 𝒩ⁱⁿ, 𝒯,  res_sub(inputs(n), CompundResource)] ≥ 0)
-    @variable(m, potential_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯,  res_sub(outputs(n), CompundResource) ≥ 0])
 
     # Set the bounds for unidirectional nodes
     𝒩ⁱⁿ⁻ᵘⁿⁱ = filter(is_unidirectional, 𝒩ⁱⁿ)
@@ -252,16 +248,18 @@ function variables_flow(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype:
     for n_out ∈ 𝒩ᵒᵘᵗ⁻ᵘⁿⁱ, t ∈ 𝒯, p ∈ outputs(n_out)
         set_lower_bound(m[:flow_out][n_out, t, p], 0)
     end
+
+    # Create new flow variables for specific resource types
+    for rt in res_types(𝒫)
+        variables_flow_resource(m, 𝒩, rt, 𝒯, modeltype)
+    end
+
 end
-function variables_flow(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
+function variables_flow(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
     # Create the link flow variables
     @variable(m, link_in[l ∈ ℒ, 𝒯, inputs(l)])
     @variable(m, link_out[l ∈ ℒ, 𝒯, outputs(l)])
-
-    # Create the node potential variables
-    @variable(m, potential_in[l ∈ ℒ, 𝒯,  res_sub(inputs(l), CompundResource)] ≥ 0)
-    @variable(m, potential_out[l ∈ ℒ, 𝒯,  res_sub(outputs(l), CompundResource) ≥ 0])
-
+    
     # Set the bounds for unidirectional links
     ℒᵘⁿⁱ = filter(is_unidirectional, ℒ)
 
@@ -273,7 +271,23 @@ function variables_flow(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::
             set_lower_bound(m[:link_out][l, t, p], 0)
         end
     end
+
+    # Create new flow variables for specific resource types
+    for rt in res_types(𝒫)
+        variables_flow_resource(m, ℒ, rt, 𝒯, modeltype)
+    end
 end
+
+"""
+    variables_flow_resource(m, ℒ::Vector{<:Link}, rt::Type{Resource}, 𝒯, modeltype::EnergyModel)
+
+Declaration of flow variables for the differrent resource types.
+
+The default method is empty but it is required for multiple dispatch in energy flow models.
+"""
+function variables_flow_resource(m, ℒ::Vector{<:Link}, rt::Type{<:Resource}, 𝒯, modeltype::EnergyModel) end
+function variables_flow_resource(m, 𝒩::Vector{<:Node}, rt::Type{<:Resource}, 𝒯, modeltype::EnergyModel) end
+
 
 """
     variables_opex(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
@@ -914,25 +928,36 @@ function create_link(m, l::Direct, 𝒯, 𝒫, modeltype::EnergyModel)
         m[:link_out][l, t, p] == m[:link_in][l, t, p]
     )
 
-    # Potential balance constraints for an availability node.
-    @constraint(m, [t ∈ 𝒯, p ∈ res_sub(link_res(l), CompoundResource)],
-        m[:potential_in][l, t, p] == m[:potential_out][l, t, p]
-    )
+    # Add flow constraints of specific resources on links.
+    for rt in res_types(𝒫)
+        constraints_link_resource(m, l, 𝒯, rt, modeltype)
+    end
 end
-function create_link(m, 𝒯, 𝒫, l::Link, modeltype::EnergyModel, formulation::Formulation)
+function create_link(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel, formulation::Formulation)
 
     # Generic link in which each output corresponds to the input
     @constraint(m, [t ∈ 𝒯, p ∈ link_res(l)],
         m[:link_out][l, t, p] == m[:link_in][l, t, p]
-    )
-
-    # Potential balance constraints for an availability node.
-    @constraint(m, [t ∈ 𝒯, p ∈ res_sub(link_res(l), CompoundResource)],
-        m[:potential_in][l, t, p] == m[:potential_out][l, t, p]
-    )
+    )    
 
     # Call of the function for limiting the capacity to the maximum installed capacity
     if has_capacity(l)
         constraints_capacity_installed(m, l, 𝒯, modeltype)
     end
+
+    # Add flow constraints of specific resources on links.
+    for rt in res_types(𝒫)
+        constraints_link_resource(m, l, 𝒯, rt, modeltype, formulation)
+    end
 end
+
+"""
+    constraints_link__resource(m, l::Direct, rt::Type{Resource}, 𝒯, modeltype::EnergyModel)
+    constraints_link__resource(m, l::Link, rt::Type{Resource}, 𝒯, modeltype::EnergyModel)
+
+Declaration of flow constraints for the differrent resource types.
+
+The default method is empty but it is required for multiple dispatch in energy flow models.
+"""
+function constraints_link_resource(m, l::Direct, 𝒯, rt::Type{<:Resource}, modeltype::EnergyModel) end
+function constraints_link_resource(m, l::Link, 𝒯, rt::Type{<:Resource}, modeltype::EnergyModel, formulation::Formulation) end
