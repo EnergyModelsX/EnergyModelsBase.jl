@@ -5,14 +5,6 @@ abstract type Resource end
 Base.show(io::IO, r::Resource) = print(io, "$(r.id)")
 
 """
-Compund resources that have a potential in addition to a flow rate,
-these potential behave differently when summarized in a junction.
-E.q. electric power which consist of voltage (potential) and power/current (flow rate),
-    or gas which have both pressure (potential) and gas flow (flow rate).
-"""
-abstract type CompoundResource <: Resource end
-
-"""
     ResourceEmit{T<:Real} <: Resource
 
 Resources that can be emitted (*e.g.*, CO₂, CH₄, NOₓ).
@@ -43,21 +35,6 @@ These resources **cannot** be included as resources that are emitted, *e.g*, in 
 struct ResourceCarrier{T<:Real} <: Resource
     id::Any
     co2_int::T
-end
-
-"""
-    ResourcePotential{T<:Real} <: CompundResource
-
-Resources that can be transported and converted, but also has a energy potential.
-
-# Fields
-- **`id`** is the name/identifyer of the resource.
-- **`co2_int::T`** is the CO₂ intensity, *e.g.*, t/MWh.
-"""
-struct ResourcePotential{T<:Real} <: CompoundResource
-    id::Any
-    co2_int::T
-    potential_id::Any
 end
 
 """
