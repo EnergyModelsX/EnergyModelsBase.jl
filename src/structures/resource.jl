@@ -45,6 +45,20 @@ Returns the CO₂ intensity of resource `p`
 co2_int(p::Resource) = p.co2_int
 
 """
+    res_flow(𝒫::Vector{<:Resource})
+
+Filter resources with flow variables.
+"""
+res_flow(𝒫::Vector{<:Resource}) = filter(p -> add_flow_var(p), 𝒫)
+
+"""
+    add_flow_var(p::Resource)
+
+Checks whether the Resource `p` should add flow variables.
+"""
+add_flow_var(p::Resource) = true
+
+"""
     is_resource_emit(p::Resource)
 
 Checks whether the Resource `p` is of type `ResourceEmit`.
@@ -90,4 +104,11 @@ res_em(𝒫::Dict) = filter(p -> is_resource_emit(first(p)), 𝒫)
 
 Return the unique resource types in an Array of resources `𝒫`.
 """
-res_types(𝒫::Array{<:Resource}) = unique([typeof(p) for p in 𝒫])
+res_types(𝒫::Array{<:Resource}) = unique(map(x -> typeof(x), 𝒫))
+
+"""
+    res_types_seg(𝒫::Array{<:Resource})
+
+Return a Vector-of-Vectors of resources segmented by the sub-types.
+"""
+res_types_seg(𝒫::Array{<:Resource}) = [Vector{rt}(filter(x -> isa(x, rt), 𝒫)) for rt in res_types(𝒫)]
