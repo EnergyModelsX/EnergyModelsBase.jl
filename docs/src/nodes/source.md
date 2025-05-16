@@ -34,7 +34,7 @@ The fields of a [`RefSource`](@ref) node are given as:
   In the current version, it is used for both providing `EmissionsData` and additional investment data when [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/) is used.
   When using `EmissionsData`, only process emissions can be considered, that is the types [`EmissionsProcess`](@ref) and that is the types [`EmissionsProcess`](@ref) and [`CaptureProcessEmissions`](@ref).
   Specifying energy related emissions will not have an impact as there is no energy conversion within a `Source` node.
-  !!! note "Constructor for RefSource"
+  !!! note "Constructor for `RefSource`"
       The field `data` is not required as we include a constructor when the value is excluded.
 
   !!! warning "Using `CaptureData`"
