@@ -37,14 +37,14 @@ The fields of a [`RefSource`](@ref) node are given as:
   !!! note "Constructor for RefSource"
       The field `data` is not required as we include a constructor when the value is excluded.
 
-!!! warning "Using `CaptureData`"
-    If you plan to use [`CaptureData`](@ref) for a [`RefSource`](@ref) node, it is crucial that you specify your CO₂ resource in the `output` dictionary.
-    The chosen value is however **not** important as the CO₂ flow is automatically calculated based on the process utilization and the provided process emission value.
-    The reason for this necessity is that flow variables are declared through the keys of the `output` dictionary.
-    Hence, not specifying CO₂ as `output` resource results in not creating the corresponding flow variable and subsequent problems in the design.
+  !!! warning "Using `CaptureData`"
+      If you plan to use [`CaptureData`](@ref) for a [`RefSource`](@ref) node, it is crucial that you specify your CO₂ resource in the `output` dictionary.
+      The chosen value is however **not** important as the CO₂ flow is automatically calculated based on the process utilization and the provided process emission value.
+      The reason for this necessity is that flow variables are declared through the keys of the `output` dictionary.
+      Hence, not specifying CO₂ as `output` resource results in not creating the corresponding flow variable and subsequent problems in the design.
 
-    We plan to remove this necessity in the future.
-    As it would most likely correspond to breaking changes, we have to be careful to avoid requiring major changes in other packages.
+      We plan to remove this necessity in the future.
+      As it would most likely correspond to breaking changes, we have to be careful to avoid requiring major changes in other packages.
 
 ## [Mathematical description](@id nodes-source-math)
 
