@@ -26,7 +26,7 @@ The fields of a [`RefSink`](@ref) node are given as:
 - **`data::Vector{Data}`**:\
   An entry for providing additional data to the model.
   In the current version, it is used for both providing `EmissionsData` and additional investment data when [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/) is used.
-  !!! note
+  !!! note "Constructor for `RefSink`"
       The field `data` is not required as we include a constructor when the value is excluded.
   !!! danger "Using `CaptureData`"
       As a `Sink` node does not have any output, it is not possible to utilize `CaptureData`.

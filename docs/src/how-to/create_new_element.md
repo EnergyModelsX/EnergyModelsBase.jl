@@ -13,9 +13,9 @@ An example for coupling constraints is provided by [`constraints_couple`](@ref) 
 In this case, the flow into a [`Node`](@ref) corresponds to the sum of all flows from the connected [`Link`](@ref)s while the flow from a [`Node`](@ref) corresponds to the flow into the connected [`Link`](@ref)s.
 
 !!! warning "Introducing new Elements"
-   Creating new elements should only be considered in cases where the functionality of [`Link`](@ref) or [`Node`](@ref) types is not sufficient for representing new concepts.
-   It is generally preferred to instead create a new link or node (as outlined on *[how to create a new node](@ref how_to-create_node)*).
-   This approach is simpler and is less error prone
+    Creating new elements should only be considered in cases where the functionality of [`Link`](@ref) or [`Node`](@ref) types is not sufficient for representing new concepts.
+    It is generally preferred to instead create a new link or node (as outlined on *[how to create a new node](@ref how_to-create_node)*).
+    This approach is simpler and is less error prone
 
 ## [Requirements](@id how_to-create_element-requirements)
 

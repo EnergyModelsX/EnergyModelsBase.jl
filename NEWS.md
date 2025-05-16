@@ -1,5 +1,12 @@
 # Release notes
 
+## Unversioned
+
+### Minor updates
+
+* Minor grammatical and structural changes to the documentation.
+* Return empty `Resource` vectors in the function `inputs` (for `RefSource`) and `outputs` (for `RefSink`) instead of empty vectors.
+
 ## Version 0.9.0 (2025-01-29)
 
 ### Major rework of input data structure

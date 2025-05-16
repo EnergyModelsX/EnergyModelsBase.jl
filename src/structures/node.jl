@@ -657,7 +657,7 @@ If the resource `p` is specified, it returns the value (1 in the case of
 """
 inputs(n::Node) = collect(keys(n.input))
 inputs(n::Availability) = n.input
-inputs(n::Source) = []
+inputs(n::Source) = Resource[]
 inputs(n::Node, p::Resource) = n.input[p]
 inputs(n::Availability, p::Resource) = 1
 inputs(n::Source, p::Resource) = nothing
@@ -673,7 +673,7 @@ If the resource `p` is specified, it returns the value (1 in the case of
 """
 outputs(n::Node) = collect(keys(n.output))
 outputs(n::Availability) = n.output
-outputs(n::Sink) = []
+outputs(n::Sink) = Resource[]
 outputs(n::Node, p::Resource) = n.output[p]
 outputs(n::Availability, p::Resource) = 1
 outputs(n::Sink, p::Resource) = nothing
@@ -724,7 +724,7 @@ opex_var(stor_par::UnionOpexVar, t) = stor_par.opex_var[t]
     opex_fixed(n::Node)
     opex_fixed(n::Node, t_inv)
 
-Returns the fixed OPEX of a node node `n` as `TimeProfile` or in strategic period `t_inv`.
+Returns the fixed OPEX of a node `n` as `TimeProfile` or in strategic period `t_inv`.
 
 !!! warning "Storage nodes"
     The fixed OPEX is not directly defined for [`Storage`](@ref) nodes. Instead, it is necessary

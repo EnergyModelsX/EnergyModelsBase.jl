@@ -84,7 +84,7 @@ The fields of a [`RefStorage`](@ref) are given as:
 - **`data::Vector{Data}`**:\
   An entry for providing additional data to the model.
   In the current version, it is used for both providing `EmissionsData` and additional investment data when [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/) is used.
-  !!! note
+  !!! note "Constructor for `RefStorage`"
       The field `data` is not required as we include a constructor when the value is excluded.
 
 !!! danger "Discharge values for `RefStorage`"
