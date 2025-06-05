@@ -16,7 +16,7 @@ CurrentModule = EnergyModelsBase
 create_element
 create_link
 variables_element
-variables_data
+variables_data(m, _::Type{<:Data}, 𝒳::Vector{<:AbstractElement}, 𝒯, 𝒫, modeltype::EnergyModel)
 objective(m, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
 objective_operational
 emissions_operational
@@ -40,7 +40,7 @@ constraints_level_bounds
 variables_capacity
 variables_flow
 variables_opex
-variables_capex(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
+variables_capex
 variables_emission
 variables_elements
 variables_element_data
