@@ -23,6 +23,12 @@ The connections are incorporated through `Link`s which transport resources betwe
 AbstractElement
 ```
 
+`EnergyModelsBase` allows for the potential of extension data which can be extracted through
+
+```@docs
+element_data
+```
+
 ## [Case type](@id lib-pub-case-case)
 
 The case type is used as input to `EnergyModelsBase` models.

@@ -41,7 +41,7 @@ export get_time_struct, get_products, get_elements_vec, get_nodes, get_links, ge
 # Export the general classes
 export EnergyModel, OperationalModel
 export Resource, ResourceCarrier, ResourceEmit
-export AbstractElement
+export AbstractElement, element_data
 
 # Export the different node types
 export Source, NetworkNode, Sink, Storage, Availability

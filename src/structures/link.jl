@@ -129,3 +129,4 @@ Returns the [`Data`](@ref) array of link `l`.
 The default options returns an empty `Data` vector.
 """
 link_data(l::Link) = Data[]
+element_data(l::Link) = link_data(l)

@@ -684,7 +684,8 @@ outputs(n::Sink, p::Resource) = nothing
 Returns the [`Data`](@ref) array of node `n`.
 """
 node_data(n::Node) = n.data
-node_data(n::Availability) = []
+node_data(n::Availability) = Data[]
+element_data(n::Node) = node_data(n)
 
 """
     storage_resource(n::Storage)

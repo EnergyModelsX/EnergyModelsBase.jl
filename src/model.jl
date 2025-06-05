@@ -65,6 +65,7 @@ function create_model(
         variables_capex(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, modeltype)
         variables_emission(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype)
         variables_elements(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, modeltype)
+        variables_element_data(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, 𝒫, modeltype)
 
         constraints_elements(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype)
     end
@@ -425,6 +426,58 @@ function variables_elements(m, 𝒳::Vector{<:AbstractElement}, 𝒳ᵛᵉᶜ, �
 end
 
 """
+    variables_element_data(m, 𝒳::Vector{<:AbstractElement}, 𝒳ᵛᵉᶜ, 𝒯, 𝒫,modeltype::EnergyModel)
+
+Loop through all data subtypes and create variables specific to each subtype. It starts
+at the top level and subsequently move through the branches until it reaches a leave.
+
+The function subsequently calls the subroutine [`variables_data`](@ref) for creating the
+variables for the nodes that have the corresponding data types.
+"""
+function variables_element_data(
+    m,
+    𝒳::Vector{<:AbstractElement},
+    𝒳ᵛᵉᶜ,
+    𝒯,
+    𝒫,
+    modeltype::EnergyModel
+)
+    # Extract all Data types within all elements
+    𝒟 = reduce(vcat, [element_data(x) for x ∈ 𝒳])
+
+    # Skip if no data is added to the individual elements
+    isempty(𝒟) && return
+
+    # Vector of the unique data types in 𝒟.
+    data_composite_types = unique(typeof.(𝒟))
+    # Get all `Data`-types in the type-hierarchy that the nodes 𝒟 represents.
+    data_types = collect_types(data_composite_types)
+    # Sort the `Data`-types such that a supertype will always come before its subtypes.
+    data_types = sort_types(data_types)
+
+    for data_type ∈ data_types
+        # All elements with the given data sub type.
+        𝒳ᵈᵃᵗ = filter(x -> any(isa.(element_data(x), data_type)), 𝒳)
+        try
+            variables_data(m, data_type, 𝒳ᵈᵃᵗ, 𝒯, 𝒫, modeltype)
+        catch e
+            # Parts of the exception message we are looking for
+            pre1 = "An object of name"
+            pre2 = "is already attached to this model."
+            if isa(e, ErrorException)
+                if occursin(pre1, e.msg) && occursin(pre2, e.msg)
+                    # data_type was already registered by a call to a supertype, so just continue.
+                    continue
+                end
+            end
+            # If we make it to this point, this means some other error occured.
+            # This should not be ignored.
+            throw(e)
+        end
+    end
+end
+
+"""
     variables_element(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     variables_element(m, ℒˢᵘᵇ::Vector{<:Link}, 𝒯, modeltype::EnergyModel)
 
@@ -442,6 +495,20 @@ variables_element(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
     variables_node(m, 𝒩ˢᵘᵇ, 𝒯, modeltype)
 variables_element(m, ℒˢᵘᵇ::Vector{<:Link}, 𝒯, modeltype::EnergyModel) =
     variables_link(m, ℒˢᵘᵇ, 𝒯, modeltype)
+
+"""
+    variables_data(m, _::Type{<:Data}, 𝒳::Vector{<:AbstractElement}, 𝒯, 𝒫, modeltype::EnergyModel)
+
+Default fallback method for the variables creation for a data type of a `Vector{<:AbstractElement}`
+`𝒳` if no other method is defined. The default method does not specify any variables.
+
+!!! warning
+    The function is called for each individual subtype of [`AbstractElement`](@ref). As a
+    consequence, methods, and hence, variables for [`Node`](@ref)s and [`Link`](@ref)s must
+    be specified specifically.
+"""
+function variables_data(m, _::Type{<:Data}, 𝒳::Vector{<:AbstractElement}, 𝒯, 𝒫, modeltype::EnergyModel)
+end
 
 """
     variables_node(m, 𝒩ˢᵘᵇ::Vector{<:Node}, 𝒯, modeltype::EnergyModel)
