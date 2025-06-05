@@ -97,7 +97,8 @@ end
     struct StorCap <: AbstractStorageParameters
 
 A storage parameter type for including only a capacity. This implies that neither the usage
-of the [`Storage`](@ref), nor the installed capacity have a direct impact on the objective function.
+of the [`Storage`](@ref), nor the installed capacity have a direct impact on the objective
+function.
 
 # Fields
 - **`capacity::TimeProfile`** is the installed capacity.
@@ -225,8 +226,8 @@ or `StrategicProfile`.
   through the variable `:cap_inst`.
 - **`output::Dict{<:Resource,<:Real}`** are the generated [`Resource`](@ref)s with
   conversion value `Real`.
-- **`data::Vector{<:Data}`** is the additional data (*e.g.*, for investments). The field `data`
-  is conditional through usage of a constructor.
+- **`data::Vector{<:ExtensionData}`** is the additional data (*e.g.*, for investments).
+  The field `data` is conditional through usage of a constructor.
 """
 struct RefSource <: Source
     id::Any
@@ -234,7 +235,7 @@ struct RefSource <: Source
     opex_var::TimeProfile
     opex_fixed::TimeProfile
     output::Dict{<:Resource,<:Real}
-    data::Vector{<:Data}
+    data::Vector{<:ExtensionData}
 end
 function RefSource(
     id,
@@ -243,7 +244,7 @@ function RefSource(
     opex_fixed::TimeProfile,
     output::Dict{<:Resource,<:Real},
 )
-    return RefSource(id, cap, opex_var, opex_fixed, output, Data[])
+    return RefSource(id, cap, opex_var, opex_fixed, output, ExtensionData[])
 end
 
 """
@@ -266,8 +267,8 @@ The capacity is hereby normalized to a conversion value of 1 in the fields `inpu
   value `Real`.
 - **`output::Dict{<:Resource,<:Real}`** are the generated [`Resource`](@ref)s with
   conversion value `Real`.
-- **`data::Vector{Data}`** is the additional data (*e.g.*, for investments). The field `data`
-  is conditional through usage of a constructor.
+- **`data::Vector{ExtensionData}`** is the additional data (*e.g.*, for investments).
+  The field `data` is conditional through usage of a constructor.
 """
 struct RefNetworkNode <: NetworkNode
     id::Any
@@ -276,7 +277,7 @@ struct RefNetworkNode <: NetworkNode
     opex_fixed::TimeProfile
     input::Dict{<:Resource,<:Real}
     output::Dict{<:Resource,<:Real}
-    data::Vector{<:Data}
+    data::Vector{<:ExtensionData}
 end
 function RefNetworkNode(
     id,
@@ -286,7 +287,7 @@ function RefNetworkNode(
     input::Dict{<:Resource,<:Real},
     output::Dict{<:Resource,<:Real},
 )
-    return RefNetworkNode(id, cap, opex_var, opex_fixed, input, output, Data[])
+    return RefNetworkNode(id, cap, opex_var, opex_fixed, input, output, ExtensionData[])
 end
 
 """
@@ -338,8 +339,8 @@ The current implemented cyclic behaviours are [`CyclicRepresentative`](@ref),
 - **`output::Dict{<:Resource,<:Real}`** are the generated [`Resource`](@ref)s with conversion
   value `Real`. Only relevant for linking and the stored [`Resource`](@ref) as the output
   value is not utilized in the calculations.
-- **`data::Vector{<:Data}`** is the additional data (*e.g.*, for investments). The field `data`
-  is conditional through usage of a constructor.
+- **`data::Vector{<:ExtensionData}`** is the additional data (*e.g.*, for investments).
+  The field `data` is conditional through usage of a constructor.
 """
 struct RefStorage{T} <: Storage{T}
     id::Any
@@ -348,7 +349,7 @@ struct RefStorage{T} <: Storage{T}
     stor_res::Resource
     input::Dict{<:Resource,<:Real}
     output::Dict{<:Resource,<:Real}
-    data::Vector{<:Data}
+    data::Vector{<:ExtensionData}
 end
 
 function RefStorage{T}(
@@ -359,7 +360,7 @@ function RefStorage{T}(
     input::Dict{<:Resource,<:Real},
     output::Dict{<:Resource,<:Real},
 ) where {T<:StorageBehavior}
-    return RefStorage{T}(id, charge, level, stor_res, input, output, Data[])
+    return RefStorage{T}(id, charge, level, stor_res, input, output, ExtensionData[])
 end
 
 """
@@ -376,15 +377,15 @@ and deficit.
   dictionary requires the  fields `:surplus` and `:deficit`.
 - **`input::Dict{<:Resource,<:Real}`** are the input [`Resource`](@ref)s with conversion
   value `Real`.
-- **`data::Vector{<:Data}`** is the additional data (*e.g.*, for investments). The field `data`
-  is conditional through usage of a constructor.
+- **`data::Vector{<:ExtensionData}`** is the additional data (*e.g.*, for investments).
+  The field `data` is conditional through usage of a constructor.
 """
 struct RefSink <: Sink
     id::Any
     cap::TimeProfile
     penalty::Dict{Symbol,<:TimeProfile}
     input::Dict{<:Resource,<:Real}
-    data::Vector{<:Data}
+    data::Vector{<:ExtensionData}
 end
 function RefSink(
     id,
@@ -392,7 +393,7 @@ function RefSink(
     penalty::Dict{<:Any,<:TimeProfile},
     input::Dict{<:Resource,<:Real},
 )
-    return RefSink(id, cap, penalty, input, Data[])
+    return RefSink(id, cap, penalty, input, ExtensionData[])
 end
 
 """
@@ -681,10 +682,10 @@ outputs(n::Sink, p::Resource) = nothing
 """
     node_data(n::Node)
 
-Returns the [`Data`](@ref) array of node `n`.
+Returns the [`ExtensionData`](@ref) array of node `n`.
 """
 node_data(n::Node) = n.data
-node_data(n::Availability) = Data[]
+node_data(n::Availability) = ExtensionData[]
 element_data(n::Node) = node_data(n)
 
 """

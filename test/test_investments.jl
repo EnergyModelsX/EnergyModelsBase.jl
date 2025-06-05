@@ -260,7 +260,7 @@ end
         from::EMB.Node
         to::EMB.Node
         formulation::EMB.Formulation
-        data::Vector{<:Data}
+        data::Vector{<:ExtensionData}
     end
     function EMB.create_link(m, 𝒯, 𝒫, l::InvDirect, modeltype::EnergyModel, formulation::EMB.Formulation)
 
@@ -305,7 +305,7 @@ end
             Dict(Power => 1),
         )
 
-        data_link = Data[
+        data_link = ExtensionData[
             SingleInvData(
                 FixedProfile(10),
                 FixedProfile(10),

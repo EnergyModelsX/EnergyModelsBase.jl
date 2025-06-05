@@ -42,7 +42,7 @@ CurrentModule = EMB
 ```
 
 The following functions can be used in newly developed nodes to include constraints.
-See the pages *[Constraint functions](@ref man-con)* and *[Data functions](@ref man-data_fun)* for a detailed explanation on their usage.
+See the pages *[Constraint functions](@ref man-con)* and *[ExtensionData functions](@ref man-data_fun)* for a detailed explanation on their usage.
 
 !!! warning
     The function `constraints_capacity_installed` should not be changed.

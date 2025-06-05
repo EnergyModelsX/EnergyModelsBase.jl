@@ -19,11 +19,11 @@ abstract type AbstractElement end
 """
     element_data(x::AbstractElement)
 
-Returns the [`Data`](@ref) array of [`AbstractElement`](@ref) `x`. The function requires the
+Returns the [`ExtensionData`](@ref) array of [`AbstractElement`](@ref) `x`. The function requires the
 specification of a new method for each `AbstractElement`.
 
 It is implemented in `EnergyModelsBase` for
 - [`Node`](@ref) calling the subfunction [`node_data`](@ref) and
 - [`Link`](@ref) calling the subfunction [`link_data`](@ref).
 """
-element_data(x::AbstractElement) = Data[]
+element_data(x::AbstractElement) = ExtensionData[]

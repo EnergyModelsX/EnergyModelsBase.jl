@@ -398,8 +398,8 @@ end
             data_source = [EmissionsProcess(Dict(CO2 => 0.5))]
         else
             output = Dict(Power => 1)
-            data_net = Vector{Data}([])
-            data_source = Vector{Data}([])
+            data_net = Vector{ExtensionData}([])
+            data_source = Vector{ExtensionData}([])
         end
 
         # Used source, network, and sink

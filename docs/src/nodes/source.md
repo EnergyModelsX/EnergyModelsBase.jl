@@ -29,7 +29,7 @@ The fields of a [`RefSource`](@ref) node are given as:
   If you would like to use a `Source` node with CO₂ as output with a given ratio, it is necessary to utilize the package [`EnergyModelsCO2`](https://energymodelsx.github.io/EnergyModelsCO2.jl/).
   If you use [`CaptureData`](@ref), it is however necessary to specify CO₂ as output, although the ratio is not important.\
   All values have to be non-negative.
-- **`data::Vector{Data}`**:\
+- **`data::Vector{ExtensionData}`**:\
   An entry for providing additional data to the model.
   In the current version, it is used for both providing `EmissionsData` and additional investment data when [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/) is used.
   When using `EmissionsData`, only process emissions can be considered, that is the types [`EmissionsProcess`](@ref) and that is the types [`EmissionsProcess`](@ref) and [`CaptureProcessEmissions`](@ref).

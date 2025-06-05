@@ -6,7 +6,7 @@ In addition, all required functions for creaeting and running the model are expo
 
 You can find the exported types and functions below or on the pages
 *[Constraint functions](@ref man-con)* and
-*[Data functions](@ref man-data_fun)*.
+*[ExtensionData functions](@ref man-data_fun)*.
 """
 module EnergyModelsBase
 
@@ -58,7 +58,7 @@ export Cyclic, CyclicRepresentative, CyclicStrategic
 export StorCapOpex, StorCap, StorCapOpexVar, StorCapOpexFixed, StorOpexVar
 
 # Export the data types
-export Data, EmptyData, EmissionsData, CaptureData
+export Data, ExtensionData, EmptyData, EmissionsData, CaptureData
 export CaptureProcessEnergyEmissions, CaptureProcessEmissions, CaptureEnergyEmissions
 export EmissionsProcess, EmissionsEnergy
 

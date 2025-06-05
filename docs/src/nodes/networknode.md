@@ -28,7 +28,7 @@ The fields of a [`RefNetworkNode`](@ref) are given as:
   CO₂ cannot be directly specified, *i.e.*, you cannot specify a ratio.
   If you use [`CaptureData`](@ref), it is however necessary to specify CO₂ as output, although the ratio is not important.\
   All values have to be non-negative.
-- **`data::Vector{Data}`**:\
+- **`data::Vector{ExtensionData}`**:\
   An entry for providing additional data to the model.
   In the current version, it is used for both providing `EmissionsData` and additional investment data when [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/) is used.
   !!! note "Constructor for RefNetworkNode"

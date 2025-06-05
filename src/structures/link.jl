@@ -124,9 +124,9 @@ formulation(l::Link) = l.formulation
 """
     link_data(l::Link)
 
-Returns the [`Data`](@ref) array of link `l`.
+Returns the [`ExtensionData`](@ref) array of link `l`.
 
-The default options returns an empty `Data` vector.
+The default options returns an empty `ExtensionData` vector.
 """
-link_data(l::Link) = Data[]
+link_data(l::Link) = ExtensionData[]
 element_data(l::Link) = link_data(l)

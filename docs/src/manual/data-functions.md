@@ -1,7 +1,7 @@
-# [Data functions](@id man-data_fun)
+# [ExtensionData functions](@id man-data_fun)
 
-The package provides the wildcard [`Data`](@ref) type as outlined in the *[Extensions to the model](@ref man-phil-ext)* section of the philosophy page.
-`Data` can be utilized to extend the functionality of the model through dispatching on its type.
+The package provides the wildcard [`ExtensionData`](@ref) type as outlined in the *[Extensions to the model](@ref man-phil-ext)* section of the philosophy page.
+`ExtensionData` can be utilized to extend the functionality of the model through dispatching on its type.
 The following function is included in all reference `create_node` functions, except for `Storage` types
 
 ```julia
@@ -11,10 +11,10 @@ for data ∈ node_data(n)
 end
 ```
 
-There is always a fallback option if a `Data` is specified, but no functions are provided:
+There is always a fallback option if a `ExtensionData` is specified, but no functions are provided:
 
 ```julia
-constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::Data) = nothing
+constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::ExtensionData) = nothing
 ```
 
 Its application is best explained by the implemented functionality for emissions.

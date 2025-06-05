@@ -23,7 +23,7 @@ The fields of a [`RefSink`](@ref) node are given as:
 - **`input::Dict{<:Resource,<:Real}`**:\
   The field `input` includes [`Resource`](@ref Resource)s with their corresponding conversion factors as dictionaries.\
   All values have to be non-negative.
-- **`data::Vector{Data}`**:\
+- **`data::Vector{ExtensionData}`**:\
   An entry for providing additional data to the model.
   In the current version, it is used for both providing `EmissionsData` and additional investment data when [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/) is used.
   !!! note "Constructor for `RefSink`"

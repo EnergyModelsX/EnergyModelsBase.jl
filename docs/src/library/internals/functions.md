@@ -16,7 +16,7 @@ CurrentModule = EnergyModelsBase
 create_element
 create_link
 variables_element
-variables_data(m, _::Type{<:Data}, 𝒳::Vector{<:AbstractElement}, 𝒯, 𝒫, modeltype::EnergyModel)
+variables_data(m, _::Type{<:ExtensionData}, 𝒳::Vector{<:AbstractElement}, 𝒯, 𝒫, modeltype::EnergyModel)
 objective(m, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
 objective_operational
 emissions_operational
@@ -57,7 +57,7 @@ check_node
 check_link
 check_node_default
 check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
-check_link_data(n::Link, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+check_link_data(n::Link, data::ExtensionData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 check_fixed_opex
 check_time_structure
 check_profile

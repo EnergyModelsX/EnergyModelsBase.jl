@@ -51,7 +51,7 @@ function create_model(
         )
     end
 
-    # WIP Data structure
+    # Extract the information from the `Case`
     𝒯 = get_time_struct(case)
     𝒫 = get_products(case)
     𝒳ᵛᵉᶜ = get_elements_vec(case)
@@ -442,7 +442,7 @@ function variables_element_data(
     𝒫,
     modeltype::EnergyModel
 )
-    # Extract all Data types within all elements
+    # Extract all ExtensionData types within all elements
     𝒟 = reduce(vcat, [element_data(x) for x ∈ 𝒳])
 
     # Skip if no data is added to the individual elements
@@ -450,9 +450,9 @@ function variables_element_data(
 
     # Vector of the unique data types in 𝒟.
     data_composite_types = unique(typeof.(𝒟))
-    # Get all `Data`-types in the type-hierarchy that the nodes 𝒟 represents.
+    # Get all `ExtensionData`-types in the type-hierarchy that the nodes 𝒟 represents.
     data_types = collect_types(data_composite_types)
-    # Sort the `Data`-types such that a supertype will always come before its subtypes.
+    # Sort the `ExtensionData`-types such that a supertype will always come before its subtypes.
     data_types = sort_types(data_types)
 
     for data_type ∈ data_types
@@ -497,7 +497,7 @@ variables_element(m, ℒˢᵘᵇ::Vector{<:Link}, 𝒯, modeltype::EnergyModel) 
     variables_link(m, ℒˢᵘᵇ, 𝒯, modeltype)
 
 """
-    variables_data(m, _::Type{<:Data}, 𝒳::Vector{<:AbstractElement}, 𝒯, 𝒫, modeltype::EnergyModel)
+    variables_data(m, _::Type{<:ExtensionData}, 𝒳::Vector{<:AbstractElement}, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Default fallback method for the variables creation for a data type of a `Vector{<:AbstractElement}`
 `𝒳` if no other method is defined. The default method does not specify any variables.
@@ -507,7 +507,7 @@ Default fallback method for the variables creation for a data type of a `Vector{
     consequence, methods, and hence, variables for [`Node`](@ref)s and [`Link`](@ref)s must
     be specified specifically.
 """
-function variables_data(m, _::Type{<:Data}, 𝒳::Vector{<:AbstractElement}, 𝒯, 𝒫, modeltype::EnergyModel)
+function variables_data(m, _::Type{<:ExtensionData}, 𝒳::Vector{<:AbstractElement}, 𝒯, 𝒫, modeltype::EnergyModel)
 end
 
 """

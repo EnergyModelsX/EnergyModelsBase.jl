@@ -47,7 +47,7 @@ This is however only advised if you do not need to access the value of the varia
 2. Emissions can be included in any way.
    It is however beneficial to reutilize the [`EmissionsData`](@ref) type to improve usability with other packages.
    This requries again the inclusion of the field `data` in `NewNodeType`.
-   It is possible to also create new subtypes for `EmissionsData` as well as dispatch on the function [`constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::Data)`](@ref man-data_fun).
+   It is possible to also create new subtypes for `EmissionsData` as well as dispatch on the function [`constraints_data(m, n::Node, 𝒯, 𝒫, modeltype, data::ExtensionData)`](@ref man-data_fun).
 3. It is in a first stage not important to include functions for handling all possible `TimeStructure`s, that is, *e.g.*, `RepresentativePeriods`.
    Instead, and error can be provided if an unsupported `TimeStructure` is chosen.
 4. The existing reference nodes and their respective *[constraint functions](@ref man-con)* can serve as idea generators.

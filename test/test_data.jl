@@ -1,6 +1,6 @@
 @testset "Variable creation" begin
     # New data type including 2 subtypes
-    abstract type ExampleData <: Data end
+    abstract type ExampleData <: ExtensionData end
     struct ExampleDataA <: ExampleData
     end
     struct ExampleDataB <: ExampleData
@@ -12,7 +12,7 @@
         from::EMB.Node
         to::EMB.Node
         formulation::EMB.Formulation
-        data::Vector{<:Data}
+        data::Vector{<:ExtensionData}
     end
 
     EMB.element_data(l::DataDirect) = l.data
@@ -62,8 +62,8 @@
         # coal and nautral gas sources, coal and natural gas (with CCS) power plants and CO2 storage.
         nodes = [
             GenAvailability(1, products),
-            RefSource(2, FixedProfile(1e12), FixedProfile(30), FixedProfile(0), Dict(NG => 1), Data[ExampleDataA()]),
-            RefSource(3, FixedProfile(1e12), FixedProfile(9), FixedProfile(0), Dict(Coal => 1), Data[ExampleDataB()]),
+            RefSource(2, FixedProfile(1e12), FixedProfile(30), FixedProfile(0), Dict(NG => 1), ExtensionData[ExampleDataA()]),
+            RefSource(3, FixedProfile(1e12), FixedProfile(9), FixedProfile(0), Dict(Coal => 1), ExtensionData[ExampleDataB()]),
             RefNetworkNode(
                 4,
                 FixedProfile(25),
@@ -89,7 +89,7 @@
                 CO2,
                 Dict(CO2 => 1, Power => 0.02),
                 Dict(CO2 => 1),
-                Data[ExampleDataB()],
+                ExtensionData[ExampleDataB()],
             ),
             RefSink(
                 7,
@@ -101,12 +101,12 @@
 
         # Connect all nodes with the availability node for the overall energy/mass balance
         links = [
-            DataDirect(14, nodes[1], nodes[4], Linear(), Data[ExampleDataA()])
+            DataDirect(14, nodes[1], nodes[4], Linear(), ExtensionData[ExampleDataA()])
             Direct(15, nodes[1], nodes[5], Linear())
             Direct(16, nodes[1], nodes[6], Linear())
             Direct(17, nodes[1], nodes[7], Linear())
             Direct(21, nodes[2], nodes[1], Linear())
-            DataDirect(31, nodes[3], nodes[1], Linear(), Data[ExampleDataB()])
+            DataDirect(31, nodes[3], nodes[1], Linear(), ExtensionData[ExampleDataB()])
             Direct(41, nodes[4], nodes[1], Linear())
             Direct(51, nodes[5], nodes[1], Linear())
             Direct(61, nodes[6], nodes[1], Linear())

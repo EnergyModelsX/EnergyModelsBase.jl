@@ -81,7 +81,7 @@ The fields of a [`RefStorage`](@ref) are given as:
       In the current implementation, we do not consider `output` conversion factors for the outflow from the [`RefStorage`](@ref) node.
       Similarly, we do not consider the `input` conversion factor of the stored resource.
       Instead, it is assumed that there is no loss of the stored resource in the storage.
-- **`data::Vector{Data}`**:\
+- **`data::Vector{ExtensionData}`**:\
   An entry for providing additional data to the model.
   In the current version, it is used for both providing `EmissionsData` and additional investment data when [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/) is used.
   !!! note "Constructor for `RefStorage`"

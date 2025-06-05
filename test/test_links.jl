@@ -22,7 +22,7 @@
             FixedProfile(0),
             Dict(NG => 2),
             Dict(Power => 1),
-            Data[EmissionsEnergy()],
+            ExtensionData[EmissionsEnergy()],
         )
 
         sink = RefSink(
