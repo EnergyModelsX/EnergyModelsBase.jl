@@ -81,7 +81,7 @@ The fields of a [`RefStorage`](@ref) are given as:
       In the current implementation, we do not consider `output` conversion factors for the outflow from the [`RefStorage`](@ref) node.
       Similarly, we do not consider the `input` conversion factor of the stored resource.
       Instead, it is assumed that there is no loss of the stored resource in the storage.
-- **`data::Vector{Data}`**:\
+- **`data::Vector{ExtensionData}`**:\
   An entry for providing additional data to the model.
   In the current version, it is used for both providing `EmissionsData` and additional investment data when [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/) is used.
   !!! note "Constructor for `RefStorage`"
@@ -231,7 +231,7 @@ Hence, if you do not have to call additional functions, but only plan to include
       The function [``scale\_op\_sp(t_{inv}, t)``](@ref scale_op_sp) calculates the scaling factor between operational and investment periods.
       It also takes into account potential operational scenarios and their probability as well as representative periods.
 
-- `constraints_data`:\
+- `constraints_ext_data`:\
   This function is only called for specified data of the storage node, see above.
 
 !!! info "Implementation of capacity and OPEX"

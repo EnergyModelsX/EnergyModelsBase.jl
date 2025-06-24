@@ -42,7 +42,7 @@ CurrentModule = EMB
 ```
 
 The following functions can be used in newly developed nodes to include constraints.
-See the pages *[Constraint functions](@ref man-con)* and *[Data functions](@ref man-data_fun)* for a detailed explanation on their usage.
+See the pages *[Constraint functions](@ref man-con)* and *[ExtensionData functions](@ref man-data_fun)* for a detailed explanation on their usage.
 
 !!! warning
     The function `constraints_capacity_installed` should not be changed.
@@ -58,6 +58,7 @@ constraints_level
 constraints_level_aux
 constraints_opex_var
 constraints_opex_fixed
+constraints_ext_data
 constraints_data
 ```
 
@@ -68,6 +69,10 @@ These auxiliary functions provide the user with simple approaches for calculatin
 previous_level
 previous_level_sp
 ```
+
+!!! note "Changes in names"
+    The function `constraints_data` is replaced by the function `constraints_ext_data`.
+    This implies that if you created new methods for the function, it is best to rename your functions as we plan to remove the function `constraints_data` in the next major release.
 
 ## [Utility functions](@id lib-pub-fun-util)
 

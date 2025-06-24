@@ -1,6 +1,14 @@
 # Release notes
 
-## Unversioned
+## Version 0.9.1 (2025-06-24)
+
+### Rework of data
+
+* Renamed extension data related functions and types:
+  * `Data` is now called `ExtraData`.
+  * `create_data` is now called `create_ext_data`.
+* The old version is still accessible, but will be removed in release 0.10.
+* Allow for variable creation for `ExtraData` types and implemented the approach for `InvestmentData` for both `Node`s and `Link`s.
 
 ### Minor updates
 

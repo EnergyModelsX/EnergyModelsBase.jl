@@ -30,16 +30,16 @@ co2_instance
 ## [Additional data](@id lib-pub-mod_data-data)
 
 Emission data are used to provide the individual nodes with potential emissions.
-The approach is also explained on the page *[Data functions](@ref man-data_fun)*.
+The approach is also explained on the page *[ExtensionData functions](@ref man-data_fun)*.
 
-### [`Data` and `Emission` types](@id lib-pub-mod_data-data-types)
+### [`ExtensionData` and `Emission` types](@id lib-pub-mod_data-data-types)
 
-`Data` types are introduced for introducing additional parameters, variables, and constraints to the `Node`s.
-The approach of using the `data` field of `Node`s is explained on the page *[Data functions](@ref man-data_fun)*.
+`ExtensionData` types are introduced for introducing additional parameters, variables, and constraints to the `Node`s.
+The approach of using the `data` field of `Node`s is explained on the page *[ExtensionData functions](@ref man-data_fun)*.
 `EmptyData` is no longer relevant for the modelling, but it is retained for avoiding any problems with existing models.
 
 ```@docs
-Data
+ExtensionData
 EmptyData
 ```
 

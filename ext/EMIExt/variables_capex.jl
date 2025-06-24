@@ -1,6 +1,7 @@
 """
-    EMB.variables_capex(m, 𝒩::Vector{<:EMB.Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::AbstractInvestmentModel)
-    EMB.variables_capex(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::AbstractInvestmentModel)
+    EMB.variables_ext_data(m, _::Type{SingleInvData}, 𝒩ᴵⁿᵛ::Vector{<:EMB.Node}, 𝒯, 𝒫, modeltype::AbstractInvestmentModel)
+    EMB.variables_ext_data(m, _::Type{StorageInvData}, 𝒩ᴵⁿᵛ::Vector{<:EMB.Node}, 𝒯, 𝒫, modeltype::AbstractInvestmentModel)
+    EMB.variables_ext_data(m, _::Type{SingleInvData}, 𝒩ᴵⁿᵛ::Vector{<:Link}, 𝒯, 𝒫, modeltype::AbstractInvestmentModel)
 
 Declaration of different capital expenditures (CAPEX) variables for the element types
 introduced in `EnergyModelsBase`. CAPEX variables are only introduced for elements that have
@@ -37,23 +38,36 @@ user with two individual methods for both `𝒩::Vector{<:EMB.Node}` and 𝒩::V
     - `**prefix**_remove_b` is an auxiliary variable used in some investment modes for the
       reduction of capacities.
 """
-function EMB.variables_capex(m, 𝒩::Vector{<:EMB.Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::AbstractInvestmentModel)
-    𝒩ᴵⁿᵛ = filter(has_investment, filter(!EMB.is_storage, 𝒩))
-    𝒩ˢᵗᵒʳ = filter(EMB.is_storage, 𝒩)
-    𝒩ˡᵉᵛᵉˡ = filter(n -> has_investment(n, :level), 𝒩ˢᵗᵒʳ)
-    𝒩ᶜʰᵃʳᵍᵉ = filter(n -> has_investment(n, :charge), 𝒩ˢᵗᵒʳ)
-    𝒩ᵈⁱˢᶜʰᵃʳᵍᵉ = filter(n -> has_investment(n, :discharge), 𝒩ˢᵗᵒʳ)
+function EMB.variables_ext_data(
+    m,
+    _::Type{SingleInvData},
+    𝒩ᴵⁿᵛ::Vector{<:EMB.Node},
+    𝒯,
+    𝒫,
+    modeltype::AbstractInvestmentModel,
+)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    # Add investment variables for reference nodes for each strategic period:
+    # Add investment variables for nodes for each strategic period
     @variable(m, cap_capex[𝒩ᴵⁿᵛ, 𝒯ᴵⁿᵛ] ≥ 0)
     @variable(m, cap_current[𝒩ᴵⁿᵛ, 𝒯ᴵⁿᵛ] ≥ 0)
     @variable(m, cap_add[𝒩ᴵⁿᵛ, 𝒯ᴵⁿᵛ] ≥ 0)
     @variable(m, cap_rem[𝒩ᴵⁿᵛ, 𝒯ᴵⁿᵛ] ≥ 0)
     @variable(m, cap_invest_b[𝒩ᴵⁿᵛ, 𝒯ᴵⁿᵛ] ≥ 0; container = IndexedVarArray)
     @variable(m, cap_remove_b[𝒩ᴵⁿᵛ, 𝒯ᴵⁿᵛ] ≥ 0; container = IndexedVarArray)
+end
+function EMB.variables_ext_data(
+    m,
+    _::Type{StorageInvData},
+    𝒩ˢᵗᵒʳ::Vector{<:EMB.Node},
+    𝒯,
+    𝒫,
+    modeltype::EnergyModel,
+)
+    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    # Add storage specific investment variables for each strategic period:
+    # Add investment variables for storage nodes for each strategic period
+    𝒩ˡᵉᵛᵉˡ = filter(n -> has_investment(n, :level), 𝒩ˢᵗᵒʳ)
     @variable(m, stor_level_capex[𝒩ˡᵉᵛᵉˡ, 𝒯ᴵⁿᵛ] ≥ 0)
     @variable(m, stor_level_current[𝒩ˡᵉᵛᵉˡ, 𝒯ᴵⁿᵛ] ≥ 0)
     @variable(m, stor_level_add[𝒩ˡᵉᵛᵉˡ, 𝒯ᴵⁿᵛ] ≥ 0)
@@ -61,6 +75,7 @@ function EMB.variables_capex(m, 𝒩::Vector{<:EMB.Node}, 𝒳ᵛᵉᶜ, 𝒯, m
     @variable(m, stor_level_invest_b[𝒩ˡᵉᵛᵉˡ, 𝒯ᴵⁿᵛ] ≥ 0; container = IndexedVarArray)
     @variable(m, stor_level_remove_b[𝒩ˡᵉᵛᵉˡ, 𝒯ᴵⁿᵛ] ≥ 0; container = IndexedVarArray)
 
+    𝒩ᶜʰᵃʳᵍᵉ = filter(n -> has_investment(n, :charge), 𝒩ˢᵗᵒʳ)
     @variable(m, stor_charge_capex[𝒩ᶜʰᵃʳᵍᵉ, 𝒯ᴵⁿᵛ] ≥ 0)
     @variable(m, stor_charge_current[𝒩ᶜʰᵃʳᵍᵉ, 𝒯ᴵⁿᵛ] ≥ 0)
     @variable(m, stor_charge_add[𝒩ᶜʰᵃʳᵍᵉ, 𝒯ᴵⁿᵛ] ≥ 0)
@@ -68,6 +83,7 @@ function EMB.variables_capex(m, 𝒩::Vector{<:EMB.Node}, 𝒳ᵛᵉᶜ, 𝒯, m
     @variable(m, stor_charge_invest_b[𝒩ᶜʰᵃʳᵍᵉ, 𝒯ᴵⁿᵛ] ≥ 0; container = IndexedVarArray)
     @variable(m, stor_charge_remove_b[𝒩ᶜʰᵃʳᵍᵉ, 𝒯ᴵⁿᵛ] ≥ 0; container = IndexedVarArray)
 
+    𝒩ᵈⁱˢᶜʰᵃʳᵍᵉ = filter(n -> has_investment(n, :discharge), 𝒩ˢᵗᵒʳ)
     @variable(m, stor_discharge_capex[𝒩ᵈⁱˢᶜʰᵃʳᵍᵉ, 𝒯ᴵⁿᵛ] ≥ 0)
     @variable(m, stor_discharge_current[𝒩ᵈⁱˢᶜʰᵃʳᵍᵉ, 𝒯ᴵⁿᵛ] ≥ 0)
     @variable(m, stor_discharge_add[𝒩ᵈⁱˢᶜʰᵃʳᵍᵉ, 𝒯ᴵⁿᵛ] ≥ 0)
@@ -83,11 +99,17 @@ function EMB.variables_capex(m, 𝒩::Vector{<:EMB.Node}, 𝒳ᵛᵉᶜ, 𝒯, m
         container = IndexedVarArray
     )
 end
-function EMB.variables_capex(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::AbstractInvestmentModel)
-    ℒᴵⁿᵛ = filter(has_investment, ℒ)
+function EMB.variables_ext_data(
+    m,
+    _::Type{SingleInvData},
+    ℒᴵⁿᵛ::Vector{<:Link},
+    𝒯,
+    𝒫,
+    modeltype::EnergyModel
+)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    # Add investment variables for reference nodes for each strategic period:
+    # Add investment variables for links for each strategic period
     @variable(m, link_cap_capex[ℒᴵⁿᵛ, 𝒯ᴵⁿᵛ] ≥ 0)
     @variable(m, link_cap_current[ℒᴵⁿᵛ, 𝒯ᴵⁿᵛ] ≥ 0)
     @variable(m, link_cap_add[ℒᴵⁿᵛ, 𝒯ᴵⁿᵛ] ≥ 0)

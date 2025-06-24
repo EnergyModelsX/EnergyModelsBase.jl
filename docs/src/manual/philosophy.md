@@ -73,12 +73,12 @@ This is done in the package [`EnergyModelsInvestments`](https://energymodelsx.gi
 It can be problematic when one also wants to use investments.
 In addition, care has to be taken with respect to method amibiguity when dispatching on the type `EnergyModel`.
 
-The `Array{Data}` field provides us with flexibility with respect to providing additional data to the existing nodes.
+The `Array{ExtensionData}` field provides us with flexibility with respect to providing additional data to the existing nodes.
 It is implemented in `EnergyModelsBase` for including emissions (both process and energy usage related).
 In that case, it allows for flexibility through either saying whether process (or energy related emissions) are present, or not.
 In addition, it allows for capturing the CO₂ from either the individual CO₂ sources (process and energy usage related), alternatively from both sources, or not at all.
-The individual data types are explained in the Section *[Additional data](@ref lib-pub-mod_data-data)* in the public library as well as on *[Data functions](@ref man-data_fun)*.
-In addition, it is already used in the package [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/) through the introduction of the `abstract type` `InvestmentData` as subtype of `Data`.
+The individual data types are explained in the Section *[Additional data](@ref lib-pub-mod_data-data)* in the public library as well as on *[ExtensionData functions](@ref man-data_fun)*.
+In addition, it is already used in the package [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/) through the introduction of the `abstract type` `InvestmentData` as subtype of `ExtensionData`.
 The introduction of `InvestmentData` allows providing additional parameters to individual technologies.
-However, the implementation in `EnergyModelsInvestments` does not utilize the extension through the *[Data functions](@ref man-data_fun)*.
+However, the implementation in `EnergyModelsInvestments` does not utilize the extension through the *[ExtensionData functions](@ref man-data_fun)*.
 Instead, as outlined above, it dispatches on the type `EnergyModel`.

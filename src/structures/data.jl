@@ -1,11 +1,17 @@
-""" Abstract type used to define concrete struct containing the package specific elements
-to add to the composite type defined in this package."""
-abstract type Data end
-""" Empty composite type for `Data`"""
-struct EmptyData <: Data end
+"""
+    abstract type ExtensionData
+
+Abstract type used to define concrete struct containing the package specific elements
+to add to the composite type defined in this package.
+"""
+abstract type ExtensionData end
+Data = ExtensionData
+
+""" Empty composite type for `ExtensionData`"""
+struct EmptyData <: ExtensionData end
 
 """
-    EmissionsData{T<:Union{TimeProfile,Float64}} <: Data
+    EmissionsData{T<:Union{TimeProfile,Float64}} <: ExtensionData
 
 Abstract type for `EmissionsData` can be used to dispatch on different types of
 capture configurations.
@@ -27,7 +33,7 @@ In general, the different types require the following input:
 - **[`EmissionsEnergy`](@ref)**: No capture and no process emissions. Does not require
   `co2_capture` or `emissions` as input, but will ignore them, if provided.
 """
-abstract type EmissionsData{T<:Union{TimeProfile,Float64}} <: Data end
+abstract type EmissionsData{T<:Union{TimeProfile,Float64}} <: ExtensionData end
 """
     CaptureData{T} <: EmissionsData{T}
 
@@ -166,11 +172,11 @@ process_emissions(data::EmissionsEnergy{T}, p::ResourceEmit, t) where {T} =
     the function `process_emissions`.")
 
 """
-    InvestmentData <: Data
+    InvestmentData <: ExtensionData
 
 Abstract type for the extra data for investing in technologies.
 """
-abstract type InvestmentData <: Data end
+abstract type InvestmentData <: ExtensionData end
 
 """
     StorageInvData <: InvestmentData
