@@ -18,18 +18,18 @@
     EMB.element_data(l::DataDirect) = l.data
 
     # Subfunctions for the nodes
-    function EMB.variables_data(m, _::Type{<:ExampleData}, 𝒳ᵈᵃᵗ::Vector{<:EMB.Node}, 𝒯, 𝒫, modeltype::EnergyModel)
+    function EMB.variables_ext_data(m, _::Type{<:ExampleData}, 𝒳ᵈᵃᵗ::Vector{<:EMB.Node}, 𝒯, 𝒫, modeltype::EnergyModel)
         @variable(m, node_example[𝒳ᵈᵃᵗ, 𝒯] ≥ 0)
     end
-    function EMB.variables_data(m, _::Type{ExampleDataB}, 𝒳ᵈᵃᵗ::Vector{<:EMB.Node}, 𝒯, 𝒫, modeltype::EnergyModel)
+    function EMB.variables_ext_data(m, _::Type{ExampleDataB}, 𝒳ᵈᵃᵗ::Vector{<:EMB.Node}, 𝒯, 𝒫, modeltype::EnergyModel)
         @variable(m, node_example_b[𝒳ᵈᵃᵗ, 𝒯] ≥ 0)
     end
 
     # Subfunctions for the link
-    function EMB.variables_data(m, _::Type{<:ExampleDataA}, 𝒳ᵈᵃᵗ::Vector{<:Link}, 𝒯, 𝒫, modeltype::EnergyModel)
+    function EMB.variables_ext_data(m, _::Type{<:ExampleDataA}, 𝒳ᵈᵃᵗ::Vector{<:Link}, 𝒯, 𝒫, modeltype::EnergyModel)
         @variable(m, link_example_a[𝒳ᵈᵃᵗ, 𝒯] ≥ 0)
     end
-    function EMB.variables_data(m, _::Type{<:ExampleDataB}, 𝒳ᵈᵃᵗ::Vector{<:Link}, 𝒯, 𝒫, modeltype::EnergyModel)
+    function EMB.variables_ext_data(m, _::Type{<:ExampleDataB}, 𝒳ᵈᵃᵗ::Vector{<:Link}, 𝒯, 𝒫, modeltype::EnergyModel)
         @variable(m, link_example_b[𝒳ᵈᵃᵗ, 𝒯] ≥ 0)
     end
     function EMB.create_link(m, l::DataDirect, 𝒯, 𝒫, modeltype::EnergyModel)
@@ -135,14 +135,14 @@
     𝒯 = get_time_struct(case)
 
     @testset "Node data" begin
-        # Test that the variables_data function for the abstract type is included for all subtypes
+        # Test that the variables_ext_data function for the abstract type is included for all subtypes
         @test haskey(m, :node_example)
         @test sum(nt[1] == 𝒩[2] for nt ∈ keys(m[:node_example])) == length(𝒯)
         @test sum(nt[1] == 𝒩[3] for nt ∈ keys(m[:node_example])) == length(𝒯)
         @test sum(nt[1] == 𝒩[4] for nt ∈ keys(m[:node_example])) == length(𝒯)
         @test sum(nt[1] == 𝒩[6] for nt ∈ keys(m[:node_example])) == length(𝒯)
 
-        # Test that the variables_data for the concrete type is included
+        # Test that the variables_ext_data for the concrete type is included
         @test haskey(m, :node_example_b)
         @test sum(nt[1] == 𝒩[3] for nt ∈ keys(m[:node_example_b])) == length(𝒯)
         @test sum(nt[1] == 𝒩[5] for nt ∈ keys(m[:node_example_b])) == length(𝒯)

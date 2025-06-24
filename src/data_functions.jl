@@ -1,9 +1,9 @@
 """
-    constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsEnergy)
-    constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
-    constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
-    constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureProcessEmissions)
-    constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureProcessEnergyEmissions)
+    constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsEnergy)
+    constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
+    constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
+    constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureProcessEmissions)
+    constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureProcessEnergyEmissions)
 
 Constraints functions for calculating both the emissions and amount of CO₂ captured in the
 process. If the data ia a [`CaptureData`](@ref), it provides the constraint for the variable
@@ -19,7 +19,7 @@ There exist several configurations:
 - **[`CaptureProcessEnergyEmissions`](@ref)** corresponds to capture of both process and energy
    usage related emissions.
 """
-function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsEnergy)
+function constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsEnergy)
 
     # Declaration of the required subsets.
     𝒫ⁱⁿ = inputs(n)
@@ -36,7 +36,7 @@ function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::
         fix(m[:emissions_node][n, t, p_em], 0, ; force = true)
     end
 end
-function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
+function constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
 
     # Declaration of the required subsets.
     𝒫ⁱⁿ = inputs(n)
@@ -56,7 +56,7 @@ function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::
         m[:cap_use][n, t] * process_emissions(data, p_em, t)
     )
 end
-function constraints_data(
+function constraints_ext_data(
     m,
     n::Node,
     𝒯,
@@ -91,7 +91,7 @@ function constraints_data(
     # Constraint for the outlet of the CO2
     @constraint(m, [t ∈ 𝒯], m[:flow_out][n, t, CO2] == CO2_tot[t] * co2_capture(data))
 end
-function constraints_data(
+function constraints_ext_data(
     m,
     n::Node,
     𝒯,
@@ -126,7 +126,7 @@ function constraints_data(
     # Constraint for the outlet of the CO2
     @constraint(m, [t ∈ 𝒯], m[:flow_out][n, t, CO2] == CO2_tot[t] * co2_capture(data))
 end
-function constraints_data(
+function constraints_ext_data(
     m,
     n::Node,
     𝒯,
@@ -162,10 +162,20 @@ function constraints_data(
 end
 
 """
-    constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::ExtensionData)
+    constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::ExtensionData)
 
 Fallback option when data is specified, but it is not desired to add the constraints through
 this function. This is, *e.g.*, the case for `EnergyModelsInvestments` as the capacity
 constraint has to be replaced.
 """
-constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::ExtensionData) = nothing
+constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::ExtensionData) = nothing
+
+"""
+    constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::ExtensionData)
+
+Legacy function for calling the new function [`constraints_ext_data`](@ref).
+The function will be removed in release 0.10.
+"""
+function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::ExtensionData)
+    constraints_ext_data(m, n, 𝒯, 𝒫, modeltype, data)
+end

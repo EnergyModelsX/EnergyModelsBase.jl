@@ -16,7 +16,7 @@ CurrentModule = EnergyModelsBase
 create_element
 create_link
 variables_element
-variables_data(m, _::Type{<:ExtensionData}, 𝒳::Vector{<:AbstractElement}, 𝒯, 𝒫, modeltype::EnergyModel)
+variables_ext_data(m, _::Type{<:ExtensionData}, 𝒳::Vector{<:AbstractElement}, 𝒯, 𝒫, modeltype::EnergyModel)
 objective(m, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
 objective_operational
 emissions_operational
@@ -43,7 +43,7 @@ variables_opex
 variables_capex
 variables_emission
 variables_elements
-variables_element_data
+variables_element_ext_data
 ```
 
 ## [Check functions](@id lib-int-fun-check)

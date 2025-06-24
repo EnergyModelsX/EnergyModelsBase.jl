@@ -82,7 +82,7 @@ export constraints_capacity, constraints_capacity_installed
 export constraints_flow_in, constraints_flow_out
 export constraints_level, constraints_level_aux
 export constraints_opex_fixed, constraints_opex_var
-export constraints_data
+export constraints_data, constraints_ext_data
 
 # Export functions used for level balancing modifications
 export previous_level, previous_level_sp

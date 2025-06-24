@@ -231,7 +231,7 @@ Hence, if you do not have to call additional functions, but only plan to include
       The function [``scale\_op\_sp(t_{inv}, t)``](@ref scale_op_sp) calculates the scaling factor between operational and investment periods.
       It also takes into account potential operational scenarios and their probability as well as representative periods.
 
-- `constraints_data`:\
+- `constraints_ext_data`:\
   This function is only called for specified data of the storage node, see above.
 
 !!! info "Implementation of capacity and OPEX"

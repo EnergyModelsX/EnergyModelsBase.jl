@@ -65,7 +65,7 @@ function create_model(
         variables_capex(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, modeltype)
         variables_emission(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype)
         variables_elements(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, modeltype)
-        variables_element_data(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, 𝒫, modeltype)
+        variables_element_ext_data(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, 𝒫, modeltype)
 
         constraints_elements(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype)
     end
@@ -426,15 +426,15 @@ function variables_elements(m, 𝒳::Vector{<:AbstractElement}, 𝒳ᵛᵉᶜ, �
 end
 
 """
-    variables_element_data(m, 𝒳::Vector{<:AbstractElement}, 𝒳ᵛᵉᶜ, 𝒯, 𝒫,modeltype::EnergyModel)
+    variables_element_ext_data(m, 𝒳::Vector{<:AbstractElement}, 𝒳ᵛᵉᶜ, 𝒯, 𝒫,modeltype::EnergyModel)
 
 Loop through all data subtypes and create variables specific to each subtype. It starts
 at the top level and subsequently move through the branches until it reaches a leave.
 
-The function subsequently calls the subroutine [`variables_data`](@ref) for creating the
+The function subsequently calls the subroutine [`variables_ext_data`](@ref) for creating the
 variables for the nodes that have the corresponding data types.
 """
-function variables_element_data(
+function variables_element_ext_data(
     m,
     𝒳::Vector{<:AbstractElement},
     𝒳ᵛᵉᶜ,
@@ -459,7 +459,7 @@ function variables_element_data(
         # All elements with the given data sub type.
         𝒳ᵈᵃᵗ = filter(x -> any(isa.(element_data(x), data_type)), 𝒳)
         try
-            variables_data(m, data_type, 𝒳ᵈᵃᵗ, 𝒯, 𝒫, modeltype)
+            variables_ext_data(m, data_type, 𝒳ᵈᵃᵗ, 𝒯, 𝒫, modeltype)
         catch e
             # Parts of the exception message we are looking for
             pre1 = "An object of name"
@@ -497,7 +497,7 @@ variables_element(m, ℒˢᵘᵇ::Vector{<:Link}, 𝒯, modeltype::EnergyModel) 
     variables_link(m, ℒˢᵘᵇ, 𝒯, modeltype)
 
 """
-    variables_data(m, _::Type{<:ExtensionData}, 𝒳::Vector{<:AbstractElement}, 𝒯, 𝒫, modeltype::EnergyModel)
+    variables_ext_data(m, _::Type{<:ExtensionData}, 𝒳::Vector{<:AbstractElement}, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Default fallback method for the variables creation for a data type of a `Vector{<:AbstractElement}`
 `𝒳` if no other method is defined. The default method does not specify any variables.
@@ -507,7 +507,14 @@ Default fallback method for the variables creation for a data type of a `Vector{
     consequence, methods, and hence, variables for [`Node`](@ref)s and [`Link`](@ref)s must
     be specified specifically.
 """
-function variables_data(m, _::Type{<:ExtensionData}, 𝒳::Vector{<:AbstractElement}, 𝒯, 𝒫, modeltype::EnergyModel)
+function variables_ext_data(
+    m,
+    _::Type{<:ExtensionData},
+    𝒳::Vector{<:AbstractElement},
+    𝒯,
+    𝒫,
+    modeltype::EnergyModel
+)
 end
 
 """

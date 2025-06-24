@@ -1,7 +1,7 @@
 """
-    EMB.variables_data(m, _::Type{SingleInvData}, 𝒩ᴵⁿᵛ::Vector{<:EMB.Node}, 𝒯, 𝒫, modeltype::AbstractInvestmentModel)
-    EMB.variables_data(m, _::Type{StorageInvData}, 𝒩ᴵⁿᵛ::Vector{<:EMB.Node}, 𝒯, 𝒫, modeltype::AbstractInvestmentModel)
-    EMB.variables_data(m, _::Type{SingleInvData}, 𝒩ᴵⁿᵛ::Vector{<:Link}, 𝒯, 𝒫, modeltype::AbstractInvestmentModel)
+    EMB.variables_ext_data(m, _::Type{SingleInvData}, 𝒩ᴵⁿᵛ::Vector{<:EMB.Node}, 𝒯, 𝒫, modeltype::AbstractInvestmentModel)
+    EMB.variables_ext_data(m, _::Type{StorageInvData}, 𝒩ᴵⁿᵛ::Vector{<:EMB.Node}, 𝒯, 𝒫, modeltype::AbstractInvestmentModel)
+    EMB.variables_ext_data(m, _::Type{SingleInvData}, 𝒩ᴵⁿᵛ::Vector{<:Link}, 𝒯, 𝒫, modeltype::AbstractInvestmentModel)
 
 Declaration of different capital expenditures (CAPEX) variables for the element types
 introduced in `EnergyModelsBase`. CAPEX variables are only introduced for elements that have
@@ -38,7 +38,7 @@ user with two individual methods for both `𝒩::Vector{<:EMB.Node}` and 𝒩::V
     - `**prefix**_remove_b` is an auxiliary variable used in some investment modes for the
       reduction of capacities.
 """
-function EMB.variables_data(m, _::Type{SingleInvData}, 𝒩ᴵⁿᵛ::Vector{<:EMB.Node}, 𝒯, 𝒫, modeltype::AbstractInvestmentModel)
+function EMB.variables_ext_data(m, _::Type{SingleInvData}, 𝒩ᴵⁿᵛ::Vector{<:EMB.Node}, 𝒯, 𝒫, modeltype::AbstractInvestmentModel)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Add investment variables for nodes for each strategic period
@@ -49,7 +49,7 @@ function EMB.variables_data(m, _::Type{SingleInvData}, 𝒩ᴵⁿᵛ::Vector{<:E
     @variable(m, cap_invest_b[𝒩ᴵⁿᵛ, 𝒯ᴵⁿᵛ] ≥ 0; container = IndexedVarArray)
     @variable(m, cap_remove_b[𝒩ᴵⁿᵛ, 𝒯ᴵⁿᵛ] ≥ 0; container = IndexedVarArray)
 end
-function EMB.variables_data(m, _::Type{StorageInvData}, 𝒩ˢᵗᵒʳ::Vector{<:EMB.Node}, 𝒯, 𝒫, modeltype::EnergyModel)
+function EMB.variables_ext_data(m, _::Type{StorageInvData}, 𝒩ˢᵗᵒʳ::Vector{<:EMB.Node}, 𝒯, 𝒫, modeltype::EnergyModel)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Add investment variables for storage nodes for each strategic period
@@ -85,7 +85,7 @@ function EMB.variables_data(m, _::Type{StorageInvData}, 𝒩ˢᵗᵒʳ::Vector{<
         container = IndexedVarArray
     )
 end
-function EMB.variables_data(m, _::Type{SingleInvData}, ℒᴵⁿᵛ::Vector{<:Link}, 𝒯, 𝒫, modeltype::EnergyModel)
+function EMB.variables_ext_data(m, _::Type{SingleInvData}, ℒᴵⁿᵛ::Vector{<:Link}, 𝒯, 𝒫, modeltype::EnergyModel)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Add investment variables for links for each strategic period

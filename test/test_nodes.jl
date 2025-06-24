@@ -341,7 +341,7 @@ end
         @test !any(val == sink for val ∈ axes(m[:emissions_node])[1])
 
         # Test that the emissions from a sink node with emissions are properly accounted for
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
+        # - constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
         em_data = EmissionsProcess(Dict(CO2 => 10.0))
         snk_emit = RefSink(
             "sink_emit",
@@ -358,7 +358,7 @@ end
             value.(m[:emissions_node][snk_emit, t, CO2]) for t ∈ 𝒯
         )
         # Test that the emissions from a source node with emissions are properly accounted for
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
+        # - constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
         em_data = EmissionsProcess(Dict(CO2 => 10.0))
         src_emit = RefSource(
             "source_emit",
@@ -372,7 +372,7 @@ end
         𝒯 = get_time_struct(case)
         # Test that the emissions are properly calculated, although no input is present in
         # a `Source ndoe`
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
+        # - constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
         @test all(
             value.(m[:cap_use][src_emit, t]) * process_emissions(em_data, CO2, t) ≈
             value.(m[:emissions_node][src_emit, t, CO2]) for t ∈ 𝒯
@@ -513,7 +513,7 @@ end
         @test size(m[:emissions_node])[1] == 2
 
         # Check that the total and strategic emissions are correctly calculated
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsEnergy)
+        # - constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsEnergy)
         @test all(
             value.(m[:emissions_node][net, t, CO2]) ≈
             sum(value.(m[:flow_in][net, t, p]) * co2_int(p) for p ∈ inputs(net)) for t ∈ 𝒯,
@@ -547,7 +547,7 @@ end
         @test size(m[:emissions_node])[1] == 2
 
         # Check that the total and strategic emissions are correctly calculated
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
+        # - constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
         @test all(
             value.(m[:emissions_node][net, t, CO2]) ≈
             sum(value.(m[:flow_in][net, t, p]) * co2_int(p) for p ∈ inputs(net)) +
@@ -586,7 +586,7 @@ end
         @test size(m[:emissions_node])[1] == 2
 
         # Check that the total and strategic emissions are correctly calculated
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
+        # - constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
         @test all(
             value.(m[:emissions_node][net, t, CO2]) ≈
             sum(value.(m[:flow_in][net, t, p]) * co2_int(p) for p ∈ inputs(net)) +
@@ -625,7 +625,7 @@ end
         @test size(m[:emissions_node])[1] == 2
 
         # Check that the total and strategic emissions are correctly calculated
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
+        # - constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
         @test all(
             value.(m[:emissions_node][net, t, CO2]) ≈
             sum(value.(m[:flow_in][net, t, p]) * co2_int(p) for p ∈ inputs(net)) *
@@ -640,7 +640,7 @@ end
         )
 
         # Test that the CO2 capture is calculated correctly
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
+        # - constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
         @test all(
             value.(m[:flow_out][net, t, CO2]) ≈
             sum(value.(m[:flow_in][net, t, p]) * co2_int(p) for p ∈ inputs(net)) *
@@ -673,7 +673,7 @@ end
         @test size(m[:emissions_node])[1] == 2
 
         # Check that the total and strategic emissions are correctly calculated
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
+        # - constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
         @test all(
             value.(m[:emissions_node][net, t, CO2]) ≈
             sum(value.(m[:flow_in][net, t, p]) * co2_int(p) for p ∈ inputs(net)) +
@@ -688,7 +688,7 @@ end
         )
 
         # Test that the CO2 capture is calculated correctly
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
+        # - constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
         @test all(
             value.(m[:flow_out][net, t, CO2]) ≈
             value.(m[:cap_use][net, t]) *
@@ -722,7 +722,7 @@ end
         @test size(m[:emissions_node])[1] == 2
 
         # Check that the total and strategic emissions are correctly calculated
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
+        # - constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
         @test all(
             value.(m[:emissions_node][net, t, CO2]) ≈
             (
@@ -737,7 +737,7 @@ end
         )
 
         # Test that the CO2 capture is calculated correctly
-        # - constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
+        # - constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
         @test all(
             value.(m[:flow_out][net, t, CO2]) ≈
             (
