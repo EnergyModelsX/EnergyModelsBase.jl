@@ -44,9 +44,9 @@ The individual fields of the different types are described in the *[Public inter
 The extension is then implemented through the functions
 
 ```julia
-function constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsEnergy)
-function constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype, data::EmissionsProcess)
-function constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype, data::CaptureEnergyEmissions)
+function constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsEnergy)
+function constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
+function constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureEnergyEmissions)
 function constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureProcessEmissions)
 function constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureProcessEnergyEmissions)
 ```
