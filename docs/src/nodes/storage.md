@@ -75,7 +75,7 @@ The fields of a [`RefStorage`](@ref) are given as:
   The `stor_res` is the stored [`Resource`](@ref Resource).
 - **`input::Dict{<:Resource,<:Real}`** and **`output::Dict{<:Resource,<:Real}`**:\
   Both fields describe the `input` and `output` [`Resource`](@ref Resource)s with their corresponding conversion factors as dictionaries.
-  The stored [`Resource`](@extref EnergyModelsBase.Resource) (outlined above) must be included in both dictionaries to create the linking variables although its conversion factor is not utilized.
+  The stored [`Resource`](@ref Resource) (outlined above) must be included in both dictionaries to create the linking variables although its conversion factor is not utilized.
   All values have to be non-negative.
   !!! warning "Ratios for Storage"
       In the current implementation, we do not consider `output` conversion factors for the outflow from the [`RefStorage`](@ref) node.
