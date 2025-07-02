@@ -793,7 +793,9 @@ a [`Storage`](@ref) node.
   accessible through a `StrategicPeriod` as outlined in the function
   [`check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`](@ref) for the chosen composite type.
 - The values of the dictionary `input` are required to be non-negative.
+- The specified storage [`Resource`](@ref) must be included in the dictionary `input`.
 - The values of the dictionary `output` are required to be non-negative.
+- The specified storage [`Resource`](@ref) must be included in the dictionary `output`.
 """
 function check_node_default(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -830,9 +832,17 @@ function check_node_default(n::Storage, 𝒯, modeltype::EnergyModel, check_time
         all(inputs(n, p) ≥ 0 for p ∈ inputs(n)),
         "The values for the Dictionary `input` must be non-negative."
     )
+    has_input(n) && @assert_or_log(
+        storage_resource(n) ∈ inputs(n),
+        "The stored resource must be included in the Dictionary `input`."
+    )
     has_output(n) && @assert_or_log(
         all(outputs(n, p) ≥ 0 for p ∈ outputs(n)),
         "The values for the Dictionary `output` must be non-negative."
+    )
+    has_output(n) && @assert_or_log(
+        storage_resource(n) ∈ outputs(n),
+        "The stored resource must be included in the Dictionary `output`."
     )
 end
 

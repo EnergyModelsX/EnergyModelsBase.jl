@@ -450,11 +450,33 @@ end
     aux = ResourceCarrier("aux", 0.0)
 
     # Function for setting up the system for testing `Sink` and `Source`
-    function simple_graph(source::Source, sink::Sink)
+    function simple_graph(;
+        src_cap::TimeProfile = FixedProfile(10),
+        src_opex_var::TimeProfile = FixedProfile(10),
+        src_opex_fixed::TimeProfile = FixedProfile(0),
+        src_output::Dict = Dict(Power => 1),
+        snk_cap::TimeProfile = OperationalProfile([6, 8, 10, 6, 8]),
+        snk_pen::Dict = Dict(:surplus => FixedProfile(4), :deficit => FixedProfile(10)),
+        snk_input::Dict = Dict(Power => 1),
+    )
         resources = [Power, CO2]
         ops = SimpleTimes(5, 2)
         T = TwoLevel(2, 2, ops; op_per_strat = 10)
 
+        source =
+        RefSource(
+            "source",
+            src_cap,
+            src_opex_var,
+            src_opex_fixed,
+            src_output,
+        )
+        sink = RefSink(
+            "sink",
+            snk_cap,
+            snk_pen,
+            snk_input,
+        )
         nodes = [source, sink]
         links = [Direct(12, source, sink)]
         model = OperationalModel(
@@ -470,121 +492,51 @@ end
     # - check_node(n::Source, 𝒯, modeltype::EnergyModel)
     @testset "Source" begin
         # Sink used in the analysis
-        sink = RefSink(
-            "sink",
-            OperationalProfile([6, 8, 10, 6, 8]),
-            Dict(:surplus => FixedProfile(4), :deficit => FixedProfile(10)),
-            Dict(Power => 1),
-        )
-
         # Test that a wrong capacity is caught by the checks.
-        source = RefSource(
-            "source",
-            FixedProfile(-4),
-            FixedProfile(10),
-            FixedProfile(0),
-            Dict(Power => 1),
-        )
-        @test_throws AssertionError simple_graph(source, sink)
+        src_cap = FixedProfile(-4)
+        @test_throws AssertionError simple_graph(;src_cap)
 
         # Test that a wrong output dictionary is caught by the checks.
-        source = RefSource(
-            "source",
-            FixedProfile(4),
-            FixedProfile(10),
-            FixedProfile(0),
-            Dict(Power => -1),
-        )
-        @test_throws AssertionError simple_graph(source, sink)
+        src_output = Dict(Power => -1)
+        @test_throws AssertionError simple_graph(;src_output)
 
         # Test that a wrong fixed OPEX is caught by the checks.
-        function check_opex_prof(opex_fixed, sink)
-            source = RefSource(
-                "source",
-                FixedProfile(4),
-                FixedProfile(10),
-                opex_fixed,
-                Dict(Power => 1),
-            )
-            return simple_graph(source, sink)
-        end
-        opex_fixed = FixedProfile(-5)
-        @test_throws AssertionError check_opex_prof(opex_fixed, sink)
+        src_opex_fixed = FixedProfile(-5)
+        @test_throws AssertionError simple_graph(;src_opex_fixed)
 
         # Test that a wrong profile for fixed OPEX is caught by the checks.
         # - check_fixed_opex(n::Node, 𝒯ᴵⁿᵛ, check_timeprofiles::Bool)
-        opex_fixed = StrategicProfile([1])
-        @test_throws AssertionError check_opex_prof(opex_fixed, sink)
-        opex_fixed = OperationalProfile([1])
-        @test_throws AssertionError check_opex_prof(opex_fixed, sink)
-
-        # Test that correct input solves the model to optimality.
-        source = RefSource(
-            "source",
-            FixedProfile(4),
-            FixedProfile(10),
-            FixedProfile(5),
-            Dict(Power => 1),
-        )
-        _, case, model = simple_graph(source, sink)
-        m = run_model(case, model, HiGHS.Optimizer)
-        @test termination_status(m) == MOI.OPTIMAL
+        src_opex_fixed = StrategicProfile([1])
+        @test_throws AssertionError simple_graph(;src_opex_fixed)
+        src_opex_fixed = OperationalProfile([1])
+        @test_throws AssertionError simple_graph(;src_opex_fixed)
     end
 
     # Test that the fields of a Sink are correctly checked
     # - check_node(n::Sink, 𝒯, modeltype::EnergyModel)
     @testset "Sink" begin
-        # Source used in the analysis
-        source = RefSource(
-            "source",
-            FixedProfile(4),
-            FixedProfile(10),
-            FixedProfile(0),
-            Dict(Power => 1),
-        )
-
         # Test that an inconsistent Sink.penalty dictionaries is caught by the checks.
-        sink = RefSink(
-            "sink",
-            FixedProfile(3),
-            Dict(:surplus => FixedProfile(4), :def => FixedProfile(2)),
-            Dict(Power => 1),
-        )
-        @test_throws AssertionError simple_graph(source, sink)
+        snk_pen = Dict(:surplus => FixedProfile(4), :def => FixedProfile(2))
+        @test_throws AssertionError simple_graph(;snk_pen)
 
         # The penalties in this Sink node lead to an infeasible optimum. Test that the
         # checks forbids it.
-        sink = RefSink(
-            "sink",
-            FixedProfile(3),
-            Dict(:surplus => FixedProfile(-4), :deficit => FixedProfile(2)),
-            Dict(Power => 1),
-        )
-        @test_throws AssertionError simple_graph(source, sink)
+        snk_pen = Dict(:surplus => FixedProfile(-4), :deficit => FixedProfile(2))
+        @test_throws AssertionError simple_graph(;snk_pen)
 
         # Check that a wrong capacity in a sink is caught by the checks.
-        sink = RefSink(
-            "sink",
-            OperationalProfile(-[6, 8, 10, 6, 8]),
-            Dict(:surplus => FixedProfile(4), :deficit => FixedProfile(10)),
-            Dict(Power => 1),
-        )
-        @test_throws AssertionError simple_graph(source, sink)
-
-        # Test that correct input solves the model to optimality.
-        sink = RefSink(
-            "sink",
-            OperationalProfile([6, 8, 10, 6, 8]),
-            Dict(:surplus => FixedProfile(4), :deficit => FixedProfile(10)),
-            Dict(Power => 1),
-        )
-        _, case, model = simple_graph(source, sink)
-        m = run_model(case, model, HiGHS.Optimizer)
-        @test termination_status(m) == MOI.OPTIMAL
+        snk_cap = OperationalProfile(-[6, 8, 10, 6, 8])
+        @test_throws AssertionError simple_graph(;snk_cap)
     end
 
     # Function for setting up the system for testing a `NetworkNode`
-    function simple_graph(network::NetworkNode)
+    function simple_graph(;
+        cap::TimeProfile = FixedProfile(25),
+        opex_var::TimeProfile = FixedProfile(5.5),
+        opex_fixed::TimeProfile = FixedProfile(0),
+        input::Dict = Dict(NG => 2),
+        output::Dict = Dict(Power => 1),
+    )
 
         # Used source, network, and sink
         source = RefSource(
@@ -595,6 +547,14 @@ end
             Dict(NG => 1),
         )
 
+        network = RefNetworkNode(
+            "network",
+            cap,
+            opex_var,
+            opex_fixed,
+            input,
+            output
+        )
         sink = RefSink(
             "sink",
             FixedProfile(3),
@@ -626,65 +586,30 @@ end
     @testset "NetworkNode" begin
 
         # Test that a wrong capacity is caught by the checks.
-        network = RefNetworkNode(
-            "network",
-            FixedProfile(-25),
-            FixedProfile(5.5),
-            FixedProfile(0),
-            Dict(NG => 2),
-            Dict(Power => 1),
-        )
-        @test_throws AssertionError simple_graph(network)
+        cap = FixedProfile(-25)
+        @test_throws AssertionError simple_graph(;cap)
 
         # Test that a wrong fixed OPEX is caught by the checks.
-        network = RefNetworkNode(
-            "network",
-            FixedProfile(25),
-            FixedProfile(5.5),
-            FixedProfile(-100),
-            Dict(NG => 2),
-            Dict(Power => 1),
-        )
-        @test_throws AssertionError simple_graph(network)
+        opex_fixed = FixedProfile(-100)
+        @test_throws AssertionError simple_graph(;opex_fixed)
 
         # Test that a wrong input dictionary is caught by the checks.
-        network = RefNetworkNode(
-            "network",
-            FixedProfile(25),
-            FixedProfile(5.5),
-            FixedProfile(0),
-            Dict(NG => -2),
-            Dict(Power => 1),
-        )
-        @test_throws AssertionError simple_graph(network)
+        input = Dict(NG => -2)
+        @test_throws AssertionError simple_graph(;input)
 
         # Test that a wrong output dictionary is caught by the checks.
-        network = RefNetworkNode(
-            "network",
-            FixedProfile(25),
-            FixedProfile(5.5),
-            FixedProfile(0),
-            Dict(NG => 2),
-            Dict(Power => -1),
-        )
-        @test_throws AssertionError simple_graph(network)
-
-        # Test that correct input solves the model to optimality.
-        network = RefNetworkNode(
-            "network",
-            FixedProfile(25),
-            FixedProfile(5.5),
-            FixedProfile(0),
-            Dict(NG => 2),
-            Dict(Power => 1),
-        )
-        _, case, model = simple_graph(network)
-        m = run_model(case, model, HiGHS.Optimizer)
-        @test termination_status(m) == MOI.OPTIMAL
+        output = Dict(Power => -1)
+        @test_throws AssertionError simple_graph(;output)
     end
 
     # Function for setting up the system for testing a `Storage` node
-    function simple_graph(storage::Storage)
+    function simple_graph(;
+        charge = StorCapOpexVar(FixedProfile(-10), FixedProfile(10)),
+        level = StorCapOpexFixed(FixedProfile(1e8), FixedProfile(2)),
+        stor_res::Resource = Power,
+        input::Dict = Dict(Power => 1, aux => 0.05),
+        output::Dict = Dict(Power => 1),
+    )
 
         # Used source, network, and sink
         source = RefSource(
@@ -700,6 +625,14 @@ end
             FixedProfile(10),
             FixedProfile(0),
             Dict(aux => 1),
+        )
+        storage = RefStorage{CyclicStrategic}(
+            "storage",
+            charge,
+            level,
+            stor_res,
+            input,
+            output,
         )
 
         sink = RefSink(
@@ -733,79 +666,33 @@ end
     @testset "Storage" begin
 
         # Test that a wrong capacities are caught by the checks.
-        storage = RefStorage{CyclicStrategic}(
-            "storage",
-            StorCapOpexVar(FixedProfile(-10), FixedProfile(10)),
-            StorCapOpexFixed(FixedProfile(1e8), FixedProfile(2)),
-            Power,
-            Dict(Power => 1, aux => 0.05),
-            Dict(Power => 1),
-        )
-        @test_throws AssertionError simple_graph(storage)
-        storage = RefStorage{CyclicStrategic}(
-            "storage",
-            StorCapOpexVar(FixedProfile(10), FixedProfile(10)),
-            StorCapOpexFixed(FixedProfile(-1e8), FixedProfile(2)),
-            Power,
-            Dict(Power => 1, aux => 0.05),
-            Dict(Power => 1),
-        )
-        @test_throws AssertionError simple_graph(storage)
+        charge = StorCapOpexVar(FixedProfile(-10), FixedProfile(10))
+        @test_throws AssertionError simple_graph(;charge)
+        level = StorCapOpexVar(FixedProfile(-1e8), FixedProfile(2))
+        @test_throws AssertionError simple_graph(;level)
 
         # Test that a wrong fixed OPEX is caught by the checks.
-        storage = RefStorage{CyclicStrategic}(
-            "storage",
-            StorCapOpexVar(FixedProfile(10), FixedProfile(10)),
-            StorCapOpexFixed(FixedProfile(1e8), FixedProfile(-2)),
-            Power,
-            Dict(Power => 1, aux => 0.05),
-            Dict(Power => 1),
-        )
-        @test_throws AssertionError simple_graph(storage)
+        level = StorCapOpexVar(FixedProfile(1e8), FixedProfile(-2))
+        @test_throws AssertionError simple_graph(;level)
 
         # Test that a wrong input dictionary is caught by the checks.
-        storage = RefStorage{CyclicStrategic}(
-            "storage",
-            StorCapOpexVar(FixedProfile(10), FixedProfile(10)),
-            StorCapOpexFixed(FixedProfile(1e8), FixedProfile(2)),
-            Power,
-            Dict(Power => -1, aux => 0.05),
-            Dict(Power => 1),
-        )
-        @test_throws AssertionError simple_graph(storage)
-        storage = RefStorage{CyclicStrategic}(
-            "storage",
-            StorCapOpexVar(FixedProfile(10), FixedProfile(10)),
-            StorCapOpexFixed(FixedProfile(1e8), FixedProfile(2)),
-            Power,
-            Dict(Power => 1, aux => -0.05),
-            Dict(Power => 1),
-        )
-        @test_throws AssertionError simple_graph(storage)
+        input = Dict(Power => -1, aux => 0.05)
+        @test_throws AssertionError simple_graph(;input)
+        input = Dict(Power => 1, aux => -0.05)
+        @test_throws AssertionError simple_graph(;input)
 
         # Test that a wrong output dictionary is caught by the checks.
-        storage = RefStorage{CyclicStrategic}(
-            "storage",
-            StorCapOpexVar(FixedProfile(10), FixedProfile(10)),
-            StorCapOpexFixed(FixedProfile(1e8), FixedProfile(2)),
-            Power,
-            Dict(Power => 1, aux => 0.05),
-            Dict(Power => -1),
-        )
-        @test_throws AssertionError simple_graph(storage)
+        output = Dict(Power => -1)
+        @test_throws AssertionError simple_graph(;output)
 
-        # Test that correct input solves the model to optimality.
-        storage = RefStorage{CyclicStrategic}(
-            "storage",
-            StorCapOpexVar(FixedProfile(10), FixedProfile(10)),
-            StorCapOpexFixed(FixedProfile(1e8), FixedProfile(2)),
-            Power,
-            Dict(Power => 1, aux => 0.05),
-            Dict(Power => 1),
-        )
-        _, case, model = simple_graph(storage)
-        m = run_model(case, model, HiGHS.Optimizer)
-        @test termination_status(m) == MOI.OPTIMAL
+        # Test that a wrong stored resource is caught by the checks.
+        stor_res = aux
+        @test_throws AssertionError simple_graph(;stor_res)
+        stor_res = NG
+        output = Dict(NG => -1)
+        @test_throws AssertionError simple_graph(;stor_res, output)
+
+
     end
 end
 

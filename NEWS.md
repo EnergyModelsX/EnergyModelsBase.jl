@@ -1,5 +1,12 @@
 # Release notes
 
+## Unversioned
+
+### Changes to checks
+
+* Add check that `stor_res` is included in both `input` and `output`.
+* Minor rewriting of function flow in tests of checks.
+
 ## Version 0.9.1 (2025-06-24)
 
 ### Rework of data

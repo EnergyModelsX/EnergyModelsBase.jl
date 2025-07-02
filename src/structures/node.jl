@@ -298,7 +298,7 @@ The reference `Availability` node solves the energy balance for all connected fl
 
 # Fields
 - **`id`** is the name/identifier of the node.
-- **`inputs::Vector{<:Resource}`** are the input [`Resource`](@ref)s.
+- **`input::Vector{<:Resource}`** are the input [`Resource`](@ref)s.
 - **`output::Vector{<:Resource}`** are the output [`Resource`](@ref)s.
 
 A constructor is provided so that only a single array can be provided with the fields:
@@ -332,7 +332,8 @@ The current implemented cyclic behaviours are [`CyclicRepresentative`](@ref),
   Depending on the chosen type, the charge parameters can include variable OPEX, fixed OPEX,
   and/or a capacity.
 - **`level::AbstractStorageParameters`** are the level parameters of the [`Storage`](@ref) node.
-  Depending on the chosen type, the charge parameters can include variable OPEX and/or fixed OPEX.
+  Depending on the chosen type, the level parameters can include variable OPEX and/or fixed OPEX.
+  They must include a capacity.
 - **`stor_res::Resource`** is the stored [`Resource`](@ref).
 - **`input::Dict{<:Resource,<:Real}`** are the input [`Resource`](@ref)s with conversion
   value `Real`.

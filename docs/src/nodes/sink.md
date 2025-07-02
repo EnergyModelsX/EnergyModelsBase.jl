@@ -62,7 +62,7 @@ The variables of [`Sink`](@ref) nodes include:
 
 A qualitative overview of the individual constraints can be found on *[Constraint functions](@ref man-con)*.
 This section focuses instead on the mathematical description of the individual constraints.
-It omits the direction inclusion of the vector of sink nodes (or all nodes, if nothing specific is implemented).
+It omits the direct inclusion of the vector of sink nodes (or all nodes, if nothing specific is implemented).
 Instead, it is implicitly assumed that the constraints are valid ``\forall n ∈ N^{\text{Sink}}`` for all [`Sink`](@ref) types if not stated differently.
 In addition, all constraints are valid ``\forall t \in T`` (that is in all operational periods) or ``\forall t_{inv} \in T^{Inv}`` (that is in all investment periods).
 
