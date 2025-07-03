@@ -1,10 +1,14 @@
 # Release notes
 
-## Unversioned
+## Version 0.8.4 (2025-07-03)
 
 ### Bugfixes
 
 * Fixed a bug when a `Link` did not have the same `input` and `output` `Resource`.
+* Fixed a bug when using `Storage{CyclicStrategic}` with `TwoLevel{OperationalScenarios}`:
+  * The storage balance was wrongly calculated.
+  * Updated constraints on the storage level when using `OperationalScenarios` without `RepresentativePeriods`.
+  * Added tests to avoid these problems in the future.
 
 ## Version 0.8.3 (2024-11-29)
 
