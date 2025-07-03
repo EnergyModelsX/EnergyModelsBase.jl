@@ -2,6 +2,10 @@
 
 ## Unversioned
 
+### Bugfixes
+
+* Fixed a bug when a `Link` did not have the same `input` and `output` `Resource`.
+
 ### Changes to checks
 
 * Add check that `stor_res` is included in both `input` and `output`.
