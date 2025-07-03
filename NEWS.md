@@ -1,5 +1,11 @@
 # Release notes
 
+## Unversioned
+
+### Bugfixes
+
+* Fixed a bug when a `Link` did not have the same `input` and `output` `Resource`.
+
 ## Version 0.8.3 (2024-11-29)
 
 ### Reference checks possible to be called
