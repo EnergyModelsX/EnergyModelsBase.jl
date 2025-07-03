@@ -90,7 +90,7 @@ function generate_example_network_investment()
             # Line above: CO2 is required as output for variable definition, but the
             # value does not matter
             [
-                capture_data,           # Additonal data for emissions and CO₂ capture
+                capture_data,           # Additional data for emissions and CO₂ capture
                 SingleInvData(
                     FixedProfile(600 * 1e3),  # Capex in EUR/MW
                     FixedProfile(40),       # Max installed capacity [MW]

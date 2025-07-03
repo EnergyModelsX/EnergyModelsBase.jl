@@ -62,7 +62,7 @@ The fields of a [`RefStorage`](@ref) are given as:
 - **`id`**:\
   The field `id` is only used for providing a name to the node.
 - **`charge::AbstractStorageParameters`**:\
-    More information can be found on *[storage parameters](@ref lib-pub-nodes-stor_par)*.
+  More information can be found on *[storage parameters](@ref lib-pub-nodes-stor_par)*.
 - **`level::UnionCapacity`**:\
   The level storage parameters must include a capacity.
   More information can be found on *[storage parameters](@ref lib-pub-nodes-stor_par)*.
@@ -71,11 +71,11 @@ The fields of a [`RefStorage`](@ref) are given as:
       Similarly, you can only use `FixedProfile` or `StrategicProfile` for the fixed OPEX, but not `RepresentativeProfile` or `OperationalProfile`.
       The variable operating expenses can be provided as `OperationalProfile` as well.
       In addition, all capacity and fixed OPEX values have to be non-negative.
-- **`stor_res::ResourceEmit`**:\
+- **`stor_res::Resource`**:\
   The `stor_res` is the stored [`Resource`](@ref Resource).
 - **`input::Dict{<:Resource,<:Real}`** and **`output::Dict{<:Resource,<:Real}`**:\
   Both fields describe the `input` and `output` [`Resource`](@ref Resource)s with their corresponding conversion factors as dictionaries.
-  It is not necessary to specify the stored [`Resource`](@ref Resource) (outlined above), but it is in general advisable.\
+  The stored [`Resource`](@ref Resource) (outlined above) must be included in both dictionaries to create the linking variables although its conversion factor is not utilized.
   All values have to be non-negative.
   !!! warning "Ratios for Storage"
       In the current implementation, we do not consider `output` conversion factors for the outflow from the [`RefStorage`](@ref) node.
@@ -130,7 +130,7 @@ The variables of [`Storage`](@ref)s include:
 
 A qualitative overview of the individual constraints can be found on *[Constraint functions](@ref man-con)*.
 This section focuses instead on the mathematical description of the individual constraints.
-It omits the direction inclusion of the vector of network nodes (or all nodes, if nothing specific is implemented).
+It omits the direct inclusion of the vector of network nodes (or all nodes, if nothing specific is implemented).
 Instead, it is implicitly assumed that the constraints are valid ``\forall n ∈ N^{\text{Storage}}`` for all [`Storage`](@ref) types if not stated differently.
 In addition, all constraints are valid ``\forall t \in T`` (that is in all operational periods) or ``\forall t_{inv} \in T^{Inv}`` (that is in all investment periods).
 

@@ -86,7 +86,7 @@ function generate_example_network()
             Dict(Power => 1, CO2 => 1), # Output from the node with output ratio
             # Line above: CO2 is required as output for variable definition, but the
             # value does not matter
-            [capture_data],             # Additonal data for emissions and CO₂ capture
+            [capture_data],             # Additional data for emissions and CO₂ capture
         ),
         RefNetworkNode(
             "coal power plant",         # Node id
@@ -95,7 +95,7 @@ function generate_example_network()
             FixedProfile(0),            # Fixed OPEX in EUR/MW/8h
             Dict(Coal => 2.5),          # Input to the node with input ratio
             Dict(Power => 1),           # Output from the node with output ratio
-            [emission_data],            # Additonal data for emissions
+            [emission_data],            # Additional data for emissions
         ),
         RefStorage{AccumulatingEmissions}(
             "CO2 storage",              # Node id
