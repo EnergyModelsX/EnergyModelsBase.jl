@@ -115,20 +115,20 @@ Power = ResourceCarrier("Power", 0.0)
 CO2 = ResourceEmit("CO2", 1.0)
 
 # Function for setting up the system
-function link_graph(LinkType::Vector{DataType})
+function link_graph(LinkType::Vector{DataType}; res_in=Power, res_out=Power)
     # Used source, network, and sink
     source = RefSource(
         "source",
         FixedProfile(4),
         FixedProfile(10),
         FixedProfile(0),
-        Dict(Power => 1),
+        Dict(res_in => 1),
     )
     sink = RefSink(
         "sink",
         FixedProfile(3),
         Dict(:surplus => FixedProfile(4), :deficit => FixedProfile(100)),
-        Dict(Power => 1),
+        Dict(res_out => 1),
     )
 
     resources = [Power, CO2]
@@ -145,6 +145,37 @@ function link_graph(LinkType::Vector{DataType})
     )
     case = Dict(:T => T, :nodes => nodes, :links => links, :products => resources)
     return run_model(case, model, HiGHS.Optimizer), case, model
+end
+
+@testset "Link - different resources" begin
+    # Creation of a new link type with associated emissions in each operational period
+    struct ResourceLink <: Link
+        id::Any
+        from::EMB.Node
+        to::EMB.Node
+        formulation::EMB.Formulation
+    end
+    function EMB.create_link(m, 𝒯, 𝒫, l::ResourceLink, modeltype::EnergyModel, formulation::EMB.Formulation)
+        # Generic link in which each output corresponds to the input
+        @constraint(m, [t ∈ 𝒯],
+            sum(m[:link_out][l, t, p_out] for p_out ∈ outputs(l)) ==
+                sum(m[:link_in][l, t, p_in] for p_in ∈ inputs(l))
+        )
+    end
+    EMB.inputs(l::ResourceLink) = [Power]
+    EMB.outputs(l::ResourceLink) = [CO2]
+
+    # Create and solve the system
+    m, case, model = link_graph([ResourceLink]; res_out=CO2)
+    ℒ = case[:links]
+    𝒩 = case[:nodes]
+    𝒯 = case[:T]
+
+    # Test that the coupling is working correctly and resources are transported
+    @test all(value.(m[:flow_out][𝒩[1], t, Power]) ≈ value.(m[:link_in][ℒ[1], t, Power]) for t ∈ 𝒯)
+    @test all(value.(m[:flow_in][𝒩[2], t, CO2]) ≈ value.(m[:link_out][ℒ[1], t, CO2]) for t ∈ 𝒯)
+    @test all(value.(m[:flow_out][𝒩[1], t, Power]) ≈ value.(m[:flow_in][𝒩[2], t, CO2]) for t ∈ 𝒯)
+    @test all(value.(m[:flow_out][𝒩[1], t, Power]) ≈ 3 for t ∈ 𝒯)
 end
 
 @testset "Link - emissions" begin

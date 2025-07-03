@@ -468,14 +468,14 @@ function constraints_node(m, 𝒩, 𝒯, 𝒫, ℒ, modeltype::EnergyModel)
         if has_output(n)
             @constraint(m, [t ∈ 𝒯, p ∈ outputs(n)],
                 m[:flow_out][n, t, p] ==
-                sum(m[:link_in][l, t, p] for l ∈ ℒᶠʳᵒᵐ if p ∈ outputs(l))
+                sum(m[:link_in][l, t, p] for l ∈ ℒᶠʳᵒᵐ if p ∈ inputs(l))
             )
         end
         # Constraint for input flowrate and output links.
         if has_input(n)
             @constraint(m, [t ∈ 𝒯, p ∈ inputs(n)],
                 m[:flow_in][n, t, p] ==
-                sum(m[:link_out][l, t, p] for l ∈ ℒᵗᵒ if p ∈ inputs(l))
+                sum(m[:link_out][l, t, p] for l ∈ ℒᵗᵒ if p ∈ outputs(l))
             )
         end
         # Call of function for individual node constraints.
