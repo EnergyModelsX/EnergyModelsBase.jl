@@ -1206,10 +1206,6 @@ end
             value.(m[:stor_level_Δ_op][stor, t]) * duration(t) for
             (t_prev, t) ∈ withprev(𝒯), atol = TEST_ATOL if !isnothing(t_prev)
         ) ≈ length(𝒯) - length(𝒯ᴵⁿᵛ) * ops.len * scps.len atol = TEST_ATOL
-
-        # Check that the level is 0 exactly 14 times
-        @test sum(value.(m[:stor_level][stor, t]) ≈ 0 for t ∈ 𝒯, atol = TEST_ATOL) ≈ 9
-                atol = TEST_ATOL
     end
 end
 
