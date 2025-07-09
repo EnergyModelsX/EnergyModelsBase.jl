@@ -72,7 +72,7 @@ function create_model(
     # Declaration of coupling constraints of the problem
     for couple ∈ 𝒳_𝒳
         elements_vec = [cpl(case) for cpl ∈ couple]
-        constraints_couple(m, elements_vec..., p_sub, 𝒯, modeltype)
+        constraints_couple(m, elements_vec..., 𝒫, 𝒯, modeltype)
     end
 
     # Declaration of global vairables and constraints
@@ -235,17 +235,17 @@ function variables_flow(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, mode
     𝒩ᵒᵘᵗ = filter(has_output, 𝒩)
 
     # Create the node flow variables
-    @variable(m, flow_in[n_in ∈ 𝒩ⁱⁿ, 𝒯, res_flow(inputs(n_in))])
-    @variable(m, flow_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯, res_flow(outputs(n_out))])
+    @variable(m, flow_in[n_in ∈ 𝒩ⁱⁿ, 𝒯, inputs(n_in)])
+    @variable(m, flow_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯, outputs(n_out)])
 
     # Set the bounds for unidirectional nodes
     𝒩ⁱⁿ⁻ᵘⁿⁱ = filter(is_unidirectional, 𝒩ⁱⁿ)
     𝒩ᵒᵘᵗ⁻ᵘⁿⁱ = filter(is_unidirectional, 𝒩ᵒᵘᵗ)
 
-    for n_in ∈ 𝒩ⁱⁿ⁻ᵘⁿⁱ, t ∈ 𝒯, p ∈ res_flow(inputs(n_in))
+    for n_in ∈ 𝒩ⁱⁿ⁻ᵘⁿⁱ, t ∈ 𝒯, p ∈ inputs(n_in)
         set_lower_bound(m[:flow_in][n_in, t, p], 0)
     end
-    for n_out ∈ 𝒩ᵒᵘᵗ⁻ᵘⁿⁱ, t ∈ 𝒯, p ∈ res_flow(outputs(n_out))
+    for n_out ∈ 𝒩ᵒᵘᵗ⁻ᵘⁿⁱ, t ∈ 𝒯, p ∈ outputs(n_out)
         set_lower_bound(m[:flow_out][n_out, t, p], 0)
     end
 
@@ -257,17 +257,17 @@ function variables_flow(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, mode
 end
 function variables_flow(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
     # Create the link flow variables
-    @variable(m, link_in[l ∈ ℒ, 𝒯, res_flow(inputs(l))])
-    @variable(m, link_out[l ∈ ℒ, 𝒯, res_flow(outputs(l))])
+    @variable(m, link_in[l ∈ ℒ, 𝒯, inputs(l)])
+    @variable(m, link_out[l ∈ ℒ, 𝒯, outputs(l)])
 
     # Set the bounds for unidirectional links
     ℒᵘⁿⁱ = filter(is_unidirectional, ℒ)
 
     for l ∈ ℒᵘⁿⁱ, t ∈ 𝒯
-        for p ∈ res_flow(inputs(l))
+        for p ∈ inputs(l)
             set_lower_bound(m[:link_in][l, t, p], 0)
         end
-        for p ∈ res_flow(outputs(l))
+        for p ∈ outputs(l)
             set_lower_bound(m[:link_out][l, t, p], 0)
         end
     end
@@ -279,14 +279,15 @@ function variables_flow(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, model
 end
 
 """
-    variables_flow_resource(m, ℒ::Vector{<:Link}, rt::Type{Resource}, 𝒯, modeltype::EnergyModel)
+    variables_flow_resource(m, ℒ::Vector{<:Link}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel)
+    variables_flow_resource(m, 𝒩::Vector{<:Node}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel)
 
 Declaration of flow variables for the differrent resource types.
 
 The default method is empty but it is required for multiple dispatch in energy flow models.
 """
-function variables_flow_resource(m, ℒ::Vector{<:Link}, rt::Vector{<:Resource}, 𝒯, modeltype::EnergyModel) end
-function variables_flow_resource(m, 𝒩::Vector{<:Node}, rt::Vector{<:Resource}, 𝒯, modeltype::EnergyModel) end
+function variables_flow_resource(m, ℒ::Vector{<:Link}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel) end
+function variables_flow_resource(m, 𝒩::Vector{<:Node}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel) end
 
 
 """
@@ -523,7 +524,7 @@ differentiation in extension packages.
 create_element(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel) =
     create_node(m, n, 𝒯, 𝒫, modeltype)
 create_element(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel) =
-    create_link(m, l, 𝒯, p_sub, modeltype)
+    create_link(m, l, 𝒯, 𝒫, modeltype)
 
 """
     constraints_couple(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫, 𝒯, modeltype::EnergyModel)
@@ -536,17 +537,27 @@ is available for the coupling between [`AbstractElement`](@ref)s while a method 
 for the coupling between a [`Link`](@ref) and a [`Node`](@ref EnergyModelsBase.Node).
 """
 function constraints_couple(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫, 𝒯, modeltype::EnergyModel)
-    𝒫ˢᵘᵇ =  res_types_seg(𝒫)
     for n ∈ 𝒩
         ℒᶠʳᵒᵐ, ℒᵗᵒ = link_sub(ℒ, n)
-        for p_sub in 𝒫ˢᵘᵇ
-            if has_output(n)
-                constraints_couple_from(m, n, ℒᶠʳᵒᵐ, p_sub, 𝒯, modeltype)
-            end
-            if has_input(n)
-                constraints_couple_to(m, n, ℒᵗᵒ, p_sub, 𝒯, modeltype)
-            end
+
+        if has_output(n)
+            @constraint(m, [t ∈ 𝒯, p ∈ outputs(n)],
+            m[:flow_out][n, t, p] ==
+            sum(m[:link_in][l, t, p] for l ∈ ℒᶠʳᵒᵐ if p ∈ outputs(l))
+            )
         end
+
+        if has_input(n)
+            @constraint(m, [t ∈ 𝒯, p ∈ inputs(n)],
+            m[:flow_in][n, t, p] ==
+            sum(m[:link_out][l, t, p] for l ∈ ℒᵗᵒ if p ∈ inputs(l))
+            )
+        end
+    end
+
+    # Create new constraints for specific resource types
+    for p_sub in res_types_seg(𝒫)
+        constraints_couple_resource(m, 𝒩, ℒ, p_sub, 𝒯, modeltype)
     end
 end
 function constraints_couple(m, ℒ::Vector{<:Link}, 𝒩::Vector{<:Node}, 𝒫, 𝒯, modeltype::EnergyModel)
@@ -554,28 +565,11 @@ function constraints_couple(m, ℒ::Vector{<:Link}, 𝒩::Vector{<:Node}, 𝒫, 
 end
 
 """
-    constraints_couple_from(m, n::Node, ℒ::Vector{<:Link}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel)
+    constraints_couple_resource(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel)
 
 Create constraints for output flowrate and input links.
 """
-function constraints_couple_from(m, n::Node, ℒ::Vector{<:Link}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel)
-    @constraint(m, [t ∈ 𝒯, p ∈ intersect(outputs(n), 𝒫)],
-        m[:flow_out][n, t, p] ==
-        sum(m[:link_in][l, t, p] for l ∈ ℒ if p ∈ outputs(l))
-    )
-end
-
-"""
-    constraints_couple_to(m, n::Node, ℒ::Vector{<:Link}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel)
-
-Create constraints for input flowrate and output links.
-"""
-function constraints_couple_to(m, n::Node, ℒ::Vector{<:Link}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel)
-    @constraint(m, [t ∈ 𝒯, p ∈ intersect(inputs(n), 𝒫)],
-        m[:flow_in][n, t, p] ==
-        sum(m[:link_out][l, t, p] for l ∈ ℒ if p ∈ inputs(l))
-    )
-end
+function constraints_couple_resource(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel) end
 
 """
     constraints_emissions(m, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
@@ -888,20 +882,25 @@ subtypes of `Availability`.
 available node except if one wants to include as well transport between different
 `Availability` nodes with associated costs (not implemented at the moment).
 """
-function create_node(m, n::Availability, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel)
+function create_node(m, n::Availability, 𝒯, 𝒫, modeltype::EnergyModel)
 
-    # Mass/energy balance constraints for an availability node.
-    for p_sub in res_types_seg(𝒫)
-        constraints_flow_balance(m, n, 𝒯, p_sub, modeltype)
+    @constraint(m, [t ∈ 𝒯, p ∈ inputs(n)],
+            m[:flow_in][n, t, p] == m[:flow_out][n, t, p]
+    )
+
+    # Constraints based on the resource types
+    for p_sub in res_types_seg(inputs(n))
+        constraints_flow_resource(m, n, 𝒯, p_sub, modeltype)
     end
 end
 
+"""
+    constraints_flow_resource(m, n::Availability, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel)
 
-function constraints_flow_balance(m, n::Availability, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel)
-    @constraint(m, [t ∈ 𝒯, p ∈ intersect(inputs(n), 𝒫)],
-            m[:flow_in][n, t, p] == m[:flow_out][n, t, p]
-    )
-end
+Create constraints for the flow of resources through an `Availability` node for specific resource types.
+The function is empty by default and can be implemented in the extension packages.
+"""
+function constraints_flow_resource(m, n::Availability, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel) end
 
 """
     create_link(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel)
@@ -924,25 +923,38 @@ function create_link(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel)
     return create_link(m, 𝒯, 𝒫, l, modeltype, formulation(l))
 end
 function create_link(m, l::Direct, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel)
-    # Create flow balance on liks for each resource type
-    for p_sub in res_types_seg(𝒫)
-        constraints_flow_balance(m, l, 𝒯, p_sub, modeltype)
+
+    @constraint(m, [t ∈ 𝒯, p ∈ link_res(l)],
+    m[:link_out][l, t, p] == m[:link_in][l, t, p]
+    )
+
+    # Constraints based on the resource types
+    for p_sub in res_types_seg(link_res(l))
+        constraints_flow_resource(m, l, 𝒯, p_sub, modeltype)
     end
 end
 function create_link(m, l::Link, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel, formulation::Formulation)
-    # Create flow balance on liks for each resource type
-    for p_sub in res_types_seg(𝒫)
-        constraints_flow_balance(m, l, 𝒯, p_sub, modeltype)
+    
+    # Generic link in which each output corresponds to the input
+    @constraint(m, [t ∈ 𝒯, p ∈ link_res(l)],
+    m[:link_out][l, t, p] == m[:link_in][l, t, p]
+    )
+    
+    # Call of the function for limiting the capacity to the maximum installed capacity
+    if has_capacity(l)
+        constraints_capacity_installed(m, l, 𝒯, modeltype)
+    end
+
+    # Constraints based on the resource types
+    for p_sub in res_types_seg(link_res(l))
+        constraints_flow_resource(m, l, 𝒯, p_sub, modeltype)
     end
 end
 
 """
-    constraints_flow_balance(m, l::Link, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel)
+    constraints_flow_resource(m, l::Link, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel)
 
-Create constraints for the resources balances on links. By default, inflow equals outflow for all resources.
+Create constraints for the flow of resources through a link for specific resource types.
+The function is empty by default and can be implemented in the extension packages.
 """
-function constraints_flow_balance(m, l::Link, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel)
-    @constraint(m, [t ∈ 𝒯, p ∈ itersect(link_res(l), 𝒫)],
-        m[:link_out][l, t, p] == m[:link_in][l, t, p]
-    )
-end
+function constraints_flow_resource(m, l::Link, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel) end
