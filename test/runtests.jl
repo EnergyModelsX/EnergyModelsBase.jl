@@ -1,7 +1,9 @@
-using EnergyModelsBase
 using HiGHS
 using JuMP
+using Logging
 using Test
+
+using EnergyModelsBase
 using TimeStruct
 
 const EMB = EnergyModelsBase

@@ -1,5 +1,11 @@
 # Release notes
 
+## Unversioned
+
+### Minor updates
+
+* Added additional comments (and processing routines) to the examples for improving the understanding.
+
 ## Version 0.9.2 (2025-07-03)
 
 ### Bugfixes
