@@ -155,21 +155,63 @@ case, model = generate_example_network()
 optimizer = optimizer_with_attributes(HiGHS.Optimizer, MOI.Silent() => true)
 m = run_model(case, model, optimizer)
 
+"""
+    process_network_results(m, case)
+
+Function for processing the results to be represented in the a table afterwards.
+"""
+function process_network_results(m, case)
+    # Extract the nodes and resources from the case data
+    ng_ccs_pp, coal_pp, = get_nodes(case)[[4, 5]]
+    co2 = get_products(case)[4]
+    𝒯ⁱⁿᵛ = strategic_periods(get_time_struct(case))
+
+    # Node variables
+    coal_pp_use = sort(                     # Capacity usage of the coal pp
+            [(
+                t_inv=t_inv,
+                val=sum(value.(m[:cap_use][coal_pp, t])*scale_op_sp(t_inv, t) for t ∈ t_inv)
+            ) for t_inv ∈ 𝒯ⁱⁿᵛ],
+        by = x -> x.t_inv,
+    )
+    ng_ccs_pp_use = sort(                   # Capacity usage of the ng pp
+            [(
+                t_inv=t_inv,
+                val=sum(value.(m[:cap_use][ng_ccs_pp, t])*scale_op_sp(t_inv, t) for t ∈ t_inv)
+            ) for t_inv ∈ 𝒯ⁱⁿᵛ],
+        by = x -> x.t_inv,
+    )
+
+    # Emission variables
+    strat_emit = sort(                      # Strategic emissions
+            JuMP.Containers.rowtable(
+                value,
+                m[:emissions_strategic][:, co2];
+                header = [:t_inv, :val],
+        ),
+        by = x -> x.t_inv,
+    )
+
+    # Set up the individual named tuples as a single named tuple
+    table = [(
+            t_inv = repr(con_1.t_inv),
+            coal_pp_use = round(con_1.val; digits=1),
+            ng_ccs_pp_use = round(con_2.val; digits=1),
+            CO2_emissions = round(con_3.val; digits=1),
+        ) for (con_1, con_2, con_3) ∈
+        zip(coal_pp_use, ng_ccs_pp_use, strat_emit)
+    ]
+    return table
+end
+
 # Display some results
-ng_ccs_pp, coal_pp, = get_nodes(case)[[4, 5]]
-@info "Capacity usage of the coal power plant"
-pretty_table(
-    JuMP.Containers.rowtable(
-        value,
-        m[:cap_use][coal_pp, :];
-        header = [:t, :Value],
-    ),
+table = process_network_results(m, case)
+
+@info(
+    "Individual strategic results from the simple network:\n" *
+    "The coal power plant is the preferred power generation unit due to the generation costs.\n" *
+    "Its usage declines however in subsequent strategic period due to the emission constraints.\n" *
+    "It is replaced by the natural gas power plant with CO₂ capture as the total strategic\n" *
+    "emissions follow the emission limits."
 )
-@info "Capacity usage of the natural gas + CCS power plant"
-pretty_table(
-    JuMP.Containers.rowtable(
-        value,
-        m[:cap_use][ng_ccs_pp, :];
-        header = [:t, :Value],
-    ),
-)
+pretty_table(table)

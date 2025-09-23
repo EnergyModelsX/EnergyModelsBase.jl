@@ -185,23 +185,80 @@ case, model = generate_example_network_investment()
 optimizer = optimizer_with_attributes(HiGHS.Optimizer, MOI.Silent() => true)
 m = run_model(case, model, optimizer)
 
+"""
+    process_network_investment_results(m, case)
+
+Function for processing the results to be represented in the a table afterwards.
+"""
+function process_network_investment_results(m, case)
+    # Extract the nodes and resources from the case data
+    ng_ccs_pp, coal_pp, co2_stor = get_nodes(case)[[4, 5, 6]]
+    co2 = get_products(case)[4]
+    𝒯ⁱⁿᵛ = strategic_periods(get_time_struct(case))
+
+    # Node variables
+    coal_pp_use = sort(                     # Capacity usage of the coal pp
+            [(
+                t_inv=t_inv,
+                val=sum(value.(m[:cap_use][coal_pp, t])*scale_op_sp(t_inv, t) for t ∈ t_inv)
+            ) for t_inv ∈ 𝒯ⁱⁿᵛ],
+        by = x -> x.t_inv,
+    )
+    ng_ccs_pp_use = sort(                   # Capacity usage of the ng pp
+            [(
+                t_inv=t_inv,
+                val=sum(value.(m[:cap_use][ng_ccs_pp, t])*scale_op_sp(t_inv, t) for t ∈ t_inv)
+            ) for t_inv ∈ 𝒯ⁱⁿᵛ],
+        by = x -> x.t_inv,
+    )
+    ng_ccs_pp_add = sort(                   # Added capacity of the ng pp
+            JuMP.Containers.rowtable(
+                value,
+                m[:cap_add][ng_ccs_pp, :];
+                header = [:t_inv, :val],
+        ),
+        by = x -> x.t_inv,
+    )
+    co2_stor_add = sort(                    # Added capacity of the CO₂ storage
+            JuMP.Containers.rowtable(
+                value,
+                m[:stor_charge_add][co2_stor, :];
+                header = [:t_inv, :val],
+        ),
+        by = x -> x.t_inv,
+    )
+
+    # Emission variables
+    strat_emit = sort(                      # Strategic emissions
+            JuMP.Containers.rowtable(
+                value,
+                m[:emissions_strategic][:, co2];
+                header = [:t_inv, :val],
+        ),
+        by = x -> x.t_inv,
+    )
+
+    # Set up the individual named tuples as a single named tuple
+    table = [(
+            t_inv = repr(con_1.t_inv),
+            coal_pp_use = round(con_1.val; digits=1),
+            ng_ccs_pp_use = round(con_2.val; digits=1),
+            ng_ccs_pp_invest = round(con_3.val; digits=1),
+            CO2_storage_invest = round(con_4.val; digits=1),
+            CO2_emissions = round(con_5.val; digits=0),
+        ) for (con_1, con_2, con_3, con_4, con_5) ∈
+        zip(coal_pp_use, ng_ccs_pp_use, ng_ccs_pp_add, co2_stor_add, strat_emit)
+    ]
+    return table
+end
+
 # Display some results
-ng_ccs_pp, CO2_stor, = get_nodes(case)[[4, 6]]
-@info "Invested capacity for the natural gas plant in the beginning of the \
-individual strategic periods"
-pretty_table(
-    JuMP.Containers.rowtable(
-        value,
-        m[:cap_add][ng_ccs_pp, :];
-        header = [:StrategicPeriod, :InvestCapacity],
-    ),
+table = process_network_investment_results(m, case)
+
+@info(
+    "Individual strategic results from the simple network:\n" *
+    "We have overinvestments in the natural gas power plant in strategic period 1 as the\n" *
+    "investment is semi continuous. The investments in the CO₂ storage is however happening\n" *
+    "in all strategic periods as it is continuous."
 )
-@info "Invested capacity for the CO₂ storage in the beginning of the
-individual strategic periods"
-pretty_table(
-    JuMP.Containers.rowtable(
-        value,
-        m[:stor_charge_add][CO2_stor, :];
-        header = [:StrategicPeriod, :InvestCapacity],
-    ),
-)
+pretty_table(table)

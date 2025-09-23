@@ -85,13 +85,50 @@ case, model = generate_example_ss()
 optimizer = optimizer_with_attributes(HiGHS.Optimizer, MOI.Silent() => true)
 m = run_model(case, model, optimizer)
 
+"""
+    process_ss_results(m, case)
+
+Function for processing the results to be represented in the a table afterwards.
+"""
+function process_ss_results(m, case)
+    # Extract the nodes from the case data
+    source, sink = get_nodes(case)
+
+    # Node variables
+    source_use = sort(                      # Usage of the source node
+            JuMP.Containers.rowtable(
+                value,
+                m[:cap_use][source, :];
+                header = [:t, :val],
+        ),
+        by = x -> x.t,
+    )
+    sink_use = sort(                        # Usage of the source node
+            JuMP.Containers.rowtable(
+                value,
+                m[:cap_use][sink, :];
+                header = [:t, :val],
+        ),
+        by = x -> x.t,
+    )
+
+    # Set up the individual named tuples as a single named tuple
+    table = [(
+            t = repr(con_1.t),
+            source_use = round(con_1.val; digits=1),
+            sink_use = round(con_2.val; digits=1),
+        ) for (con_1, con_2, ) ∈
+        zip(source_use, sink_use, )
+    ]
+    return table
+end
+
 # Display some results
-source, sink = get_nodes(case)
-@info "Capacity usage of the power source"
-pretty_table(
-    JuMP.Containers.rowtable(
-        value,
-        m[:cap_use][source, :];
-        header = [:t, :Value],
-    ),
+table = process_ss_results(m, case)
+
+@info(
+    "Individual operational results from the source-sink example:\n" *
+    "The capacity usage of the source and the sink node are the same as the penalty for not\n" *
+    "delivering power is significantly higher than the variable OPEX in the source node."
 )
+pretty_table(table)

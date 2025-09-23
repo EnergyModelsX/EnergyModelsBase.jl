@@ -110,21 +110,73 @@ case, model = generate_example_ss_investment()
 optimizer = optimizer_with_attributes(HiGHS.Optimizer, MOI.Silent() => true)
 m = run_model(case, model, optimizer)
 
+"""
+    process_ss_investment_results(m, case)
+
+Function for processing the results to be represented in the a table afterwards.
+"""
+function process_ss_investment_results(m, case)
+    # Extract the nodes and time structure from the case data
+    source, sink = get_nodes(case)
+    𝒯ⁱⁿᵛ = strategic_periods(get_time_struct(case))
+
+    # Node variables
+    source_current = sort(                      # Capacity of the source node
+            JuMP.Containers.rowtable(
+                value,
+                m[:cap_current][source, :];
+                header = [:t_inv, :val],
+        ),
+        by = x -> x.t_inv,
+    )
+    source_add = sort(                          # Investments in the source node
+            JuMP.Containers.rowtable(
+                value,
+                m[:cap_add][source, :];
+                header = [:t_inv, :val],
+        ),
+        by = x -> x.t_inv,
+    )
+    source_remove = sort(                       # Retirement from the source node
+            JuMP.Containers.rowtable(
+                value,
+                m[:cap_rem][source, :];
+                header = [:t_inv, :val],
+        ),
+        by = x -> x.t_inv,
+    )
+
+    sink_deficit = sort(                        # Sink deficit in each strategic period
+            [(
+                t_inv=t_inv,
+                val=sum(value.(m[:sink_deficit][sink, t])*scale_op_sp(t_inv, t) for t ∈ t_inv)
+            ) for t_inv ∈ 𝒯ⁱⁿᵛ],
+        by = x -> x.t_inv,
+    )
+
+    # Set up the individual named tuples as a single named tuple
+    table = [(
+            t_inv = repr(con_1.t_inv),
+            capacity = round(con_1.val; digits=1),
+            capacity_addition = round(con_2.val; digits=1),
+            capacity_removal = round(con_3.val; digits=1),
+            deficit = round(con_4.val; digits=1),
+        ) for (con_1, con_2, con_3, con_4) ∈
+        zip(source_current, source_add, source_remove, sink_deficit)
+    ]
+    return table
+end
+
 # Display some results
-source, sink = get_nodes(case)
-@info "Invested capacity for the source in the beginning of the individual strategic periods"
-pretty_table(
-    JuMP.Containers.rowtable(
-        value,
-        m[:cap_add][source, :];
-        header = [:StrategicPeriod, :InvestCapacity],
-    ),
+table = process_ss_investment_results(m, case)
+
+@info(
+    "Individual strategic results from the source-sink example:\n" *
+    "The source node receives investments in the first strategic period. However, due to the\n" *
+    "maximum capacity additions, we still see a deficit. It is hence required to invest also\n" *
+    "in the second strategic period. The capacities are removed at the end of the lifetime\n" *
+    "given by 3 strategic periods (3*5 years = 15 years). As a consequence, reinvestments are\n" *
+    "neccesary in strategic period 4. Note that the removal is happening at the end of a\n" *
+    "strategic period."
 )
-@info "Retired capacity of the source at the end of the individual strategic periods"
-pretty_table(
-    JuMP.Containers.rowtable(
-        value,
-        m[:cap_rem][source, :];
-        header = [:StrategicPeriod, :InvestCapacity],
-    ),
-)
+pretty_table(table)
