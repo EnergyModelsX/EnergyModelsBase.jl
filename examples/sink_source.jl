@@ -22,13 +22,13 @@ the source adjusts to the demand.
 function generate_example_ss()
     @info "Generate case data - Simple sink-source example"
 
-    # Define the different resources and their emission intensity in tCO2/MWh
-    Power = ResourceCarrier("Power", 0.0)
-    CO2 = ResourceEmit("CO2", 1.0)
-    products = [Power, CO2]
+    # Define the different resources and their emission intensity in t CO₂/MWh
+    power = ResourceCarrier("power", 0.0)
+    co2 = ResourceEmit("CO₂", 1.0)
+    products = [power, co2]
 
     # Variables for the individual entries of the time structure
-    op_duration = 2 # Each operational period has a duration of 2
+    op_duration = 2 # Each operational period has a duration of 2 (hours)
     op_number = 4   # There are in total 4 operational periods
     operational_periods = SimpleTimes(op_number, op_duration)
 
@@ -41,9 +41,9 @@ function generate_example_ss()
     # Creation of the time structure and global data
     T = TwoLevel(2, 1, operational_periods; op_per_strat)
     model = OperationalModel(
-        Dict(CO2 => FixedProfile(10)),  # Emission cap for CO₂ in t/8h
-        Dict(CO2 => FixedProfile(0)),   # Emission price for CO₂ in EUR/t
-        CO2,                            # CO₂ instance
+        Dict(co2 => FixedProfile(10)),  # Emission cap for CO₂ in t/8h
+        Dict(co2 => FixedProfile(0)),   # Emission price for CO₂ in EUR/t
+        co2,                            # CO₂ instance
     )
 
     # Create the individual test nodes, corresponding to a system with an electricity
@@ -54,23 +54,28 @@ function generate_example_ss()
             FixedProfile(50),           # Capacity in MW
             FixedProfile(30),           # Variable OPEX in EUR/MW
             FixedProfile(0),            # Fixed OPEX in EUR/MW/8h
-            Dict(Power => 1),           # Output from the Node, in this case, Power
+            Dict(power => 1),           # Output from the Node, in this case, power
         ),
         RefSink(
             "electricity demand",       # Node id
             OperationalProfile([20, 30, 40, 30]), # Demand in MW
             Dict(:surplus => FixedProfile(0), :deficit => FixedProfile(1e6)),
             # Line above: Surplus and deficit penalty for the node in EUR/MWh
-            Dict(Power => 1),           # Energy demand and corresponding ratio
+            Dict(power => 1),           # Energy demand and corresponding ratio
         ),
     ]
 
-    # Connect all nodes with the availability node for the overall energy/mass balance
+    # Connect the two nodes
+    # NOTE: This hard coding based on indexing is error prone. It is in general advised to
+    #       use a mapping dictionary to avoid any problems when introducing new technology
+    #       nodes.
     links = [
         Direct("source-demand", nodes[1], nodes[2], Linear()),
     ]
 
     # Input data structure
+    # It is also explained on
+    # https://energymodelsx.github.io/EnergyModelsBase.jl/stable/library/public/case_element/
     case = Case(T, products, [nodes, links], [[get_nodes, get_links]])
     return case, model
 end

@@ -48,7 +48,6 @@
 
     @testset "Emission cap" begin
         # Test that the emission cap is enforced in the case when it may lead to a deficit
-
         cap = 30.0      # Emission cap in a strategic period
         em_data = EmissionsProcess(Dict(CO2 => 1.0))
         em_cap = FixedProfile(cap)
@@ -64,7 +63,7 @@
         general_tests(m, case)
 
         # Test that the strategic emission limits hold
-        # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel
+        # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
         @test all(
             value.(m[:emissions_strategic][t_inv, CO2]) ≈ cap for t_inv ∈ 𝒯ᴵⁿᵛ,
             atol ∈ TEST_ATOL
@@ -78,7 +77,6 @@
 
     @testset "Emission price" begin
         # Test that the price for emissions is correctly calculated when there is not deficit
-
         cap = 40.0      # Emission cap in a strategic period
         price = 1.0     # Emission price per emitted unit of CO2
         em_data = EmissionsProcess(Dict(CO2 => 1.0))

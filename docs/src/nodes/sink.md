@@ -53,7 +53,7 @@ The variables of [`Sink`](@ref) nodes include:
 - [``\texttt{opex\_fixed}``](@ref man-opt_var-opex)
 - [``\texttt{cap\_use}``](@ref man-opt_var-cap)
 - [``\texttt{cap\_inst}``](@ref man-opt_var-cap)
-- [``\texttt{flow\_out}``](@ref man-opt_var-flow)
+- [``\texttt{flow\_in}``](@ref man-opt_var-flow)
 - [``\texttt{sink\_surplus}``](@ref man-opt_var-sink)
 - [``\texttt{sink\_deficit}``](@ref man-opt_var-sink)
 - [``\texttt{emissions\_node}``](@ref man-opt_var-emissions) if `EmissionsData` is added to the field `data`
@@ -110,10 +110,10 @@ Hence, if you do not have to call additional functions, but only plan to include
 
   ```math
   \begin{aligned}
-  \texttt{opex\_var}[n, t_{inv}] = & \\
-    \sum_{t \in t_{inv}} & surplus\_penalty(n, t) \times \texttt{sink\_surplus}[n, t] + \\ &
-    deficit\_penalty(n, t) \times \texttt{sink\_deficit}[n, t] \times \\ &
-    scale\_op\_sp(t_{inv}, t)
+  \texttt{opex\_var}[n, t_{inv}] = & scale\_op\_sp(t_{inv}, t) \times \\
+    \sum_{t \in t_{inv}} & ( surplus\_penalty(n, t) \times \texttt{sink\_surplus}[n, t] + \\ &
+    deficit\_penalty(n, t) \times \texttt{sink\_deficit}[n, t]) \\ &
+
   \end{aligned}
   ```
 
