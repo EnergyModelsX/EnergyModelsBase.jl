@@ -521,10 +521,42 @@ differentiation in extension packages.
 - `Node` - the subfunction is [`create_node`](@ref).
 - `Link` - the subfunction is [`create_link`](@ref).
 """
-create_element(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel) =
+function create_element(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel)
+    
     create_node(m, n, 𝒯, 𝒫, modeltype)
-create_element(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel) =
+
+    # Constraints based on the resource types
+    node_resources = Vector{Resource}(unique(vcat(inputs(n), outputs(n))))
+    for p_sub in res_types_seg(node_resources)
+        constraints_resource(m, n, 𝒯, p_sub, modeltype)
+    end
+end
+
+function create_element(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel)
+
     create_link(m, l, 𝒯, 𝒫, modeltype)
+
+    # Constraints based on the resource types
+    for p_sub in res_types_seg(link_res(l))
+        constraints_resource(m, l, 𝒯, p_sub, modeltype)
+    end
+end
+
+"""
+    constraints_resource(m, n::Node, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel)
+
+Create constraints for the flow of resources through a node for specific resource types.
+The function is empty by default and can be implemented in the extension packages.
+"""
+function constraints_resource(m, n::Node, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel) end
+
+"""
+    constraints_resource(m, l::Link, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel)
+
+Create constraints for the flow of resources through a link for specific resource types.
+The function is empty by default and can be implemented in the extension packages.
+"""
+function constraints_resource(m, l::Link, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel) end
 
 """
     constraints_couple(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫, 𝒯, modeltype::EnergyModel)
@@ -887,20 +919,7 @@ function create_node(m, n::Availability, 𝒯, 𝒫, modeltype::EnergyModel)
     @constraint(m, [t ∈ 𝒯, p ∈ inputs(n)],
             m[:flow_in][n, t, p] == m[:flow_out][n, t, p]
     )
-
-    # Constraints based on the resource types
-    for p_sub in res_types_seg(inputs(n))
-        constraints_flow_resource(m, n, 𝒯, p_sub, modeltype)
-    end
 end
-
-"""
-    constraints_flow_resource(m, n::Availability, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel)
-
-Create constraints for the flow of resources through an `Availability` node for specific resource types.
-The function is empty by default and can be implemented in the extension packages.
-"""
-function constraints_flow_resource(m, n::Availability, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel) end
 
 """
     create_link(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel)
@@ -927,11 +946,6 @@ function create_link(m, l::Direct, 𝒯, 𝒫::Vector{<:Resource}, modeltype::En
     @constraint(m, [t ∈ 𝒯, p ∈ link_res(l)],
     m[:link_out][l, t, p] == m[:link_in][l, t, p]
     )
-
-    # Constraints based on the resource types
-    for p_sub in res_types_seg(link_res(l))
-        constraints_flow_resource(m, l, 𝒯, p_sub, modeltype)
-    end
 end
 function create_link(m, l::Link, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel, formulation::Formulation)
     
@@ -944,17 +958,4 @@ function create_link(m, l::Link, 𝒯, 𝒫::Vector{<:Resource}, modeltype::Ener
     if has_capacity(l)
         constraints_capacity_installed(m, l, 𝒯, modeltype)
     end
-
-    # Constraints based on the resource types
-    for p_sub in res_types_seg(link_res(l))
-        constraints_flow_resource(m, l, 𝒯, p_sub, modeltype)
-    end
 end
-
-"""
-    constraints_flow_resource(m, l::Link, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel)
-
-Create constraints for the flow of resources through a link for specific resource types.
-The function is empty by default and can be implemented in the extension packages.
-"""
-function constraints_flow_resource(m, l::Link, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel) end
