@@ -783,6 +783,7 @@ function objective(m, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
         for t_inv ∈ 𝒯ᴵⁿᵛ)
     )
 end
+
 """
     objective_operational(m, 𝒳, 𝒯ᴵⁿᵛ::TS.AbstractStratPers, modeltype::EnergyModel)
 

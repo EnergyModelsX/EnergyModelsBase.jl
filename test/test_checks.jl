@@ -278,17 +278,29 @@ end
 
     # Test that there is an error with wrong strategic profiles
     # - EMB.check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel)
-    ts = TwoLevel(2, 1, day)
+    # - EMB.check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevelTree)
+    ts = TwoLevel(3, 1, day)
+    ts_tree_reg = TwoLevelTree(1, [2, 2], day)
+    ts_tree_irreg = TwoLevelTree(
+        TreeNode(1, day, [
+            TreeNode(1, day, TreeNode(1, day, TreeNode(1, day))),
+            TreeNode(1, day)
+        ])
+    )
     ops = OperationalProfile(ones(24))
     profiles = [
-        StrategicProfile([ops, ops, ops]),
-        StrategicProfile([ops]),
+        StrategicProfile([ops, ops, ops, ops]),
+        StrategicProfile([ops, ops]),
     ]
     for tp ∈ profiles
         @test_throws AssertionError create_simple_graph(ts, tp)
+        @test_throws AssertionError create_simple_graph(ts_tree_reg, tp)
+        @test_throws AssertionError create_simple_graph(ts_tree_irreg, tp)
     end
 
     # Test that there is an error with wrong `OperationalProfile`s
+    # - EMB.check_profile(fieldname, value::TimeProfile, 𝒯::TwoLevel)
+    # - EMB.check_profile(fieldname, value::TimeProfile, 𝒯::TwoLevelTree)
     # - EMB.check_profile(fieldname, value::OperationalProfile, ts::SimpleTimes, sp)
     profiles = [
         OperationalProfile(ones(20)),
@@ -296,6 +308,7 @@ end
     ]
     for tp ∈ profiles
         @test_throws AssertionError create_simple_graph(ts, tp)
+        @test_throws AssertionError create_simple_graph(ts_tree_reg, tp)
     end
 
     # Test that there is an error with wrong `OperationalProfile`s in operational scenarios
