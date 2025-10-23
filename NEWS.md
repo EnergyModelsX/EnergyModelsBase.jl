@@ -1,6 +1,10 @@
 # Release notes
 
-## Unversioned
+## Version 0.9.3 (2025-10-23)
+
+## Bugfixes
+
+* Fix a bug in which field names for the capacities of a `Storage` node resulted in unconstrained capacities.
 
 ### Minor updates
 
