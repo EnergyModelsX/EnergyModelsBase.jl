@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Update models · EnergyModelsBase</title><meta name="title" content="Update models · EnergyModelsBase"/><meta property="og:title" content="Update models · EnergyModelsBase"/><meta property="twitter:title" content="Update models · EnergyModelsBase"/><meta name="description" content="Documentation for EnergyModelsBase."/><meta property="og:description" content="Documentation for EnergyModelsBase."/><meta property="twitter:description" content="Documentation for EnergyModelsBase."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">EnergyModelsBase</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Manual</span><ul><li><a class="tocitem" href="../../manual/quick-start/">Quick Start</a></li><li><a class="tocitem" href="../../manual/philosophy/">Philosophy</a></li><li><a class="tocitem" href="../../manual/optimization-variables/">Optimization variables</a></li><li><a class="tocitem" href="../../manual/constraint-functions/">Constraint functions</a></li><li><a class="tocitem" href="../../manual/data-functions/">ExtensionData functions</a></li><li><a class="tocitem" href="../../manual/simple-example/">Example</a></li><li><a class="tocitem" href="../../manual/investments/">Investment options</a></li><li><a class="tocitem" href="../../manual/NEWS/">Release notes</a></li></ul></li><li><span class="tocitem">Nodes</span><ul><li><a class="tocitem" href="../../nodes/source/">Source</a></li><li><a class="tocitem" href="../../nodes/networknode/">NetworkNode</a></li><li><a class="tocitem" href="../../nodes/storage/">Storage</a></li><li><a class="tocitem" href="../../nodes/sink/">Sink</a></li><li><a class="tocitem" href="../../nodes/availability/">Availability</a></li></ul></li><li><span class="tocitem">How to</span><ul><li><a class="tocitem" href="../create_new_element/">Create a new element</a></li><li><a class="tocitem" href="../create-new-node/">Create a new node</a></li><li><a class="tocitem" href="../utilize-timestruct/">Utilize TimeStruct</a></li><li class="is-active"><a class="tocitem" href>Update models</a><ul class="internal"><li><a class="tocitem" href="#how_to-update-08"><span>Adjustments from 0.8.x</span></a></li><li><a class="tocitem" href="#how_to-update-06"><span>Adjustments from 0.6.x to 0.8.x</span></a></li><li><a class="tocitem" href="#how_to-update-05"><span>Adjustments from 0.5.x to 0.7.x</span></a></li></ul></li><li><a class="tocitem" href="../contribute/">Contribute to EnergyModelsBase</a></li></ul></li><li><span class="tocitem">Library</span><ul><li><input class="collapse-toggle" id="menuitem-5-1" type="checkbox"/><label class="tocitem" for="menuitem-5-1"><span class="docs-label">Public</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../library/public/resources/">Resources</a></li><li><a class="tocitem" href="../../library/public/model_data/">Modeltype and ExtensionData</a></li><li><a class="tocitem" href="../../library/public/nodes/">Nodes</a></li><li><a class="tocitem" href="../../library/public/links/">Links</a></li><li><a class="tocitem" href="../../library/public/case_element/">Case</a></li><li><a class="tocitem" href="../../library/public/functions/">Functions</a></li><li><a class="tocitem" href="../../library/public/misc/">Miscellaneous</a></li><li><a class="tocitem" href="../../library/public/emi_extension/">EMI extension</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-2" type="checkbox"/><label class="tocitem" for="menuitem-5-2"><span class="docs-label">Internal</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../library/internals/types/">Types</a></li><li><a class="tocitem" href="../../library/internals/functions/">Functions</a></li><li><a class="tocitem" href="../../library/internals/reference_EMIExt/">EMI extension</a></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">How to</a></li><li class="is-active"><a href>Update models</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Update models</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/EnergyModelsX/EnergyModelsBase.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/EnergyModelsX/EnergyModelsBase.jl/blob/main/docs/src/how-to/update-models.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="how_to-update"><a class="docs-heading-anchor" href="#how_to-update">Update your model to the latest versions</a><a id="how_to-update-1"></a><a class="docs-heading-anchor-permalink" href="#how_to-update" title="Permalink"></a></h1><p><code>EnergyModelsBase</code> is still in a pre-release version. Hence, there are frequently breaking changes occuring, although we plan to keep backwards compatibility. This document is designed to provide users with information regarding how they have to adjust their models to keep compatibility to the latest changes. We will as well implement information regarding the adjustment of extension packages, although this is more difficult due to the vast majority of potential changes.</p><h2 id="how_to-update-08"><a class="docs-heading-anchor" href="#how_to-update-08">Adjustments from 0.8.x</a><a id="how_to-update-08-1"></a><a class="docs-heading-anchor-permalink" href="#how_to-update-08" title="Permalink"></a></h2><h3 id="how_to-update-08-case"><a class="docs-heading-anchor" href="#how_to-update-08-case">Case input data</a><a id="how_to-update-08-case-1"></a><a class="docs-heading-anchor-permalink" href="#how_to-update-08-case" title="Permalink"></a></h3><p>Starting from version 0.9.0, we introduced a new input format to the function <code>create_model</code>. The original case dictionary is replaced with a new type, <a href="../../library/public/case_element/#EnergyModelsBase.Case"><code>Case</code></a>. We introduced deprecated methods that can be utilized with the original dictionary, but it is advisable to switch to the new type as:</p><pre><code class="language-julia hljs"># Old structure:
+case = Dict(
+    :nodes =&gt; nodes,
+    :links =&gt; links,
+    :products =&gt; products,
+    :T =&gt; T,
+)
+
+# New structure:
+case = Case(T, products, [nodes, links], [[get_nodes, get_links]]) # or
+case = Case(T, products, [nodes, links])</code></pre><h3 id="how_to-update-08-link"><a class="docs-heading-anchor" href="#how_to-update-08-link"><code>create_link</code> arguments</a><a id="how_to-update-08-link-1"></a><a class="docs-heading-anchor-permalink" href="#how_to-update-08-link" title="Permalink"></a></h3><p>We restructured the function call arguments for links through the function <a href="../../library/internals/functions/#EnergyModelsBase.create_link"><code>create_link</code></a>:</p><pre><code class="language-julia hljs"># Old structure:
+create_link(m, 𝒯, 𝒫, l::Link, modeltype::EnergyModel, formulation::Formulation)
+
+# New structure:
+create_link(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel)</code></pre><p>This implies that we removed the argument <code>formulation::Formulation</code> and reordered the individual arguments to be consistent with <a href="../../library/public/functions/#EnergyModelsBase.create_node"><code>create_node</code></a>. The field <code>formulation</code> still exists for <code>Direct</code>. It can be used to provide differnet submethods, <em>e.g.</em>, when creating capacity constraints.</p><h2 id="how_to-update-06"><a class="docs-heading-anchor" href="#how_to-update-06">Adjustments from 0.6.x to 0.8.x</a><a id="how_to-update-06-1"></a><a class="docs-heading-anchor-permalink" href="#how_to-update-06" title="Permalink"></a></h2><h3 id="how_to-update-06-nodes"><a class="docs-heading-anchor" href="#how_to-update-06-nodes">Key changes for nodal descriptions</a><a id="how_to-update-06-nodes-1"></a><a class="docs-heading-anchor-permalink" href="#how_to-update-06-nodes" title="Permalink"></a></h3><p>Version 0.7 introduced both <em><a href="../../library/public/nodes/#lib-pub-nodes-stor_behav">storage behaviours</a></em> resulting in a rework of the individual approach for calculating the level balance as well as the potential to have charge and discharge capacities through <em><a href="../../library/public/nodes/#lib-pub-nodes-stor_par">storage parameters</a></em>.</p><div class="admonition is-info" id="Note-75b355d7e9615c94"><header class="admonition-header">Note<a class="admonition-anchor" href="#Note-75b355d7e9615c94" title="Permalink"></a></header><div class="admonition-body"><p>The legacy constructors for calls of the composite type of version 0.6 will be included at least until version 0.8.</p></div></div><h3 id="[RefStorage](@ref)"><a class="docs-heading-anchor" href="#[RefStorage](@ref)"><a href="../../library/public/nodes/#EnergyModelsBase.RefStorage"><code>RefStorage</code></a></a><a id="[RefStorage](@ref)-1"></a><a class="docs-heading-anchor-permalink" href="#[RefStorage](@ref)" title="Permalink"></a></h3><p><code>RefStorage</code> was significantly reworked since version 0.6. The total rework is provided below.</p><p>If you are previously using the functions <a href="../../library/public/nodes/#EnergyModelsBase.capacity"><code>capacity</code></a>, <a href="../../library/public/nodes/#EnergyModelsBase.opex_var"><code>opex_var</code></a>, and <a href="../../library/public/nodes/#EnergyModelsBase.opex_fixed"><code>opex_fixed</code></a> directly on the nodal type, you have to adjust as well your call of the function as they now require the call on the <code>StorageParameter</code> type.</p><h4 id="RefStorage{:ResourceCarrier}-translates-to-RefStorage{CyclicStrategic}"><a class="docs-heading-anchor" href="#RefStorage{:ResourceCarrier}-translates-to-RefStorage{CyclicStrategic}"><code>RefStorage{&lt;:ResourceCarrier}</code> translates to <code>RefStorage{CyclicStrategic}</code></a><a id="RefStorage{:ResourceCarrier}-translates-to-RefStorage{CyclicStrategic}-1"></a><a class="docs-heading-anchor-permalink" href="#RefStorage{:ResourceCarrier}-translates-to-RefStorage{CyclicStrategic}" title="Permalink"></a></h4><pre><code class="language-julia hljs"># The previous nodal description for a storage node storing a `ResourceCarrier` was given by:
+RefStorage(
+    id,
+    rate_cap::TimeProfile,
+    stor_cap::TimeProfile,
+    opex_var::TimeProfile,
+    opex_fixed::TimeProfile,
+    stor_res::ResourceCarrier,
+    input::Dict{&lt;:Resource,&lt;:Real},
+    output::Dict{&lt;:Resource,&lt;:Real},
+    data::Array,
+)
+
+# This translates to the following new version
+RefStorage{CyclicStrategic}(
+    id,
+    StorCapOpexVar(rate_cap, opex_var),
+    StorCapOpexFixed(stor_cap, opex_fixed),
+    stor_res,
+    input,
+    output,
+    data,
+)</code></pre><h4 id="RefStorage{:ResourceEmit}-translates-to-RefStorage{AccumulatingEmissions}"><a class="docs-heading-anchor" href="#RefStorage{:ResourceEmit}-translates-to-RefStorage{AccumulatingEmissions}"><code>RefStorage{&lt;:ResourceEmit}</code> translates to <code>RefStorage{AccumulatingEmissions}</code></a><a id="RefStorage{:ResourceEmit}-translates-to-RefStorage{AccumulatingEmissions}-1"></a><a class="docs-heading-anchor-permalink" href="#RefStorage{:ResourceEmit}-translates-to-RefStorage{AccumulatingEmissions}" title="Permalink"></a></h4><pre><code class="language-julia hljs"># The previous nodal description for a storage node storing a `ResourceEmit` was given by:
+RefStorageEmissions(
+    id,
+    rate_cap::TimeProfile,
+    stor_cap::TimeProfile,
+    opex_var::TimeProfile,
+    opex_fixed::TimeProfile,
+    stor_res::ResourceEmit,
+    input::Dict{&lt;:Resource,&lt;:Real},
+    output::Dict{&lt;:Resource,&lt;:Real},
+    data::Array,
+)
+
+# This translates to the following new version
+RefStorage{AccumulatingEmissions}(
+    id,
+    StorCapOpex(rate_cap, opex_var, opex_fixed),
+    StorCap(stor_cap),
+    stor_res,
+    input,
+    output,
+    data,
+)</code></pre><h2 id="how_to-update-05"><a class="docs-heading-anchor" href="#how_to-update-05">Adjustments from 0.5.x to 0.7.x</a><a id="how_to-update-05-1"></a><a class="docs-heading-anchor-permalink" href="#how_to-update-05" title="Permalink"></a></h2><h3 id="how_to-update-05-nodes"><a class="docs-heading-anchor" href="#how_to-update-05-nodes">Key changes for nodal descriptions</a><a id="how_to-update-05-nodes-1"></a><a class="docs-heading-anchor-permalink" href="#how_to-update-05-nodes" title="Permalink"></a></h3><p>Version 0.6 introduced <a href="../../library/public/model_data/#EnergyModelsBase.EmissionsData"><code>EmissionsData</code></a> for providing the user with more flexibility (and less input demand) for incorporating different types of emissions to the model. Hence, the <code>Node</code> types were adjusted. In addition, version 0.6 simplified the <a href="../../library/public/nodes/#EnergyModelsBase.GenAvailability"><code>GenAvailability</code></a> node and added emissions prices to the <a href="../../library/public/model_data/#EnergyModelsBase.OperationalModel"><code>OperationalModel</code></a>.</p><p>Version 0.7 introduced both <em><a href="../../library/public/nodes/#lib-pub-nodes-stor_behav">storage behaviours</a></em> resulting in a rework of the individual approach for calculating the level balance as well as the potential to have charge and discharge capacities through <em><a href="../../library/public/nodes/#lib-pub-nodes-stor_par">storage parameters</a></em>.</p><div class="admonition is-warning" id="Warning-1ac4b29ca58065ad"><header class="admonition-header">Warning<a class="admonition-anchor" href="#Warning-1ac4b29ca58065ad" title="Permalink"></a></header><div class="admonition-body"><p>The legacy constructors for calls of the composite type of version 0.5 were removed in version 0.7. In addition, the adjustments will not be updated in release 0.8 as the models will be at that time most likely more than 1 year old.</p></div></div><h3 id="[RefSource](@ref)"><a class="docs-heading-anchor" href="#[RefSource](@ref)"><a href="../../library/public/nodes/#EnergyModelsBase.RefSource"><code>RefSource</code></a></a><a id="[RefSource](@ref)-1"></a><a class="docs-heading-anchor-permalink" href="#[RefSource](@ref)" title="Permalink"></a></h3><pre><code class="language-julia hljs"># The previous nodal description was given by:
+RefSource(
+    id,
+    cap::TimeProfile,
+    opex_var::TimeProfile,
+    opex_fixed::TimeProfile,
+    output::Dict{&lt;:Resource,&lt;:Real},
+    data::Array,
+    emissions::Dict{&lt;:ResourceEmit,&lt;:Real},
+)
+
+# This translates to the following new version
+em_data = EmissionsProcess(emissions)
+append!(data, [em_data])
+RefSource(id, cap, opex_var, opex_fixed, output, data)</code></pre><h3 id="RefNetwork-and-RefNetworkEmissions-to-[RefNetworkNode](@ref)"><a class="docs-heading-anchor" href="#RefNetwork-and-RefNetworkEmissions-to-[RefNetworkNode](@ref)"><code>RefNetwork</code> and <code>RefNetworkEmissions</code> to <a href="../../library/public/nodes/#EnergyModelsBase.RefNetworkNode"><code>RefNetworkNode</code></a></a><a id="RefNetwork-and-RefNetworkEmissions-to-[RefNetworkNode](@ref)-1"></a><a class="docs-heading-anchor-permalink" href="#RefNetwork-and-RefNetworkEmissions-to-[RefNetworkNode](@ref)" title="Permalink"></a></h3><p>The introduction of <a href="../../library/public/model_data/#EnergyModelsBase.EmissionsData"><code>EmissionsData</code></a> allowed to condense both previous types into a single new type. This new type was renamed to <code>RefNetworkNode</code>.</p><pre><code class="language-julia hljs"># The previous nodal description for a network node without emissions was given by:
+RefNetwork(
+    id,
+    cap::TimeProfile,
+    opex_var::TimeProfile,
+    opex_fixed::TimeProfile,
+    input::Dict{&lt;:Resource,&lt;:Real},
+    output::Dict{&lt;:Resource,&lt;:Real},
+    data::Array,
+)
+
+# This translates to the following new version
+RefNetworkNode(id, cap, opex_var, opex_fixed, input, output, data)</code></pre><pre><code class="language-julia hljs"># The previous nodal description for a network node without emissions was given by:
+RefNetworkEmissions(
+    id,
+    cap::TimeProfile,
+    opex_var::TimeProfile,
+    opex_fixed::TimeProfile,
+    input::Dict{&lt;:Resource,&lt;:Real},
+    output::Dict{&lt;:Resource,&lt;:Real},
+    emissions::Dict{&lt;:ResourceEmit,&lt;:Real},
+    co2_capture::Real,
+    data::Array,
+)
+
+# This translates to the following new version
+em_data = CaptureEnergyEmissions(emissions, co2_capture)
+append!(data, [em_data])
+RefNetworkNode(id, cap, opex_var, opex_fixed, input, output, data)</code></pre><h3 id="[RefStorage](@ref)-2"><a class="docs-heading-anchor" href="#[RefStorage](@ref)-2"><a href="../../library/public/nodes/#EnergyModelsBase.RefStorage"><code>RefStorage</code></a></a><a class="docs-heading-anchor-permalink" href="#[RefStorage](@ref)-2" title="Permalink"></a></h3><p><code>RefStorage</code> was significantly reworked since version 0.5. The total rework is provided below.</p><p>If you are previously using the functions <a href="../../library/public/nodes/#EnergyModelsBase.capacity"><code>capacity</code></a>, <a href="../../library/public/nodes/#EnergyModelsBase.opex_var"><code>opex_var</code></a>, and <a href="../../library/public/nodes/#EnergyModelsBase.opex_fixed"><code>opex_fixed</code></a> directly on the nodal type, you have to adjust as well your call of the function as they now require the call on the <code>StorageParameter</code> type.</p><h4 id="RefStorage-translated-to-RefStorage{CyclicStrategic}"><a class="docs-heading-anchor" href="#RefStorage-translated-to-RefStorage{CyclicStrategic}"><code>RefStorage</code> translated to <code>RefStorage{CyclicStrategic}</code></a><a id="RefStorage-translated-to-RefStorage{CyclicStrategic}-1"></a><a class="docs-heading-anchor-permalink" href="#RefStorage-translated-to-RefStorage{CyclicStrategic}" title="Permalink"></a></h4><pre><code class="language-julia hljs"># The previous nodal description for a storage node storing a `ResourceCarrier` was given by:
+RefStorage(
+    id,
+    rate_cap::TimeProfile,
+    stor_cap::TimeProfile,
+    opex_var::TimeProfile,
+    opex_fixed::TimeProfile,
+    stor_res::ResourceCarrier,
+    input::Dict{&lt;:Resource,&lt;:Real},
+    output::Dict{&lt;:Resource,&lt;:Real},
+    data::Array,
+)
+
+# This translates to the following new version
+RefStorage{CyclicStrategic}(
+    id,
+    StorCapOpexVar(rate_cap, opex_var),
+    StorCapOpexFixed(stor_cap, opex_fixed),
+    stor_res,
+    input,
+    output,
+    data,
+)</code></pre><h4 id="RefStorageEmissions-translated-to-RefStorage{AccumulatingEmissions}"><a class="docs-heading-anchor" href="#RefStorageEmissions-translated-to-RefStorage{AccumulatingEmissions}"><code>RefStorageEmissions</code> translated to <code>RefStorage{AccumulatingEmissions}</code></a><a id="RefStorageEmissions-translated-to-RefStorage{AccumulatingEmissions}-1"></a><a class="docs-heading-anchor-permalink" href="#RefStorageEmissions-translated-to-RefStorage{AccumulatingEmissions}" title="Permalink"></a></h4><pre><code class="language-julia hljs"># The previous nodal description for a storage node storing a `ResourceEmit` was given by:
+RefStorageEmissions(
+    id,
+    rate_cap::TimeProfile,
+    stor_cap::TimeProfile,
+    opex_var::TimeProfile,
+    opex_fixed::TimeProfile,
+    stor_res::ResourceEmit,
+    input::Dict{&lt;:Resource,&lt;:Real},
+    output::Dict{&lt;:Resource,&lt;:Real},
+    data::Array,
+)
+
+# This translates to the following new version
+RefStorage{AccumulatingEmissions}(
+    id,
+    StorCapOpex(rate_cap, opex_var, opex_fixed),
+    StorCap(stor_cap),
+    stor_res,
+    input,
+    output,
+    data,
+)</code></pre><h3 id="[RefSink](@ref)"><a class="docs-heading-anchor" href="#[RefSink](@ref)"><a href="../../library/public/nodes/#EnergyModelsBase.RefSink"><code>RefSink</code></a></a><a id="[RefSink](@ref)-1"></a><a class="docs-heading-anchor-permalink" href="#[RefSink](@ref)" title="Permalink"></a></h3><p><code>RefSink</code> has now as well the potential for investments although this would require a new type as the current operational cost calculated would incentivize retiring the demand directly.</p><pre><code class="language-julia hljs"># The previous nodal description was given by:
+RefSink(
+    id,
+    cap::TimeProfile,
+    penalty::Dict{&lt;:Any,&lt;:TimeProfile},
+    input::Dict{&lt;:Resource,&lt;:Real},
+    emissions::Dict{&lt;:ResourceEmit,&lt;:Real},
+)
+
+# This translates to the following new version
+em_data = EmissionsProcess(emissions)
+RefSink(id, cap, penalty, input, [em_data])</code></pre><h3 id="[GenAvailability](@ref)"><a class="docs-heading-anchor" href="#[GenAvailability](@ref)"><a href="../../library/public/nodes/#EnergyModelsBase.GenAvailability"><code>GenAvailability</code></a></a><a id="[GenAvailability](@ref)-1"></a><a class="docs-heading-anchor-permalink" href="#[GenAvailability](@ref)" title="Permalink"></a></h3><p><code>GenAvailability</code> nodes do not require any longer the data for <code>input</code> and <code>output</code>, as they utilize a constructor, if only a single array is given.</p><pre><code class="language-julia hljs"># The previous nodal description was given by:
+GenAvailability(
+    id,
+    input::Dict{&lt;:Resource,&lt;:Real},
+    output::Dict{&lt;:Resource,&lt;:Real},
+)
+
+# This translates to the following new version
+GenAvailability(id, collect(keys(input)), collect(keys(output)))</code></pre><h3 id="[OperationalModel](@ref)"><a class="docs-heading-anchor" href="#[OperationalModel](@ref)"><a href="../../library/public/model_data/#EnergyModelsBase.OperationalModel"><code>OperationalModel</code></a></a><a id="[OperationalModel](@ref)-1"></a><a class="docs-heading-anchor-permalink" href="#[OperationalModel](@ref)" title="Permalink"></a></h3><p><code>OperationalModel</code> incorporated the concept of emission prices as initially introduced in <code>EnergyModelsInvestments</code>.</p><pre><code class="language-julia hljs"># The previous model description was given by:
+OperationalModel(
+    emission_limit::Dict{&lt;:ResourceEmit, &lt;:TimeProfile},
+    co2_instance::ResourceEmit,
+)
+
+# This translates to the following new version
+emission_price = Dict(k =&gt; FixedProfile(0) for k ∈ keys(emission_limit))
+OperationalModel(emission_limit, emission_price, co2_instance)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../utilize-timestruct/">« Utilize TimeStruct</a><a class="docs-footer-nextpage" href="../contribute/">Contribute to EnergyModelsBase »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.15.0 on <span class="colophon-date" title="Thursday 23 October 2025 09:35">Thursday 23 October 2025</span>. Using Julia version 1.12.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
