@@ -44,13 +44,13 @@ function EMB.constraints_capacity_installed(
     disc_rate = discount_rate(modeltype)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
-    cap_fields = [:charge, :level, :discharge]
+    cap_map = Dict(:charge => charge, :level => level, :discharge => discharge)
 
-    for cap ∈ cap_fields
-        if !hasfield(typeof(n), cap)
+    for (cap, cap_fun) ∈ cap_map
+        if isnothing(cap_fun(n))
             continue
         end
-        stor_par = getfield(n, cap)
+        stor_par = cap_fun(n)
         prefix = Symbol(:stor_, cap)
         var_inst = EMI.get_var_inst(m, prefix, n)
         if has_investment(n, cap)
