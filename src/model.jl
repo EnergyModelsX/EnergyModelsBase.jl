@@ -527,8 +527,8 @@ function create_element(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Constraints based on the resource types
     node_resources = Vector{Resource}(unique(vcat(inputs(n), outputs(n))))
-    for p_sub in res_types_seg(node_resources)
-        constraints_resource(m, n, 𝒯, p_sub, modeltype)
+    for 𝒫ˢᵘᵇ in res_types_seg(node_resources)
+        constraints_resource(m, n, 𝒯, 𝒫ˢᵘᵇ, modeltype)
     end
 end
 
@@ -537,8 +537,8 @@ function create_element(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel)
     create_link(m, l, 𝒯, 𝒫, modeltype)
 
     # Constraints based on the resource types
-    for p_sub in res_types_seg(link_res(l))
-        constraints_resource(m, l, 𝒯, p_sub, modeltype)
+    for 𝒫ˢᵘᵇ in res_types_seg(link_res(l))
+        constraints_resource(m, l, 𝒯, 𝒫ˢᵘᵇ, modeltype)
     end
 end
 
