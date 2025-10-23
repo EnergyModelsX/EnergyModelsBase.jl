@@ -1,5 +1,7 @@
 using EnergyModelsInvestments
 
+const EMI = EnergyModelsInvestments
+
 @testset "Simple network" begin
     # Create simple model
     function investment_model()
@@ -709,6 +711,296 @@ EMB.TEST_ENV = true
         max_add = RepresentativeProfile([FixedProfile(4)])
         @test_throws AssertionError build_simple_graph(;max_add)
     end
+end
+
+@testset "Test - InvestmentData w/ specific disc_rates" begin
+    # Create simple model
+    function investment_model(;inv_data=nothing)
+        # Define the different resources
+        Coal = ResourceCarrier("Coal", 0.35)
+        Power = ResourceCarrier("Power", 0.0)
+        CO2 = ResourceEmit("CO2", 1.0)
+        products = [Coal, Power, CO2]
+
+        op_profile = OperationalProfile([
+            20,
+            20,
+            20,
+            20,
+            25,
+            30,
+            35,
+            35,
+            40,
+            40,
+            40,
+            40,
+            40,
+            35,
+            35,
+            30,
+            25,
+            30,
+            35,
+            30,
+            25,
+            20,
+            20,
+            20,
+        ])
+
+        if isnothing(inv_data)
+            inv_data = [
+                SingleInvData(
+                        FixedProfile(1000), # capex [€/kW]
+                        FixedProfile(50),  # max installed capacity [kW]
+                        ContinuousInvestment(FixedProfile(0), FixedProfile(200)), # investment mode
+                    ),
+                SingleInvData(
+                        FixedProfile(1000), # capex [€/kW]
+                        FixedProfile(50),  # max installed capacity [kW]
+                        ContinuousInvestment(FixedProfile(0), FixedProfile(200)), # investment mode
+                    ),
+            ]
+        end
+
+        nodes = [
+            GenAvailability(1, products),
+            RefSink(
+                2,
+                op_profile,
+                Dict(:surplus => FixedProfile(0), :deficit => FixedProfile(1e6)),
+                Dict(Power => 1),
+            ),
+            RefSource(
+                3,
+                FixedProfile(0),
+                FixedProfile(0),
+                FixedProfile(100),
+                Dict(Coal => 1),
+                [inv_data[1]],
+            ),
+            RefSource( # same technology as 3
+                4, 
+                FixedProfile(0),
+                FixedProfile(0),
+                FixedProfile(100),
+                Dict(Coal => 1),
+                [inv_data[2]],
+            ),
+            # RefNetworkNode(
+            #     5,
+            #     FixedProfile(0),
+            #     FixedProfile(5.5),
+            #     FixedProfile(100),
+            #     Dict(NG => 2),
+            #     Dict(Power => 1, CO2 => 0),
+            #     [
+            #         SingleInvData(
+            #             FixedProfile(600),  # capex [€/kW]
+            #             FixedProfile(25),   # max installed capacity [kW]
+            #             ContinuousInvestment(FixedProfile(0), FixedProfile(25)), # investment mode
+            #         ),
+            #         CaptureEnergyEmissions(0.9),
+            #     ],
+            # ),
+            RefNetworkNode(
+                6,
+                FixedProfile(0),
+                FixedProfile(6),
+                FixedProfile(100),
+                Dict(Coal => 2.5),
+                Dict(Power => 1),
+                [
+                    SingleInvData(
+                        FixedProfile(800),  # capex [€/kW]
+                        FixedProfile(25),   # max installed capacity [kW]
+                        ContinuousInvestment(FixedProfile(0), FixedProfile(25)), # investment mode
+                    ),
+                    EmissionsEnergy(),
+                ],
+            ),
+            RefStorage{AccumulatingEmissions}(
+                7,
+                StorCapOpex(FixedProfile(0), FixedProfile(9.1), FixedProfile(100)),
+                StorCap(FixedProfile(0)),
+                CO2,
+                Dict(CO2 => 1, Power => 0.02),
+                Dict(CO2 => 1),
+                [
+                    StorageInvData(
+                        charge = NoStartInvData(
+                            FixedProfile(0),
+                            FixedProfile(600),
+                            ContinuousInvestment(FixedProfile(0), FixedProfile(600)),
+                            UnlimitedLife(),
+                        ),
+                        level = NoStartInvData(
+                            FixedProfile(500),
+                            FixedProfile(600),
+                            ContinuousInvestment(FixedProfile(0), FixedProfile(600)),
+                            UnlimitedLife(),
+                        ),
+                    ),
+                ],
+            ),
+            RefNetworkNode(
+                8,
+                FixedProfile(2),
+                FixedProfile(0),
+                FixedProfile(0),
+                Dict(Coal => 2.5),
+                Dict(Power => 1),
+                [
+                    SingleInvData(
+                        FixedProfile(0),    # capex [€/kW]
+                        FixedProfile(25),    # max installed capacity [kW]
+                        ContinuousInvestment(FixedProfile(2), FixedProfile(2)), # investment mode
+                    ),
+                    EmissionsEnergy(),
+                ],
+            ),
+            RefStorage{AccumulatingEmissions}(
+                9,
+                StorCapOpex(FixedProfile(3), FixedProfile(0), FixedProfile(0)),
+                StorCap(FixedProfile(5)),
+                CO2,
+                Dict(CO2 => 1, Power => 0.02),
+                Dict(CO2 => 1),
+                [
+                    StorageInvData(
+                        charge = NoStartInvData(
+                            FixedProfile(0),
+                            FixedProfile(30),
+                            ContinuousInvestment(FixedProfile(3), FixedProfile(3)),
+                            UnlimitedLife(),
+                        ),
+                        level = NoStartInvData(
+                            FixedProfile(0),
+                            FixedProfile(50),
+                            ContinuousInvestment(FixedProfile(5), FixedProfile(5)),
+                            UnlimitedLife(),
+                        ),
+                    ),
+                ],
+            ),
+            RefNetworkNode(
+                10,
+                FixedProfile(0),
+                FixedProfile(0),
+                FixedProfile(0),
+                Dict(Coal => 2.5),
+                Dict(Power => 1),
+                [
+                    SingleInvData(
+                        FixedProfile(10000),        # capex [€/kW]
+                        FixedProfile(10000),     # max installed capacity [kW]
+                        ContinuousInvestment(FixedProfile(0), FixedProfile(10000)),  # investment mode
+                    ),
+                    EmissionsEnergy(),
+                ],
+            ),
+        ]
+        links = [
+            # Direct(15, nodes[1], nodes[5], Linear())
+            Direct(16, nodes[1], nodes[6-1], Linear())
+            Direct(17, nodes[1], nodes[7-1], Linear())
+            Direct(18, nodes[1], nodes[8-1], Linear())
+            Direct(19, nodes[1], nodes[9-1], Linear())
+            Direct(110, nodes[1], nodes[10-1], Linear())
+            Direct(12, nodes[1], nodes[2], Linear())
+            Direct(31, nodes[3], nodes[1], Linear())
+            Direct(41, nodes[4], nodes[1], Linear())
+            # Direct(51, nodes[5], nodes[1], Linear())
+            Direct(61, nodes[6-1], nodes[1], Linear())
+            Direct(71, nodes[7-1], nodes[1], Linear())
+            Direct(81, nodes[8-1], nodes[1], Linear())
+            Direct(91, nodes[9-1], nodes[1], Linear())
+            Direct(101, nodes[10-1], nodes[1], Linear())
+        ]
+
+        # Creation of the time structure and global data
+        T = TwoLevel(4, 1, SimpleTimes(24, 1), op_per_strat = 24)
+        em_limits = Dict(CO2 => StrategicProfile([450, 400, 350, 300]))
+        em_cost = Dict(CO2 => FixedProfile(0))
+        modeltype = InvestmentModel(em_limits, em_cost, CO2, 0.07)
+
+        # Input data structure
+        case = Case(T, products, [nodes, links], [[get_nodes, get_links]])
+        return case, modeltype
+    end
+
+    case1, modeltype1 = investment_model()
+    m1 = run_model(case1, modeltype1, HiGHS.Optimizer)
+    nodes1 = case1.elements[1]
+
+    inv_data = inv_data = [
+            SingleInvData(
+                    FixedProfile(1000), # capex [€/kW]
+                    FixedProfile(50),  # max installed capacity [kW]
+                    ContinuousInvestment(FixedProfile(0), FixedProfile(200)), # investment mode
+                    0.03
+                ),
+            SingleInvData(
+                    FixedProfile(1000), # capex [€/kW]
+                    FixedProfile(50),  # max installed capacity [kW]
+                    ContinuousInvestment(FixedProfile(0), FixedProfile(200)), # investment mode
+                    0.09
+                ),
+            ]
+    case, modeltype = investment_model(;inv_data)
+    m = run_model(case, modeltype, HiGHS.Optimizer)
+    nodes = case.elements[1]
+
+    @testset "SingleInvData without initial capacity" begin
+        @test all(value.(m[:cap_add])[nodes[3], :].data .>= value.(m1[:cap_add])[nodes1[3], :].data) # in m src1 should be higher than in m1 as it is less risky
+        @test all(value.(m[:cap_inst])[nodes[3], :] .> value.(m[:cap_inst])[nodes[4], :]) # in m src1 should be prioritised
+    end
+
+
+    inv_data3 = inv_data = [
+            SingleInvData(
+                    FixedProfile(1000), # capex [€/kW]
+                    FixedProfile(40),  # max installed capacity [kW]
+                    FixedProfile(10), # initial capacity [kW]
+                    ContinuousInvestment(FixedProfile(0), FixedProfile(200)), # investment mode
+                ),
+            SingleInvData(
+                    FixedProfile(1000), # capex [€/kW]
+                    FixedProfile(40),  # max installed capacity [kW]
+                    FixedProfile(10), # initial capacity [kW]
+                    ContinuousInvestment(FixedProfile(0), FixedProfile(200)), # investment mode
+                ),
+            ]
+    case3, modeltype3 = investment_model(;inv_data = inv_data3)
+    m3 = run_model(case3, modeltype3, HiGHS.Optimizer)
+    nodes3 = case3.elements[1]
+
+    inv_data4 = inv_data = [
+            SingleInvData(
+                    FixedProfile(1000), # capex [€/kW]
+                    FixedProfile(40),  # max installed capacity [kW]
+                    FixedProfile(10), # initial capacity [kW]
+                    ContinuousInvestment(FixedProfile(0), FixedProfile(200)), # investment mode
+                    0.03
+                ),
+            SingleInvData(
+                    FixedProfile(1000), # capex [€/kW]
+                    FixedProfile(40),  # max installed capacity [kW]
+                    FixedProfile(10), # initial capacity [kW]
+                    ContinuousInvestment(FixedProfile(0), FixedProfile(200)), # investment mode
+                    0.09
+                ),
+            ]
+    case4, modeltype4 = investment_model(;inv_data = inv_data4)
+    m4 = run_model(case4, modeltype4, HiGHS.Optimizer)
+    nodes4 = case4.elements[1]
+
+    @testset "SingleInvData without initial capacity" begin
+        @test all(value.(m4[:cap_add])[nodes4[3], :].data .>= value.(m3[:cap_add])[nodes3[3], :].data) # in m src1 should be higher than in m1 as it is less risky
+        @test all(value.(m[:cap_inst])[nodes[3], :] .> value.(m[:cap_inst])[nodes[4], :]) # in m src1 should be prioritised
+    end
+    
 end
 
 # Set the global again to false
