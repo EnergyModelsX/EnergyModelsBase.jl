@@ -43,7 +43,7 @@ makedocs(
             "Philosophy"=>"manual/philosophy.md",
             "Optimization variables"=>"manual/optimization-variables.md",
             "Constraint functions"=>"manual/constraint-functions.md",
-            "Data functions"=>"manual/data-functions.md",
+            "ExtensionData functions"=>"manual/data-functions.md",
             "Example"=>"manual/simple-example.md",
             "Investment options"=>"manual/investments.md",
             "Release notes"=>"manual/NEWS.md",
@@ -65,7 +65,7 @@ makedocs(
         "Library" => Any[
             "Public"=>Any[
                 "Resources"=>"library/public/resources.md",
-                "Modeltype and Data"=>"library/public/model_data.md",
+                "Modeltype and ExtensionData"=>"library/public/model_data.md",
                 "Nodes"=>"library/public/nodes.md",
                 "Links"=>"library/public/links.md",
                 "Case"=>"library/public/case_element.md",

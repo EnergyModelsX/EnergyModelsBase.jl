@@ -23,10 +23,10 @@ The fields of a [`RefSink`](@ref) node are given as:
 - **`input::Dict{<:Resource,<:Real}`**:\
   The field `input` includes [`Resource`](@ref Resource)s with their corresponding conversion factors as dictionaries.\
   All values have to be non-negative.
-- **`data::Vector{Data}`**:\
+- **`data::Vector{ExtensionData}`**:\
   An entry for providing additional data to the model.
   In the current version, it is used for both providing `EmissionsData` and additional investment data when [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/) is used.
-  !!! note
+  !!! note "Constructor for `RefSink`"
       The field `data` is not required as we include a constructor when the value is excluded.
   !!! danger "Using `CaptureData`"
       As a `Sink` node does not have any output, it is not possible to utilize `CaptureData`.
@@ -53,7 +53,7 @@ The variables of [`Sink`](@ref) nodes include:
 - [``\texttt{opex\_fixed}``](@ref man-opt_var-opex)
 - [``\texttt{cap\_use}``](@ref man-opt_var-cap)
 - [``\texttt{cap\_inst}``](@ref man-opt_var-cap)
-- [``\texttt{flow\_out}``](@ref man-opt_var-flow)
+- [``\texttt{flow\_in}``](@ref man-opt_var-flow)
 - [``\texttt{sink\_surplus}``](@ref man-opt_var-sink)
 - [``\texttt{sink\_deficit}``](@ref man-opt_var-sink)
 - [``\texttt{emissions\_node}``](@ref man-opt_var-emissions) if `EmissionsData` is added to the field `data`
@@ -62,7 +62,7 @@ The variables of [`Sink`](@ref) nodes include:
 
 A qualitative overview of the individual constraints can be found on *[Constraint functions](@ref man-con)*.
 This section focuses instead on the mathematical description of the individual constraints.
-It omits the direction inclusion of the vector of sink nodes (or all nodes, if nothing specific is implemented).
+It omits the direct inclusion of the vector of sink nodes (or all nodes, if nothing specific is implemented).
 Instead, it is implicitly assumed that the constraints are valid ``\forall n ∈ N^{\text{Sink}}`` for all [`Sink`](@ref) types if not stated differently.
 In addition, all constraints are valid ``\forall t \in T`` (that is in all operational periods) or ``\forall t_{inv} \in T^{Inv}`` (that is in all investment periods).
 
@@ -110,10 +110,10 @@ Hence, if you do not have to call additional functions, but only plan to include
 
   ```math
   \begin{aligned}
-  \texttt{opex\_var}[n, t_{inv}] = & \\
-    \sum_{t \in t_{inv}} & surplus\_penalty(n, t) \times \texttt{sink\_surplus}[n, t] + \\ &
-    deficit\_penalty(n, t) \times \texttt{sink\_deficit}[n, t] \times \\ &
-    scale\_op\_sp(t_{inv}, t)
+  \texttt{opex\_var}[n, t_{inv}] = & scale\_op\_sp(t_{inv}, t) \times \\
+    \sum_{t \in t_{inv}} & ( surplus\_penalty(n, t) \times \texttt{sink\_surplus}[n, t] + \\ &
+    deficit\_penalty(n, t) \times \texttt{sink\_deficit}[n, t]) \\ &
+
   \end{aligned}
   ```
 
@@ -121,5 +121,5 @@ Hence, if you do not have to call additional functions, but only plan to include
       The function [``scale\_op\_sp(t_{inv}, t)``](@ref scale_op_sp) calculates the scaling factor between operational and investment periods.
       It also takes into account potential operational scenarios and their probability as well as representative periods.
 
-- `constraints_data`:\
+- `constraints_ext_data`:\
   This function is only called for specified additional data, see above.

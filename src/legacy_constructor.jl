@@ -86,7 +86,7 @@ function RefStorage(
         stor_res,
         input,
         output,
-        Data[],
+        ExtensionData[],
     )
     return tmp
 end
@@ -181,7 +181,7 @@ function RefStorage(
         stor_res,
         input,
         output,
-        Data[],
+        ExtensionData[],
     )
     return tmp
 end

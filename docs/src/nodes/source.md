@@ -29,22 +29,22 @@ The fields of a [`RefSource`](@ref) node are given as:
   If you would like to use a `Source` node with CO₂ as output with a given ratio, it is necessary to utilize the package [`EnergyModelsCO2`](https://energymodelsx.github.io/EnergyModelsCO2.jl/).
   If you use [`CaptureData`](@ref), it is however necessary to specify CO₂ as output, although the ratio is not important.\
   All values have to be non-negative.
-- **`data::Vector{Data}`**:\
+- **`data::Vector{ExtensionData}`**:\
   An entry for providing additional data to the model.
   In the current version, it is used for both providing `EmissionsData` and additional investment data when [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/) is used.
   When using `EmissionsData`, only process emissions can be considered, that is the types [`EmissionsProcess`](@ref) and that is the types [`EmissionsProcess`](@ref) and [`CaptureProcessEmissions`](@ref).
   Specifying energy related emissions will not have an impact as there is no energy conversion within a `Source` node.
-  !!! note
+  !!! note "Constructor for `RefSource`"
       The field `data` is not required as we include a constructor when the value is excluded.
 
-!!! warning "Using `CaptureData`"
-    If you plan to use [`CaptureData`](@ref) for a [`RefSource`](@ref) node, it is crucial that you specify your CO₂ resource in the `output` dictionary.
-    The chosen value is however **not** important as the CO₂ flow is automatically calculated based on the process utilization and the provided process emission value.
-    The reason for this necessity is that flow variables are declared through the keys of the `output` dictionary.
-    Hence, not specifying CO₂ as `output` resource results in not creating the corresponding flow variable and subsequent problems in the design.
+  !!! warning "Using `CaptureData`"
+      If you plan to use [`CaptureData`](@ref) for a [`RefSource`](@ref) node, it is crucial that you specify your CO₂ resource in the `output` dictionary.
+      The chosen value is however **not** important as the CO₂ flow is automatically calculated based on the process utilization and the provided process emission value.
+      The reason for this necessity is that flow variables are declared through the keys of the `output` dictionary.
+      Hence, not specifying CO₂ as `output` resource results in not creating the corresponding flow variable and subsequent problems in the design.
 
-    We plan to remove this necessity in the future.
-    As it would most likely correspond to breaking changes, we have to be careful to avoid requiring major changes in other packages.
+      We plan to remove this necessity in the future.
+      As it would most likely correspond to breaking changes, we have to be careful to avoid requiring major changes in other packages.
 
 ## [Mathematical description](@id nodes-source-math)
 
@@ -76,7 +76,7 @@ The variables of [`Source`](@ref) nodes include:
 
 A qualitative overview of the individual constraints can be found on *[Constraint functions](@ref man-con)*.
 This section focuses instead on the mathematical description of the individual constraints.
-It omits the direction inclusion of the vector of source nodes (or all nodes, if nothing specific is implemented).
+It omits the direct inclusion of the vector of source nodes (or all nodes, if nothing specific is implemented).
 Instead, it is implicitly assumed that the constraints are valid ``\forall n ∈ N^{\text{Source}}`` for all [`Source`](@ref) types if not stated differently.
 In addition, all constraints are valid ``\forall t \in T`` (that is in all operational periods) or ``\forall t_{inv} \in T^{Inv}`` (that is in all investment periods).
 
@@ -129,5 +129,5 @@ Hence, if you do not have to call additional functions, but only plan to include
       The function [``scale\_op\_sp(t_{inv}, t)``](@ref scale_op_sp) calculates the scaling factor between operational and investment periods.
       It also takes into account potential operational scenarios and their probability as well as representative periods.
 
-- `constraints_data`:\
+- `constraints_ext_data`:\
   This function is only called for specified additional data, see above.

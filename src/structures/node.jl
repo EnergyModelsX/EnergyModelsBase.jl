@@ -97,7 +97,8 @@ end
     struct StorCap <: AbstractStorageParameters
 
 A storage parameter type for including only a capacity. This implies that neither the usage
-of the [`Storage`](@ref), nor the installed capacity have a direct impact on the objective function.
+of the [`Storage`](@ref), nor the installed capacity have a direct impact on the objective
+function.
 
 # Fields
 - **`capacity::TimeProfile`** is the installed capacity.
@@ -225,8 +226,8 @@ or `StrategicProfile`.
   through the variable `:cap_inst`.
 - **`output::Dict{<:Resource,<:Real}`** are the generated [`Resource`](@ref)s with
   conversion value `Real`.
-- **`data::Vector{<:Data}`** is the additional data (*e.g.*, for investments). The field `data`
-  is conditional through usage of a constructor.
+- **`data::Vector{<:ExtensionData}`** is the additional data (*e.g.*, for investments).
+  The field `data` is conditional through usage of a constructor.
 """
 struct RefSource <: Source
     id::Any
@@ -234,7 +235,7 @@ struct RefSource <: Source
     opex_var::TimeProfile
     opex_fixed::TimeProfile
     output::Dict{<:Resource,<:Real}
-    data::Vector{<:Data}
+    data::Vector{<:ExtensionData}
 end
 function RefSource(
     id,
@@ -243,7 +244,7 @@ function RefSource(
     opex_fixed::TimeProfile,
     output::Dict{<:Resource,<:Real},
 )
-    return RefSource(id, cap, opex_var, opex_fixed, output, Data[])
+    return RefSource(id, cap, opex_var, opex_fixed, output, ExtensionData[])
 end
 
 """
@@ -266,8 +267,8 @@ The capacity is hereby normalized to a conversion value of 1 in the fields `inpu
   value `Real`.
 - **`output::Dict{<:Resource,<:Real}`** are the generated [`Resource`](@ref)s with
   conversion value `Real`.
-- **`data::Vector{Data}`** is the additional data (*e.g.*, for investments). The field `data`
-  is conditional through usage of a constructor.
+- **`data::Vector{ExtensionData}`** is the additional data (*e.g.*, for investments).
+  The field `data` is conditional through usage of a constructor.
 """
 struct RefNetworkNode <: NetworkNode
     id::Any
@@ -276,7 +277,7 @@ struct RefNetworkNode <: NetworkNode
     opex_fixed::TimeProfile
     input::Dict{<:Resource,<:Real}
     output::Dict{<:Resource,<:Real}
-    data::Vector{<:Data}
+    data::Vector{<:ExtensionData}
 end
 function RefNetworkNode(
     id,
@@ -286,7 +287,7 @@ function RefNetworkNode(
     input::Dict{<:Resource,<:Real},
     output::Dict{<:Resource,<:Real},
 )
-    return RefNetworkNode(id, cap, opex_var, opex_fixed, input, output, Data[])
+    return RefNetworkNode(id, cap, opex_var, opex_fixed, input, output, ExtensionData[])
 end
 
 """
@@ -297,7 +298,7 @@ The reference `Availability` node solves the energy balance for all connected fl
 
 # Fields
 - **`id`** is the name/identifier of the node.
-- **`inputs::Vector{<:Resource}`** are the input [`Resource`](@ref)s.
+- **`input::Vector{<:Resource}`** are the input [`Resource`](@ref)s.
 - **`output::Vector{<:Resource}`** are the output [`Resource`](@ref)s.
 
 A constructor is provided so that only a single array can be provided with the fields:
@@ -331,15 +332,16 @@ The current implemented cyclic behaviours are [`CyclicRepresentative`](@ref),
   Depending on the chosen type, the charge parameters can include variable OPEX, fixed OPEX,
   and/or a capacity.
 - **`level::AbstractStorageParameters`** are the level parameters of the [`Storage`](@ref) node.
-  Depending on the chosen type, the charge parameters can include variable OPEX and/or fixed OPEX.
+  Depending on the chosen type, the level parameters can include variable OPEX and/or fixed OPEX.
+  They must include a capacity.
 - **`stor_res::Resource`** is the stored [`Resource`](@ref).
 - **`input::Dict{<:Resource,<:Real}`** are the input [`Resource`](@ref)s with conversion
   value `Real`.
 - **`output::Dict{<:Resource,<:Real}`** are the generated [`Resource`](@ref)s with conversion
   value `Real`. Only relevant for linking and the stored [`Resource`](@ref) as the output
   value is not utilized in the calculations.
-- **`data::Vector{<:Data}`** is the additional data (*e.g.*, for investments). The field `data`
-  is conditional through usage of a constructor.
+- **`data::Vector{<:ExtensionData}`** is the additional data (*e.g.*, for investments).
+  The field `data` is conditional through usage of a constructor.
 """
 struct RefStorage{T} <: Storage{T}
     id::Any
@@ -348,7 +350,7 @@ struct RefStorage{T} <: Storage{T}
     stor_res::Resource
     input::Dict{<:Resource,<:Real}
     output::Dict{<:Resource,<:Real}
-    data::Vector{<:Data}
+    data::Vector{<:ExtensionData}
 end
 
 function RefStorage{T}(
@@ -359,7 +361,7 @@ function RefStorage{T}(
     input::Dict{<:Resource,<:Real},
     output::Dict{<:Resource,<:Real},
 ) where {T<:StorageBehavior}
-    return RefStorage{T}(id, charge, level, stor_res, input, output, Data[])
+    return RefStorage{T}(id, charge, level, stor_res, input, output, ExtensionData[])
 end
 
 """
@@ -376,15 +378,15 @@ and deficit.
   dictionary requires the  fields `:surplus` and `:deficit`.
 - **`input::Dict{<:Resource,<:Real}`** are the input [`Resource`](@ref)s with conversion
   value `Real`.
-- **`data::Vector{<:Data}`** is the additional data (*e.g.*, for investments). The field `data`
-  is conditional through usage of a constructor.
+- **`data::Vector{<:ExtensionData}`** is the additional data (*e.g.*, for investments).
+  The field `data` is conditional through usage of a constructor.
 """
 struct RefSink <: Sink
     id::Any
     cap::TimeProfile
     penalty::Dict{Symbol,<:TimeProfile}
     input::Dict{<:Resource,<:Real}
-    data::Vector{<:Data}
+    data::Vector{<:ExtensionData}
 end
 function RefSink(
     id,
@@ -392,7 +394,7 @@ function RefSink(
     penalty::Dict{<:Any,<:TimeProfile},
     input::Dict{<:Resource,<:Real},
 )
-    return RefSink(id, cap, penalty, input, Data[])
+    return RefSink(id, cap, penalty, input, ExtensionData[])
 end
 
 """
@@ -657,7 +659,7 @@ If the resource `p` is specified, it returns the value (1 in the case of
 """
 inputs(n::Node) = collect(keys(n.input))
 inputs(n::Availability) = n.input
-inputs(n::Source) = []
+inputs(n::Source) = Resource[]
 inputs(n::Node, p::Resource) = n.input[p]
 inputs(n::Availability, p::Resource) = 1
 inputs(n::Source, p::Resource) = nothing
@@ -673,7 +675,7 @@ If the resource `p` is specified, it returns the value (1 in the case of
 """
 outputs(n::Node) = collect(keys(n.output))
 outputs(n::Availability) = n.output
-outputs(n::Sink) = []
+outputs(n::Sink) = Resource[]
 outputs(n::Node, p::Resource) = n.output[p]
 outputs(n::Availability, p::Resource) = 1
 outputs(n::Sink, p::Resource) = nothing
@@ -681,10 +683,11 @@ outputs(n::Sink, p::Resource) = nothing
 """
     node_data(n::Node)
 
-Returns the [`Data`](@ref) array of node `n`.
+Returns the [`ExtensionData`](@ref) array of node `n`.
 """
 node_data(n::Node) = n.data
-node_data(n::Availability) = []
+node_data(n::Availability) = ExtensionData[]
+element_data(n::Node) = node_data(n)
 
 """
     storage_resource(n::Storage)
@@ -724,7 +727,7 @@ opex_var(stor_par::UnionOpexVar, t) = stor_par.opex_var[t]
     opex_fixed(n::Node)
     opex_fixed(n::Node, t_inv)
 
-Returns the fixed OPEX of a node node `n` as `TimeProfile` or in strategic period `t_inv`.
+Returns the fixed OPEX of a node `n` as `TimeProfile` or in strategic period `t_inv`.
 
 !!! warning "Storage nodes"
     The fixed OPEX is not directly defined for [`Storage`](@ref) nodes. Instead, it is necessary

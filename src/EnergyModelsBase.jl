@@ -6,7 +6,7 @@ In addition, all required functions for creaeting and running the model are expo
 
 You can find the exported types and functions below or on the pages
 *[Constraint functions](@ref man-con)* and
-*[Data functions](@ref man-data_fun)*.
+*[ExtensionData functions](@ref man-data_fun)*.
 """
 module EnergyModelsBase
 
@@ -41,7 +41,7 @@ export get_time_struct, get_products, get_elements_vec, get_nodes, get_links, ge
 # Export the general classes
 export EnergyModel, OperationalModel
 export Resource, ResourceCarrier, ResourceEmit
-export AbstractElement
+export AbstractElement, element_data
 
 # Export the different node types
 export Source, NetworkNode, Sink, Storage, Availability
@@ -58,7 +58,7 @@ export Cyclic, CyclicRepresentative, CyclicStrategic
 export StorCapOpex, StorCap, StorCapOpexVar, StorCapOpexFixed, StorOpexVar
 
 # Export the data types
-export Data, EmptyData, EmissionsData, CaptureData
+export Data, ExtensionData, EmptyData, EmissionsData, CaptureData
 export CaptureProcessEnergyEmissions, CaptureProcessEmissions, CaptureEnergyEmissions
 export EmissionsProcess, EmissionsEnergy
 
@@ -82,7 +82,7 @@ export constraints_capacity, constraints_capacity_installed
 export constraints_flow_in, constraints_flow_out
 export constraints_level, constraints_level_aux
 export constraints_opex_fixed, constraints_opex_var
-export constraints_data
+export constraints_data, constraints_ext_data
 
 # Export functions used for level balancing modifications
 export previous_level, previous_level_sp

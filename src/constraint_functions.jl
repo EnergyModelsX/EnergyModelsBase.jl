@@ -107,7 +107,7 @@ end
     constraints_flow_in(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
     constraints_flow_in(m, n::Storage{AccumulatingEmissions}, 𝒯::TimeStructure, modeltype::EnergyModel)
 
-Function for creating the constraint on the outlet flow from a generic [`Node`](@ref) or
+Function for creating the constraint on the inlet flow from a generic [`Node`](@ref) or
 [`Storage`](@ref).
 
 These functions serve as fallback option if no other method is specified for a specific
@@ -478,15 +478,39 @@ function constraints_level_scp(m, n::Storage, per, modeltype::EnergyModel)
     return nothing
 end
 """
-    constraints_level_scp(m, n::Storage{CyclicRepresentative}, per, modeltype::EnergyModel)
+    constraints_level_scp(m, n::Storage{<:Cyclic}, per::TS.AbstractStrategicPeriod, modeltype::EnergyModel)
+
+When a Storage{<:Cyclic} is used in a time structure without `RepresentativeProfile`, the
+final level in an operational scenario is constrained to be the same in all operational
+scenarios for the cyclic constraints.
+"""
+function constraints_level_scp(
+    m,
+    n::Storage{<:Cyclic},
+    per::TS.AbstractStrategicPeriod,
+    modeltype::EnergyModel,
+)
+    # Declaration of the required subsets
+    𝒯ˢᶜ = opscenarios(per)
+    last_scp = [last(t_scp) for t_scp ∈ 𝒯ˢᶜ]
+
+    # Constraint that level is similar to the level in the first scenario
+    for t ∈ last_scp[2:end]
+        @constraint(m, m[:stor_level][n, t] == m[:stor_level][n, first(last_scp)])
+    end
+end
+"""
+    constraints_level_scp(m, n::Storage{CyclicRepresentative}, per::TS.AbstractRepresentativePeriod, modeltype::EnergyModel)
 
 When a Storage{CyclicRepresentative} is used, the final level in an operational scenario is
 constrained to be the same in all operational scenarios.
+
+This function is required in addition to enforce the [`CyclicRepresentative`](@ref) constraint.
 """
 function constraints_level_scp(
     m,
     n::Storage{CyclicRepresentative},
-    per,
+    per::TS.AbstractRepresentativePeriod,
     modeltype::EnergyModel,
 )
     # Declaration of the required subsets

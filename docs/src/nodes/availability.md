@@ -66,7 +66,7 @@ The variables of [`Availability`](@ref) nodes include:
 
 ### [Constraints](@id nodes-availability-math-con)
 
-Availability nodes do not add by default any constraints, except for the constraints introduced in the function `create_node`(@ref).
+Availability nodes do not add by default any constraints, except for the constraints introduced in the function [`create_node`](@ref).
 This constraint is given by:
 
 ```math

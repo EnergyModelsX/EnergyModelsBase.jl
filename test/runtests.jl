@@ -1,7 +1,9 @@
-using EnergyModelsBase
 using HiGHS
 using JuMP
+using Logging
 using Test
+
+using EnergyModelsBase
 using TimeStruct
 
 const EMB = EnergyModelsBase
@@ -13,6 +15,10 @@ ENV["EMB_TEST"] = true # Set flag for example scripts to check if they are run a
 @testset "Base" begin
     @testset "Base | General" begin
         include("test_general.jl")
+    end
+
+    @testset "Base | ExtensionData" begin
+        include("test_data.jl")
     end
 
     @testset "Base | Node" begin

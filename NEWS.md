@@ -1,5 +1,45 @@
 # Release notes
 
+## Version 0.9.3 (2025-10-23)
+
+## Bugfixes
+
+* Fix a bug in which field names for the capacities of a `Storage` node resulted in unconstrained capacities.
+
+### Minor updates
+
+* Added additional comments (and processing routines) to the examples for improving the understanding.
+
+## Version 0.9.2 (2025-07-03)
+
+### Bugfixes
+
+* Fixed a bug when a `Link` did not have the same `input` and `output` `Resource`.
+* Fixed a bug when using `Storage{CyclicStrategic}` with `TwoLevel{OperationalScenarios}`:
+  * The storage balance was wrongly calculated.
+  * Updated constraints on the storage level when using `OperationalScenarios` without `RepresentativePeriods`.
+  * Added tests to avoid these problems in the future.
+
+### Changes to checks
+
+* Add check that `stor_res` is included in both `input` and `output`.
+* Minor rewriting of function flow in tests of checks.
+
+## Version 0.9.1 (2025-06-24)
+
+### Rework of data
+
+* Renamed extension data related functions and types:
+  * `Data` is now called `ExtraData`.
+  * `create_data` is now called `create_ext_data`.
+* The old version is still accessible, but will be removed in release 0.10.
+* Allow for variable creation for `ExtraData` types and implemented the approach for `InvestmentData` for both `Node`s and `Link`s.
+
+### Minor updates
+
+* Minor grammatical and structural changes to the documentation.
+* Return empty `Resource` vectors in the function `inputs` (for `RefSource`) and `outputs` (for `RefSink`) instead of empty vectors.
+
 ## Version 0.9.0 (2025-01-29)
 
 ### Major rework of input data structure

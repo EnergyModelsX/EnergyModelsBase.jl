@@ -34,7 +34,7 @@ discount_rate
 
 ### [`InvestmentData` types](@id lib-pub-emi_ext-inv_data-types)
 
-`InvestmentData` subtypes are used to provide technologies introduced in `EnergyModelsX` (nodes and transmission modes) a subtype of `Data` that can be used for dispatching.
+`InvestmentData` subtypes are used to provide technologies introduced in `EnergyModelsX` (nodes and transmission modes) a subtype of `ExtensionData` that can be used for dispatching.
 Two different types are directly introduced, `SingleInvData` and `StorageInvData`.
 
 `SingleInvData` is providing a composite type with a single field.

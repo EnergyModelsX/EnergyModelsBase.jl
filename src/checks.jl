@@ -170,7 +170,7 @@ and Vector{<:Link}.
 !!! note "Node methods"
     All nodes are checked through the functions
     - [`check_node`](@ref) to identify problematic input,
-    - [`check_node_data`](@ref EnergyModelsBase.check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool))
+    - [`check_node_data`](@ref EnergyModelsBase.check_node_data(n::Node, data::ExtensionData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool))
       issues in the provided additional data, and
     - [`check_time_structure`](@ref) to identify time profiles at the highest level that
       are not equivalent to the provided timestructure.
@@ -178,7 +178,7 @@ and Vector{<:Link}.
 !!! note "Links methods"
     All links are checked through the functions
     - [`check_link`](@ref) to identify problematic input,
-    - [`check_link_data`](@ref EnergyModelsBase.check_link_data(l::Link, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool))
+    - [`check_link_data`](@ref EnergyModelsBase.check_link_data(l::Link, data::ExtensionData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool))
       to identify issues in the provided additional data, and
     - [`check_time_structure`](@ref) to identify time profiles at the highest level that
       are not equivalent to the provided timestructure.
@@ -793,7 +793,9 @@ a [`Storage`](@ref) node.
   accessible through a `StrategicPeriod` as outlined in the function
   [`check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles)`](@ref) for the chosen composite type.
 - The values of the dictionary `input` are required to be non-negative.
+- The specified storage [`Resource`](@ref) must be included in the dictionary `input`.
 - The values of the dictionary `output` are required to be non-negative.
+- The specified storage [`Resource`](@ref) must be included in the dictionary `output`.
 """
 function check_node_default(n::Storage, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
@@ -830,9 +832,17 @@ function check_node_default(n::Storage, 𝒯, modeltype::EnergyModel, check_time
         all(inputs(n, p) ≥ 0 for p ∈ inputs(n)),
         "The values for the Dictionary `input` must be non-negative."
     )
+    has_input(n) && @assert_or_log(
+        storage_resource(n) ∈ inputs(n),
+        "The stored resource must be included in the Dictionary `input`."
+    )
     has_output(n) && @assert_or_log(
         all(outputs(n, p) ≥ 0 for p ∈ outputs(n)),
         "The values for the Dictionary `output` must be non-negative."
+    )
+    has_output(n) && @assert_or_log(
+        storage_resource(n) ∈ outputs(n),
+        "The stored resource must be included in the Dictionary `output`."
     )
 end
 
@@ -910,10 +920,10 @@ function check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles::Bool)
 end
 
 """
-    check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+    check_node_data(n::Node, data::ExtensionData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     check_node_data(n::Node, data::EmissionsData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
-Check that the included `Data` types of a `Node` correspond to required structure.
+Check that the included `ExtensionData` types of a `Node` correspond to required structure.
 
 ## Checks `EmissionsData`
 - Each node can only have a single `EmissionsData`.
@@ -921,7 +931,7 @@ Check that the included `Data` types of a `Node` correspond to required structur
 - The value of the field `co2_capture` is required to be in the range ``[0, 1]``, if
   [`CaptureData`](@ref) is used.
 """
-check_node_data(n::Node, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) =
+check_node_data(n::Node, data::ExtensionData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) =
     nothing
 function check_node_data(
     n::Node,
@@ -988,9 +998,9 @@ functionality does not check anthing, aside from the checks performed in [`check
 check_link(n::Link, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) = nothing
 
 """
-    check_link_data(l::Link, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+    check_link_data(l::Link, data::ExtensionData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
-Check that the included `Data` types of a `Link` correspond to required structure.
+Check that the included `ExtensionData` types of a `Link` correspond to required structure.
 """
-check_link_data(l::Link, data::Data, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) =
+check_link_data(l::Link, data::ExtensionData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) =
     nothing
