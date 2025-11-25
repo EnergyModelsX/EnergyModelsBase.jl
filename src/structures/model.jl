@@ -1,10 +1,16 @@
-""" Abstract type for differentation between types of models (investment, operational, ...)."""
+"""
+    abstract type EnergyModel
+
+A supertype for differentation between types of models (investment, operational, ...). Its
+main functionality is to provide new methods to the function [`objective`](@ref) and to
+provide global data required in several technologies.
+"""
 abstract type EnergyModel end
 
 """
     OperationalModel <: EnergyModel
 
-Operational Energy Model without investments.
+Operational Energy Model without investments. The model does not discount the costs.
 
 # Fields
 - **`emission_limit::Dict{<:ResourceEmit, <:TimeProfile}`** is a dictionary with

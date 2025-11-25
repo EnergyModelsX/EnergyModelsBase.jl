@@ -11,7 +11,7 @@ Data = ExtensionData
 struct EmptyData <: ExtensionData end
 
 """
-    EmissionsData{T<:Union{TimeProfile,Float64}} <: ExtensionData
+    abstract type EmissionsData{T<:Union{TimeProfile,Float64}} <: ExtensionData
 
 Abstract type for `EmissionsData` can be used to dispatch on different types of
 capture configurations.
@@ -35,9 +35,17 @@ In general, the different types require the following input:
 """
 abstract type EmissionsData{T<:Union{TimeProfile,Float64}} <: ExtensionData end
 """
-    CaptureData{T} <: EmissionsData{T}
+    abstract type CaptureData{T} <: EmissionsData{T}
 
 Supertype for all `EmissionsData` that include CO₂ capture.
+
+# Types
+- **[`CaptureProcessEnergyEmissions`](@ref)**: Capture both the process emissions and the
+  energy usage related emissions.
+- **[`CaptureProcessEmissions`](@ref)**: Capture the process emissions, but not the
+  energy usage related emissions.
+- **[`CaptureEnergyEmissions`](@ref)**: Capture the energy usage related emissions, but not
+  the process emissions. Does not require `emissions` as input.
 """
 abstract type CaptureData{T} <: EmissionsData{T} end
 

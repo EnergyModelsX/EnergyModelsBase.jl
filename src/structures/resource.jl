@@ -1,4 +1,6 @@
 """
+    abstract type Resource
+
 General resource supertype to be used for the declaration of subtypes.
 """
 abstract type Resource end
