@@ -760,6 +760,7 @@ end
     @test_throws AssertionError create_model(case, model)
 
     case, model = check_links(; res_snk = CO2)
+    @test_throws AssertionError create_model(case, model)
     av, source, sink = get_nodes(case)
     case.elements[2] = [CheckLink(12, sink, av, Power)]
     @test_throws AssertionError create_model(case, model)

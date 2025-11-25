@@ -4,7 +4,9 @@
 
 ### Minor updates
 
-* Check that the `inputs` and `outputs` resources of a `Link` are present in the connected nodes.
+* Added checks
+  * that the `inputs` and `outputs` resources of a `Link` are present in the connected nodes.
+  * that a `Direct` link has actually `inputs` and `outputs`,
 
 ## Version 0.9.3 (2025-10-23)
 
