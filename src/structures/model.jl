@@ -1,10 +1,16 @@
-""" Abstract type for differentation between types of models (investment, operational, ...)."""
+"""
+    abstract type EnergyModel
+
+A supertype for differentation between types of models (investment, operational, ...). Its
+main functionality is to provide new methods to the function [`objective`](@ref) and to
+provide global data required in several technologies.
+"""
 abstract type EnergyModel end
 
 """
-    OperationalModel <: EnergyModel
+    struct OperationalModel <: EnergyModel
 
-Operational Energy Model without investments.
+Operational Energy Model without investments. The model does not discount the costs.
 
 # Fields
 - **`emission_limit::Dict{<:ResourceEmit, <:TimeProfile}`** is a dictionary with
@@ -56,7 +62,7 @@ Returns the CO₂ instance used in modelling.
 co2_instance(modeltype::EnergyModel) = modeltype.co2_instance
 
 """
-    AbstractInvestmentModel <: EnergyModel
+    abstract type AbstractInvestmentModel <: EnergyModel
 
 An abstract investment model type.
 
@@ -72,7 +78,7 @@ An example for additional types is given by the inclusion of, *e.g.*, `SDDP`.
 abstract type AbstractInvestmentModel <: EnergyModel end
 
 """
-    InvestmentModel <: AbstractInvestmentModel
+    struct InvestmentModel <: AbstractInvestmentModel
 
 A concrete basic investment model type based on the standard [`OperationalModel`](@ref).
 The concrete basic investment model is similar to an `OperationalModel`, but allows for

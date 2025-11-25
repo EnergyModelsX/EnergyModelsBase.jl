@@ -1,4 +1,3 @@
-
 @testset "Test OperationalModel" begin
 
     # Resources used in the analysis
