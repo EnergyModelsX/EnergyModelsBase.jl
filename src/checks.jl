@@ -874,7 +874,6 @@ function check_node_default(n::Sink, 𝒯, modeltype::EnergyModel, check_timepro
     )
 
     if :surplus ∈ keys(n.penalty) && :deficit ∈ keys(n.penalty)
-        # The if-condition was checked above.
         @assert_or_log(
             all(surplus_penalty(n, t) + deficit_penalty(n, t) ≥ 0 for t ∈ 𝒯),
             "An inconsistent combination of `:surplus` and `:deficit` leads to an infeasible model."
