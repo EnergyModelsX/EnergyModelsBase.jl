@@ -1,5 +1,11 @@
 # Release notes
 
+## Unversioned
+
+### Minor updates
+
+* Check that the `inputs` and `outputs` resources of a `Link` are present in the connected nodes.
+
 ## Version 0.9.3 (2025-10-23)
 
 ## Bugfixes

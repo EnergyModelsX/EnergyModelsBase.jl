@@ -702,8 +702,19 @@ end
     Power = ResourceCarrier("Power", 0.0)
     CO2 = ResourceEmit("CO2", 1.0)
 
+    # Auxiliary link used in the tests
+    struct CheckLink <: Link
+        id::Any
+        from::EMB.Node
+        to::EMB.Node
+        p::Resource
+    end
+    EMB.formulation(l::CheckLink) = Linear()
+    EMB.inputs(l::CheckLink) = Resource[l.p]
+    EMB.outputs(l::CheckLink) = Resource[l.p]
+
     # Function for setting up the system for testing `Sink` and `Source`
-    function simple_graph()
+    function check_links(; res_src=Power, res_snk=Power)
         resources = [Power, CO2]
         ops = SimpleTimes(5, 2)
         T = TwoLevel(2, 2, ops; op_per_strat = 10)
@@ -713,7 +724,7 @@ end
             "sink",
             OperationalProfile([6, 8, 10, 6, 8]),
             Dict(:surplus => FixedProfile(4), :deficit => FixedProfile(10)),
-            Dict(Power => 1),
+            Dict(res_src => 1),
         )
 
         # Test that a wrong capacity is caught by the checks.
@@ -722,7 +733,7 @@ end
             FixedProfile(4),
             FixedProfile(10),
             FixedProfile(0),
-            Dict(Power => 1),
+            Dict(res_snk => 1),
         )
         nodes = [av, source, sink]
         links = [Direct(12, source, sink)]
@@ -737,7 +748,7 @@ end
 
     # Test that the from and to fields are correctly checked
     # - check_elements(log_by_element, ℒ::Vector{<:Link}}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
-    case, model = simple_graph()
+    case, model = check_links()
     av, source, sink = get_nodes(case)
     case.elements[2] = [Direct(12, GenAvailability("test", get_products(case)), sink)]
     @test_throws AssertionError create_model(case, model)
@@ -747,6 +758,17 @@ end
     @test_throws AssertionError create_model(case, model)
     case.elements[2] = [Direct(12, sink, av)]
     @test_throws AssertionError create_model(case, model)
+
+    case, model = check_links(; res_snk = CO2)
+    av, source, sink = get_nodes(case)
+    case.elements[2] = [CheckLink(12, sink, av, Power)]
+    @test_throws AssertionError create_model(case, model)
+
+    case, model = check_links(; res_src = CO2)
+    av, source, sink = get_nodes(case)
+    case.elements[2] = [CheckLink(12, sink, av, Power)]
+    @test_throws AssertionError create_model(case, model)
+
 end
 
 # Set the global again to false
