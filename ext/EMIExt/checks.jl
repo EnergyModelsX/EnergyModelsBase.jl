@@ -53,14 +53,16 @@ function EMB.check_node_data(
         return
     end
 
-    for cap_fields ∈ fieldnames(typeof(data))
-        sub_data = getfield(data, cap_fields)
+    cap_map = Dict(:charge => charge, :level => level, :discharge => discharge)
+
+    for (cap, cap_fun) ∈ cap_map
+        sub_data = getfield(data, cap)
         isnothing(sub_data) && continue
         check_inv_data(
             sub_data,
-            EMB.capacity(getproperty(n, cap_fields)),
+            EMB.capacity(cap_fun(n)),
             𝒯,
-            " of field `" * String(cap_fields) * "`",
+            " of field `" * String(cap) * "`",
             check_timeprofiles,
         )
     end
