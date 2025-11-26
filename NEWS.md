@@ -1,6 +1,6 @@
 # Release notes
 
-## Unversioned
+## Version 0.9.4 (2025-11-26)
 
 ### Bugfixes
 
