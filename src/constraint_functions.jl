@@ -176,10 +176,9 @@ end
 function constraints_flow_out(m, n::Storage, 𝒯::TimeStructure, modeltype::EnergyModel)
     # Declaration of the required subsets
     p_stor = storage_resource(n)
-    𝒫ᵒᵘᵗ = res_not(outputs(n), co2_instance(modeltype))
 
     # Constraint for the individual output stream connections
-    @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵒᵘᵗ],
+    @constraint(m, [t ∈ 𝒯],
         m[:stor_discharge_use][n, t] == m[:flow_out][n, t, p_stor]
     )
 end

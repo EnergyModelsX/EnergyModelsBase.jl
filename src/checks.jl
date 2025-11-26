@@ -857,7 +857,7 @@ a [`Sink`](@ref) node.
 - The values of the dictionary `input` are required to be non-negative.
 - The dictionary `penalty` is required to have the keys `:deficit` and `:surplus`.
 - The sum of the values `:deficit` and `:surplus` in the dictionary `penalty` has to be
-    non-negative to avoid an infeasible model.
+  non-negative to avoid an infeasible model.
 """
 function check_node_default(n::Sink, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
     @assert_or_log(
@@ -870,11 +870,10 @@ function check_node_default(n::Sink, 𝒯, modeltype::EnergyModel, check_timepro
     )
     @assert_or_log(
         :surplus ∈ keys(n.penalty) && :deficit ∈ keys(n.penalty),
-        "The entries :surplus and :deficit are required in the field `penalty`"
+        "The entries `:surplus` and `:deficit` are required in the field `penalty`."
     )
 
     if :surplus ∈ keys(n.penalty) && :deficit ∈ keys(n.penalty)
-        # The if-condition was checked above.
         @assert_or_log(
             all(surplus_penalty(n, t) + deficit_penalty(n, t) ≥ 0 for t ∈ 𝒯),
             "An inconsistent combination of `:surplus` and `:deficit` leads to an infeasible model."
