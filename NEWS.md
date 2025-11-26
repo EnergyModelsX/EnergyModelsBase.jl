@@ -1,5 +1,11 @@
 # Release notes
 
+## Unversioned
+
+### Bugfixes
+
+* Fix a bug in which field names for the capacities of a `Storage` node resulted in error message for the investment data checks.
+
 ## Version 0.9.3 (2025-10-23)
 
 ## Bugfixes
