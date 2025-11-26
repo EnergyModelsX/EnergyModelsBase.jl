@@ -102,6 +102,10 @@ Return the resources transported for a given link `l`.
 
 The default approach is to use the intersection of the inputs of the `to` node and the
 outputs of the `from` node.
+
+!!! danger
+    This function is only internal and should not be used in other packages. Its behaviour
+    may not be the expected when used outside `EnergyModelsBase` for new [`Link`](@ref) types/
 """
 link_res(l::Link) = intersect(inputs(l.to), outputs(l.from))
 
@@ -111,6 +115,12 @@ link_res(l::Link) = intersect(inputs(l.to), outputs(l.from))
 Returns the input resources of a link `l`.
 
 The default approach is to use the function [`link_res(l::Link)`](@ref).
+
+!!! note "New Links"
+    This function should receive a new method when you define a new [`Link`](@ref) type in
+    which you specify the transported resources.
+
+    The new method *must* return a `Vector{<:Resource}`
 """
 inputs(l::Link) = link_res(l)
 
@@ -120,6 +130,12 @@ inputs(l::Link) = link_res(l)
 Returns the output resources of a link `l`.
 
 The default approach is to use the function [`link_res(l::Link)`](@ref).
+
+!!! note "New Links"
+    This function should receive a new method when you define a new [`Link`](@ref) type in
+    which you specify the transported resources.
+
+    The new method *must* return a `Vector{<:Resource}`
 """
 outputs(l::Link) = link_res(l)
 

@@ -183,9 +183,14 @@ and Vector{<:Link}.
     - [`check_time_structure`](@ref) to identify time profiles at the highest level that
       are not equivalent to the provided timestructure.
 
-    In addition, all links are directly checked to have in the fields `:from` and `:to` nodes
-    that are present in the Node vector as extracted through the function [`get_nodes`](@ref)
-    and that these nodes have input (`:to`) or output (`:from`).
+    In addition, all links are directly checked:
+
+    - The nodes in the fields `:from` and `:to` are present in the Node vector as extracted
+      through the function [`get_nodes`](@ref).
+    - The node in the field `:from` has output and the node in the field `:to` has input.
+    - The [`inputs`](@ref) of the link are included in the [`outputs`](@ref) of the `:from`
+      node and the [`outputs`](@ref) of the link are included in the [`inputs`](@ref) of the
+      `:to` node.
 """
 function check_elements(
     log_by_element,
@@ -238,17 +243,29 @@ function check_elements(
             "the link would not be utilized in the model."
         )
         @assert_or_log(
+            has_output(l.from),
+            "The node in the field `:from` does not allow for outputs."
+        )
+        @assert_or_log(
+            all(p_in ∈ outputs(l.from) for p_in ∈ inputs(l)),
+            "Not all resources specifed as `inputs` of the link are specified as `outputs` " *
+            "of the node in the field `:from`. As a consequence, the link could potentially " *
+            "be not utilized in the model."
+        )
+        @assert_or_log(
             l.to ∈ 𝒩,
             "The node in the field `:to` is not included in the Node vector. As a consequence," *
             "the link would not be utilized in the model."
         )
         @assert_or_log(
-            has_output(l.from),
-            "The node in the field `:from` does not allow for outputs."
-        )
-        @assert_or_log(
             has_input(l.to),
             "The node in the field `:to` does not allow for inputs."
+        )
+        @assert_or_log(
+            all(p_out ∈ inputs(l.to) for p_out ∈ outputs(l)),
+            "Not all resources specifed as `outputs` of the link are specified as `inputs` " *
+            "of the node in the field `:to`. As a consequence, the link could potentially " *
+            "not be utilized in the model."
         )
 
         # Check the links, the link data, and the time structure
@@ -985,17 +1002,29 @@ function check_node_data(
 end
 
 """
-    check_link(n::Link, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+    check_link(l::Link, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
+    check_link(l::Direct, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
 Check that the fields of a [`Link`](@ref) corresponds to required structure. The default
 functionality does not check anthing, aside from the checks performed in [`check_elements`](@ref).
+
+## Checks `Direct`
+- The functions [`inputs`](@ref) and [`outputs`](@ref) must be non-empty.
 
 !!! tip "Creating a new link type"
     When developing a new link with new checks, it is important to create a new method for
     `check_link`.
 """
-check_link(n::Link, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) = nothing
+check_link(l::Link, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool) = nothing
+function check_link(l::Direct, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 
+    @assert_or_log(
+        !isempty(link_res(l)),
+        "The functions `inputs` and `outputs` return an empty `Vector`. This implies that " *
+        "the nodes in the fields `:from` and `:to` do not have common `Resources` as " *
+        "`outputs` and `inputs`, respectively. Hence, the link will not be used."
+    )
+end
 """
     check_link_data(l::Link, data::ExtensionData, 𝒯, modeltype::EnergyModel, check_timeprofiles::Bool)
 

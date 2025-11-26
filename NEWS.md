@@ -1,14 +1,20 @@
 # Release notes
 
-## Unversioned
+## Version 0.9.4 (2025-11-26)
 
 ### Bugfixes
 
 * Fix a bug in which field names for the capacities of a `Storage` node resulted in error message for the investment data checks.
 
+### Minor updates
+
+* Added checks
+  * that the `inputs` and `outputs` resources of a `Link` are present in the connected nodes.
+  * that a `Direct` link has actually `inputs` and `outputs`,
+
 ## Version 0.9.3 (2025-10-23)
 
-## Bugfixes
+### Bugfixes
 
 * Fix a bug in which field names for the capacities of a `Storage` node resulted in unconstrained capacities.
 
