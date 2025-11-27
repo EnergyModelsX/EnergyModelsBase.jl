@@ -38,9 +38,26 @@ function EMB.SingleInvData(
     capex::TimeProfile,
     max_inst::TimeProfile,
     inv_mode::Investment,
+    disc_rate::Float64
+)
+    return SingleInvData(NoStartInvData(capex, max_inst, inv_mode, disc_rate))
+end
+function EMB.SingleInvData(
+    capex::TimeProfile,
+    max_inst::TimeProfile,
+    inv_mode::Investment,
     life_mode::LifetimeMode,
 )
     return SingleInvData(NoStartInvData(capex, max_inst, inv_mode, life_mode))
+end
+function EMB.SingleInvData(
+    capex::TimeProfile,
+    max_inst::TimeProfile,
+    inv_mode::Investment,
+    life_mode::LifetimeMode,
+    disc_rate::Float64
+)
+    return SingleInvData(NoStartInvData(capex, max_inst, inv_mode, life_mode, disc_rate))
 end
 function EMB.SingleInvData(
     capex::TimeProfile,
@@ -55,9 +72,30 @@ function EMB.SingleInvData(
     max_inst::TimeProfile,
     initial::TimeProfile,
     inv_mode::Investment,
+    disc_rate::Float64
+)
+    return SingleInvData(StartInvData(capex, max_inst, initial, inv_mode, disc_rate))
+end
+function EMB.SingleInvData(
+    capex::TimeProfile,
+    max_inst::TimeProfile,
+    initial::TimeProfile,
+    inv_mode::Investment,
     life_mode::LifetimeMode,
 )
     return SingleInvData(
         StartInvData(capex, max_inst, initial, inv_mode, life_mode),
+    )
+end
+function EMB.SingleInvData(
+    capex::TimeProfile,
+    max_inst::TimeProfile,
+    initial::TimeProfile,
+    inv_mode::Investment,
+    life_mode::LifetimeMode,
+    disc_rate::Float64
+)
+    return SingleInvData(
+        StartInvData(capex, max_inst, initial, inv_mode, life_mode, disc_rate),
     )
 end
