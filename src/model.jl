@@ -283,9 +283,13 @@ end
     variables_flow_resource(m, ℒ::Vector{<:Link}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel)
     variables_flow_resource(m, 𝒩::Vector{<:Node}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel)
 
-Declaration of flow variables for the differrent resource types.
+Create resource-specific flow variables for links or nodes.
 
-The default method is empty but it is required for multiple dispatch in energy flow models.
+This function is called from [`variables_flow`](@ref) for each subset of resources
+sharing the same type. It can be used to add variables and bounds for specialized
+resource classes while keeping the default flow variables unchanged.
+
+The default methods are empty and intended to be implemented in extension packages.
 """
 function variables_flow_resource(m, ℒ::Vector{<:Link}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel) end
 function variables_flow_resource(m, 𝒩::Vector{<:Node}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel) end
@@ -618,18 +622,16 @@ end
 
 """
     constraints_resource(m, n::Node, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel)
+    constraints_resource(m, l::Link, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel)
 
-Create constraints for the flow of resources through a node for specific resource types.
-The function is empty by default and can be implemented in the extension packages.
+Create constraints for the flow of resources through an [`AbstractElement`](@ref) for
+specific resource types. In `EnergyModelsBase`, this method is provided for
+[`Node`](@ref EnergyModelsBase.Node) and [`Link`](@ref).
+
+The function is empty by default and can be implemented in extension packages.
 """
 function constraints_resource(m, n::Node, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel) end
 
-"""
-    constraints_resource(m, l::Link, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel)
-
-Create constraints for the flow of resources through a link for specific resource types.
-The function is empty by default and can be implemented in the extension packages.
-"""
 function constraints_resource(m, l::Link, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel) end
 
 """
@@ -675,7 +677,13 @@ end
 """
     constraints_couple_resource(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel)
 
-Create constraints for output flowrate and input links.
+Create resource-specific coupling constraints between nodes and links.
+
+This function is called from [`constraints_couple`](@ref) for each subset of resources
+sharing the same type. It can be used to add additional coupling constraints for
+specialized resource classes while keeping the default node-link flow balance unchanged.
+
+The default method is empty and intended to be implemented in extension packages.
 """
 function constraints_couple_resource(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel) end
 
