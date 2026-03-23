@@ -86,15 +86,15 @@ res_em(𝒫::Array{<:Resource}) = filter(is_resource_emit, 𝒫)
 res_em(𝒫::Dict) = filter(p -> is_resource_emit(first(p)), 𝒫)
 
 """
-    res_types(𝒫::Array{<:Resource})
+    res_types(𝒫::Vector{<:Resource})
 
-Return the unique resource types in an Array of resources `𝒫`.
+Return the unique resource types in an Vector of resources `𝒫`.
 """
-res_types(𝒫::Array{<:Resource}) = unique(map(x -> typeof(x), 𝒫))
+res_types(𝒫::Vector{<:Resource}) = unique(map(x -> typeof(x), 𝒫))
 
 """
-    res_types_seg(𝒫::Array{<:Resource})
+    res_types_seg(𝒫::Vector{<:Resource})
 
 Return a Vector-of-Vectors of resources segmented by the sub-types.
 """
-res_types_seg(𝒫::Array{<:Resource}) = [Vector{rt}(filter(x -> isa(x, rt), 𝒫)) for rt in res_types(𝒫)]
+res_types_seg(𝒫::Vector{<:Resource}) = [Vector{rt}(filter(x -> isa(x, rt), 𝒫)) for rt in res_types(𝒫)]

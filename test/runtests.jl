@@ -21,6 +21,10 @@ ENV["EMB_TEST"] = true # Set flag for example scripts to check if they are run a
         include("test_data.jl")
     end
 
+    @testset "Base | Resource" begin
+        include("test_resource.jl")
+    end
+
     @testset "Base | Node" begin
         include("test_nodes.jl")
     end
