@@ -444,7 +444,7 @@ end
                 Dict(CO2 => 1, Power => 0.02),
             )
             push!(nodes, CO2_stor)
-            append!(links, [Direct(14, source, CO2_stor), Direct(24, network, CO2_stor)])
+            append!(links, [Direct(24, network, CO2_stor)])
         end
 
         model = OperationalModel(

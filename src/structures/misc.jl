@@ -6,7 +6,7 @@ limiting the potential entries to the fields of [`PreviousPeriods`](@ref) and
 NothingPeriod = Union{Nothing,TS.TimePeriod,TS.TimeStructure{T}} where {T}
 
 """
-    PreviousPeriods{S<:NothingPeriod, T<:NothingPeriod, U<:NothingPeriod}
+    struct PreviousPeriods{S<:NothingPeriod, T<:NothingPeriod, U<:NothingPeriod}
 
 Contains the previous strategic, representative, and operational period used through the
 application of the `with_prev` iterator developed in `TimeStruct`.
@@ -42,7 +42,7 @@ Extracts the previous operational period (field `op`) from a [`PreviousPeriods`]
 op_per(prev_periods::PreviousPeriods) = prev_periods.op
 
 """
-    CyclicPeriods{S<:NothingPeriod}
+    struct CyclicPeriods{S<:NothingPeriod}
 
 Contains information for calculating the cyclic constraints. The parameter `S` should be
 either an `AbstractStrategicPeriod` or `AbstractRepresentativePeriod`.

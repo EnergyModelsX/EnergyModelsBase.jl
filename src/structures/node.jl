@@ -1,4 +1,8 @@
-""" `Node` as supertype for all technologies."""
+"""
+    abstract type Node <: AbstractElement
+
+A supertype for all technologies that convert a stream to another.
+"""
 abstract type Node <: AbstractElement end
 Base.show(io::IO, n::Node) = print(io, "n_$(n.id)")
 

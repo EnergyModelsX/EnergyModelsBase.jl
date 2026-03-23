@@ -1,4 +1,3 @@
-
 @testset "create_model" begin
     """
         simple_graph()

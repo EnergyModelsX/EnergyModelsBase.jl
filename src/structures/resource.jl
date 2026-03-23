@@ -1,11 +1,13 @@
 """
+    abstract type Resource
+
 General resource supertype to be used for the declaration of subtypes.
 """
 abstract type Resource end
 Base.show(io::IO, r::Resource) = print(io, "$(r.id)")
 
 """
-    ResourceEmit{T<:Real} <: Resource
+    struct ResourceEmit{T<:Real} <: Resource
 
 Resources that can be emitted (*e.g.*, CO₂, CH₄, NOₓ).
 
@@ -22,7 +24,7 @@ struct ResourceEmit{T<:Real} <: Resource
 end
 
 """
-    ResourceCarrier{T<:Real} <: Resource
+    struct ResourceCarrier{T<:Real} <: Resource
 
 Resources that can be transported and converted.
 These resources **cannot** be included as resources that are emitted, *e.g*, in the variable

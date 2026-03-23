@@ -11,7 +11,7 @@ Data = ExtensionData
 struct EmptyData <: ExtensionData end
 
 """
-    EmissionsData{T<:Union{TimeProfile,Float64}} <: ExtensionData
+    abstract type EmissionsData{T<:Union{TimeProfile,Float64}} <: ExtensionData
 
 Abstract type for `EmissionsData` can be used to dispatch on different types of
 capture configurations.
@@ -35,9 +35,17 @@ In general, the different types require the following input:
 """
 abstract type EmissionsData{T<:Union{TimeProfile,Float64}} <: ExtensionData end
 """
-    CaptureData{T} <: EmissionsData{T}
+    abstract type CaptureData{T} <: EmissionsData{T}
 
 Supertype for all `EmissionsData` that include CO₂ capture.
+
+# Types
+- **[`CaptureProcessEnergyEmissions`](@ref)**: Capture both the process emissions and the
+  energy usage related emissions.
+- **[`CaptureProcessEmissions`](@ref)**: Capture the process emissions, but not the
+  energy usage related emissions.
+- **[`CaptureEnergyEmissions`](@ref)**: Capture the energy usage related emissions, but not
+  the process emissions. Does not require `emissions` as input.
 """
 abstract type CaptureData{T} <: EmissionsData{T} end
 
@@ -172,14 +180,14 @@ process_emissions(data::EmissionsEnergy{T}, p::ResourceEmit, t) where {T} =
     the function `process_emissions`.")
 
 """
-    InvestmentData <: ExtensionData
+    abstract type InvestmentData <: ExtensionData
 
 Abstract type for the extra data for investing in technologies.
 """
 abstract type InvestmentData <: ExtensionData end
 
 """
-    StorageInvData <: InvestmentData
+    struct StorageInvData <: InvestmentData
 
 Extra investment data for storage investments. The extra investment data for storage
 investments can, but does not require investment data for the charge capacity of the storage
@@ -198,7 +206,7 @@ Hence, the names of the parameters have to be specified.
 abstract type StorageInvData <: InvestmentData end
 
 """
-    SingleInvData <: InvestmentData
+    struct SingleInvData <: InvestmentData
 
 Extra investment data for type investments. The extra investment data has only a single
 field in which `AbstractInvData` has to be added.

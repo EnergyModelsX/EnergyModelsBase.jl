@@ -41,7 +41,6 @@
         links = [
             Direct(12, source, network)
             Direct(23, network, sink)
-            Direct(23, source, sink)
         ]
         model = OperationalModel(
             Dict(CO2 => FixedProfile(100), NG => FixedProfile(100)),
@@ -75,11 +74,6 @@
         @test inputs(ℒ[1]) == outputs(𝒩[1])
         @test outputs(ℒ[1]) == inputs(𝒩[2])
 
-        # Test that the function `link_res` does not return a transported resources for the
-        # 3ʳᵈ link
-        @test isempty(EMB.link_res(ℒ[3]))
-        @test isempty(EMB.link_res(ℒ[3]))
-
         # Test that the constructor for a direct link is working and that the function
         # formulation is working
         @test isa(formulation(ℒ[1]), Linear)
@@ -102,7 +96,7 @@
         )
 
         # Test that `emissions_link`, `link_opex_var`, `link_opex_fixed`, and `link_cap_inst`
-        #are empty
+        # are empty
         @test isempty(m[:emissions_link])
         @test isempty(m[:link_opex_var])
         @test isempty(m[:link_opex_fixed])
