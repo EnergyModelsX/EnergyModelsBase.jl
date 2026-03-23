@@ -39,7 +39,7 @@ op_number = length(op_duration)
 operational_periods = SimpleTimes(op_number, op_duration)
 
 # output
-SimpleTimes{Int64}(11, [4, 2, 1, 1, 2, 4, 2, 1, 1, 2, 4])
+SimpleTimes{Int64}(11, [4, 2, 1, 1, 2, 4, 2, 1, 1, 2, 4], 24)
 ```
 
 In this case, we model the day not with hourly resolution, but only have hourly resolution in the morning and afternoon.
@@ -60,7 +60,7 @@ Instead, one can also write
 operational_periods = SimpleTimes(op_duration)
 
 # output
-SimpleTimes{Int64}(11, [4, 2, 1, 1, 2, 4, 2, 1, 1, 2, 4])
+SimpleTimes{Int64}(11, [4, 2, 1, 1, 2, 4, 2, 1, 1, 2, 4], 24)
 ```
 
 and a constructor will automatically deduce that there have to be 11 operational periods.

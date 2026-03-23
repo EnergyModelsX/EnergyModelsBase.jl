@@ -646,6 +646,7 @@ function constraints_couple(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫, 
     for n ∈ 𝒩
         ℒᶠʳᵒᵐ, ℒᵗᵒ = link_sub(ℒ, n)
 
+        # Constraint for output flowrate and input links.
         if has_output(n)
             @constraint(m, [t ∈ 𝒯, p ∈ outputs(n)],
                 m[:flow_out][n, t, p] ==
@@ -653,6 +654,7 @@ function constraints_couple(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫, 
             )
         end
 
+        # Constraint for input flowrate and output links.
         if has_input(n)
             @constraint(m, [t ∈ 𝒯, p ∈ inputs(n)],
                 m[:flow_in][n, t, p] ==
@@ -991,7 +993,7 @@ available node except if one wants to include as well transport between differen
 function create_node(m, n::Availability, 𝒯, 𝒫, modeltype::EnergyModel)
 
     @constraint(m, [t ∈ 𝒯, p ∈ inputs(n)],
-            m[:flow_in][n, t, p] == m[:flow_out][n, t, p]
+        m[:flow_in][n, t, p] == m[:flow_out][n, t, p]
     )
 end
 
@@ -1015,17 +1017,17 @@ function create_link(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel)
     )
     return create_link(m, 𝒯, 𝒫, l, modeltype, formulation(l))
 end
-function create_link(m, l::Direct, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel)
+function create_link(m, l::Direct, 𝒯, 𝒫, modeltype::EnergyModel)
 
     @constraint(m, [t ∈ 𝒯, p ∈ link_res(l)],
-    m[:link_out][l, t, p] == m[:link_in][l, t, p]
+        m[:link_out][l, t, p] == m[:link_in][l, t, p]
     )
 end
-function create_link(m, l::Link, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel, formulation::Formulation)
+function create_link(m, 𝒯, 𝒫, l::Link, modeltype::EnergyModel, formulation::Formulation)
     
     # Generic link in which each output corresponds to the input
     @constraint(m, [t ∈ 𝒯, p ∈ link_res(l)],
-    m[:link_out][l, t, p] == m[:link_in][l, t, p]
+        m[:link_out][l, t, p] == m[:link_in][l, t, p]
     )
     
     # Call of the function for limiting the capacity to the maximum installed capacity
