@@ -981,7 +981,7 @@ function create_node(m, n::Sink, 𝒯, 𝒫, modeltype::EnergyModel)
 end
 
 """
-    create_node(m, n::Availability, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel)
+    create_node(m, n::Availability, 𝒯, 𝒫, modeltype::EnergyModel)
 
 Set all constraints for a `Availability`. Can serve as fallback option for all unspecified
 subtypes of `Availability`.
@@ -992,6 +992,7 @@ available node except if one wants to include as well transport between differen
 """
 function create_node(m, n::Availability, 𝒯, 𝒫, modeltype::EnergyModel)
 
+    # Mass/energy balance constraints for an availability node.
     @constraint(m, [t ∈ 𝒯, p ∈ inputs(n)],
         m[:flow_in][n, t, p] == m[:flow_out][n, t, p]
     )
@@ -1018,18 +1019,17 @@ function create_link(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel)
     return create_link(m, 𝒯, 𝒫, l, modeltype, formulation(l))
 end
 function create_link(m, l::Direct, 𝒯, 𝒫, modeltype::EnergyModel)
-
+    # Generic link in which each output corresponds to the input
     @constraint(m, [t ∈ 𝒯, p ∈ link_res(l)],
         m[:link_out][l, t, p] == m[:link_in][l, t, p]
     )
 end
 function create_link(m, 𝒯, 𝒫, l::Link, modeltype::EnergyModel, formulation::Formulation)
-    
     # Generic link in which each output corresponds to the input
     @constraint(m, [t ∈ 𝒯, p ∈ link_res(l)],
         m[:link_out][l, t, p] == m[:link_in][l, t, p]
     )
-    
+
     # Call of the function for limiting the capacity to the maximum installed capacity
     if has_capacity(l)
         constraints_capacity_installed(m, l, 𝒯, modeltype)
