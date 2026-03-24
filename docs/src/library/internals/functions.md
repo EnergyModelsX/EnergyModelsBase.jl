@@ -100,5 +100,5 @@ res_sub
 collect_types
 sort_types
 res_types
-res_types_seg
+res_types_vec
 ```

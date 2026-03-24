@@ -58,6 +58,7 @@ makedocs(
         "How to" => Any[
             "Create a new element"=>"how-to/create_new_element.md",
             "Create a new node"=>"how-to/create-new-node.md",
+            "Extend resource functionality"=>"how-to/extend-resource-functionality.md",
             "Utilize TimeStruct"=>"how-to/utilize-timestruct.md",
             "Update models"=>"how-to/update-models.md",
             "Contribute to EnergyModelsBase"=>"how-to/contribute.md",

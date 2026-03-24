@@ -95,8 +95,8 @@ Return the unique resource types in an Vector of resources `𝒫`.
 res_types(𝒫::Vector{<:Resource}) = unique(map(x -> typeof(x), 𝒫))
 
 """
-    res_types_seg(𝒫::Vector{<:Resource})
+    res_types_vec(𝒫::Vector{<:Resource})
 
-Return a Vector-of-Vectors of resources segmented by the sub-types.
+Return a Vector-of-Vectors of resources by the concrete sub-types, if the input is empty it returns an empty Vector.
 """
-res_types_seg(𝒫::Vector{<:Resource}) = [Vector{rt}(filter(x -> isa(x, rt), 𝒫)) for rt in res_types(𝒫)]
+res_types_vec(𝒫::Vector{<:Resource}) = [Vector{rt}(filter(x -> isa(x, rt), 𝒫)) for rt in res_types(𝒫)]

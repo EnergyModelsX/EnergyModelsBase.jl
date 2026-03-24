@@ -61,6 +61,7 @@ Depth = 1
 Pages = [
     "how-to/create_new_element.md",
     "how-to/create-new-node.md",
+    "how-to/extend-resource-functionality.md",
     "how-to/utilize-timestruct.md",
     "how-to/update-models.md",
     "how-to/contribute.md",
