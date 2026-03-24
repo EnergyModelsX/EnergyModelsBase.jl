@@ -594,9 +594,8 @@ end
     create_element(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel)
     create_element(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel)
 
-Default fallback method for an element type if no other method is defined for a given type.
-This function calls subfunctions to maintain backwards compatibility and simplify the
-differentiation in extension packages.
+Calls the create functions for the specific elements to add element specific constraints,
+also add resource specific constraints through constraints_resource.
 
 `EnergyModelsBase` provides the user with two element types, [`Link`](@ref) and
 [`Node`](@ref EnergyModelsBase.Node):
