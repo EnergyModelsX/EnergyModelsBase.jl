@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Extend resource functionality · EnergyModelsBase</title><meta name="title" content="Extend resource functionality · EnergyModelsBase"/><meta property="og:title" content="Extend resource functionality · EnergyModelsBase"/><meta property="twitter:title" content="Extend resource functionality · EnergyModelsBase"/><meta name="description" content="Documentation for EnergyModelsBase."/><meta property="og:description" content="Documentation for EnergyModelsBase."/><meta property="twitter:description" content="Documentation for EnergyModelsBase."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">EnergyModelsBase</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Manual</span><ul><li><a class="tocitem" href="../../manual/quick-start/">Quick Start</a></li><li><a class="tocitem" href="../../manual/philosophy/">Philosophy</a></li><li><a class="tocitem" href="../../manual/optimization-variables/">Optimization variables</a></li><li><a class="tocitem" href="../../manual/constraint-functions/">Constraint functions</a></li><li><a class="tocitem" href="../../manual/data-functions/">ExtensionData functions</a></li><li><a class="tocitem" href="../../manual/simple-example/">Example</a></li><li><a class="tocitem" href="../../manual/investments/">Investment options</a></li><li><a class="tocitem" href="../../manual/NEWS/">Release notes</a></li></ul></li><li><span class="tocitem">Nodes</span><ul><li><a class="tocitem" href="../../nodes/source/">Source</a></li><li><a class="tocitem" href="../../nodes/networknode/">NetworkNode</a></li><li><a class="tocitem" href="../../nodes/storage/">Storage</a></li><li><a class="tocitem" href="../../nodes/sink/">Sink</a></li><li><a class="tocitem" href="../../nodes/availability/">Availability</a></li></ul></li><li><span class="tocitem">How to</span><ul><li><a class="tocitem" href="../create_new_element/">Create a new element</a></li><li><a class="tocitem" href="../create-new-node/">Create a new node</a></li><li class="is-active"><a class="tocitem" href>Extend resource functionality</a><ul class="internal"><li><a class="tocitem" href="#how_to-res_funct-concept"><span>Concept</span></a></li><li><a class="tocitem" href="#how_to-res_funct-example"><span>Example</span></a></li></ul></li><li><a class="tocitem" href="../utilize-timestruct/">Utilize TimeStruct</a></li><li><a class="tocitem" href="../update-models/">Update models</a></li><li><a class="tocitem" href="../contribute/">Contribute to EnergyModelsBase</a></li></ul></li><li><span class="tocitem">Library</span><ul><li><input class="collapse-toggle" id="menuitem-5-1" type="checkbox"/><label class="tocitem" for="menuitem-5-1"><span class="docs-label">Public</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../library/public/resources/">Resources</a></li><li><a class="tocitem" href="../../library/public/model_data/">Modeltype and ExtensionData</a></li><li><a class="tocitem" href="../../library/public/nodes/">Nodes</a></li><li><a class="tocitem" href="../../library/public/links/">Links</a></li><li><a class="tocitem" href="../../library/public/case_element/">Case</a></li><li><a class="tocitem" href="../../library/public/functions/">Functions</a></li><li><a class="tocitem" href="../../library/public/misc/">Miscellaneous</a></li><li><a class="tocitem" href="../../library/public/emi_extension/">EMI extension</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5-2" type="checkbox"/><label class="tocitem" for="menuitem-5-2"><span class="docs-label">Internal</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../library/internals/types/">Types</a></li><li><a class="tocitem" href="../../library/internals/functions/">Functions</a></li><li><a class="tocitem" href="../../library/internals/reference_EMIExt/">EMI extension</a></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">How to</a></li><li class="is-active"><a href>Extend resource functionality</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Extend resource functionality</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/EnergyModelsX/EnergyModelsBase.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/EnergyModelsX/EnergyModelsBase.jl/blob/main/docs/src/how-to/extend-resource-functionality.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="how_to-res_funct"><a class="docs-heading-anchor" href="#how_to-res_funct">Extend resource functionality</a><a id="how_to-res_funct-1"></a><a class="docs-heading-anchor-permalink" href="#how_to-res_funct" title="Permalink"></a></h1><h2 id="how_to-res_funct-concept"><a class="docs-heading-anchor" href="#how_to-res_funct-concept">Concept</a><a id="how_to-res_funct-concept-1"></a><a class="docs-heading-anchor-permalink" href="#how_to-res_funct-concept" title="Permalink"></a></h2><p>This guide shows how to extend resource functionality by adding a custom resource type and connecting it to custom variables and constraints through resource-dispatch functions. This is useful for modelling more complex resource behavior that cannot be captured by the default resource types where the standard behavior is built around energy or mass flow.</p><p>The pattern follows the same structure as the resource dispatch test in <code>test/test_resource.jl</code>:</p><ol><li>Define a resource subtype with extra parameters.</li><li>(Optionally) create a custom node subtype that uses the resource.</li><li>Add resource-specific variables with <a href="../../library/internals/functions/#EnergyModelsBase.variables_flow_resource"><code>variables_flow_resource</code></a>.</li><li>Add resource-specific constraints with <a href="../../library/internals/functions/#EnergyModelsBase.constraints_resource"><code>constraints_resource</code></a>.</li><li>Couple node and link resource variables with <a href="../../library/internals/functions/#EnergyModelsBase.constraints_couple_resource"><code>constraints_couple_resource</code></a>.</li></ol><h2 id="how_to-res_funct-example"><a class="docs-heading-anchor" href="#how_to-res_funct-example">Example</a><a id="how_to-res_funct-example-1"></a><a class="docs-heading-anchor-permalink" href="#how_to-res_funct-example" title="Permalink"></a></h2><p>The following example illustrates the different steps that are required for creating a new resource with additional properties. It defines a <code>PotentialPower</code> resource which has as property a potential with upper and lower bounds in addition to its energy flow. The flow of this potential in and out of junctions follows equality constraints, as opposed to the energy and mass flow which follow sum constraints.</p><p>The notation below follows the same conventions as the implementation and tests:</p><ul><li><code>𝒩</code> for nodes,</li><li><code>ℒ</code> for links,</li><li><code>𝒫</code> for resources,</li><li><code>𝒯</code> for the time structure,</li><li><code>ℒᶠʳᵒᵐ</code>, <code>ℒᵗᵒ</code> for outgoing and incoming links of a node, and</li><li><code>𝒫ᵒᵘᵗ</code>, <code>𝒫ⁱⁿ</code>, <code>𝒫ˡⁱⁿᵏ</code> for resource subsets on outputs, inputs, and links.</li></ul><h3 id="1.-Define-a-special-resource"><a class="docs-heading-anchor" href="#1.-Define-a-special-resource">1. Define a special resource</a><a id="1.-Define-a-special-resource-1"></a><a class="docs-heading-anchor-permalink" href="#1.-Define-a-special-resource" title="Permalink"></a></h3><p>Create a subtype of <a href="../../library/public/resources/#EnergyModelsBase.Resource"><code>Resource</code></a> and keep <code>co2_int</code> as the second field for consistency with existing resource structures. Alternatively, you can create a new method for the internal function <a href="../../library/public/resources/#EnergyModelsBase.co2_int"><code>co2_int</code></a>.</p><pre><code class="language-julia hljs">struct PotentialPower &lt;: Resource
+    id::String
+    co2_int::Float64
+    potential_lower::Float64
+    potential_upper::Float64
+end
+
+EMB.is_resource_emit(::PotentialPower) = false
+lower_limit(p::PotentialPower) = p.potential_lower
+upper_limit(p::PotentialPower) = p.potential_upper</code></pre><h3 id="2.-Define-a-custom-node-(optional)"><a class="docs-heading-anchor" href="#2.-Define-a-custom-node-(optional)">2. Define a custom node (optional)</a><a id="2.-Define-a-custom-node-(optional)-1"></a><a class="docs-heading-anchor-permalink" href="#2.-Define-a-custom-node-(optional)" title="Permalink"></a></h3><p>If your resource needs dedicated node behavior, create a custom node subtype. If the node subtype is parametrized, it can handle different types of resources in different ways without defining multiple node types. In the dispatch test, the custom node is an intermediate <code>NetworkNode</code> with a potential loss, but without a loss in energy flow.</p><pre><code class="language-julia hljs">struct PotentialLossNode{T&lt;:PotentialPower} &lt;: NetworkNode
+    id::Any
+    cap::TimeProfile
+    opex_var::TimeProfile
+    opex_fixed::TimeProfile
+    resource::T
+    input::Dict{&lt;:Resource,&lt;:Real}
+    output::Dict{&lt;:Resource,&lt;:Real}
+    data::Vector{&lt;:ExtensionData}
+    loss_factor::Float64
+end
+
+function PotentialLossNode(
+    id,
+    cap::TimeProfile,
+    opex_var::TimeProfile,
+    opex_fixed::TimeProfile,
+    resource::T,
+    loss_factor::Float64,
+) where {T&lt;:PotentialPower}
+    return PotentialLossNode{T}(
+        id,
+        cap,
+        opex_var,
+        opex_fixed,
+        resource,
+        Dict(resource =&gt; 1.0),
+        Dict(resource =&gt; 1.0),
+        ExtensionData[],
+        loss_factor,
+    )
+end</code></pre><h3 id="3.-Declare-resource-specific-variables"><a class="docs-heading-anchor" href="#3.-Declare-resource-specific-variables">3. Declare resource-specific variables</a><a id="3.-Declare-resource-specific-variables-1"></a><a class="docs-heading-anchor-permalink" href="#3.-Declare-resource-specific-variables" title="Permalink"></a></h3><p>Use <a href="../../library/internals/functions/#EnergyModelsBase.variables_flow_resource"><code>variables_flow_resource</code></a> to create resource variables.</p><p>Important:</p><ul><li>Declare each variable name once.</li><li>Filter <code>𝒩</code> and <code>ℒ</code> down to the subsets that actually use the special resource.</li><li>You can create resource dependent bounds as well.</li></ul><pre><code class="language-julia hljs">function EMB.variables_flow_resource(
+    m,
+    𝒩::Vector{&lt;:EMB.Node},
+    𝒫::Vector{&lt;:PotentialPower},
+    𝒯,
+    modeltype::EnergyModel,
+)
+    𝒩ᵒᵘᵗ = filter(n -&gt; any(p ∈ 𝒫 for p ∈ outputs(n)), 𝒩)
+    𝒩ⁱⁿ = filter(n -&gt; any(p ∈ 𝒫 for p ∈ inputs(n)), 𝒩)
+
+    @variable(m,
+        lower_limit(p) ≤
+            energy_potential_node_out[n ∈ 𝒩ᵒᵘᵗ, 𝒯, p ∈ intersect(outputs(n), 𝒫)] ≤
+        upper_limit(p)
+    )
+    @variable(m,
+        lower_limit(p) ≤
+            energy_potential_node_in[n ∈ 𝒩ⁱⁿ, 𝒯, p ∈ intersect(inputs(n), 𝒫)] ≤
+        upper_limit(p)
+    )
+end
+
+function EMB.variables_flow_resource(
+    m,
+    ℒ::Vector{&lt;:Link},
+    𝒫::Vector{&lt;:PotentialPower},
+    𝒯,
+    modeltype::EnergyModel,
+)
+    ℒᵉᵖ = filter(l -&gt; any(p ∈ 𝒫 for p ∈ EMB.link_res(l)), ℒ)
+    @variable(m, energy_potential_link_in[ℒᵉᵖ, 𝒯, 𝒫])
+    @variable(m, energy_potential_link_out[ℒᵉᵖ, 𝒯, 𝒫])
+end</code></pre><h3 id="4.-Add-resource-specific-constraints"><a class="docs-heading-anchor" href="#4.-Add-resource-specific-constraints">4. Add resource-specific constraints</a><a id="4.-Add-resource-specific-constraints-1"></a><a class="docs-heading-anchor-permalink" href="#4.-Add-resource-specific-constraints" title="Permalink"></a></h3><p>Create a new method <a href="../../library/internals/functions/#EnergyModelsBase.constraints_resource"><code>constraints_resource</code></a> for custom node or link behavior. These methods can be either for the complete set of <a href="../../library/internals/types/#EnergyModelsBase.Node"><code>Node</code></a> and <a href="../../library/public/links/#EnergyModelsBase.Link"><code>Link</code></a>s or alternatively for only a specified subset of nodes. If you only specify it for a subset of nodes, it is important that the new resource is only an <code>input</code> or <code>output</code> of this subset.</p><pre><code class="language-julia hljs">function EMB.constraints_resource(
+    m,
+    n::PotentialLossNode,
+    𝒯,
+    𝒫::Vector{&lt;:PotentialPower},
+    modeltype::EnergyModel,
+)
+    𝒫ᵒᵘᵗ = filter(p -&gt; p ∈ 𝒫, outputs(n))
+    𝒫ⁱⁿ = filter(p -&gt; p ∈ 𝒫, inputs(n))
+
+    @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵒᵘᵗ],
+        m[:energy_potential_node_out][n, t, p] ==
+            n.loss_factor * m[:energy_potential_node_in][n, t, p]
+    )
+end
+
+function EMB.constraints_resource(
+    m,
+    l::Link,
+    𝒯,
+    𝒫::Vector{&lt;:PotentialPower},
+    modeltype::EnergyModel,
+)
+    𝒫ˡⁱⁿᵏ = filter(p -&gt; p ∈ 𝒫, EMB.link_res(l))
+    @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ˡⁱⁿᵏ],
+        m[:energy_potential_link_in][l, t, p] ==
+            m[:energy_potential_link_out][l, t, p]
+    )
+end</code></pre><h3 id="5.-Couple-node-and-link-variables"><a class="docs-heading-anchor" href="#5.-Couple-node-and-link-variables">5. Couple node and link variables</a><a id="5.-Couple-node-and-link-variables-1"></a><a class="docs-heading-anchor-permalink" href="#5.-Couple-node-and-link-variables" title="Permalink"></a></h3><p>Use <a href="../../library/internals/functions/#EnergyModelsBase.constraints_couple_resource"><code>constraints_couple_resource</code></a> to connect node and link resource variables.</p><pre><code class="language-julia hljs">function EMB.constraints_couple_resource(
+    m,
+    𝒩::Vector{&lt;:EMB.Node},
+    ℒ::Vector{&lt;:Link},
+    𝒫::Vector{&lt;:PotentialPower},
+    𝒯,
+    modeltype::EnergyModel,
+)
+    for n ∈ 𝒩
+        ℒᶠʳᵒᵐ, ℒᵗᵒ = EMB.link_sub(ℒ, n)
+        𝒫ᵒᵘᵗ = filter(p -&gt; p ∈ 𝒫, outputs(n))
+        𝒫ⁱⁿ = filter(p -&gt; p ∈ 𝒫, inputs(n))
+
+        @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ᵒᵘᵗ, l ∈ ℒᶠʳᵒᵐ],
+            m[:energy_potential_node_out][n, t, p] ==
+                m[:energy_potential_link_in][l, t, p]
+        )
+
+        @constraint(m, [t ∈ 𝒯, p ∈ 𝒫ⁱⁿ, l ∈ ℒᵗᵒ],
+            m[:energy_potential_link_out][l, t, p] ==
+                m[:energy_potential_node_in][n, t, p]
+        )
+    end
+end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../create-new-node/">« Create a new node</a><a class="docs-footer-nextpage" href="../utilize-timestruct/">Utilize TimeStruct »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Wednesday 25 March 2026 14:03">Wednesday 25 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
