@@ -1,10 +1,17 @@
 # Release notes
 
-## Unversioned
+## Version 0.9.5 (2026-03-25)
 
-* New functions (`variables_flow_resource()`, `constraints_resource()`,  `constraints_couple_resource()`) that dispatch on resource types, which allow for creation of new resource-specific variables and constraints in extension packages.
-* New function to indentify the unique resource types of a vector of resources
-* New function that segments the vector of resources into sub-vectors based on each resource type
+### Minor updates
+
+* Minor updates in the documentation.
+
+### Support for resource specific variables and constraints
+
+* New functions (`variables_flow_resource()`, `constraints_resource()`,  `constraints_couple_resource()`) that dispatch on resource types.
+* New function to indentify the unique resource types of a vector of resources.
+* New function that segments the vector of resources into sub-vectors based on each resource type.
+* This allows for creation of new resource-specific variables and constraints in extension packages.
 
 ## Version 0.9.4 (2025-11-26)
 
