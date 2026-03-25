@@ -88,10 +88,10 @@ has_capacity(l::Link) = false
 """
     has_opex(l::Link)
 
-Checks whether link `l` has operational expenses.
+Checks whether link `l` has operating expenses.
 
-By default, links do not have operational expenses. You must dispatch on this function if
-you want to introduce links with operational expenses.
+By default, links do not have operating expenses. You must dispatch on this function if
+you want to introduce links with operating expenses.
 """
 has_opex(l::Link) = false
 

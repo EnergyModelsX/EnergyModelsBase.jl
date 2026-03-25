@@ -304,7 +304,6 @@ The default methods are empty and intended to be implemented in extension packag
 function variables_flow_resource(m, ℒ::Vector{<:Link}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel) end
 function variables_flow_resource(m, 𝒩::Vector{<:Node}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel) end
 
-
 """
     variables_opex(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
     variables_opex(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
@@ -641,7 +640,6 @@ specific resource types. In `EnergyModelsBase`, this method is provided for
 The function is empty by default and can be implemented in extension packages.
 """
 function constraints_resource(m, n::Node, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel) end
-
 function constraints_resource(m, l::Link, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel) end
 
 """
@@ -789,7 +787,7 @@ end
     objective_operational(m, 𝒳, 𝒯ᴵⁿᵛ::TS.AbstractStratPers, modeltype::EnergyModel)
 
 Create JuMP expressions indexed over the investment periods `𝒯ᴵⁿᵛ` for different elements 𝒳.
-The expressions correspond to the operational expenses of the different elements.
+The expressions correspond to the operating expenses of the different elements.
 The expressions are not discounted and do not take the duration of the investment periods
 into account.
 
