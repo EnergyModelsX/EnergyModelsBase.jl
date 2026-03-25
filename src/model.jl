@@ -282,7 +282,7 @@ function variables_flow(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, model
     end
 
     # Create new flow variables for specific resource types
-    for p_sub in res_types_vec(𝒫)
+    for p_sub ∈ res_types_vec(𝒫)
         variables_flow_resource(m, ℒ, p_sub, 𝒯, modeltype)
     end
 end
@@ -615,7 +615,7 @@ function create_element(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel)
 
     # Constraints based on the resource types
     node_resources = Vector{Resource}(unique(vcat(inputs(n), outputs(n))))
-    for 𝒫ˢᵘᵇ in res_types_vec(node_resources)
+    for 𝒫ˢᵘᵇ ∈ res_types_vec(node_resources)
         constraints_resource(m, n, 𝒯, 𝒫ˢᵘᵇ, modeltype)
     end
 end
@@ -625,7 +625,7 @@ function create_element(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel)
     create_link(m, l, 𝒯, 𝒫, modeltype)
 
     # Constraints based on the resource types
-    for 𝒫ˢᵘᵇ in res_types_vec(link_res(l))
+    for 𝒫ˢᵘᵇ ∈ res_types_vec(link_res(l))
         constraints_resource(m, l, 𝒯, 𝒫ˢᵘᵇ, modeltype)
     end
 end
@@ -676,7 +676,7 @@ function constraints_couple(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫, 
     end
 
     # Create new constraints for specific resource types
-    for p_sub in res_types_vec(𝒫)
+    for p_sub ∈ res_types_vec(𝒫)
         constraints_couple_resource(m, 𝒩, ℒ, p_sub, 𝒯, modeltype)
     end
 end
