@@ -203,12 +203,13 @@ function variables_capacity(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modelty
 end
 
 """
+    variables_flow(m, 𝒳::Vector{<:AbstractElement}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
     variables_flow(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
     variables_flow(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
 
-Declaration of flow OPEX variables for the element types introduced in
-`EnergyModelsBase`. `EnergyModelsBase` introduces two elements for an energy system, and
-hence, provides the user with two individual methods:
+Declaration of flow variables for the element types introduced in `EnergyModelsBase`.
+`EnergyModelsBase` introduces two elements for an energy system, and hence, provides the
+user with two individual methods:
 
 !!! note "Node variables"
     - `flow_in[n, t, p]` is the flow _**into**_ node `n` in operational period `t` for
@@ -217,6 +218,8 @@ hence, provides the user with two individual methods:
     - `flow_out[n, t, p]` is the flow _**from**_ node `n` in operational period `t`
       for resource `p`. The outflow resources of node `n` are extracted using the
       function [`outputs`](@ref).
+    - call of the function [`variables_flow_resource`](@ref) for introducing resource
+      specific flow variables.
 
 !!! tip "Link variables"
     - `link_in[l, t, p]` is the flow _**into**_ link `l` in operational period `t` for
@@ -225,10 +228,15 @@ hence, provides the user with two individual methods:
     - `link_out[l, t, p]` is the flow _**from**_ link `l` in operational period `t`
       for resource `p`. The outflow resources of link `l` are extracted using the
       function [`outputs`](@ref).
+    - call of the function [`variables_flow_resource`](@ref) for introducing resource
+      specific flow variables.
 
 By default, all nodes `𝒩` and links `ℒ` only allow for unidirectional flow. You can specify
 bidirectional flow through providing a method to the function [`is_unidirectional`](@ref)
 for new link/node types.
+
+The fallback solution for `𝒳::Vector{<:AbstractElement}` is in the current stage included
+to maintain backwards compatibility for packages that introduce additional [`AbstractElement`](@ref)s.
 """
 function variables_flow(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
     # Extract the nodes with inputs and outputs
@@ -251,7 +259,7 @@ function variables_flow(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, mode
     end
 
     # Create new flow variables for specific resource types
-    for p_sub in res_types_vec(𝒫)
+    for p_sub ∈ res_types_vec(𝒫)
         variables_flow_resource(m, 𝒩, p_sub, 𝒯, modeltype)
     end
 
@@ -278,11 +286,8 @@ function variables_flow(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, model
         variables_flow_resource(m, ℒ, p_sub, 𝒯, modeltype)
     end
 end
-
-# 5-parameter backward compatibility wrapper (for extension packages with old signature)
-function variables_flow(m, 𝒳::Vector{<:AbstractElement}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
-    variables_flow(m, 𝒳, 𝒳ᵛᵉᶜ, Resource[], 𝒯, modeltype)
-end
+variables_flow(m, 𝒳::Vector{<:AbstractElement}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel) =
+    variables_flow(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, modeltype)
 
 """
     variables_flow_resource(m, ℒ::Vector{<:Link}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel)
@@ -594,8 +599,9 @@ end
     create_element(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel)
     create_element(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel)
 
-Calls the create functions for the specific elements to add element specific constraints,
-also add resource specific constraints through constraints_resource.
+Calls the create functions for the specific elements to add element specific constraints (by
+calling individual subfunctions) and add resource specific constraints by calling
+[`constraints_resource`](@ref).
 
 `EnergyModelsBase` provides the user with two element types, [`Link`](@ref) and
 [`Node`](@ref EnergyModelsBase.Node):
@@ -604,7 +610,7 @@ also add resource specific constraints through constraints_resource.
 - `Link` - the subfunction is [`create_link`](@ref).
 """
 function create_element(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel)
-    
+
     create_node(m, n, 𝒯, 𝒫, modeltype)
 
     # Constraints based on the resource types
