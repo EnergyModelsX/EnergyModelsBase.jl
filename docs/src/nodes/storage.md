@@ -7,7 +7,7 @@ As a consequence, a new abstract type is specified.
 ## [Philosophy of Storage nodes](@id nodes-storage-phil)
 
 [`Storage`](@ref) nodes differ from the other nodes as they are designed per default as *[parametric types](https://docs.julialang.org/en/v1/manual/types/#man-parametric-composite-types)* using the concept of [`EnergyModelsBase.StorageBehavior`](@ref).
-In addition, capacities and operational expenses are not included at the first level of the composite type, but instead on a lower level.
+In addition, capacities and operating expenses are not included at the first level of the composite type, but instead on a lower level.
 
 ### [Parametric implementation](@id nodes-storage-phil-parametric)
 
@@ -106,7 +106,7 @@ with square brackets, while functions are represented as
 
 ``func\_example(index_1, index_2)``
 
-with paranthesis.
+with parantheses.
 
 ### [Variables](@id nodes-storage-math-var)
 

@@ -448,9 +448,9 @@ has_capacity(n::Availability) = false
 """
     has_opex(n::Node)
 
-Checks whether node `n` has operational expenses.
+Checks whether node `n` has operating expenses.
 
-By default, all nodes except for [`Availability`](@ref) nodes do have operational expenses.
+By default, all nodes except for [`Availability`](@ref) nodes do have operating expenses.
 """
 has_opex(n::Node) = true
 has_opex(n::Availability) = false

@@ -16,7 +16,7 @@ The fields of a [`RefNetworkNode`](@ref) are given as:
   If the node should contain investments through the application of [`EnergyModelsInvestments`](https://energymodelsx.github.io/EnergyModelsInvestments.jl/), it is important to note that you can only use `FixedProfile` or `StrategicProfile` for the capacity, but not `RepresentativeProfile` or `OperationalProfile`.
   In addition, all values have to be non-negative.
 - **`opex_var::TimeProfile`**:\
-  The variable operational expenses are based on the capacity utilization through the variable [`:cap_use`](@ref man-opt_var-cap).
+  The variable operating expenses are based on the capacity utilization through the variable [`:cap_use`](@ref man-opt_var-cap).
   Hence, it is directly related to the specified `input` and `output` ratios.
   The variable operating expenses can be provided as `OperationalProfile` as well.
 - **`opex_fixed::TimeProfile`**:\
@@ -54,7 +54,7 @@ with square brackets, while functions are represented as
 
 ``func\_example(index_1, index_2)``
 
-with paranthesis.
+with parantheses.
 
 ### [Variables](@id nodes-network_node-math-var)
 
