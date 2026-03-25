@@ -60,7 +60,7 @@ function create_model(
     # Declaration of element variables and constraints of the problem
     for 𝒳 ∈ 𝒳ᵛᵉᶜ
         variables_capacity(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, modeltype)
-        variables_flow(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, modeltype)
+        variables_flow(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype)
         variables_opex(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, modeltype)
         variables_capex(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, modeltype)
         variables_emission(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype)
@@ -203,12 +203,13 @@ function variables_capacity(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modelty
 end
 
 """
+    variables_flow(m, 𝒳::Vector{<:AbstractElement}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
     variables_flow(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
     variables_flow(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
 
-Declaration of flow OPEX variables for the element types introduced in
-`EnergyModelsBase`. `EnergyModelsBase` introduces two elements for an energy system, and
-hence, provides the user with two individual methods:
+Declaration of flow variables for the element types introduced in `EnergyModelsBase`.
+`EnergyModelsBase` introduces two elements for an energy system, and hence, provides the
+user with two individual methods:
 
 !!! note "Node variables"
     - `flow_in[n, t, p]` is the flow _**into**_ node `n` in operational period `t` for
@@ -217,6 +218,8 @@ hence, provides the user with two individual methods:
     - `flow_out[n, t, p]` is the flow _**from**_ node `n` in operational period `t`
       for resource `p`. The outflow resources of node `n` are extracted using the
       function [`outputs`](@ref).
+    - call of the function [`variables_flow_resource`](@ref) for introducing resource
+      specific flow variables.
 
 !!! tip "Link variables"
     - `link_in[l, t, p]` is the flow _**into**_ link `l` in operational period `t` for
@@ -225,12 +228,17 @@ hence, provides the user with two individual methods:
     - `link_out[l, t, p]` is the flow _**from**_ link `l` in operational period `t`
       for resource `p`. The outflow resources of link `l` are extracted using the
       function [`outputs`](@ref).
+    - call of the function [`variables_flow_resource`](@ref) for introducing resource
+      specific flow variables.
 
 By default, all nodes `𝒩` and links `ℒ` only allow for unidirectional flow. You can specify
 bidirectional flow through providing a method to the function [`is_unidirectional`](@ref)
 for new link/node types.
+
+The fallback solution for `𝒳::Vector{<:AbstractElement}` is in the current stage included
+to maintain backwards compatibility for packages that introduce additional [`AbstractElement`](@ref)s.
 """
-function variables_flow(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
+function variables_flow(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
     # Extract the nodes with inputs and outputs
     𝒩ⁱⁿ = filter(has_input, 𝒩)
     𝒩ᵒᵘᵗ = filter(has_output, 𝒩)
@@ -249,8 +257,14 @@ function variables_flow(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype:
     for n_out ∈ 𝒩ᵒᵘᵗ⁻ᵘⁿⁱ, t ∈ 𝒯, p ∈ outputs(n_out)
         set_lower_bound(m[:flow_out][n_out, t, p], 0)
     end
+
+    # Create new flow variables for specific resource types
+    for p_sub ∈ res_types_vec(𝒫)
+        variables_flow_resource(m, 𝒩, p_sub, 𝒯, modeltype)
+    end
+
 end
-function variables_flow(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
+function variables_flow(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
     # Create the link flow variables
     @variable(m, link_in[l ∈ ℒ, 𝒯, inputs(l)])
     @variable(m, link_out[l ∈ ℒ, 𝒯, outputs(l)])
@@ -266,7 +280,30 @@ function variables_flow(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::
             set_lower_bound(m[:link_out][l, t, p], 0)
         end
     end
+
+    # Create new flow variables for specific resource types
+    for p_sub ∈ res_types_vec(𝒫)
+        variables_flow_resource(m, ℒ, p_sub, 𝒯, modeltype)
+    end
 end
+variables_flow(m, 𝒳::Vector{<:AbstractElement}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel) =
+    variables_flow(m, 𝒳, 𝒳ᵛᵉᶜ, 𝒯, modeltype)
+
+"""
+    variables_flow_resource(m, ℒ::Vector{<:Link}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel)
+    variables_flow_resource(m, 𝒩::Vector{<:Node}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel)
+
+Create resource-specific flow variables for links or nodes.
+
+This function is called from [`variables_flow`](@ref) for each subset of resources
+sharing the same type. It can be used to add variables and bounds for specialized
+resource classes while keeping the default flow variables unchanged.
+
+The default methods are empty and intended to be implemented in extension packages.
+"""
+function variables_flow_resource(m, ℒ::Vector{<:Link}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel) end
+function variables_flow_resource(m, 𝒩::Vector{<:Node}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel) end
+
 
 """
     variables_opex(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel)
@@ -562,9 +599,9 @@ end
     create_element(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel)
     create_element(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel)
 
-Default fallback method for an element type if no other method is defined for a given type.
-This function calls subfunctions to maintain backwards compatibility and simplify the
-differentiation in extension packages.
+Calls the create functions for the specific elements to add element specific constraints (by
+calling individual subfunctions) and add resource specific constraints by calling
+[`constraints_resource`](@ref).
 
 `EnergyModelsBase` provides the user with two element types, [`Link`](@ref) and
 [`Node`](@ref EnergyModelsBase.Node):
@@ -572,10 +609,40 @@ differentiation in extension packages.
 - `Node` - the subfunction is [`create_node`](@ref).
 - `Link` - the subfunction is [`create_link`](@ref).
 """
-create_element(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel) =
+function create_element(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel)
+
     create_node(m, n, 𝒯, 𝒫, modeltype)
-create_element(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel) =
+
+    # Constraints based on the resource types
+    node_resources = Vector{Resource}(unique(vcat(inputs(n), outputs(n))))
+    for 𝒫ˢᵘᵇ ∈ res_types_vec(node_resources)
+        constraints_resource(m, n, 𝒯, 𝒫ˢᵘᵇ, modeltype)
+    end
+end
+
+function create_element(m, l::Link, 𝒯, 𝒫, modeltype::EnergyModel)
+
     create_link(m, l, 𝒯, 𝒫, modeltype)
+
+    # Constraints based on the resource types
+    for 𝒫ˢᵘᵇ ∈ res_types_vec(link_res(l))
+        constraints_resource(m, l, 𝒯, 𝒫ˢᵘᵇ, modeltype)
+    end
+end
+
+"""
+    constraints_resource(m, n::Node, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel)
+    constraints_resource(m, l::Link, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel)
+
+Create constraints for the flow of resources through an [`AbstractElement`](@ref) for
+specific resource types. In `EnergyModelsBase`, this method is provided for
+[`Node`](@ref EnergyModelsBase.Node) and [`Link`](@ref).
+
+The function is empty by default and can be implemented in extension packages.
+"""
+function constraints_resource(m, n::Node, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel) end
+
+function constraints_resource(m, l::Link, 𝒯, 𝒫::Vector{<:Resource}, modeltype::EnergyModel) end
 
 """
     constraints_couple(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫, 𝒯, modeltype::EnergyModel)
@@ -590,6 +657,7 @@ for the coupling between a [`Link`](@ref) and a [`Node`](@ref EnergyModelsBase.N
 function constraints_couple(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫, 𝒯, modeltype::EnergyModel)
     for n ∈ 𝒩
         ℒᶠʳᵒᵐ, ℒᵗᵒ = link_sub(ℒ, n)
+
         # Constraint for output flowrate and input links.
         if has_output(n)
             @constraint(m, [t ∈ 𝒯, p ∈ outputs(n)],
@@ -597,6 +665,7 @@ function constraints_couple(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫, 
                 sum(m[:link_in][l, t, p] for l ∈ ℒᶠʳᵒᵐ if p ∈ inputs(l))
             )
         end
+
         # Constraint for input flowrate and output links.
         if has_input(n)
             @constraint(m, [t ∈ 𝒯, p ∈ inputs(n)],
@@ -605,10 +674,28 @@ function constraints_couple(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫, 
             )
         end
     end
+
+    # Create new constraints for specific resource types
+    for p_sub ∈ res_types_vec(𝒫)
+        constraints_couple_resource(m, 𝒩, ℒ, p_sub, 𝒯, modeltype)
+    end
 end
 function constraints_couple(m, ℒ::Vector{<:Link}, 𝒩::Vector{<:Node}, 𝒫, 𝒯, modeltype::EnergyModel)
     return constraints_couple(m, 𝒩, ℒ, 𝒫, 𝒯, modeltype)
 end
+
+"""
+    constraints_couple_resource(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel)
+
+Create resource-specific coupling constraints between nodes and links.
+
+This function is called from [`constraints_couple`](@ref) for each subset of resources
+sharing the same type. It can be used to add additional coupling constraints for
+specialized resource classes while keeping the default node-link flow balance unchanged.
+
+The default method is empty and intended to be implemented in extension packages.
+"""
+function constraints_couple_resource(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫::Vector{<:Resource}, 𝒯, modeltype::EnergyModel) end
 
 """
     constraints_emissions(m, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
@@ -956,7 +1043,6 @@ function create_link(m, l::Direct, 𝒯, 𝒫, modeltype::EnergyModel)
     )
 end
 function create_link(m, 𝒯, 𝒫, l::Link, modeltype::EnergyModel, formulation::Formulation)
-
     # Generic link in which each output corresponds to the input
     @constraint(m, [t ∈ 𝒯, p ∈ link_res(l)],
         m[:link_out][l, t, p] == m[:link_in][l, t, p]

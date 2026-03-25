@@ -28,6 +28,8 @@ emissions_operational
 constraints_emissions
 constraints_elements
 constraints_couple
+constraints_couple_resource
+constraints_resource
 constraints_level_iterate
 constraints_level_rp
 constraints_level_scp
@@ -39,6 +41,7 @@ constraints_level_bounds
 ```@docs
 variables_capacity
 variables_flow
+variables_flow_resource
 variables_opex
 variables_capex
 variables_emission
@@ -96,4 +99,6 @@ res_sub
 ```@docs
 collect_types
 sort_types
+res_types
+res_types_vec
 ```
