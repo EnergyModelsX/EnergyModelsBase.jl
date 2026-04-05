@@ -280,7 +280,7 @@ end
     # - EMB.check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel)
     # - EMB.check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevelTree)
     ts = TwoLevel(3, 1, day)
-    ts_tree_reg = TwoLevelTree(1, [2, 2], day)
+    ts_tree_reg = TwoLevelTree(1, [2, 1], day)
     ts_tree_irreg = TwoLevelTree(
         TreeNode(1, day, [
             TreeNode(1, day, TreeNode(1, day, TreeNode(1, day))),
@@ -298,7 +298,43 @@ end
         @test_throws AssertionError create_simple_graph(ts_tree_irreg, tp)
     end
 
+    # Test that there is a warning when using `StrategicStochasticProfile` and `TwoLevel`
+    # - EMB.check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLevel)
+    profiles_ssc = StrategicStochasticProfile([[ops], [ops], [ops]])
+    msg =
+        "Using `StrategicStochasticProfile` with `TwoLevel` is dangerous, " *
+        "as it may lead to unexpected behaviour. " *
+        "In this case, only the profiles of the first scenario are used in the model and " *
+        "tested."
+    @test_logs (:warn, msg) create_simple_graph(ts, profiles_ssc);
+
+    # Test that there is an error with wrong `StrategicStochasticProfile`s with `TwoLevel`
+    # - EMB.check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLevel)
+    profiles = [
+        StrategicStochasticProfile([[ops], [ops], [ops], [ops]]),
+        StrategicStochasticProfile([[ops], [ops]]),
+    ]
+    for tp ∈ profiles
+        @test_throws AssertionError create_simple_graph(ts, tp)
+    end
+
+    # Test that there is an error with wrong `StrategicStochasticProfile`s with `TwoLevelTree`
+    # - EMB.check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLevelTree)
+    profiles = [
+        StrategicStochasticProfile([[ops], [ops, ops], [ops, ops], [ops, ops]]),
+        StrategicStochasticProfile([[ops], [ops, ops]]),
+        StrategicStochasticProfile([[ops], [ops, ops], [ops]]),
+        StrategicStochasticProfile([[ops], [ops, ops], [ops, ops, ops]]),
+    ]
+    for tp ∈ profiles
+        @test_throws AssertionError create_simple_graph(ts_tree_reg, tp)
+    end
+
     # Test that there is an error with wrong `OperationalProfile`s
+    # - EMB.check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel)
+    # - EMB.check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevelTree)
+    # - EMB.check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLevel)
+    # - EMB.check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLevelTree)
     # - EMB.check_profile(fieldname, value::TimeProfile, 𝒯::TwoLevel)
     # - EMB.check_profile(fieldname, value::TimeProfile, 𝒯::TwoLevelTree)
     # - EMB.check_profile(fieldname, value::OperationalProfile, ts::SimpleTimes, sp)
@@ -306,9 +342,21 @@ end
         OperationalProfile(ones(20)),
         OperationalProfile(ones(30)),
     ]
-    for tp ∈ profiles
+    profiles_sp = [
+        StrategicProfile([ops, ops, profiles[1]]),
+        StrategicProfile([ops, ops, profiles[2]]),
+    ]
+    profiles_ssc = [
+        StrategicStochasticProfile([[ops], [ops, ops], [profiles[1], ops]]),
+        StrategicStochasticProfile([[ops], [ops, ops], [profiles[2], ops]]),
+    ]
+    for (tp, tp_sp, tp_ssc) ∈ zip(profiles, profiles_sp, profiles_ssc)
         @test_throws AssertionError create_simple_graph(ts, tp)
+        @test_throws AssertionError create_simple_graph(ts, tp_sp)
+        @test_throws AssertionError create_simple_graph(ts, tp_ssc)
         @test_throws AssertionError create_simple_graph(ts_tree_reg, tp)
+        @test_throws AssertionError create_simple_graph(ts_tree_reg, tp_sp)
+        @test_throws AssertionError create_simple_graph(ts_tree_reg, tp_ssc)
     end
 
     # Test that there is an error with wrong `OperationalProfile`s in operational scenarios
