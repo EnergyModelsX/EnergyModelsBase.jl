@@ -1,5 +1,9 @@
 # Release notes
 
+## Unversioned
+
+* Introduced support in checks for `TwoLevelTree` and `StrategicStochasticProfile`.
+
 ## Version 0.9.5 (2026-03-25)
 
 ### Minor updates

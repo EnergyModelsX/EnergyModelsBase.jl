@@ -354,25 +354,39 @@ function check_time_structure(x::AbstractElement, 𝒯)
 end
 
 """
-    check_profile(fieldname, value::TimeProfile, 𝒯)
+    check_profile(fieldname, value::TimeProfile, 𝒯::TwoLevel)
+    check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel)
+    check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLevel)
 
-Check that an individual `TimeProfile` corresponds to the time structure `𝒯`.
-It currently does not include support for identifying `OperationalScenarios`.
+    check_profile(fieldname, value::TimeProfile, 𝒯::TwoLevelTree)
+    check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevelTree)
+    check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLevelTree)
+
+Check that an individual `TimeProfile` corresponds to the time structure `𝒯`. The individual
+checks are depending on the profile type and the time structure.
 """
+function check_profile(fieldname, value::TimeProfile, 𝒯::TwoLevel)
+    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
+    for t_inv ∈ 𝒯ᴵⁿᵛ
+        p_msg = "strategic period $(t_inv.sp)"
+        check_profile(fieldname, value, t_inv.operational, p_msg)
+    end
+end
 function check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     len_vals = length(value.vals)
     len_ts = length(𝒯ᴵⁿᵛ)
     if len_vals > len_ts
-        message = "` is longer than the strategic time structure. \
-        Its last $(len_vals - len_ts) value(s) will be omitted."
+        message = "` is longer than the strategic time structure. " *
+            "Its last $(len_vals - len_ts) value(s) will be omitted."
     elseif len_vals < len_ts
-        message = "` is shorter than the strategic time structure. It will use the last \
-        value for the last $(len_ts - len_vals) strategic period(s)."
+        message = "` is shorter than the strategic time structure. It will use the last " *
+            "value for the last $(len_ts - len_vals) strategic period(s)."
     end
-    @assert_or_log len_vals ==
-        len_ts "The `TimeProfile` of field `" * string(fieldname) * message
+    @assert_or_log(
+        len_vals == len_ts, "The `TimeProfile` of field `" * string(fieldname) * message
+    )
     for t_inv ∈ 𝒯ᴵⁿᵛ
         p_msg = "strategic period $(t_inv.sp)"
         check_profile(
@@ -383,11 +397,100 @@ function check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel)
         )
     end
 end
-function check_profile(fieldname, value, 𝒯::TwoLevel)
+function check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLevel)
+    @warn(
+        "Using `StrategicStochasticProfile` with `TwoLevel` is dangerous, " *
+        "as it may lead to unexpected behaviour. " *
+        "In this case, only the profiles of the first scenario are used in the model and " *
+        "tested.",
+        maxlog = 1
+    )
+    prof = StrategicProfile([op_prof[1] for op_prof ∈ value.vals])
+    check_profile(fieldname, prof, 𝒯)
+end
+function check_profile(fieldname, value::TimeProfile, 𝒯::TwoLevelTree)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
     for t_inv ∈ 𝒯ᴵⁿᵛ
-        p_msg = "strategic period $(t_inv.sp)"
+        p_msg = "branch $(t_inv.branch) in strategic period $(t_inv.sp)"
         check_profile(fieldname, value, t_inv.operational, p_msg)
+    end
+end
+function check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevelTree)
+    𝒯ˢˢᶜ = strategic_scenarios(𝒯)
+    t_inv_vec = []
+
+    for ssc ∈ 𝒯ˢˢᶜ
+        𝒯ᴵⁿᵛ = strategic_periods(ssc)
+        len_vals = length(value.vals)
+        len_ts = length(𝒯ᴵⁿᵛ)
+        if len_vals > len_ts
+            message = "` is longer than strategic scenario $(ssc.scen). " *
+                "Its last $(len_vals - len_ts) value(s) will be omitted."
+        elseif len_vals < len_ts
+            message = "` is shorter than strategic scenario $(ssc.scen). It will use the " *
+                "last value for the last $(len_ts - len_vals) strategic period(s)."
+        end
+        @assert_or_log(
+            len_vals == len_ts, "The `TimeProfile` of field `" * string(fieldname) * message,
+        )
+        for t_inv ∈ 𝒯ᴵⁿᵛ
+            t_inv ∈ t_inv_vec && continue
+            push!(t_inv_vec, t_inv)
+
+            p_msg = "branch $(t_inv.branch) in strategic period $(t_inv.sp)"
+            check_profile(
+                fieldname,
+                value.vals[minimum([t_inv.sp, length(value.vals)])],
+                t_inv.operational,
+                p_msg,
+            )
+        end
+    end
+end
+function check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLevelTree)
+    # Check for the number of strategic periods
+    len_vals = length(value.vals)
+    len_ts = n_strat_per(𝒯)
+    if len_vals > len_ts
+        message = "` is longer than the strategic time structure. " *
+            "Its last $(len_vals - len_ts) value(s) will be omitted."
+    elseif len_vals < len_ts
+        message = "` is shorter than the strategic time structure. It will use the last " *
+            "value for the last $(len_ts - len_vals) strategic period(s)."
+    end
+    @assert_or_log(
+        len_vals == len_ts,
+        "The `TimeProfile` of field `" * string(fieldname) * message,
+    )
+
+    # Check each individual branch
+    for sp ∈ 1:n_strat_per(𝒯)
+        pre_msg = "` in strategic period $(sp) has "
+        len_vals = length(value.vals[minimum([sp, length(value.vals)])])
+        len_branches = n_branches(𝒯, sp)
+        if len_vals > len_branches
+            message = pre_msg * "more branches than the time structure. " *
+                "Its last $(len_vals - len_branches) value(s) will be omitted."
+        elseif len_vals < len_branches
+            message = pre_msg * "less branches than the time structure. It will use the " *
+                "last value for the last $(len_branches - len_vals) branche(s)."
+        end
+        @assert_or_log(
+            len_vals == len_branches,
+            "The `TimeProfile` of field `" * string(fieldname) * message,
+        )
+    end
+
+    # Check the sub profiles
+    for t_inv ∈ strategic_periods(𝒯)
+        p_msg = "branch $(t_inv.branch) in strategic period $(t_inv.sp)"
+        sp_prof = value.vals[minimum([t_inv.sp, length(value.vals)])]
+        check_profile(
+            fieldname,
+            sp_prof[minimum([t_inv.branch, length(sp_prof)])],
+            t_inv.operational,
+            p_msg,
+        )
     end
 end
 
