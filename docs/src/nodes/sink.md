@@ -111,9 +111,8 @@ Hence, if you do not have to call additional functions, but only plan to include
   ```math
   \begin{aligned}
   \texttt{opex\_var}[n, t_{inv}] = & scale\_op\_sp(t_{inv}, t) \times \\
-    \sum_{t \in t_{inv}} & ( surplus\_penalty(n, t) \times \texttt{sink\_surplus}[n, t] + \\ &
-    deficit\_penalty(n, t) \times \texttt{sink\_deficit}[n, t]) \\ &
-
+    & \sum_{t \in t_{inv}} ( surplus\_penalty(n, t) \times \texttt{sink\_surplus}[n, t] + \\
+    & deficit\_penalty(n, t) \times \texttt{sink\_deficit}[n, t])
   \end{aligned}
   ```
 
