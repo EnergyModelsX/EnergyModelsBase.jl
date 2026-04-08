@@ -27,7 +27,7 @@ function EMB.constraints_capacity_installed(
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
         # Add the investment constraints
-        EMI.add_investment_constraints(m, n, inv_data, :cap, :cap, 𝒯ᴵⁿᵛ, disc_rate)
+        EMI.add_investment_constraints(m, n, inv_data, :cap, :cap, 𝒯, disc_rate)
     else
         for t ∈ 𝒯
             fix(m[:cap_inst][n, t], EMB.capacity(n, t); force = true)
@@ -58,7 +58,7 @@ function EMB.constraints_capacity_installed(
             inv_data = investment_data(n, cap)
 
             # Add the investment constraints
-            EMI.add_investment_constraints(m, n, inv_data, cap, prefix, 𝒯ᴵⁿᵛ, disc_rate)
+            EMI.add_investment_constraints(m, n, inv_data, cap, prefix, 𝒯, disc_rate)
 
         elseif isa(stor_par, EMB.UnionCapacity)
             for t ∈ 𝒯
@@ -80,7 +80,7 @@ function EMB.constraints_capacity_installed(
         𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
         # Add the investment constraints
-        EMI.add_investment_constraints(m, l, inv_data, :cap, :link_cap, 𝒯ᴵⁿᵛ, disc_rate)
+        EMI.add_investment_constraints(m, l, inv_data, :cap, :link_cap, 𝒯, disc_rate)
     else
         for t ∈ 𝒯
             fix(m[:link_cap_inst][l, t], EMB.capacity(l, t); force = true)
