@@ -24,7 +24,6 @@ function EMB.constraints_capacity_installed(
         # Extract the investment data, the discount rate, and the strategic periods
         disc_rate = discount_rate(modeltype)
         inv_data = investment_data(n, :cap)
-        𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
         # Add the investment constraints
         EMI.add_investment_constraints(m, n, inv_data, :cap, :cap, 𝒯, disc_rate)
@@ -42,7 +41,6 @@ function EMB.constraints_capacity_installed(
 )
     # Extract the he discount rate and the strategic periods
     disc_rate = discount_rate(modeltype)
-    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     cap_map = Dict(:charge => charge, :level => level, :discharge => discharge)
 
@@ -77,7 +75,6 @@ function EMB.constraints_capacity_installed(
         # Extract the investment data, the discount rate, and the strategic periods
         disc_rate = discount_rate(modeltype)
         inv_data = investment_data(l, :cap)
-        𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
         # Add the investment constraints
         EMI.add_investment_constraints(m, l, inv_data, :cap, :link_cap, 𝒯, disc_rate)
