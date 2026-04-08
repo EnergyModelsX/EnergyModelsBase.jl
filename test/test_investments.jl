@@ -227,7 +227,8 @@ using EnergyModelsInvestments
     # Test results
     # (-724 compared to 0.5.x as RefStorage as emission source does not require a charge
     #  capacity any longer in 0.7.x)
-    @test round(objective_value(m)) ≈ -302624
+    # (-10736 compared to 0.9.x due to the potential of early retirment)
+    @test round(objective_value(m)) ≈ -313360.0
 
     # Test that investments are happening
     𝒯ᴵⁿᵛ = strategic_periods(get_time_struct(case))

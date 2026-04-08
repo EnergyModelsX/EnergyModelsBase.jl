@@ -2,6 +2,14 @@
 
 ## Unversioned
 
+### Breaking changes
+
+* Adjusted to the changes introduced in [`EnergyModelsInvestments` 0.9](https://github.com/EnergyModelsX/EnergyModelsInvestments.jl/releases/tag/v0.9.0):
+  * Breaking change required as early retirement is now allowed.
+  * Changed the function call arguments for [`add_investment_constraints`](https://github.com/EnergyModelsX/EnergyModelsInvestments.jl/blob/0c84eb4fabdf6f3c188812a3555b40f2681e916b/src/model.jl#L1).
+
+### Minor updates
+
 * Introduced support in checks for `TwoLevelTree` and `StrategicStochasticProfile`.
 
 ## Version 0.9.5 (2026-03-25)
@@ -59,10 +67,10 @@
 ### Rework of data
 
 * Renamed extension data related functions and types:
-  * `Data` is now called `ExtraData`.
+  * `Data` is now called `ExtensionData`.
   * `create_data` is now called `create_ext_data`.
 * The old version is still accessible, but will be removed in release 0.10.
-* Allow for variable creation for `ExtraData` types and implemented the approach for `InvestmentData` for both `Node`s and `Link`s.
+* Allow for variable creation for `ExtensionData` types and implemented the approach for `InvestmentData` for both `Node`s and `Link`s.
 
 ### Minor updates
 
