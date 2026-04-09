@@ -227,7 +227,8 @@ using EnergyModelsInvestments
     # Test results
     # (-724 compared to 0.5.x as RefStorage as emission source does not require a charge
     #  capacity any longer in 0.7.x)
-    @test round(objective_value(m)) ≈ -302624
+    # (-10736 compared to 0.9.x due to the potential of early retirment)
+    @test round(objective_value(m)) ≈ -313360.0
 
     # Test that investments are happening
     𝒯ᴵⁿᵛ = strategic_periods(get_time_struct(case))
@@ -259,10 +260,9 @@ end
         id::Any
         from::EMB.Node
         to::EMB.Node
-        formulation::EMB.Formulation
         data::Vector{<:ExtensionData}
     end
-    function EMB.create_link(m, 𝒯, 𝒫, l::InvDirect, modeltype::EnergyModel, formulation::EMB.Formulation)
+    function EMB.create_link(m, l::InvDirect, 𝒯, 𝒫, modeltype::EnergyModel)
 
         # Generic link in which each output corresponds to the input
         @constraint(m, [t ∈ 𝒯, p ∈ EMB.link_res(l)],
@@ -317,7 +317,7 @@ end
         nodes = [source_1, source_2, sink]
         links = Link[
             OpexDirect("OpexDirect", source_1, sink, Linear()),
-            InvDirect("InvDirect", source_2, sink, Linear(), data_link),
+            InvDirect("InvDirect", source_2, sink, data_link),
         ]
 
         # Creation of the time structure and global data
@@ -359,7 +359,7 @@ end
     )
 
     # Test that investments are happening
-    @test value.(m[:link_cap_add])[ℒ[2],𝒯ᴵⁿᵛ[3]] == 3
+    @test sum(value.(m[:link_cap_add])[ℒ[2], t_inv] for t_inv ∈ 𝒯ᴵⁿᵛ) == 3
 
     # Test that the variables are `link_cap_capex`, `link_cap_current`, `link_cap_add` and
     # `link_cap_rem` are created for the corresponding links while `link_cap_invest_b` and
@@ -679,7 +679,7 @@ EMB.TEST_ENV = true
                 Dict(Power => 1),
             )
             nodes = [source, sink]
-            links = [InvDirect("scr-sink", nodes[1], nodes[2], Linear(), inv_data)]
+            links = [InvDirect("scr-sink", nodes[1], nodes[2], inv_data)]
             T = TwoLevel(4, 10, SimpleTimes(4, 1))
             case = Case(T, products, [nodes, links], [[get_nodes, get_links]])
 
