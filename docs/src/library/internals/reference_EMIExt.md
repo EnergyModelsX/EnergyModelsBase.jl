@@ -41,23 +41,6 @@ EMB.check_link_data(l::Link, data::InvestmentData, 𝒯, modeltype::AbstractInve
 
 ## [EnergyModelsInvestments](@id lib-int-EMIext-EMI)
 
-### [Constructors](@id lib-int-EMIext-construct)
-
-The following constructors are only relevant for the legacy constructors introduced within the extension.
-They do not provide any additional information.
-
-```@docs
-EMI.BinaryInvestment
-EMI.ContinuousInvestment
-EMI.DiscreteInvestment
-EMI.FixedInvestment
-EMI.PeriodLife
-EMI.RollingLife
-EMI.SemiContinuousInvestment
-EMI.SemiContinuousOffsetInvestment
-EMI.StudyLife
-```
-
 ### [Methods](@id lib-int-EMIext-met)
 
 ```@docs

@@ -73,7 +73,7 @@ EMI.investment_data(inv_data::SingleInvData) = inv_data.cap
 Return the `InvestmentData` of the Node `n` or Link `l`. It will return an error if the
 if the Node `n` or Link `l` does not have investment data.
 
-If `field` is specified, it returns the `InvData` for the corresponding capacity.
+If `field` is specified, it returns the `InvestmentData` for the corresponding capacity.
 """
 EMI.investment_data(n::EMB.Node) =
     filter(data -> typeof(data) <: InvestmentData, node_data(n))[1]

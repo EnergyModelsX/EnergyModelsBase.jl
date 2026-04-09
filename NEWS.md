@@ -1,12 +1,14 @@
 # Release notes
 
-## Unversioned
+## Version 0.10.0 (2026-04-09)
 
 ### Breaking changes
 
 * Adjusted to the changes introduced in [`EnergyModelsInvestments` 0.9](https://github.com/EnergyModelsX/EnergyModelsInvestments.jl/releases/tag/v0.9.0):
   * Breaking change required as early retirement is now allowed.
   * Changed the function call arguments for [`add_investment_constraints`](https://github.com/EnergyModelsX/EnergyModelsInvestments.jl/blob/0c84eb4fabdf6f3c188812a3555b40f2681e916b/src/model.jl#L1).
+* Removed legacy constructors for
+* Removed legacy constructors for `SingleInvData` (based on the change of the field `initial` in `EnergyModelsInvestments`), `InvData`, `InvDataStorage`, and all `Investment` modes and `LifetimeMode`s.
 
 ### Minor updates
 
