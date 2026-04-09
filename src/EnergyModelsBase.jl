@@ -71,7 +71,6 @@ export PreviousPeriods, CyclicPeriods
 # Export of the types for investment models
 export AbstractInvestmentModel, InvestmentModel
 export InvestmentData, SingleInvData, StorageInvData
-export InvData, InvDataStorage
 
 # Export commonly used functions for model generation
 export @assert_or_log

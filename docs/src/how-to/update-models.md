@@ -43,14 +43,15 @@ This implies that we removed the argument `formulation::Formulation` and reorder
 The field `formulation` still exists for `Direct`.
 It can be used to provide differnet submethods, *e.g.*, when creating capacity constraints.
 
-## [Adjustments from 0.6.x to 0.8.x](@id how_to-update-06)
+## [Adjustments from 0.6.x to 0.9.x](@id how_to-update-06)
 
 ### [Key changes for nodal descriptions](@id how_to-update-06-nodes)
 
 Version 0.7 introduced both *[storage behaviours](@ref lib-pub-nodes-stor_behav)* resulting in a rework of the individual approach for calculating the level balance as well as the potential to have charge and discharge capacities through *[storage parameters](@ref lib-pub-nodes-stor_par)*.
 
-!!! note
-    The legacy constructors for calls of the composite type of version 0.6 will be included at least until version 0.8.
+!!! warning
+    The legacy constructors for calls of the composite type of version 0.6 were removed in version 0.10.
+    In addition, the adjustments will not be updated in release 0.10 as potential models will be at that time most likely more than 1 year old.
 
 ### [`RefStorage`](@ref)
 

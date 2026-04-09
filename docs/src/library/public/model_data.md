@@ -1,7 +1,7 @@
 
 # [Model and data](@id lib-pub-mod_data)
 
-### [`EnergyModel`](@id lib-pub-mod_data-types)
+## [`EnergyModel`](@id lib-pub-mod_data-types)
 
 The type `EnergyModel` is used for creating the global parameters of a model.
 It can be as well used for extending `EnergyModelsBase` as described in the section *[Extensions to the model](@ref man-phil-ext)*.
