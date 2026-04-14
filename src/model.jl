@@ -2,7 +2,7 @@
     create_model(
         case::Case,
         modeltype::EnergyModel,
-        m::JuMP.Model;
+        m::JuMP.AbstractModel = JuMP.Model();
         check_timeprofiles::Bool = true,
         check_any_data::Bool = true,
     )
@@ -32,7 +32,7 @@ Create the model and call all required functions.
 function create_model(
     case::Case,
     modeltype::EnergyModel,
-    m::JuMP.Model;
+    m::JuMP.AbstractModel = JuMP.Model();
     check_timeprofiles::Bool = true,
     check_any_data::Bool = true,
 )
@@ -85,33 +85,16 @@ function create_model(
 
     return m
 end
-function create_model(
-    case::Case,
-    modeltype::EnergyModel;
-    check_timeprofiles::Bool = true,
-    check_any_data::Bool = true,
-)
-    m = JuMP.Model()
-    create_model(case, modeltype, m; check_timeprofiles, check_any_data)
-end
+
 function create_model(
     case::Dict,
     modeltype::EnergyModel,
-    m::JuMP.Model;
+    m::JuMP.AbstractModel = JuMP.Model();
     check_timeprofiles::Bool = true,
     check_any_data::Bool = true,
 )
     case_new = Case(case[:T], case[:products], [case[:nodes], case[:links]])
     create_model(case_new, modeltype, m; check_timeprofiles, check_any_data)
-end
-function create_model(
-    case::Dict,
-    modeltype::EnergyModel;
-    check_timeprofiles::Bool = true,
-    check_any_data::Bool = true,
-)
-    m = JuMP.Model()
-    create_model(case, modeltype, m; check_timeprofiles, check_any_data)
 end
 
 """

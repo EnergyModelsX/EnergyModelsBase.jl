@@ -1,6 +1,10 @@
 # Release notes
 
-## Unversioned
+## Version 0.10.1 (2026-04-14)
+
+### Minor updates
+
+* Add support for JuMP.AbstractModel to allow custom model types, e.g. for decomposition.
 
 ### Bug fixes
 
