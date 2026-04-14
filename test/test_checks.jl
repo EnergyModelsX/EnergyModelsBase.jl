@@ -506,7 +506,7 @@ end
         RepresentativeProfile([ScenarioProfile([FixedProfile(5)])]),
     ]
     for tp ∈ valid_profiles
-        @test EMB.check_scenario_profile(tp, "") == true
+        @test EMB.check_scenario_profile(tp, "")
     end
 
     # Reactivate logging
