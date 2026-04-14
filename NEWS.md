@@ -1,5 +1,11 @@
 # Release notes
 
+## Version 0.8.7 (2026-04-15)
+
+### Bug fixes
+
+* Fixed a bug in the function `check_scenario_profile` resulting in an error, if utilized.
+
 ## Version 0.8.6 (2025-11-26)
 
 ### Bugfixes
