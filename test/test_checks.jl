@@ -498,6 +498,17 @@ end
         @test_throws AssertionError EMB.check_scenario_profile(tp, "")
     end
 
+    # Check that valid profiles pass check_scenario_profile without error
+    valid_profiles = [
+        FixedProfile(5),
+        StrategicProfile([FixedProfile(5)]),
+        StrategicProfile([RepresentativeProfile([FixedProfile(5)])]),
+        RepresentativeProfile([ScenarioProfile([FixedProfile(5)])]),
+    ]
+    for tp ∈ valid_profiles
+        @test EMB.check_scenario_profile(tp, "")
+    end
+
     # Reactivate logging
     EMB.ASSERTS_AS_LOG = true
 end
