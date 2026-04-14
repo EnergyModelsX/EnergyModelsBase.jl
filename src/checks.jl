@@ -798,7 +798,7 @@ function check_scenario_profile(time_profile::TimeProfile, message::String)
             bool_osc = check_osc_sub_profile(l1_profile, sub_msg, bool_osc)
         end
     end
-    return bool_scp
+    return bool_osc
 end
 function check_osc_sub_profile(sub_profile::TimeProfile, sub_msg::String, bool_scp::Bool)
     @assert_or_log(
