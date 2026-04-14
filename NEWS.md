@@ -1,6 +1,6 @@
 # Release notes
 
-## Unversioned
+## Version 0.10.1 (2026-04-14)
 
 ### Minor updates
 
