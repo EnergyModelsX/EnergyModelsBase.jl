@@ -33,7 +33,7 @@ function constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, da
 
     # Fix the other emissions to 0 to avoid problems with unconstrained variables
     for t ∈ 𝒯, p_em ∈ 𝒫ᵉᵐ
-        fix(m[:emissions_node][n, t, p_em], 0, ; force = true)
+        fix(m[:emissions_node][n, t, p_em], 0; force = true)
     end
 end
 function constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::EmissionsProcess)
