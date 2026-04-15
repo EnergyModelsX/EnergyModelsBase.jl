@@ -215,18 +215,18 @@ When multiple inputs are provided, a constructor directly creates the correspond
   [`StartInvData`](@extref EnergyModelsInvestments.StartInvData) type for the investment data.
 - **`inv_mode::Investment`** is the chosen investment mode for the technology. The following
   investment modes are currently available:
-  [`BinaryInvestment`](@extref EnergyModelsInvestments),
-  [`DiscreteInvestment`](@extref EnergyModelsInvestments),
-  [`ContinuousInvestment`](@extref EnergyModelsInvestments),
-  [`SemiContinuousInvestment`](@extref EnergyModelsInvestments), or
-  [`FixedInvestment`](@extref EnergyModelsInvestments).
+  [`BinaryInvestment`](@extref EnergyModelsInvestments.BinaryInvestment),
+  [`DiscreteInvestment`](@extref EnergyModelsInvestments.DiscreteInvestment),
+  [`ContinuousInvestment`](@extref EnergyModelsInvestments.ContinuousInvestment),
+  [`SemiContinuousInvestment`](@extref EnergyModelsInvestments.SemiContinuousInvestment), or
+  [`FixedInvestment`](@extref EnergyModelsInvestments.FixedInvestment).
 - **`life_mode::LifetimeMode`** is type of handling the lifetime. Several different
   alternatives can be used:
-  [`UnlimitedLife`](@extref EnergyModelsInvestments),
-  [`StudyLife`](@extref EnergyModelsInvestments),
-  [`PeriodLife`](@extref EnergyModelsInvestments), or
-  [`RollingLife`](@extref EnergyModelsInvestments). If `life_mode` is not specified, the
-  model assumes an [`UnlimitedLife`](@extref EnergyModelsInvestments).
+  [`UnlimitedLife`](@extref EnergyModelsInvestments.UnlimitedLife),
+  [`StudyLife`](@extref EnergyModelsInvestments.StudyLife),
+  [`PeriodLife`](@extref EnergyModelsInvestments.PeriodLife), or
+  [`RollingLife`](@extref EnergyModelsInvestments.RollingLife). If `life_mode` is not specified, the
+  model assumes an [`UnlimitedLife`](@extref EnergyModelsInvestments.UnlimitedLife).
 """
 abstract type SingleInvData <: InvestmentData end
 
