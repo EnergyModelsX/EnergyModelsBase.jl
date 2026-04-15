@@ -647,28 +647,28 @@ scenario indexing.
 """
 function check_scenario_profile(time_profile::TimeProfile, message::String)
     # Check on the highest level
-    bool_osc = check_osc_sub_profile(time_profile, message, true)
+    bool_scp = check_osc_sub_profile(time_profile, message, true)
 
     # Iterate through the strategic profiles, if existing
     if isa(time_profile, StrategicProfile)
         for l1_profile ∈ time_profile.vals
             sub_msg = "in strategic profiles " * message
-            bool_osc = check_osc_sub_profile(l1_profile, sub_msg, bool_osc)
+            bool_scp = check_osc_sub_profile(l1_profile, sub_msg, bool_scp)
             if isa(l1_profile, RepresentativeProfile)
                 for l2_profile ∈ l1_profile.vals
                     sub_msg = "in representative profiles in strategic profiles " * message
-                    bool_osc = check_osc_sub_profile(l2_profile, sub_msg, bool_osc)
+                    bool_scp = check_osc_sub_profile(l2_profile, sub_msg, bool_scp)
                     if isa(l2_profile, ScenarioProfile)
                         for l3_profile ∈ l2_profile.vals
                             sub_msg = "in scenario profiles in representative profiles in strategic profiles " * message
-                            bool_osc = check_osc_sub_profile(l3_profile, sub_msg, bool_osc)
+                            bool_scp = check_osc_sub_profile(l3_profile, sub_msg, bool_scp)
                         end
                     end
                 end
             elseif isa(l1_profile, ScenarioProfile)
                 for l2_profile ∈ l1_profile.vals
                     sub_msg = "in scenario profiles in strategic profiles " * message
-                    bool_osc = check_osc_sub_profile(l2_profile, sub_msg, bool_osc)
+                    bool_scp = check_osc_sub_profile(l2_profile, sub_msg, bool_scp)
                 end
             end
         end
@@ -678,11 +678,11 @@ function check_scenario_profile(time_profile::TimeProfile, message::String)
     if isa(time_profile, RepresentativeProfile)
         for l1_profile ∈ time_profile.vals
             sub_msg = "in representative profiles " * message
-            bool_osc = check_osc_sub_profile(l1_profile, sub_msg, bool_osc)
+            bool_scp = check_osc_sub_profile(l1_profile, sub_msg, bool_scp)
             if isa(l1_profile, ScenarioProfile)
                 for l2_profile ∈ l1_profile.vals
                     sub_msg = "in scenario profiles in representative profiles " * message
-                    bool_osc = check_osc_sub_profile(l2_profile, sub_msg, bool_osc)
+                    bool_scp = check_osc_sub_profile(l2_profile, sub_msg, bool_scp)
                 end
             end
         end
@@ -692,7 +692,7 @@ function check_scenario_profile(time_profile::TimeProfile, message::String)
     if isa(time_profile, ScenarioProfile)
         for l1_profile ∈ time_profile.vals
             sub_msg = "in scenario profiles " * message
-            bool_osc = check_osc_sub_profile(l1_profile, sub_msg, bool_osc)
+            bool_scp = check_osc_sub_profile(l1_profile, sub_msg, bool_scp)
         end
     end
     return bool_scp

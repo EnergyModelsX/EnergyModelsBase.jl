@@ -638,7 +638,7 @@ function constraints_opex_fixed(m, n::Sink, 𝒯ᴵⁿᵛ, modeltype::EnergyMode
 
     # Fix the fixed OPEX
     for t_inv ∈ 𝒯ᴵⁿᵛ
-        fix(m[:opex_fixed][n, t_inv], 0, ; force = true)
+        fix(m[:opex_fixed][n, t_inv], 0; force = true)
     end
 end
 
