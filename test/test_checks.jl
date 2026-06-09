@@ -462,6 +462,9 @@ end
         StrategicProfile([OperationalProfile([5])]),
         StrategicProfile([ScenarioProfile([5])]),
         StrategicProfile([RepresentativeProfile([5])]),
+        StrategicStochasticProfile([[OperationalProfile([5])]]),
+        StrategicStochasticProfile([[ScenarioProfile([5])]]),
+        StrategicStochasticProfile([[RepresentativeProfile([5])]]),
     ]
     for tp ∈ profiles
         @test_throws AssertionError EMB.check_strategic_profile(tp, "")
@@ -514,7 +517,6 @@ end
 end
 
 @testset "Checks - Nodes" begin
-
     # Resources used in the checks
     NG = ResourceEmit("NG", 0.2)
     Power = ResourceCarrier("Power", 0.0)
@@ -522,7 +524,7 @@ end
     aux = ResourceCarrier("aux", 0.0)
 
     # Function for setting up the system for testing `Sink` and `Source`
-    function simple_graph(;
+    function check_graph_src_snk(;
         src_cap::TimeProfile = FixedProfile(10),
         src_opex_var::TimeProfile = FixedProfile(10),
         src_opex_fixed::TimeProfile = FixedProfile(0),
@@ -530,10 +532,9 @@ end
         snk_cap::TimeProfile = OperationalProfile([6, 8, 10, 6, 8]),
         snk_pen::Dict = Dict(:surplus => FixedProfile(4), :deficit => FixedProfile(10)),
         snk_input::Dict = Dict(Power => 1),
+        T = TwoLevel(2, 2, SimpleTimes(5, 2); op_per_strat = 10),
     )
         resources = [Power, CO2]
-        ops = SimpleTimes(5, 2)
-        T = TwoLevel(2, 2, ops; op_per_strat = 10)
 
         source =
         RefSource(
@@ -566,22 +567,38 @@ end
         # Sink used in the analysis
         # Test that a wrong capacity is caught by the checks.
         src_cap = FixedProfile(-4)
-        @test_throws AssertionError simple_graph(;src_cap)
+        @test_throws AssertionError check_graph_src_snk(;src_cap)
 
         # Test that a wrong output dictionary is caught by the checks.
         src_output = Dict(Power => -1)
-        @test_throws AssertionError simple_graph(;src_output)
+        @test_throws AssertionError check_graph_src_snk(;src_output)
 
         # Test that a wrong fixed OPEX is caught by the checks.
         src_opex_fixed = FixedProfile(-5)
-        @test_throws AssertionError simple_graph(;src_opex_fixed)
+        @test_throws AssertionError check_graph_src_snk(; src_opex_fixed)
 
-        # Test that a wrong profile for fixed OPEX is caught by the checks.
+        # Test that a wrong profile for fixed OPEX is caught by the checks both with a
+        # `TwoLevelTree` and `TwoLevel` time structure
         # - check_fixed_opex(n::Node, 𝒯ᴵⁿᵛ, check_timeprofiles::Bool)
         src_opex_fixed = StrategicProfile([1])
-        @test_throws AssertionError simple_graph(;src_opex_fixed)
+        @test_throws AssertionError check_graph_src_snk(; src_opex_fixed)
         src_opex_fixed = OperationalProfile([1])
-        @test_throws AssertionError simple_graph(;src_opex_fixed)
+        @test_throws AssertionError check_graph_src_snk(; src_opex_fixed)
+        src_opex_fixed = StrategicProfile([OperationalProfile([1]), OperationalProfile([1])])
+        @test_throws AssertionError check_graph_src_snk(; src_opex_fixed)
+
+        T = TwoLevelTree(2, [2], SimpleTimes(5, 1); op_per_strat = 10.)
+        src_opex_fixed = StrategicProfile([1])
+        @test_throws AssertionError check_graph_src_snk(; src_opex_fixed, T)
+        src_opex_fixed = StrategicProfile([1, 2, 3])
+        @test_throws AssertionError check_graph_src_snk(; src_opex_fixed, T)
+        src_opex_fixed = OperationalProfile([1])
+        @test_throws AssertionError check_graph_src_snk(; src_opex_fixed, T)
+        src_opex_fixed = StrategicStochasticProfile([
+            [OperationalProfile([1])],
+            [OperationalProfile([1]), OperationalProfile([1])],
+        ])
+        @test_throws AssertionError check_graph_src_snk(; src_opex_fixed, T)
     end
 
     # Test that the fields of a Sink are correctly checked
@@ -589,16 +606,16 @@ end
     @testset "Sink" begin
         # Test that an inconsistent Sink.penalty dictionaries is caught by the checks.
         snk_pen = Dict(:surplus => FixedProfile(4), :def => FixedProfile(2))
-        @test_throws AssertionError simple_graph(;snk_pen)
+        @test_throws AssertionError check_graph_src_snk(;snk_pen)
 
         # The penalties in this Sink node lead to an infeasible optimum. Test that the
         # checks forbids it.
         snk_pen = Dict(:surplus => FixedProfile(-4), :deficit => FixedProfile(2))
-        @test_throws AssertionError simple_graph(;snk_pen)
+        @test_throws AssertionError check_graph_src_snk(;snk_pen)
 
         # Check that a wrong capacity in a sink is caught by the checks.
         snk_cap = OperationalProfile(-[6, 8, 10, 6, 8])
-        @test_throws AssertionError simple_graph(;snk_cap)
+        @test_throws AssertionError check_graph_src_snk(;snk_cap)
     end
 
     # Function for setting up the system for testing a `NetworkNode`

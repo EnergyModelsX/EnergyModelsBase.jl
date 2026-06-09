@@ -227,8 +227,9 @@ using EnergyModelsInvestments
     # Test results
     # (-724 compared to 0.5.x as RefStorage as emission source does not require a charge
     #  capacity any longer in 0.7.x)
-    # (-10736 compared to 0.9.x due to the potential of early retirment)
-    @test round(objective_value(m)) ≈ -313360.0
+    # (-10736 compared to 0.9.x due to the potential of early retirement)
+    # (-16689 compared to 10.1.x due to the bugfix 0.9.1 in EMI)
+    @test round(objective_value(m)) ≈ -296671.0
 
     # Test that investments are happening
     𝒯ᴵⁿᵛ = strategic_periods(get_time_struct(case))
@@ -247,7 +248,6 @@ using EnergyModelsInvestments
     @test sum(
         sum(value.(m[:stor_charge_add][n, t_inv]) > 0 for n ∈ 𝒩ᶜʰᵃʳᵍᵉ)
         for t_inv ∈ 𝒯ᴵⁿᵛ) > 0
-
 end
 
 @testset "Link - OPEX and investments" begin
