@@ -1,5 +1,12 @@
 # Release notes
 
+## Unversioned
+
+### Bug fixes
+
+* Fixed a bug for using `StrategicProfile` in the field `opex_fixed` of a node and `TwoLevelTree` as time structure.
+* Fixed bug in function `check_strategic_profile` when utilizing  `StrategicStochasticProfile`.
+
 ## Version 0.10.1 (2026-04-14)
 
 ### Minor updates

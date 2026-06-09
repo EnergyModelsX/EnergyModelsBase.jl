@@ -662,6 +662,13 @@ function check_strategic_profile(time_profile::TimeProfile, message::String)
         for l1_profile ∈ time_profile.vals
             sub_msg = "in strategic profiles " * message
             bool_sp = check_strat_sub_profile(l1_profile, sub_msg, bool_sp)
+            !bool_sp && break
+        end
+    elseif isa(time_profile, StrategicStochasticProfile)
+        for sp_array ∈ time_profile.vals, l1_profile ∈ sp_array
+            sub_msg = "in strategic stochastic profiles " * message
+            bool_sp = check_strat_sub_profile(l1_profile, sub_msg, bool_sp)
+            !bool_sp && break
         end
     end
 
@@ -1017,14 +1024,6 @@ returns a `TimeProfile`.
   periods.
 """
 function check_fixed_opex(n, 𝒯ᴵⁿᵛ, check_timeprofiles::Bool)
-    if isa(opex_fixed(n), StrategicProfile) && check_timeprofiles
-        @assert_or_log(
-            length(opex_fixed(n).vals) == length(𝒯ᴵⁿᵛ),
-            "The timeprofile provided for the field `opex_fixed` does not match the " *
-            "strategic structure."
-        )
-    end
-
     # Check for potential indexing problems
     message = "are not allowed for the field `opex_fixed`."
     bool_sp = check_strategic_profile(opex_fixed(n), message)
