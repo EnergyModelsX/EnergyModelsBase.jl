@@ -229,7 +229,7 @@ using EnergyModelsInvestments
     #  capacity any longer in 0.7.x)
     # (-10736 compared to 0.9.x due to the potential of early retirement)
     # (-16689 compared to 10.1.x due to the bugfix 0.9.1 in EMI)
-    @test round(objective_value(m)) ≈ -313360.0
+    @test round(objective_value(m)) ≈ -296671.0
 
     # Test that investments are happening
     𝒯ᴵⁿᵛ = strategic_periods(get_time_struct(case))
