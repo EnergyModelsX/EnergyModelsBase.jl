@@ -296,7 +296,6 @@ Checks the `modeltype` .
 """
 function check_model(case, modeltype::EnergyModel, check_timeprofiles::Bool)
     𝒯 = get_time_struct(case)
-    𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     # Check for inclusion of all emission resources
     for p ∈ get_products(case)
@@ -310,27 +309,21 @@ function check_model(case, modeltype::EnergyModel, check_timeprofiles::Bool)
     end
 
     for p ∈ keys(emission_limit(modeltype))
-        em_limit = emission_limit(modeltype, p)
-        # Check for the strategic periods
-        if isa(em_limit, StrategicProfile) && check_timeprofiles
-            @assert_or_log(
-                length(em_limit.vals) == length(𝒯ᴵⁿᵛ),
-                "The timeprofile provided for resource `" *
-                string(p) *
-                "` in the field " *
-                "`emission_limit` does not match the strategic structure."
-            )
-        end
-
         # Check for potential indexing problems
+        em_limit = emission_limit(modeltype, p)
         message =
             "are not allowed for the resource `" *
             string(p) *
             "` in the dictionary " *
             "`emission_limit`."
         check_strategic_profile(em_limit, message)
+
+        # Check for the strategic periods
+        check_timeprofiles || continue
+        check_profile("emission_limit[" * string(p) * "]", em_limit, 𝒯)
     end
 
+    # Check for the strategic periods
     for p ∈ keys(emission_price(modeltype))
         em_price = emission_price(modeltype, p)
         check_timeprofiles || continue
