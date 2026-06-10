@@ -347,25 +347,28 @@ function check_time_structure(x::AbstractElement, 𝒯)
 end
 
 """
-    check_profile(fieldname, value::TimeProfile, 𝒯::TwoLevel)
-    check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel)
-    check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLevel)
+    check_profile(fieldname, value::TimeProfile, 𝒯::TwoLevel; bool::Bool=true)
+    check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel; bool::Bool=true)
+    check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLevel; bool::Bool=true)
 
-    check_profile(fieldname, value::TimeProfile, 𝒯::TwoLevelTree)
-    check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevelTree)
-    check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLevelTree)
+    check_profile(fieldname, value::TimeProfile, 𝒯::TwoLevelTree; bool::Bool=true)
+    check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevelTree; bool::Bool=true)
+    check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLevelTree; bool::Bool=true)
 
 Check that an individual `TimeProfile` corresponds to the time structure `𝒯`. The individual
 checks are depending on the profile type and the time structure.
+
+The key word argument `bool` is used to identify whether subprofiles should be checked
+(`true` as default) or not (`false`).
 """
-function check_profile(fieldname, value::TimeProfile, 𝒯::TwoLevel)
+function check_profile(fieldname, value::TimeProfile, 𝒯::TwoLevel; bool::Bool=true)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-    for t_inv ∈ 𝒯ᴵⁿᵛ
+    bool && for t_inv ∈ 𝒯ᴵⁿᵛ
         p_msg = "strategic period $(t_inv.sp)"
         check_profile(fieldname, value, t_inv.operational, p_msg)
     end
 end
-function check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel)
+function check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel; bool::Bool=true)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
 
     len_vals = length(value.vals)
@@ -380,7 +383,7 @@ function check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel)
     @assert_or_log(
         len_vals == len_ts, "The `TimeProfile` of field `" * string(fieldname) * message
     )
-    for t_inv ∈ 𝒯ᴵⁿᵛ
+    bool && for t_inv ∈ 𝒯ᴵⁿᵛ
         p_msg = "strategic period $(t_inv.sp)"
         check_profile(
             fieldname,
@@ -390,7 +393,7 @@ function check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevel)
         )
     end
 end
-function check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLevel)
+function check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLevel; bool::Bool=true)
     @warn(
         "Using `StrategicStochasticProfile` with `TwoLevel` is dangerous, " *
         "as it may lead to unexpected behaviour. " *
@@ -401,14 +404,14 @@ function check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLe
     prof = StrategicProfile([op_prof[1] for op_prof ∈ value.vals])
     check_profile(fieldname, prof, 𝒯)
 end
-function check_profile(fieldname, value::TimeProfile, 𝒯::TwoLevelTree)
+function check_profile(fieldname, value::TimeProfile, 𝒯::TwoLevelTree; bool::Bool=true)
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-    for t_inv ∈ 𝒯ᴵⁿᵛ
+    bool && for t_inv ∈ 𝒯ᴵⁿᵛ
         p_msg = "branch $(t_inv.branch) in strategic period $(t_inv.sp)"
         check_profile(fieldname, value, t_inv.operational, p_msg)
     end
 end
-function check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevelTree)
+function check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevelTree; bool::Bool=true)
     𝒯ˢˢᶜ = strategic_scenarios(𝒯)
     t_inv_vec = []
 
@@ -426,7 +429,7 @@ function check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevelTree)
         @assert_or_log(
             len_vals == len_ts, "The `TimeProfile` of field `" * string(fieldname) * message,
         )
-        for t_inv ∈ 𝒯ᴵⁿᵛ
+        bool && for t_inv ∈ 𝒯ᴵⁿᵛ
             t_inv ∈ t_inv_vec && continue
             push!(t_inv_vec, t_inv)
 
@@ -440,7 +443,7 @@ function check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevelTree)
         end
     end
 end
-function check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLevelTree)
+function check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLevelTree; bool::Bool=true)
     # Check for the number of strategic periods
     len_vals = length(value.vals)
     len_ts = n_strat_per(𝒯)
@@ -475,7 +478,7 @@ function check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLe
     end
 
     # Check the sub profiles
-    for t_inv ∈ strategic_periods(𝒯)
+    bool && for t_inv ∈ strategic_periods(𝒯)
         p_msg = "branch $(t_inv.branch) in strategic period $(t_inv.sp)"
         sp_prof = value.vals[minimum([t_inv.sp, length(value.vals)])]
         check_profile(

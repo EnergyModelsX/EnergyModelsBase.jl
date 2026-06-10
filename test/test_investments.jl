@@ -380,17 +380,19 @@ EMB.TEST_ENV = true
     # - EMB.check_node_data(n::EMB.Node, data::InvestmentData, 𝒯, modeltype::AbstractInvestmentModel)
     @testset "SingleInvData" begin
 
-        function build_simple_graph(;
+        function check_graph_inv_node(;
             cap = FixedProfile(0),
+            max_inst = FixedProfile(30),
             min_add = FixedProfile(0),
             max_add = FixedProfile(10),
             inv_data = nothing,
+            T = TwoLevel(4, 10, SimpleTimes(4, 1))
         )
             if isnothing(inv_data)
                 inv_data = [
                     SingleInvData(
                         FixedProfile(1000),     # capex [€/kW]
-                        FixedProfile(30),       # max installed capacity [kW]
+                        max_inst,               # max installed capacity [kW]
                         ContinuousInvestment(min_add, max_add),   # investment mode
                     ),
                 ]
@@ -416,7 +418,6 @@ EMB.TEST_ENV = true
             )
             nodes = [source, sink]
             links = [Direct("scr-sink", nodes[1], nodes[2], Linear())]
-            T = TwoLevel(4, 10, SimpleTimes(4, 1))
             case = Case(T, products, [nodes, links], [[get_nodes, get_links]])
 
             em_limits = Dict(CO2 => StrategicProfile([450, 400, 350, 300]))
@@ -439,62 +440,58 @@ EMB.TEST_ENV = true
                 ContinuousInvestment(FixedProfile(0), FixedProfile(20)),   # investment mode
             ),
         ]
-        @test_throws AssertionError build_simple_graph(;inv_data)
+        @test_throws AssertionError check_graph_inv_node(;inv_data)
 
-        # Check that we receive an error if the profiles are wrong
-        rprofile = RepresentativeProfile([FixedProfile(4)])
-        scprofile = ScenarioProfile([FixedProfile(4)])
+        # Check that we receive an error if the profiles are wrong both with a `TwoLevelTree`
+        # and `TwoLevel` time structure for the the sub fields
         oprofile = OperationalProfile(ones(4))
+        profiles = [
+            oprofile,
+            StrategicProfile([4]),
+            StrategicProfile([oprofile, oprofile, oprofile, oprofile])
+        ]
+        T = TwoLevelTree(10, [2, 2, 1], SimpleTimes(4, 1))
 
-        max_add = oprofile
-        @test_throws AssertionError build_simple_graph(;max_add)
-        max_add = scprofile
-        @test_throws AssertionError build_simple_graph(;max_add)
-        max_add = rprofile
-        @test_throws AssertionError build_simple_graph(;max_add)
-        max_add = StrategicProfile([4])
-        @test_throws AssertionError build_simple_graph(;max_add)
-
-        max_add = StrategicProfile([oprofile, oprofile, oprofile, oprofile])
-        @test_throws AssertionError build_simple_graph(;max_add)
-        max_add = StrategicProfile([scprofile, scprofile, scprofile, scprofile])
-        @test_throws AssertionError build_simple_graph(;max_add)
-        max_add = StrategicProfile([rprofile, rprofile, rprofile, rprofile])
-        @test_throws AssertionError build_simple_graph(;max_add)
+        for tp ∈ profiles
+            @test_throws AssertionError check_graph_inv_node(; max_add=tp)
+            @test_throws AssertionError check_graph_inv_node(; max_inst=tp)
+            @test_throws AssertionError check_graph_inv_node(; max_add=tp, T)
+            @test_throws AssertionError check_graph_inv_node(; max_inst=tp, T)
+        end
 
         # Check that we receive an error if the capacity is an operational profile
         cap = OperationalProfile(ones(4))
-        @test_throws AssertionError build_simple_graph(;cap)
+        @test_throws AssertionError check_graph_inv_node(;cap)
         inv_data = [SingleInvData(
             FixedProfile(1000),     # capex [€/kW]
             FixedProfile(10),       # max installed capacity [kW]
             cap,                    # initial capacity
             ContinuousInvestment(FixedProfile(0), FixedProfile(20)),   # investment mode
         )]
-        @test_throws AssertionError build_simple_graph(;inv_data)
+        @test_throws AssertionError check_graph_inv_node(; inv_data)
 
         # Check that we receive an error if the initial capacity is higher than the
         # allowed maximum installed
         cap = FixedProfile(50)
-        @test_throws AssertionError build_simple_graph(;cap)
+        @test_throws AssertionError check_graph_inv_node(; cap)
         inv_data = [SingleInvData(
             FixedProfile(1000),     # capex [€/kW]
             FixedProfile(10),       # max installed capacity [kW]
             FixedProfile(50),       # initial capacity
             ContinuousInvestment(FixedProfile(0), FixedProfile(20)),   # investment mode
         )]
-        @test_throws AssertionError build_simple_graph(;inv_data)
+        @test_throws AssertionError check_graph_inv_node(; inv_data)
 
         # Check that we receive an error if we provide a larger `min_add` than `max_add`
         min_add = FixedProfile(20)
-        @test_throws AssertionError build_simple_graph(;min_add)
+        @test_throws AssertionError check_graph_inv_node(; min_add)
     end
 
     # Testing, that the checks for StorageInvData are working
     # - EMB.check_node_data(n::EMB.Storage, data::InvestmentData, 𝒯, modeltype::AbstractInvestmentModel)
     @testset "StorageInvData" begin
 
-        function build_simple_graph(;
+        function check_graph_inv_stor(;
             charge_cap = FixedProfile(0),
             level_cap = FixedProfile(0),
             min_add = FixedProfile(0),
@@ -571,7 +568,7 @@ EMB.TEST_ENV = true
                 ContinuousInvestment(FixedProfile(0), FixedProfile(20)), # investment mode
             )
         ]
-        @test_throws AssertionError build_simple_graph(;inv_data)
+        @test_throws AssertionError check_graph_inv_stor(;inv_data)
 
         # Check that we receive an error if we provide two `InvestmentData`
         inv_data = [
@@ -600,7 +597,7 @@ EMB.TEST_ENV = true
                 ),
             ),
         ]
-        @test_throws AssertionError build_simple_graph(;inv_data)
+        @test_throws AssertionError check_graph_inv_stor(;inv_data)
 
         # Check that we receive an error if the profiles are wrong
         rprofile = RepresentativeProfile([FixedProfile(4)])
@@ -608,44 +605,44 @@ EMB.TEST_ENV = true
         oprofile = OperationalProfile(ones(4))
 
         max_add = oprofile
-        @test_throws AssertionError build_simple_graph(;max_add)
+        @test_throws AssertionError check_graph_inv_stor(; max_add)
         max_add = scprofile
-        @test_throws AssertionError build_simple_graph(;max_add)
+        @test_throws AssertionError check_graph_inv_stor(; max_add)
         max_add = rprofile
-        @test_throws AssertionError build_simple_graph(;max_add)
+        @test_throws AssertionError check_graph_inv_stor(; max_add)
         max_add = StrategicProfile([4])
-        @test_throws AssertionError build_simple_graph(;max_add)
+        @test_throws AssertionError check_graph_inv_stor(; max_add)
 
         max_add = StrategicProfile([oprofile, oprofile, oprofile, oprofile])
-        @test_throws AssertionError build_simple_graph(;max_add)
+        @test_throws AssertionError check_graph_inv_stor(; max_add)
         max_add = StrategicProfile([scprofile, scprofile, scprofile, scprofile])
-        @test_throws AssertionError build_simple_graph(;max_add)
+        @test_throws AssertionError check_graph_inv_stor(; max_add)
         max_add = StrategicProfile([rprofile, rprofile, rprofile, rprofile])
-        @test_throws AssertionError build_simple_graph(;max_add)
+        @test_throws AssertionError check_graph_inv_stor(; max_add)
 
         # Check that we receive an error if the capacity is an operational profile
         charge_cap = OperationalProfile(ones(4))
-        @test_throws AssertionError build_simple_graph(;charge_cap)
+        @test_throws AssertionError check_graph_inv_stor(; charge_cap)
         level_cap = OperationalProfile(ones(4))
-        @test_throws AssertionError build_simple_graph(;level_cap)
+        @test_throws AssertionError check_graph_inv_stor(; level_cap)
 
         # Check that we receive an error if the initial capacity is higher than the
         # allowed maximum installed
         charge_cap = FixedProfile(50)
-        @test_throws AssertionError build_simple_graph(;charge_cap)
+        @test_throws AssertionError check_graph_inv_stor(; charge_cap)
         level_cap = FixedProfile(10000)
-        @test_throws AssertionError build_simple_graph(;level_cap)
+        @test_throws AssertionError check_graph_inv_stor(; level_cap)
 
         # Check that we receive an error if we provide a larger `min_add` than `max_add`
         min_add = FixedProfile(20)
-        @test_throws AssertionError build_simple_graph(;min_add)
+        @test_throws AssertionError check_graph_inv_stor(; min_add)
     end
 
     # Testing, that the checks for Links are working
     # - EMB.check_link_data(n::Link, data::InvestmentData, 𝒯, modeltype::AbstractInvestmentModel)
     @testset "SingleInvData" begin
 
-        function build_simple_graph(;
+        function check_graph_inv_link(;
             cap = FixedProfile(0),
             min_add = FixedProfile(0),
             max_add = FixedProfile(10),
@@ -703,11 +700,11 @@ EMB.TEST_ENV = true
                 ContinuousInvestment(FixedProfile(0), FixedProfile(20)),   # investment mode
             ),
         ]
-        @test_throws AssertionError build_simple_graph(;inv_data)
+        @test_throws AssertionError check_graph_inv_link(; inv_data)
 
         # Check that the correct subtroutine is called
         max_add = RepresentativeProfile([FixedProfile(4)])
-        @test_throws AssertionError build_simple_graph(;max_add)
+        @test_throws AssertionError check_graph_inv_link(; max_add)
     end
 end
 

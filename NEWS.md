@@ -1,5 +1,11 @@
 # Release notes
 
+## Version 0.10.3 (2026-06-10)
+
+### Bug fixes
+
+* Fixed addition bugs with `StrategicProfile` and `TwoLevelTree` in the checks for the investment data.
+
 ## Version 0.10.2 (2026-06-09)
 
 ### Bug fixes
