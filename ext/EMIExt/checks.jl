@@ -81,8 +81,8 @@ Performs various checks on investment data introduced within EnergyModelsInvestm
 
 ## Checks
 - For each field with `TimeProfile`:
-  - If the `TimeProfile` is a `StrategicProfile`, it will check that the profile is in
-    accordance with the `TimeStructure`
+  - If the `TimeProfile` is a `StrategicProfile` or `StrategicStochasticProfile`, it will
+    check that the profile is in accordance with the `TimeStructure`
   - `TimeProfile`s in `InvestmentData` cannot include `OperationalProfile`,
     `RepresentativeProfile`, or `ScenarioProfile` as this is not allowed through indexing
     on the `TimeProfile`.
@@ -101,45 +101,39 @@ function check_inv_data(
     check_timeprofiles::Bool,
 )
     𝒯ᴵⁿᵛ = strategic_periods(𝒯)
-    bool_sp = true
+    bool = false        # Boolean for subprofile checks
+    bool_sp = true      # Boolean
 
     # Check on the individual time profiles
     for field_name ∈ fieldnames(typeof(inv_data))
-        time_profile = getfield(inv_data, field_name)
-        if isa(time_profile, Union{Investment,LifetimeMode})
-            for sub_field_name ∈ fieldnames(typeof(time_profile))
-                sub_time_profile = getfield(time_profile, sub_field_name)
+        tp = getfield(inv_data, field_name)
+        if isa(tp, Union{Investment,LifetimeMode})
+            for sub_field_name ∈ fieldnames(typeof(tp))
+                stp = getfield(tp, sub_field_name)
                 submessage =
                     "are not allowed for the field `" * String(sub_field_name) *
                     "` of the mode `" * String(field_name) *
                     "` in the investment data" * message * "."
-                if isa(sub_time_profile, StrategicProfile) && check_timeprofiles
-                    @assert_or_log(
-                        length(sub_time_profile.vals) == length(𝒯ᴵⁿᵛ),
-                        "Field `" * string(sub_field_name) *
-                        "` does not match the strategic structure."
-                    )
+                if (isa(stp, StrategicProfile) || isa(stp, StrategicStochasticProfile)) &&
+                    check_timeprofiles
+                    EMB.check_profile(string(sub_field_name), stp, 𝒯; bool)
                 end
-                EMB.check_strategic_profile(sub_time_profile, submessage)
+                EMB.check_strategic_profile(stp, submessage)
             end
         end
-        !isa(time_profile, TimeProfile) && continue
-        isa(time_profile, FixedProfile) && continue
+        (!isa(tp, TimeProfile) || isa(tp, FixedProfile)) && continue
         submessage =
             "are not allowed for the field `" * String(field_name) *
             "` in the investment data" * message * "."
 
-        if isa(time_profile, StrategicProfile) && check_timeprofiles
-            @assert_or_log(
-                length(time_profile.vals) == length(𝒯ᴵⁿᵛ),
-                "Field `" * string(field_name) * "` does not match the strategic " *
-                "structure in the investment data" * message * "."
-            )
+        if (isa(tp, StrategicProfile) || isa(tp, StrategicStochasticProfile)) &&
+            check_timeprofiles
+            EMB.check_profile(string(field_name), tp, 𝒯; bool)
         end
-        if field_name == :initial
-            bool_sp = EMB.check_strategic_profile(time_profile, submessage)
+        if field_name == :initial || field_name == :max_inst
+            bool_sp *= EMB.check_strategic_profile(tp, submessage)
         else
-            EMB.check_strategic_profile(time_profile, submessage)
+            EMB.check_strategic_profile(tp, submessage)
         end
     end
 
@@ -156,7 +150,7 @@ function check_inv_data(
         submessage =
             "are not allowed for the capacity of the investment data " * message *
             ", if investments are allowed and the chosen investment type is `NoStartInvData`."
-        bool_sp = EMB.check_strategic_profile(capacity_profile, submessage)
+        bool_sp *= EMB.check_strategic_profile(capacity_profile, submessage)
         if bool_sp
             @assert_or_log(
                 all(capacity_profile[t_inv] ≤ EMI.max_installed(inv_data, t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ),
