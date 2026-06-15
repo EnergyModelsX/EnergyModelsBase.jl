@@ -1,5 +1,13 @@
 # Release notes
 
+## Version 0.10.4 (2026-06-15)
+
+### Bug fixes
+
+* Fixed a bug regarding the branch probability when using a `TwoLevelTree` structure:
+  * This bug resulted in strategic variables being scaled when calculated from operational variables through the function `scale_op_sp`.
+  * As a consequence, as an example, emission limits where wrongly applied.
+
 ## Version 0.10.3 (2026-06-10)
 
 ### Bug fixes

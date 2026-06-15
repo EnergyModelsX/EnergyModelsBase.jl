@@ -9,7 +9,7 @@ The latter is the recommended approach.
 !!! note
     The majority of the variables in `EnergyModelsBase` are rate variables.
     This imples that they are calculated for either an operational period duration of 1, when indexed over operational period ``t`` or a strategic period duration of 1, when indexed over strategic period ``t_\texttt{inv}``.
-    Typical units for rates are MW for energy streams, tonne/hour for mass streams, tonne/year for strategic emissions, and €/year for operational expenditures.
+    Typical units for rates are MW for energy streams, tonne/hour for mass streams, tonne/year for strategic emissions, and €/year for operating expenses.
     In this example, the duration of an operational period of 1 corresponds to an hour, while the duration of a strategic period of 1 corresponds to a year.
 
     Variables that are energy/mass based have that property highlighted in the documentation below.
@@ -27,9 +27,15 @@ The multiplication then leads to an energy/mass quantity in stead of an energy/m
 The coupling of strategic and operational periods can be achieved through the function `scale_op_sp(t, t_inv)`.
 This functions allows for considering the scaling of the operational periods within a strategic period.
 
+!!! note "`TwoLevelTree` and variables"
+    All variables that are indexed over strategic periods do not take into consideration the branch probability.
+    This is, *e.g.*, the case for the strategic emission variables or the variable operating expenses.
+
+    The branch probability is however taken into account when calculating the objective function.
+
 ## [Operational cost variables](@id man-opt_var-opex)
 
-Operational cost variables are included to account for operational expenditures (OPEX) of the model.
+Operational cost variables are included to account for operating expenses (OPEX) of the model.
 These costs are pure dependent on either the use or the installed capacity of a node ``n``.
 All nodes ``n`` (except [`Availability`](@ref)-nodes) have the following variables representing the operational costs of the nodes:
 
