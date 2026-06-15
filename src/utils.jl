@@ -327,10 +327,14 @@ provided for operational periods to a duration of 1 of a strategic period.
 !!! note "`TwoLevelTree` application"
     The function does not consider the probability of a branch when using a
     [`TwoLevelTree`](@extref TimeStruct.TwoLevelTree) time structure. The reason is that we
-    do not consider any scaling or discounting for the individual strategic variables. This
-    is implicitly included by utilizing the function [`probability_branch`](@extref TimeStruct.probability_branch)
-    or [`objective_weight`](@extref TimeStruct.objective_weight) in the function
-    [`objective`](@ref).
+    do not consider any scaling or discounting for the individual strategic variables to
+    avoid scaling the corresponding bounds. In addition, it allows a simple comparison
+    of branches with different probabilities.
+
+    The scaling is however included in the function [`objective`](@ref) by utilizing the
+    function [`probability_branch`](@extref TimeStruct.probability_branch)
+    or [`objective_weight`](@extref TimeStruct.objective_weight) when considering
+    investments.
 
 # Example
 

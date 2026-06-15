@@ -29,7 +29,8 @@ This functions allows for considering the scaling of the operational periods wit
 
 !!! note "`TwoLevelTree` and variables"
     All variables that are indexed over strategic periods do not take into consideration the branch probability.
-    This is, *e.g.*, the case for the strategic emission variables or the variable operating expenses.
+    This is, *e.g.*, the case for the strategic emission variables or the variable operating expenses that apply per scenario/branch.
+    The reason for this approach is to simplify the comparison of individual values between different branches without the need to consider the probability.
 
     The branch probability is however taken into account when calculating the objective function.
 
