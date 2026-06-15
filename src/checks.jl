@@ -710,12 +710,12 @@ function check_representative_profile(time_profile::TimeProfile, message::String
     # Iterate through the strategic profiles, if existing
     if isa(time_profile, StrategicProfile)
         for l1_profile ∈ time_profile.vals
-            sub_msg = "in strategic profiles " * message
-            bool_rp = check_repr_sub_profile(l1_profile, sub_msg, bool_rp)
+            sub_msg_1 = "in strategic profiles " * message
+            bool_rp = check_repr_sub_profile(l1_profile, sub_msg_1, bool_rp)
             if isa(l1_profile, RepresentativeProfile)
                 for l2_profile ∈ l1_profile.vals
-                    sub_msg = "in representative profiles in strategic profiles " * message
-                    bool_rp = check_repr_sub_profile(l2_profile, sub_msg, bool_rp)
+                    sub_msg_2 = "in representative profiles " * sub_msg_1
+                    bool_rp = check_repr_sub_profile(l2_profile, sub_msg_2, bool_rp)
                 end
             end
         end
@@ -748,8 +748,8 @@ Function for checking that an individual `TimeProfile` does not include the wron
 scenario indexing.
 
 ## Checks
-- `TimeProfile`s accessed in `RepresentativePeriod`s cannot include `OperationalProfile`
-  or `ScenarioProfile` as this is not allowed through indexing on the `TimeProfile`.
+- `TimeProfile`s accessed in `OperationalScenario`s cannot include `OperationalProfile` as
+   this is not allowed through indexing on the `TimeProfile`.
 """
 function check_scenario_profile(time_profile::TimeProfile, message::String)
     # Check on the highest level
@@ -758,23 +758,23 @@ function check_scenario_profile(time_profile::TimeProfile, message::String)
     # Iterate through the strategic profiles, if existing
     if isa(time_profile, StrategicProfile)
         for l1_profile ∈ time_profile.vals
-            sub_msg = "in strategic profiles " * message
-            bool_scp = check_osc_sub_profile(l1_profile, sub_msg, bool_scp)
+            sub_msg_1 = "in strategic profiles " * message
+            bool_scp = check_osc_sub_profile(l1_profile, sub_msg_1, bool_scp)
             if isa(l1_profile, RepresentativeProfile)
+                sub_msg_2 = "in representative profiles " * sub_msg_1
                 for l2_profile ∈ l1_profile.vals
-                    sub_msg = "in representative profiles in strategic profiles " * message
-                    bool_scp = check_osc_sub_profile(l2_profile, sub_msg, bool_scp)
+                    bool_scp = check_osc_sub_profile(l2_profile, sub_msg_2, bool_scp)
                     if isa(l2_profile, ScenarioProfile)
+                        sub_msg_3 = "in scenario profiles in " * sub_msg_2
                         for l3_profile ∈ l2_profile.vals
-                            sub_msg = "in scenario profiles in representative profiles in strategic profiles " * message
-                            bool_scp = check_osc_sub_profile(l3_profile, sub_msg, bool_scp)
+                            bool_scp = check_osc_sub_profile(l3_profile, sub_msg_3, bool_scp)
                         end
                     end
                 end
             elseif isa(l1_profile, ScenarioProfile)
                 for l2_profile ∈ l1_profile.vals
-                    sub_msg = "in scenario profiles in strategic profiles " * message
-                    bool_scp = check_osc_sub_profile(l2_profile, sub_msg, bool_scp)
+                    sub_msg_2 = "in scenario profiles " * sub_msg_1
+                    bool_scp = check_osc_sub_profile(l2_profile, sub_msg_2, bool_scp)
                 end
             end
         end
@@ -783,12 +783,12 @@ function check_scenario_profile(time_profile::TimeProfile, message::String)
     # Iterate through the representative profiles, if existing
     if isa(time_profile, RepresentativeProfile)
         for l1_profile ∈ time_profile.vals
-            sub_msg = "in representative profiles " * message
-            bool_scp = check_osc_sub_profile(l1_profile, sub_msg, bool_scp)
+            sub_msg_1 = "in representative profiles " * message
+            bool_scp = check_osc_sub_profile(l1_profile, sub_msg_1, bool_scp)
             if isa(l1_profile, ScenarioProfile)
                 for l2_profile ∈ l1_profile.vals
-                    sub_msg = "in scenario profiles in representative profiles " * message
-                    bool_scp = check_osc_sub_profile(l2_profile, sub_msg, bool_scp)
+                    sub_msg_2 = "in scenario profiles " * sub_msg_1
+                    bool_scp = check_osc_sub_profile(l2_profile, sub_msg_2, bool_scp)
                 end
             end
         end

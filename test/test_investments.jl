@@ -2,13 +2,13 @@ using EnergyModelsInvestments
 
 @testset "Simple network" begin
     # Create simple model
-    function investment_model()
+    function investment_model(; 𝒯 = TwoLevel(4, 1, SimpleTimes(24, 1), op_per_strat = 24))
         # Define the different resources
         NG = ResourceEmit("NG", 0.2)
         Coal = ResourceCarrier("Coal", 0.35)
         Power = ResourceCarrier("Power", 0.0)
         CO2 = ResourceEmit("CO2", 1.0)
-        products = [NG, Coal, Power, CO2]
+        𝒫 = [NG, Coal, Power, CO2]
 
         op_profile = OperationalProfile([
             20,
@@ -37,8 +37,8 @@ using EnergyModelsInvestments
             20,
         ])
 
-        nodes = [
-            GenAvailability(1, products),
+        𝒩 = [
+            GenAvailability(1, 𝒫),
             RefSink(
                 2,
                 op_profile,
@@ -187,32 +187,31 @@ using EnergyModelsInvestments
                 ],
             ),
         ]
-        links = [
-            Direct(15, nodes[1], nodes[5], Linear())
-            Direct(16, nodes[1], nodes[6], Linear())
-            Direct(17, nodes[1], nodes[7], Linear())
-            Direct(18, nodes[1], nodes[8], Linear())
-            Direct(19, nodes[1], nodes[9], Linear())
-            Direct(110, nodes[1], nodes[10], Linear())
-            Direct(12, nodes[1], nodes[2], Linear())
-            Direct(31, nodes[3], nodes[1], Linear())
-            Direct(41, nodes[4], nodes[1], Linear())
-            Direct(51, nodes[5], nodes[1], Linear())
-            Direct(61, nodes[6], nodes[1], Linear())
-            Direct(71, nodes[7], nodes[1], Linear())
-            Direct(81, nodes[8], nodes[1], Linear())
-            Direct(91, nodes[9], nodes[1], Linear())
-            Direct(101, nodes[10], nodes[1], Linear())
+        ℒ = [
+            Direct(15, 𝒩[1], 𝒩[5], Linear())
+            Direct(16, 𝒩[1], 𝒩[6], Linear())
+            Direct(17, 𝒩[1], 𝒩[7], Linear())
+            Direct(18, 𝒩[1], 𝒩[8], Linear())
+            Direct(19, 𝒩[1], 𝒩[9], Linear())
+            Direct(110, 𝒩[1], 𝒩[10], Linear())
+            Direct(12, 𝒩[1], 𝒩[2], Linear())
+            Direct(31, 𝒩[3], 𝒩[1], Linear())
+            Direct(41, 𝒩[4], 𝒩[1], Linear())
+            Direct(51, 𝒩[5], 𝒩[1], Linear())
+            Direct(61, 𝒩[6], 𝒩[1], Linear())
+            Direct(71, 𝒩[7], 𝒩[1], Linear())
+            Direct(81, 𝒩[8], 𝒩[1], Linear())
+            Direct(91, 𝒩[9], 𝒩[1], Linear())
+            Direct(101, 𝒩[10], 𝒩[1], Linear())
         ]
 
         # Creation of the time structure and global data
-        T = TwoLevel(4, 1, SimpleTimes(24, 1), op_per_strat = 24)
         em_limits = Dict(NG => FixedProfile(1e6), CO2 => StrategicProfile([450, 400, 350, 300]))
         em_cost = Dict(NG => FixedProfile(0), CO2 => FixedProfile(0))
         modeltype = InvestmentModel(em_limits, em_cost, CO2, 0.07)
 
         # Input data structure
-        case = Case(T, products, [nodes, links], [[get_nodes, get_links]])
+        case = Case(𝒯, 𝒫, [𝒩, ℒ], [[get_nodes, get_links]])
         return case, modeltype
     end
 
@@ -229,6 +228,7 @@ using EnergyModelsInvestments
     #  capacity any longer in 0.7.x)
     # (-10736 compared to 0.9.x due to the potential of early retirement)
     # (-16689 compared to 10.1.x due to the bugfix 0.9.1 in EMI)
+    objective_TwoLevel = objective_value(m)
     @test round(objective_value(m)) ≈ -296671.0
 
     # Test that investments are happening
@@ -248,6 +248,12 @@ using EnergyModelsInvestments
     @test sum(
         sum(value.(m[:stor_charge_add][n, t_inv]) > 0 for n ∈ 𝒩ᶜʰᵃʳᵍᵉ)
         for t_inv ∈ 𝒯ᴵⁿᵛ) > 0
+
+    # Test that the results are exactly the same for an equivalent `TwoLevelTree`
+    𝒯 = TwoLevelTree(1, [2, 2, 2], SimpleTimes(24, 1), op_per_strat = 24.0)
+    case, modeltype = investment_model(; 𝒯)
+    m = run_model(case, modeltype, HiGHS.Optimizer)
+    @test objective_TwoLevel ≈ objective_value(m)
 end
 
 @testset "Link - OPEX and investments" begin
@@ -313,21 +319,21 @@ end
             ),
         ]
 
-        products = [Power, CO2]
-        nodes = [source_1, source_2, sink]
-        links = Link[
+        𝒫 = [Power, CO2]
+        𝒩 = [source_1, source_2, sink]
+        ℒ = Link[
             OpexDirect("OpexDirect", source_1, sink, Linear()),
             InvDirect("InvDirect", source_2, sink, data_link),
         ]
 
         # Creation of the time structure and global data
-        T = TwoLevel(4, 1, SimpleTimes(24, 1), op_per_strat = 24)
+        𝒯 = TwoLevel(4, 1, SimpleTimes(24, 1), op_per_strat = 24)
         em_limits = Dict(CO2 => StrategicProfile([450, 400, 350, 300]))
         em_cost = Dict(CO2 => FixedProfile(0))
         modeltype = InvestmentModel(em_limits, em_cost, CO2, 0.0)
 
         # Input data structure
-        case = Case(T, products, [nodes, links], [[get_nodes, get_links]])
+        case = Case(𝒯, 𝒫, [𝒩, ℒ], [[get_nodes, get_links]])
         return run_model(case, modeltype, HiGHS.Optimizer), case, modeltype
     end
 
@@ -386,7 +392,7 @@ EMB.TEST_ENV = true
             min_add = FixedProfile(0),
             max_add = FixedProfile(10),
             inv_data = nothing,
-            T = TwoLevel(4, 10, SimpleTimes(4, 1))
+            𝒯 = TwoLevel(4, 10, SimpleTimes(4, 1))
         )
             if isnothing(inv_data)
                 inv_data = [
@@ -400,7 +406,7 @@ EMB.TEST_ENV = true
 
             CO2 = ResourceEmit("CO2", 1.0)
             Power = ResourceCarrier("Power", 0.0)
-            products = [Power, CO2]
+            𝒫 = [Power, CO2]
 
             source = RefSource(
                 "-src",
@@ -416,9 +422,9 @@ EMB.TEST_ENV = true
                 Dict(:surplus => FixedProfile(0), :deficit => FixedProfile(1e4)),
                 Dict(Power => 1),
             )
-            nodes = [source, sink]
-            links = [Direct("scr-sink", nodes[1], nodes[2], Linear())]
-            case = Case(T, products, [nodes, links], [[get_nodes, get_links]])
+            𝒩 = [source, sink]
+            ℒ = [Direct("scr-sink", 𝒩[1], 𝒩[2], Linear())]
+            case = Case(𝒯, 𝒫, [𝒩, ℒ], [[get_nodes, get_links]])
 
             em_limits = Dict(CO2 => StrategicProfile([450, 400, 350, 300]))
             em_cost = Dict(CO2 => FixedProfile(0))
@@ -450,13 +456,13 @@ EMB.TEST_ENV = true
             StrategicProfile([4]),
             StrategicProfile([oprofile, oprofile, oprofile, oprofile])
         ]
-        T = TwoLevelTree(10, [2, 2, 1], SimpleTimes(4, 1))
+        𝒯 = TwoLevelTree(10, [2, 2, 1], SimpleTimes(4, 1))
 
         for tp ∈ profiles
             @test_throws AssertionError check_graph_inv_node(; max_add=tp)
             @test_throws AssertionError check_graph_inv_node(; max_inst=tp)
-            @test_throws AssertionError check_graph_inv_node(; max_add=tp, T)
-            @test_throws AssertionError check_graph_inv_node(; max_inst=tp, T)
+            @test_throws AssertionError check_graph_inv_node(; max_add=tp, 𝒯)
+            @test_throws AssertionError check_graph_inv_node(; max_inst=tp, 𝒯)
         end
 
         # Check that we receive an error if the capacity is an operational profile
@@ -520,7 +526,7 @@ EMB.TEST_ENV = true
 
             CO2 = ResourceEmit("CO2", 1.0)
             Power = ResourceCarrier("Power", 0.0)
-            products = [Power, CO2]
+            𝒫 = [Power, CO2]
 
             source = RefSource(
                 "-src",
@@ -544,14 +550,14 @@ EMB.TEST_ENV = true
                 Dict(:surplus => FixedProfile(0), :deficit => FixedProfile(1e4)),
                 Dict(Power => 1),
             )
-            nodes = [source, storage, sink]
-            links = [
-                Direct("src-stor", nodes[1], nodes[2], Linear())
-                Direct("src-snk", nodes[1], nodes[3], Linear())
-                Direct("stor-snk", nodes[2], nodes[3], Linear())
+            𝒩 = [source, storage, sink]
+            ℒ = [
+                Direct("src-stor", 𝒩[1], 𝒩[2], Linear())
+                Direct("src-snk", 𝒩[1], 𝒩[3], Linear())
+                Direct("stor-snk", 𝒩[2], 𝒩[3], Linear())
             ]
-            T = TwoLevel(4, 10, SimpleTimes(4, 1))
-            case = Case(T, products, [nodes, links], [[get_nodes, get_links]])
+            𝒯 = TwoLevel(4, 10, SimpleTimes(4, 1))
+            case = Case(𝒯, 𝒫, [𝒩, ℒ], [[get_nodes, get_links]])
 
             em_limits = Dict(CO2 => StrategicProfile([450, 400, 350, 300]))
             em_cost = Dict(CO2 => FixedProfile(0))
@@ -660,7 +666,7 @@ EMB.TEST_ENV = true
 
             CO2 = ResourceEmit("CO2", 1.0)
             Power = ResourceCarrier("Power", 0.0)
-            products = [Power, CO2]
+            𝒫 = [Power, CO2]
 
             source = RefSource(
                 "-src",
@@ -675,10 +681,10 @@ EMB.TEST_ENV = true
                 Dict(:surplus => FixedProfile(0), :deficit => FixedProfile(1e4)),
                 Dict(Power => 1),
             )
-            nodes = [source, sink]
-            links = [InvDirect("scr-sink", nodes[1], nodes[2], inv_data)]
-            T = TwoLevel(4, 10, SimpleTimes(4, 1))
-            case = Case(T, products, [nodes, links], [[get_nodes, get_links]])
+            𝒩 = [source, sink]
+            ℒ = [InvDirect("scr-sink", 𝒩[1], 𝒩[2], inv_data)]
+            𝒯 = TwoLevel(4, 10, SimpleTimes(4, 1))
+            case = Case(𝒯, 𝒫, [𝒩, ℒ], [[get_nodes, get_links]])
 
             em_limits = Dict(CO2 => StrategicProfile([450, 400, 350, 300]))
             em_cost = Dict(CO2 => FixedProfile(0))

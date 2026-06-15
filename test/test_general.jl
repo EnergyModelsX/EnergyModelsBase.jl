@@ -1,11 +1,11 @@
-function generate_data()
+function generate_data(; 𝒯 = TwoLevel(4, 2, SimpleTimes(4, 2), op_per_strat = 8.0))
 
     # Define the different resources
     NG = ResourceEmit("NG", 0.2)
     Coal = ResourceCarrier("Coal", 0.35)
     Power = ResourceCarrier("Power", 0.0)
     CO2 = ResourceEmit("CO2", 1.0)
-    products = [NG, Coal, Power, CO2]
+    𝒫 = [NG, Coal, Power, CO2]
 
     # Creation of the emission data for the individual nodes.
     capture_data = CaptureEnergyEmissions(0.9)
@@ -13,10 +13,10 @@ function generate_data()
 
     # Create the individual test nodes, corresponding to a system with an electricity demand/sink,
     # coal and nautral gas sources, coal and natural gas (with CCS) power plants and CO2 storage.
-    nodes = [
-        GenAvailability(1, products),
-        RefSource(2, FixedProfile(1e12), FixedProfile(30), FixedProfile(0), Dict(NG => 1)),
-        RefSource(3, FixedProfile(1e12), FixedProfile(9), FixedProfile(0), Dict(Coal => 1)),
+    𝒩 = [
+        GenAvailability(1, 𝒫),
+        RefSource(2, FixedProfile(100), FixedProfile(30), FixedProfile(0), Dict(NG => 1)),
+        RefSource(3, FixedProfile(100), FixedProfile(9), FixedProfile(0), Dict(Coal => 1)),
         RefNetworkNode(
             4,
             FixedProfile(25),
@@ -52,34 +52,33 @@ function generate_data()
     ]
 
     # Connect all nodes with the availability node for the overall energy/mass balance
-    links = [
-        Direct(14, nodes[1], nodes[4], Linear())
-        Direct(15, nodes[1], nodes[5], Linear())
-        Direct(16, nodes[1], nodes[6], Linear())
-        Direct(17, nodes[1], nodes[7], Linear())
-        Direct(21, nodes[2], nodes[1], Linear())
-        Direct(31, nodes[3], nodes[1], Linear())
-        Direct(41, nodes[4], nodes[1], Linear())
-        Direct(51, nodes[5], nodes[1], Linear())
-        Direct(61, nodes[6], nodes[1], Linear())
+    ℒ = [
+        Direct(14, 𝒩[1], 𝒩[4], Linear())
+        Direct(15, 𝒩[1], 𝒩[5], Linear())
+        Direct(16, 𝒩[1], 𝒩[6], Linear())
+        Direct(17, 𝒩[1], 𝒩[7], Linear())
+        Direct(21, 𝒩[2], 𝒩[1], Linear())
+        Direct(31, 𝒩[3], 𝒩[1], Linear())
+        Direct(41, 𝒩[4], 𝒩[1], Linear())
+        Direct(51, 𝒩[5], 𝒩[1], Linear())
+        Direct(61, 𝒩[6], 𝒩[1], Linear())
     ]
 
-    # Creation of the time structure and global data
-    T = TwoLevel(4, 2, SimpleTimes(4, 2), op_per_strat = 8)
-    model = OperationalModel(
+    # Creation of the modeltype
+    modeltype = OperationalModel(
         Dict(CO2 => StrategicProfile([160, 140, 120, 100]), NG => FixedProfile(1e6)),
         Dict(CO2 => FixedProfile(10)),
         CO2,
     )
 
     # Input data structure
-    case = Case(T, products, [nodes, links], [[get_nodes, get_links]])
-    return case, model
+    case = Case(𝒯, 𝒫, [𝒩, ℒ], [[get_nodes, get_links]])
+    return case, modeltype
 end
 
 @testset "General tests" begin
-    case, model = generate_data()
-    m = run_model(case, model, HiGHS.Optimizer)
+    case, modeltype = generate_data()
+    m = run_model(case, modeltype, HiGHS.Optimizer)
 
     # Retrieve data from the case structure
     𝒫 = get_products(case)
@@ -100,6 +99,8 @@ end
 
     ℒ = get_links(case)
 
+    objective_TwoLevel = objective_value(m)
+
     # Check for the objective value
     # (*2 compared to 0.6.0 due to change in strategic period duration)
     # (-10400 = 2*10*(160+140+120+100) compared to 0.8.3 due to inclusion of co2 emissions)
@@ -113,10 +114,10 @@ end
     # - constraints_emissions(m, 𝒩, 𝒯, 𝒫, modeltype::EnergyModel)
     @test all(
         value.(m[:emissions_strategic])[t_inv, CO2] <=
-        EMB.emission_limit(model, CO2, t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ
+        EMB.emission_limit(modeltype, CO2, t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ
     )
     @test all(
-        value.(m[:emissions_strategic])[t_inv, NG] <= EMB.emission_limit(model, NG, t_inv)
+        value.(m[:emissions_strategic])[t_inv, NG] <= EMB.emission_limit(modeltype, NG, t_inv)
         for t_inv ∈ 𝒯ᴵⁿᵛ
     )
 
@@ -140,7 +141,7 @@ end
                 value.(m[:opex_var][n, t_inv]) + value.(m[:opex_fixed][n, t_inv])
             for n ∈ 𝒩ᵒᵖᵉˣ) +
             sum(
-                value.(m[:emissions_total][t, CO2]) * emission_price(model, CO2, t) *
+                value.(m[:emissions_total][t, CO2]) * emission_price(modeltype, CO2, t) *
                 scale_op_sp(t_inv, t) for t ∈ t_inv)
         ) * duration_strat(t_inv) for t_inv ∈ 𝒯ᴵⁿᵛ
     ) ≈ objective_value(m) atol = TEST_ATOL
@@ -184,4 +185,10 @@ end
             p ∈ EMB.link_res(l), atol ∈ TEST_ATOL
         ) for l ∈ ℒ, atol ∈ TEST_ATOL
     )
+
+    # Test that the results are exactly the same for an equivalent `TwoLevelTree`
+    𝒯 = TwoLevelTree(2, [2, 2, 2], SimpleTimes(4, 2), op_per_strat = 8.0)
+    case, modeltype = generate_data(; 𝒯)
+    m = run_model(case, modeltype, HiGHS.Optimizer)
+    @test objective_TwoLevel ≈ objective_value(m)
 end
