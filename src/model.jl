@@ -762,7 +762,7 @@ function objective(m, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
     # Calculation of the objective function.
     @objective(m, Max,
         -sum(
-            sum(𝒳[t_inv] for 𝒳 ∈ opex) * duration_strat(t_inv)
+            sum(𝒳[t_inv] for 𝒳 ∈ opex) * duration_strat(t_inv) * probability_branch(t_inv)
         for t_inv ∈ 𝒯ᴵⁿᵛ)
     )
 end

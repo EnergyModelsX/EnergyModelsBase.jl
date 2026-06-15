@@ -319,10 +319,18 @@ end
 
 Provides a simplified function for returning the multiplication
 
-``duration(t) * multiple\\_strat(t\\_inv, t) * probability(t)``
+``duration(t) * multiple\\_strat(t\\_inv, t) * probability(t) / probability_branch(t)``
 
 when operational periods are coupled with strategic periods. It is used to scale the value
 provided for operational periods to a duration of 1 of a strategic period.
+
+!!! note "`TwoLevelTree` application"
+    The function does not consider the probability of a branch when using a
+    [`TwoLevelTree`](@extref TimeStruct.TwoLevelTree) time structure. The reason is that we
+    do not consider any scaling or discounting for the individual strategic variables. This
+    is implicitly included by utilizing the function [`probability_branch`](@extref TimeStruct.probability_branch)
+    or [`objective_weight`](@extref TimeStruct.objective_weight) in the function
+    [`objective`](@ref).
 
 # Example
 
@@ -340,7 +348,7 @@ scale_op_sp(t_inv, t)
 ```
 """
 scale_op_sp(t_inv::TS.AbstractStrategicPeriod, t::TS.TimePeriod) =
-    duration(t) * multiple_strat(t_inv, t) * probability(t)
+    duration(t) * multiple_strat(t_inv, t) * probability(t) / probability_branch(t)
 
 function multiple(t_inv, t)
     @warn(
