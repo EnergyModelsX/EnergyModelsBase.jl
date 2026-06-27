@@ -645,38 +645,7 @@ function check_not_sub_prof(::Type{TP}, tp_sub::TimeProfile, sub_msg::String) wh
     return bool_tp
 end
 
-"""
-    check_strategic_profile(time_profile::TimeProfile, message::String)
-
-Function for checking that an individual `TimeProfile` does not include the wrong type for
-strategic indexing.
-
-## Checks
-- `TimeProfile`s accessed in `StrategicPeriod`s cannot include `OperationalProfile`,
-  `ScenarioProfile`, or `RepresentativeProfile` as this is not allowed through indexing
-  on the `TimeProfile`.
-"""
-function check_strategic_profile(time_profile::TimeProfile, message::String)
-    # Check on the highest level
-    bool_sp = check_strat_sub_profile(time_profile, message)
-
-    if isa(time_profile, StrategicProfile)
-        for tp_l1 ∈ time_profile.vals
-            sub_msg = "in strategic profiles " * message
-            bool_sp *= check_strat_sub_profile(tp_l1, sub_msg)
-            !bool_sp && break
-        end
-    elseif isa(time_profile, StrategicStochasticProfile)
-        for sp_array ∈ time_profile.vals, tp_l1 ∈ sp_array
-            sub_msg = "in strategic stochastic profiles " * message
-            bool_sp *= check_strat_sub_profile(tp_l1, sub_msg)
-            !bool_sp && break
-        end
-    end
-
-    return bool_sp
-end
-function check_strat_sub_profile(tp_sub::TimeProfile, sub_msg::String)
+function check_not_profiles(::Type{TP}, tp_sub::TimeProfile, sub_msg::String) where {TP<:Union{StrategicProfile, StrategicStochasticProfile}}
     bool_op = check_not_sub_prof(OperationalProfile, tp_sub, sub_msg)
     bool_part = check_not_sub_prof(PartitionProfile, tp_sub, sub_msg)
     bool_scp = check_not_sub_prof(ScenarioProfile, tp_sub, sub_msg)
@@ -685,6 +654,57 @@ function check_strat_sub_profile(tp_sub::TimeProfile, sub_msg::String)
     return bool_op * bool_part * bool_scp * bool_rp
 end
 
+function check_sub_profs(
+    ::Type{TP},
+    time_profile::StrategicProfile,
+    msg::String,
+) where {TP<:StrategicProfile}
+    bool_val = true
+    for l1_profile ∈ time_profile.vals
+        sub_msg = "in strategic profiles " * msg
+        bool_val *= check_not_profiles(TP, l1_profile, sub_msg)
+        !bool_val && break
+    end
+    return bool_val
+end
+
+function check_sub_profs(
+    ::Type{TP},
+    time_profile::StrategicStochasticProfile,
+    msg::String,
+) where {TP<:StrategicStochasticProfile}
+    bool_val = true
+    for sp_array ∈ time_profile.vals, l1_profile ∈ sp_array
+        sub_msg = "in strategic stochastic profiles " * msg
+        bool_val = check_not_profiles(TP, l1_profile, sub_msg)
+        !bool_val && break
+    end
+    return bool_val
+end
+
+"""
+    check_strategic_profile(time_profile::TimeProfile, message::String)
+
+Function for checking that an individual `TimeProfile` does not include the wrong type for
+strategic indexing.
+
+## Checks
+- `TimeProfile`s accessed in `StrategicPeriod`s cannot include `OperationalProfile`,
+  `PartitionProfile`, `ScenarioProfile`, or `RepresentativeProfile` as this is not allowed
+  through indexing on the `TimeProfile`.
+"""
+function check_strategic_profile(time_profile::TimeProfile, message::String)
+
+    if isa(time_profile, Union{StrategicProfile, StrategicStochasticProfile})
+        # Iterate through the strategic or strategic stochstic profiles, if existing
+        bool_sp = check_sub_profs(typeof(time_profile), time_profile, message)
+    else
+        # Check the profiles
+        bool_sp = check_not_profiles(StrategicProfile, time_profile, message)
+    end
+
+    return bool_sp
+end
 
 """
     check_representative_profile(time_profile::TimeProfile, message::String)
@@ -697,8 +717,9 @@ representative periods indexing.
 - `message` - A message that should be printed after the type of profile.
 
 ## Checks
-- `TimeProfile`s accessed in `RepresentativePeriod`s cannot include `OperationalProfile`
-  or `ScenarioProfile` as this is not allowed through indexing on the `TimeProfile`.
+- `TimeProfile`s accessed in `RepresentativePeriod`s cannot include `OperationalProfile`,
+  `PartitionProfile` or `ScenarioProfile` as this is not allowed through indexing on the
+  `TimeProfile`.
 """
 function check_representative_profile(time_profile::TimeProfile, message::String)
     # Check on the highest level
@@ -742,8 +763,8 @@ Function for checking that an individual `TimeProfile` does not include the wron
 scenario indexing.
 
 ## Checks
-- `TimeProfile`s accessed in `OperationalScenario`s cannot include `OperationalProfile` as
-   this is not allowed through indexing on the `TimeProfile`.
+- `TimeProfile`s accessed in `OperationalScenario`s cannot include `OperationalProfile` or
+  `PartitionProfile` as this is not allowed through indexing on the `TimeProfile`.
 """
 function check_scenario_profile(time_profile::TimeProfile, message::String)
     # Check on the highest level

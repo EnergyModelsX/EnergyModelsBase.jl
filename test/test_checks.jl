@@ -481,6 +481,17 @@ end
         @test_throws AssertionError EMB.check_strategic_profile(tp, "")
     end
 
+    # Check that valid profiles pass check_strategic_profile without error
+    valid_profiles = [
+        FixedProfile(5),
+        StrategicProfile([FixedProfile(5)]),
+        StrategicStochasticProfile([[FixedProfile(5)]]),
+    ]
+    for tp ∈ valid_profiles
+        @test EMB.check_strategic_profile(tp, "")
+    end
+
+
     # Check that wrong profiles for representative indexable variables are identified
     # - EMB.check_representative_profile(time_profile::TimeProfile, message::String)
     profiles = [
