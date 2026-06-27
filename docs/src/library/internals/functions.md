@@ -67,6 +67,7 @@ check_profile
 check_strategic_profile
 check_representative_profile
 check_scenario_profile
+check_partition_profile
 compile_logs
 ```
 

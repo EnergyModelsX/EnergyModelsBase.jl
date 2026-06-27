@@ -669,6 +669,14 @@ function check_not_profiles(::Type{TP}, tp_sub::TimeProfile, sub_msg::String) wh
     return bool_op * bool_part
 end
 
+function check_not_profiles(::Type{TP}, tp_sub::TimeProfile, sub_msg::String) where {TP<:PartitionProfile}
+    bool_op = check_not_sub_prof(OperationalProfile, tp_sub, sub_msg)
+    return bool_op
+end
+function check_not_profiles(::Type{TP}, tp_sub::Number, sub_msg::String) where {TP<:PartitionProfile}
+    return true
+end
+
 function check_sub_profs(
     ::Type{TP},
     time_profile::StrategicProfile,
@@ -766,6 +774,34 @@ function check_sub_profs(
     end
     return bool_val
 end
+function check_sub_profs(
+    ::Type{TP},
+    time_profile::ScenarioProfile,
+    msg::String,
+) where {TP<:TimeProfile}
+    bool_val = true
+    for l1_profile ∈ time_profile.vals
+        sub_msg = "in scenario profiles " * msg
+        bool_val *= check_not_profiles(TP, l1_profile, sub_msg)
+        bool_val *= check_sub_profs(TP, l1_profile, sub_msg)
+        !bool_val && break
+    end
+    return bool_val
+end
+
+function check_sub_profs(
+    ::Type{TP},
+    time_profile::PartitionProfile,
+    msg::String,
+) where {TP<:PartitionProfile}
+    bool_val = true
+    for l1_profile ∈ time_profile.vals
+        sub_msg = "in partition profiles " * msg
+        bool_val *= check_not_profiles(TP, l1_profile, sub_msg)
+        !bool_val && break
+    end
+    return bool_val
+end
 
 function check_sub_profs(
     ::Type{TP},
@@ -853,6 +889,31 @@ function check_scenario_profile(time_profile::TimeProfile, message::String)
     end
 
     return bool_scp
+end
+
+"""
+    check_partition_profile(time_profile::TimeProfile, message::String)
+
+Function for checking that an individual `TimeProfile` does not include the wrong type for
+partition indexing.
+
+## Checks
+- `TimeProfile`s accessed in `PeriodPartion`s cannot include `OperationalProfile` as this is
+  not allowed through indexing on the `TimeProfile`.
+"""
+function check_partition_profile(time_profile::TimeProfile, message::String)
+    # Check the sub structures
+    if isa(
+        time_profile,
+        Union{StrategicProfile, StrategicStochasticProfile, RepresentativeProfile, ScenarioProfile, PartitionProfile}
+    )
+        bool_part = check_sub_profs(PartitionProfile, time_profile, message)
+    else
+        # Check the profiles
+        bool_part = check_not_profiles(ScenarioProfile, time_profile, message)
+    end
+
+    return bool_part
 end
 
 """
