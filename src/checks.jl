@@ -654,6 +654,14 @@ function check_not_profiles(::Type{TP}, tp_sub::TimeProfile, sub_msg::String) wh
     return bool_op * bool_part * bool_scp * bool_rp
 end
 
+function check_not_profiles(::Type{TP}, tp_sub::TimeProfile, sub_msg::String) where {TP<:RepresentativeProfile}
+    bool_op = check_not_sub_prof(OperationalProfile, tp_sub, sub_msg)
+    bool_part = check_not_sub_prof(PartitionProfile, tp_sub, sub_msg)
+    bool_scp = check_not_sub_prof(ScenarioProfile, tp_sub, sub_msg)
+
+    return bool_op * bool_part * bool_scp
+end
+
 function check_sub_profs(
     ::Type{TP},
     time_profile::StrategicProfile,
@@ -663,6 +671,20 @@ function check_sub_profs(
     for l1_profile ∈ time_profile.vals
         sub_msg = "in strategic profiles " * msg
         bool_val *= check_not_profiles(TP, l1_profile, sub_msg)
+        !bool_val && break
+    end
+    return bool_val
+end
+function check_sub_profs(
+    ::Type{TP},
+    time_profile::StrategicProfile,
+    msg::String,
+) where {TP<:TimeProfile}
+    bool_val = true
+    for l1_profile ∈ time_profile.vals
+        sub_msg = "in strategic profiles " * msg
+        bool_val *= check_not_profiles(TP, l1_profile, sub_msg)
+        bool_val *= check_sub_profs(TP, l1_profile, msg)
         !bool_val && break
     end
     return bool_val
@@ -680,6 +702,42 @@ function check_sub_profs(
         !bool_val && break
     end
     return bool_val
+end
+function check_sub_profs(
+    ::Type{TP},
+    time_profile::StrategicStochasticProfile,
+    msg::String,
+) where {TP<:TimeProfile}
+    bool_val = true
+    for sp_array ∈ time_profile.vals, l1_profile ∈ sp_array
+        sub_msg = "in strategic stochastic profiles " * msg
+        bool_val = check_not_profiles(TP, l1_profile, sub_msg)
+        bool_val *= check_sub_profs(TP, l1_profile, msg)
+        !bool_val && break
+    end
+    return bool_val
+end
+
+function check_sub_profs(
+    ::Type{TP},
+    time_profile::RepresentativeProfile,
+    msg::String,
+) where {TP<:RepresentativeProfile}
+    bool_val = true
+    for l1_profile ∈ time_profile.vals
+        sub_msg = "in representative profiles " * msg
+        bool_val *= check_not_profiles(TP, l1_profile, sub_msg)
+        !bool_val && break
+    end
+    return bool_val
+end
+
+function check_sub_profs(
+    ::Type{TP},
+    time_profile::FixedProfile,
+    msg::String,
+) where {TP<:TimeProfile}
+    return true
 end
 
 """
@@ -722,38 +780,19 @@ representative periods indexing.
   `TimeProfile`.
 """
 function check_representative_profile(time_profile::TimeProfile, message::String)
-    # Check on the highest level
-    bool_rp = check_repr_sub_profile(time_profile, message)
 
-    # Iterate through the strategic profiles, if existing
-    if isa(time_profile, StrategicProfile)
-        for tp_l1 ∈ time_profile.vals
-            sub_msg_1 = "in strategic profiles " * message
-            bool_rp *= check_repr_sub_profile(tp_l1, sub_msg_1)
-            if isa(tp_l1, RepresentativeProfile)
-                for tp_l2 ∈ tp_l1.vals
-                    sub_msg_2 = "in representative profiles " * sub_msg_1
-                    bool_rp *= check_repr_sub_profile(tp_l2, sub_msg_2)
-                end
-            end
-        end
-    end
-
-    # Iterate through the representative profiles, if existing
-    if isa(time_profile, RepresentativeProfile)
-        for tp_l1 ∈ time_profile.vals
-            sub_msg = "in representative profiles " * message
-            bool_rp *= check_repr_sub_profile(tp_l1, sub_msg)
-        end
+    if isa(
+        time_profile,
+        Union{StrategicProfile, StrategicStochasticProfile, RepresentativeProfile}
+    )
+        # Iterate through the strategic, strategic stochstic, or representative profiles,
+        # if existing
+        bool_rp = check_sub_profs(RepresentativeProfile, time_profile, message)
+    else
+        # Check the profiles
+        bool_rp = check_not_profiles(RepresentativeProfile, time_profile, message)
     end
     return bool_rp
-end
-function check_repr_sub_profile(tp_sub::TimeProfile, sub_msg::String)
-    bool_op = check_not_sub_prof(OperationalProfile, tp_sub, sub_msg)
-    bool_part = check_not_sub_prof(PartitionProfile, tp_sub, sub_msg)
-    bool_scp = check_not_sub_prof(ScenarioProfile, tp_sub, sub_msg)
-
-    return bool_op * bool_part * bool_scp
 end
 
 """

@@ -501,9 +501,11 @@ end
         StrategicProfile([OperationalProfile([5])]),
         StrategicProfile([PartitionProfile([5])]),
         StrategicProfile([ScenarioProfile([5])]),
+        StrategicStochasticProfile([[OperationalProfile([5])]]),
         StrategicProfile([RepresentativeProfile([OperationalProfile([5])])]),
         StrategicProfile([RepresentativeProfile([PartitionProfile([5])])]),
         StrategicProfile([RepresentativeProfile([ScenarioProfile([5])])]),
+        StrategicStochasticProfile([[RepresentativeProfile([OperationalProfile([5])])]]),
         RepresentativeProfile([OperationalProfile([5])]),
         RepresentativeProfile([PartitionProfile([5])]),
         RepresentativeProfile([ScenarioProfile([5])]),
@@ -511,6 +513,20 @@ end
     for tp ∈ profiles
         @test_throws AssertionError EMB.check_representative_profile(tp, "")
     end
+
+    # Check that valid profiles pass check_representative_profile without error
+    valid_profiles = [
+        FixedProfile(5),
+        RepresentativeProfile([5]),
+        StrategicProfile([FixedProfile(5)]),
+        StrategicProfile([RepresentativeProfile([5])]),
+        StrategicStochasticProfile([[FixedProfile(5)]]),
+        StrategicStochasticProfile([[RepresentativeProfile([5])]]),
+    ]
+    for tp ∈ valid_profiles
+        @test EMB.check_representative_profile(tp, "")
+    end
+
 
     # Check that wrong profiles for scenario indexable variables are identified
     # - EMB.check_scenario_profile(time_profile::TimeProfile, message::String)
