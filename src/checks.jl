@@ -645,6 +645,17 @@ function check_not_sub_prof(::Type{TP}, tp_sub::TimeProfile, sub_msg::String) wh
     return bool_tp
 end
 
+"""
+    check_not_profiles(::Type{TP}, tp_sub::TimeProfile, sub_msg::String) where {T<:TimeProfile}
+
+Check that the sub time profile `tp_sub` is applicable for indexing with `TimeStructurePeriod`
+or `PeriodPartition` as declared by the time profile type `TP`. The check is not performed
+on potential subprofiles. This can be achieved through the function [`check_sub_profs`](@ref)
+
+!!! danger "Usage of this function"
+    User should never use this function directly. It should only be included within the core
+    structure in `EnergyModelsBase`.
+"""
 function check_not_profiles(::Type{TP}, tp_sub::TimeProfile, sub_msg::String) where {TP<:Union{StrategicProfile, StrategicStochasticProfile}}
     bool_op = check_not_sub_prof(OperationalProfile, tp_sub, sub_msg)
     bool_part = check_not_sub_prof(PartitionProfile, tp_sub, sub_msg)
@@ -653,7 +664,6 @@ function check_not_profiles(::Type{TP}, tp_sub::TimeProfile, sub_msg::String) wh
 
     return bool_op * bool_part * bool_scp * bool_rp
 end
-
 function check_not_profiles(::Type{TP}, tp_sub::TimeProfile, sub_msg::String) where {TP<:RepresentativeProfile}
     bool_op = check_not_sub_prof(OperationalProfile, tp_sub, sub_msg)
     bool_part = check_not_sub_prof(PartitionProfile, tp_sub, sub_msg)
@@ -661,14 +671,12 @@ function check_not_profiles(::Type{TP}, tp_sub::TimeProfile, sub_msg::String) wh
 
     return bool_op * bool_part * bool_scp
 end
-
 function check_not_profiles(::Type{TP}, tp_sub::TimeProfile, sub_msg::String) where {TP<:ScenarioProfile}
     bool_op = check_not_sub_prof(OperationalProfile, tp_sub, sub_msg)
     bool_part = check_not_sub_prof(PartitionProfile, tp_sub, sub_msg)
 
     return bool_op * bool_part
 end
-
 function check_not_profiles(::Type{TP}, tp_sub::TimeProfile, sub_msg::String) where {TP<:PartitionProfile}
     bool_op = check_not_sub_prof(OperationalProfile, tp_sub, sub_msg)
     return bool_op
@@ -677,6 +685,17 @@ function check_not_profiles(::Type{TP}, tp_sub::Number, sub_msg::String) where {
     return true
 end
 
+"""
+    check_sub_profs(::Type{TP}, time_profile::TimeProfile, msg::String) where {TP<:TimeProfile}
+
+Check that the provided `time_profile` allows indexing as specified through the provided
+`TP` profile type. Each sub profile is checked if the `time_profile` includes sub profiles
+different than `FixedProfile`. The check is based on the provided profile type `TP`.
+
+!!! danger "Usage of these functions"
+    User should never use these functions directly. They should only be included within the
+    core structure in `EnergyModelsBase`.
+"""
 function check_sub_profs(
     ::Type{TP},
     time_profile::StrategicProfile,
