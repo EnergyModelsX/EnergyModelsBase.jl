@@ -363,24 +363,32 @@ end
     # - EMB.check_profile(fieldname, value::OperationalProfile, ts::OperationalScenarios, sp)
     oscs = OperationalScenarios(3, day)
     ts =  TwoLevel(2, 1, oscs)
+    ts_tree =  TwoLevelTree(1, [2] ,oscs)
     for tp ∈ profiles
         @test_throws AssertionError create_simple_graph(ts, tp)
+        @test_throws AssertionError create_simple_graph(ts_tree, tp)
     end
 
     # Test that there is an error with wrong `OperationalProfile`s in representative periods
     # - EMB.check_profile(fieldname, value::OperationalProfile, ts::RepresentativePeriods, sp)
-    ts =  TwoLevel(2, 1, RepresentativePeriods(2, [.5, .5], day))
+    rps = RepresentativePeriods(2, [.5, .5], day)
+    ts =  TwoLevel(2, 1, rps)
+    ts_tree =  TwoLevelTree(1, [2], rps)
     for tp ∈ profiles
         @test_throws AssertionError create_simple_graph(ts, tp)
+        @test_throws AssertionError create_simple_graph(ts_tree, tp)
     end
 
     # Test that there is an error with wrong `OperationalProfile`s in operational scenarios
     # in representative periods
     # - EMB.check_profile(fieldname, value::OperationalProfile, ts::OperationalScenarios, sp)
     # - EMB.check_profile(fieldname, value::OperationalProfile, ts::RepresentativePeriods, sp)
-    ts =  TwoLevel(2, 1, RepresentativePeriods(2, [.5, .5], oscs))
+    rps = RepresentativePeriods(2, [.5, .5], oscs)
+    ts =  TwoLevel(2, 1, rps)
+    ts_tree =  TwoLevelTree(1, [2], rps)
     for tp ∈ profiles
         @test_throws AssertionError create_simple_graph(ts, tp)
+        @test_throws AssertionError create_simple_graph(ts_tree, tp)
     end
 
     # Test that there is warning when using `ScenarioProfile` without `OperationalScenarios`
@@ -457,11 +465,14 @@ end
     # - EMB.check_strategic_profile(time_profile::TimeProfile, message::String)
     profiles = [
         OperationalProfile([5]),
+        PartitionProfile([5]),
         ScenarioProfile([5]),
         RepresentativeProfile([5]),
         StrategicProfile([OperationalProfile([5])]),
+        StrategicProfile([PartitionProfile([5])]),
         StrategicProfile([ScenarioProfile([5])]),
         StrategicProfile([RepresentativeProfile([5])]),
+        StrategicStochasticProfile([[PartitionProfile([5])]]),
         StrategicStochasticProfile([[OperationalProfile([5])]]),
         StrategicStochasticProfile([[ScenarioProfile([5])]]),
         StrategicStochasticProfile([[RepresentativeProfile([5])]]),
@@ -470,32 +481,72 @@ end
         @test_throws AssertionError EMB.check_strategic_profile(tp, "")
     end
 
+    # Check that valid profiles pass check_strategic_profile without error
+    valid_profiles = [
+        FixedProfile(5),
+        StrategicProfile([FixedProfile(5)]),
+        StrategicStochasticProfile([[FixedProfile(5)]]),
+    ]
+    for tp ∈ valid_profiles
+        @test EMB.check_strategic_profile(tp, "")
+    end
+
+
     # Check that wrong profiles for representative indexable variables are identified
     # - EMB.check_representative_profile(time_profile::TimeProfile, message::String)
     profiles = [
         OperationalProfile([5]),
+        PartitionProfile([5]),
         ScenarioProfile([5]),
         StrategicProfile([OperationalProfile([5])]),
+        StrategicProfile([PartitionProfile([5])]),
         StrategicProfile([ScenarioProfile([5])]),
+        StrategicStochasticProfile([[OperationalProfile([5])]]),
         StrategicProfile([RepresentativeProfile([OperationalProfile([5])])]),
+        StrategicProfile([RepresentativeProfile([PartitionProfile([5])])]),
         StrategicProfile([RepresentativeProfile([ScenarioProfile([5])])]),
+        StrategicStochasticProfile([[RepresentativeProfile([OperationalProfile([5])])]]),
         RepresentativeProfile([OperationalProfile([5])]),
+        RepresentativeProfile([PartitionProfile([5])]),
         RepresentativeProfile([ScenarioProfile([5])]),
     ]
     for tp ∈ profiles
         @test_throws AssertionError EMB.check_representative_profile(tp, "")
     end
 
+    # Check that valid profiles pass check_representative_profile without error
+    valid_profiles = [
+        FixedProfile(5),
+        RepresentativeProfile([5]),
+        StrategicProfile([FixedProfile(5)]),
+        StrategicProfile([RepresentativeProfile([5])]),
+        StrategicStochasticProfile([[FixedProfile(5)]]),
+        StrategicStochasticProfile([[RepresentativeProfile([5])]]),
+    ]
+    for tp ∈ valid_profiles
+        @test EMB.check_representative_profile(tp, "")
+    end
+
+
     # Check that wrong profiles for scenario indexable variables are identified
     # - EMB.check_scenario_profile(time_profile::TimeProfile, message::String)
     profiles = [
         OperationalProfile([5]),
+        PartitionProfile([5]),
         StrategicProfile([OperationalProfile([5])]),
+        StrategicProfile([PartitionProfile([5])]),
+        StrategicStochasticProfile([[OperationalProfile([5])]]),
         StrategicProfile([RepresentativeProfile([OperationalProfile([5])])]),
+        StrategicProfile([RepresentativeProfile([PartitionProfile([5])])]),
+        StrategicStochasticProfile([[RepresentativeProfile([OperationalProfile([5])])]]),
         StrategicProfile([RepresentativeProfile([ScenarioProfile([OperationalProfile([5])])])]),
+        StrategicProfile([RepresentativeProfile([ScenarioProfile([PartitionProfile([5])])])]),
         RepresentativeProfile([OperationalProfile([5])]),
+        RepresentativeProfile([PartitionProfile([5])]),
         RepresentativeProfile([ScenarioProfile([OperationalProfile([5])])]),
+        RepresentativeProfile([ScenarioProfile([PartitionProfile([5])])]),
         ScenarioProfile([OperationalProfile([5])]),
+        ScenarioProfile([PartitionProfile([5])]),
     ]
     for tp ∈ profiles
         @test_throws AssertionError EMB.check_scenario_profile(tp, "")
@@ -510,6 +561,41 @@ end
     ]
     for tp ∈ valid_profiles
         @test EMB.check_scenario_profile(tp, "")
+    end
+
+    # Check that wrong profiles for partition indexable variables are identified
+    # - EMB.check_partition_profile(time_profile::TimeProfile, message::String)
+    profiles = [
+        OperationalProfile([5]),
+        StrategicProfile([OperationalProfile([5])]),
+        StrategicStochasticProfile([[OperationalProfile([5])]]),
+        StrategicProfile([RepresentativeProfile([OperationalProfile([5])])]),
+        StrategicStochasticProfile([[RepresentativeProfile([OperationalProfile([5])])]]),
+        StrategicProfile([RepresentativeProfile([ScenarioProfile([OperationalProfile([5])])])]),
+        RepresentativeProfile([OperationalProfile([5])]),
+        RepresentativeProfile([ScenarioProfile([OperationalProfile([5])])]),
+        ScenarioProfile([OperationalProfile([5])]),
+        ScenarioProfile([PartitionProfile([OperationalProfile([5])])]),
+        PartitionProfile([OperationalProfile([5])]),
+
+    ]
+    for tp ∈ profiles
+        @test_throws AssertionError EMB.check_partition_profile(tp, "")
+    end
+
+    # Check that valid profiles pass check_partition_profile without error
+    valid_profiles = [
+        FixedProfile(5),
+        PartitionProfile([5]),
+        StrategicProfile([FixedProfile(5)]),
+        StrategicProfile([PartitionProfile([5])]),
+        StrategicProfile([RepresentativeProfile([PartitionProfile([5])])]),
+        StrategicStochasticProfile([[PartitionProfile([5])]]),
+        StrategicStochasticProfile([[PartitionProfile([5])]]),
+        RepresentativeProfile([ScenarioProfile([FixedProfile(5)])]),
+    ]
+    for tp ∈ valid_profiles
+        @test EMB.check_partition_profile(tp, "")
     end
 
     # Reactivate logging

@@ -67,6 +67,10 @@ check_profile
 check_strategic_profile
 check_representative_profile
 check_scenario_profile
+check_partition_profile
+check_sub_profs
+check_sub_profile
+check_not_profile
 compile_logs
 ```
 

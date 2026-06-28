@@ -640,6 +640,126 @@ end
 check_profile(fieldname, value, ts, p_msg) = nothing
 
 """
+    check_not_profile(::Type{TP}, sub_prof::TimeProfile, sub_msg::String) where {TP<:TimeProfile}
+
+Check that the profile `sub_prof` is not of type `TP`.
+"""
+function check_not_profile(::Type{TP}, sub_prof::TimeProfile, sub_msg::String) where {TP<:TimeProfile}
+    bool_tp = !isa(sub_prof, TP)
+    @assert_or_log(bool_tp, "`$(TP)`s " * sub_msg)
+    return bool_tp
+end
+
+"""
+    check_sub_profile(::Type{TP}, sub_prof::TimeProfile, sub_msg::String) where {T<:TimeProfile}
+
+Check that the time profile `sub_prof` is applicable for indexing with `TimeStructurePeriod`
+or `PeriodPartition` as declared by the time profile type `TP`. The check is not performed
+on potential subprofiles. This can be achieved through the function [`check_sub_profs`](@ref)
+
+!!! danger "Usage of this function"
+    User should never use this function directly. It should only be included within the core
+    structure in `EnergyModelsBase`.
+"""
+function check_sub_profile(::Type{TP}, sub_prof::TimeProfile, sub_msg::String) where {TP<:Union{StrategicProfile, StrategicStochasticProfile}}
+    bool_op = check_not_profile(OperationalProfile, sub_prof, sub_msg)
+    bool_part = check_not_profile(PartitionProfile, sub_prof, sub_msg)
+    bool_scp = check_not_profile(ScenarioProfile, sub_prof, sub_msg)
+    bool_rp = check_not_profile(RepresentativeProfile, sub_prof, sub_msg)
+
+    return bool_op * bool_part * bool_scp * bool_rp
+end
+function check_sub_profile(::Type{TP}, sub_prof::TimeProfile, sub_msg::String) where {TP<:RepresentativeProfile}
+    bool_op = check_not_profile(OperationalProfile, sub_prof, sub_msg)
+    bool_part = check_not_profile(PartitionProfile, sub_prof, sub_msg)
+    bool_scp = check_not_profile(ScenarioProfile, sub_prof, sub_msg)
+
+    return bool_op * bool_part * bool_scp
+end
+function check_sub_profile(::Type{TP}, sub_prof::TimeProfile, sub_msg::String) where {TP<:ScenarioProfile}
+    bool_op = check_not_profile(OperationalProfile, sub_prof, sub_msg)
+    bool_part = check_not_profile(PartitionProfile, sub_prof, sub_msg)
+
+    return bool_op * bool_part
+end
+function check_sub_profile(::Type{TP}, sub_prof::TimeProfile, sub_msg::String) where {TP<:PartitionProfile}
+    bool_op = check_not_profile(OperationalProfile, sub_prof, sub_msg)
+    return bool_op
+end
+function check_sub_profile(::Type{TP}, sub_prof::Number, sub_msg::String) where {TP<:PartitionProfile}
+    return true
+end
+
+"""
+    check_sub_profs(check_type::Type{TP_C}, prof::TP, msg::String) where {TP_C<:TimeProfile, TP<:TimeProfile}
+
+Check that the provided `prof` allows indexing as specified through the provided
+`TP_C` profile type. Each sub profile is checked if the `prof` includes sub profiles
+different than `FixedProfile`. The check is based on the provided profile type `TP_C`.
+
+!!! danger "Usage of these functions"
+    User should never use these functions directly. They should only be included within the
+    core structure in `EnergyModelsBase`.
+"""
+function check_sub_profs(::Type{TP_C}, prof::TP_C, msg::String) where {TP_C<:TimeProfile}
+    bool_val = true
+    sub_msg = "in `$(TP_C)`s " * msg
+    for sub_prof ∈ prof.vals
+        bool_val *= check_sub_profile(TP_C, sub_prof, sub_msg)
+        !bool_val && break
+    end
+    return bool_val
+end
+function check_sub_profs(
+    ::Type{TP_C},
+    prof::TP,
+    msg::String,
+) where {TP_C<:TimeProfile, TP<:TimeProfile}
+    bool_val = true
+    sub_msg = "in `$(TP.name.name)`s " * msg
+    for sub_prof ∈ prof.vals
+        bool_val *= check_sub_profile(TP_C, sub_prof, sub_msg)
+        bool_val *= check_sub_profs(TP_C, sub_prof, sub_msg)
+        !bool_val && break
+    end
+    return bool_val
+end
+function check_sub_profs(
+    ::Type{TP_C},
+    prof::TP_C,
+    msg::String,
+) where {TP_C<:StrategicStochasticProfile}
+    bool_val = true
+    sub_msg = "in `StrategicStochasticProfile`s " * msg
+    for sp_array ∈ prof.vals, sub_prof ∈ sp_array
+        bool_val = check_sub_profile(TP_C, sub_prof, sub_msg)
+        !bool_val && break
+    end
+    return bool_val
+end
+function check_sub_profs(
+    ::Type{TP_C},
+    prof::StrategicStochasticProfile,
+    msg::String,
+) where {TP_C<:TimeProfile}
+    bool_val = true
+    sub_msg = "in `StrategicStochasticProfile`s " * msg
+    for sp_array ∈ prof.vals, sub_prof ∈ sp_array
+        bool_val = check_sub_profile(TP_C, sub_prof, sub_msg)
+        bool_val *= check_sub_profs(TP_C, sub_prof, msg)
+        !bool_val && break
+    end
+    return bool_val
+end
+function check_sub_profs(
+    ::Type{TP_C},
+    prof::TP,
+    msg::String,
+) where {TP_C<:TimeProfile, TP<:Union{FixedProfile, Number}}
+    return true
+end
+
+"""
     check_strategic_profile(time_profile::TimeProfile, message::String)
 
 Function for checking that an individual `TimeProfile` does not include the wrong type for
@@ -647,47 +767,21 @@ strategic indexing.
 
 ## Checks
 - `TimeProfile`s accessed in `StrategicPeriod`s cannot include `OperationalProfile`,
-  `ScenarioProfile`, or `RepresentativeProfile` as this is not allowed through indexing
-  on the `TimeProfile`.
+  `PartitionProfile`, `ScenarioProfile`, or `RepresentativeProfile` as this is not allowed
+  through indexing on the `TimeProfile`.
 """
 function check_strategic_profile(time_profile::TimeProfile, message::String)
-    # Check on the highest level
-    bool_sp = check_strat_sub_profile(time_profile, message, true)
 
-    if isa(time_profile, StrategicProfile)
-        for l1_profile ∈ time_profile.vals
-            sub_msg = "in strategic profiles " * message
-            bool_sp = check_strat_sub_profile(l1_profile, sub_msg, bool_sp)
-            !bool_sp && break
-        end
-    elseif isa(time_profile, StrategicStochasticProfile)
-        for sp_array ∈ time_profile.vals, l1_profile ∈ sp_array
-            sub_msg = "in strategic stochastic profiles " * message
-            bool_sp = check_strat_sub_profile(l1_profile, sub_msg, bool_sp)
-            !bool_sp && break
-        end
+    if isa(time_profile, Union{StrategicProfile, StrategicStochasticProfile})
+        # Iterate through the strategic or strategic stochstic profiles, if existing
+        bool_sp = check_sub_profs(typeof(time_profile), time_profile, message)
+    else
+        # Check the profiles
+        bool_sp = check_sub_profile(StrategicProfile, time_profile, message)
     end
 
     return bool_sp
 end
-function check_strat_sub_profile(sub_profile::TimeProfile, sub_msg::String, bool_sp::Bool)
-    @assert_or_log(
-        !isa(sub_profile, OperationalProfile),
-        "Operational profiles " * sub_msg
-    )
-    @assert_or_log(!isa(sub_profile, ScenarioProfile), "Scenario profiles " * sub_msg)
-    @assert_or_log(
-        !isa(sub_profile, RepresentativeProfile),
-        "Representative profiles " * sub_msg
-    )
-
-    bool_sp *=
-        !isa(sub_profile, OperationalProfile) &&
-        !isa(sub_profile, ScenarioProfile) &&
-        !isa(sub_profile, RepresentativeProfile)
-    return bool_sp
-end
-
 
 """
     check_representative_profile(time_profile::TimeProfile, message::String)
@@ -700,44 +794,23 @@ representative periods indexing.
 - `message` - A message that should be printed after the type of profile.
 
 ## Checks
-- `TimeProfile`s accessed in `RepresentativePeriod`s cannot include `OperationalProfile`
-  or `ScenarioProfile` as this is not allowed through indexing on the `TimeProfile`.
+- `TimeProfile`s accessed in `RepresentativePeriod`s cannot include `OperationalProfile`,
+  `PartitionProfile` or `ScenarioProfile` as this is not allowed through indexing on the
+  `TimeProfile`.
 """
 function check_representative_profile(time_profile::TimeProfile, message::String)
-    # Check on the highest level
-    bool_rp = check_repr_sub_profile(time_profile, message, true)
 
-    # Iterate through the strategic profiles, if existing
-    if isa(time_profile, StrategicProfile)
-        for l1_profile ∈ time_profile.vals
-            sub_msg_1 = "in strategic profiles " * message
-            bool_rp = check_repr_sub_profile(l1_profile, sub_msg_1, bool_rp)
-            if isa(l1_profile, RepresentativeProfile)
-                for l2_profile ∈ l1_profile.vals
-                    sub_msg_2 = "in representative profiles " * sub_msg_1
-                    bool_rp = check_repr_sub_profile(l2_profile, sub_msg_2, bool_rp)
-                end
-            end
-        end
-    end
-
-    # Iterate through the representative profiles, if existing
-    if isa(time_profile, RepresentativeProfile)
-        for l1_profile ∈ time_profile.vals
-            sub_msg = "in representative profiles " * message
-            bool_rp = check_repr_sub_profile(l1_profile, sub_msg, bool_rp)
-        end
-    end
-    return bool_rp
-end
-function check_repr_sub_profile(sub_profile::TimeProfile, sub_msg::String, bool_rp::Bool)
-    @assert_or_log(
-        !isa(sub_profile, OperationalProfile),
-        "Operational profiles " * sub_msg
+    if isa(
+        time_profile,
+        Union{StrategicProfile, StrategicStochasticProfile, RepresentativeProfile}
     )
-    @assert_or_log(!isa(sub_profile, ScenarioProfile), "Scenario profiles " * sub_msg)
-
-    bool_rp *= !isa(sub_profile, OperationalProfile) && !isa(sub_profile, ScenarioProfile)
+        # Iterate through the strategic, strategic stochstic, or representative profiles,
+        # if existing
+        bool_rp = check_sub_profs(RepresentativeProfile, time_profile, message)
+    else
+        # Check the profiles
+        bool_rp = check_sub_profile(RepresentativeProfile, time_profile, message)
+    end
     return bool_rp
 end
 
@@ -748,68 +821,47 @@ Function for checking that an individual `TimeProfile` does not include the wron
 scenario indexing.
 
 ## Checks
-- `TimeProfile`s accessed in `OperationalScenario`s cannot include `OperationalProfile` as
-   this is not allowed through indexing on the `TimeProfile`.
+- `TimeProfile`s accessed in `OperationalScenario`s cannot include `OperationalProfile` or
+  `PartitionProfile` as this is not allowed through indexing on the `TimeProfile`.
 """
 function check_scenario_profile(time_profile::TimeProfile, message::String)
-    # Check on the highest level
-    bool_scp = check_osc_sub_profile(time_profile, message, true)
-
-    # Iterate through the strategic profiles, if existing
-    if isa(time_profile, StrategicProfile)
-        for l1_profile ∈ time_profile.vals
-            sub_msg_1 = "in strategic profiles " * message
-            bool_scp = check_osc_sub_profile(l1_profile, sub_msg_1, bool_scp)
-            if isa(l1_profile, RepresentativeProfile)
-                sub_msg_2 = "in representative profiles " * sub_msg_1
-                for l2_profile ∈ l1_profile.vals
-                    bool_scp = check_osc_sub_profile(l2_profile, sub_msg_2, bool_scp)
-                    if isa(l2_profile, ScenarioProfile)
-                        sub_msg_3 = "in scenario profiles in " * sub_msg_2
-                        for l3_profile ∈ l2_profile.vals
-                            bool_scp = check_osc_sub_profile(l3_profile, sub_msg_3, bool_scp)
-                        end
-                    end
-                end
-            elseif isa(l1_profile, ScenarioProfile)
-                for l2_profile ∈ l1_profile.vals
-                    sub_msg_2 = "in scenario profiles " * sub_msg_1
-                    bool_scp = check_osc_sub_profile(l2_profile, sub_msg_2, bool_scp)
-                end
-            end
-        end
+    # Check the sub structures
+    if isa(
+        time_profile,
+        Union{StrategicProfile, StrategicStochasticProfile, RepresentativeProfile, ScenarioProfile}
+    )
+        bool_scp = check_sub_profs(ScenarioProfile, time_profile, message)
+    else
+        # Check the profiles
+        bool_scp = check_sub_profile(ScenarioProfile, time_profile, message)
     end
 
-    # Iterate through the representative profiles, if existing
-    if isa(time_profile, RepresentativeProfile)
-        for l1_profile ∈ time_profile.vals
-            sub_msg_1 = "in representative profiles " * message
-            bool_scp = check_osc_sub_profile(l1_profile, sub_msg_1, bool_scp)
-            if isa(l1_profile, ScenarioProfile)
-                for l2_profile ∈ l1_profile.vals
-                    sub_msg_2 = "in scenario profiles " * sub_msg_1
-                    bool_scp = check_osc_sub_profile(l2_profile, sub_msg_2, bool_scp)
-                end
-            end
-        end
-    end
-
-    # Iterate through the scenario profiles, if existing
-    if isa(time_profile, ScenarioProfile)
-        for l1_profile ∈ time_profile.vals
-            sub_msg = "in scenario profiles " * message
-            bool_scp = check_osc_sub_profile(l1_profile, sub_msg, bool_scp)
-        end
-    end
     return bool_scp
 end
-function check_osc_sub_profile(sub_profile::TimeProfile, sub_msg::String, bool_scp::Bool)
-    @assert_or_log(
-        !isa(sub_profile, OperationalProfile),
-        "Operational profiles " * sub_msg
+
+"""
+    check_partition_profile(time_profile::TimeProfile, message::String)
+
+Function for checking that an individual `TimeProfile` does not include the wrong type for
+partition indexing.
+
+## Checks
+- `TimeProfile`s accessed in `PeriodPartion`s cannot include `OperationalProfile` as this is
+  not allowed through indexing on the `TimeProfile`.
+"""
+function check_partition_profile(time_profile::TimeProfile, message::String)
+    # Check the sub structures
+    if isa(
+        time_profile,
+        Union{StrategicProfile, StrategicStochasticProfile, RepresentativeProfile, ScenarioProfile, PartitionProfile}
     )
-    bool_scp *= !isa(sub_profile, OperationalProfile)
-    return bool_scp
+        bool_part = check_sub_profs(PartitionProfile, time_profile, message)
+    else
+        # Check the profiles
+        bool_part = check_sub_profile(ScenarioProfile, time_profile, message)
+    end
+
+    return bool_part
 end
 
 """
