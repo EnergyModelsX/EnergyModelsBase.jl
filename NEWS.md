@@ -1,5 +1,12 @@
 # Release notes
 
+## Version 0.10.5 (2026-06-28)
+
+* Increased robustness for checking whether a `TimeProfile` is of the correct type for indexing.
+* Added support in checks for `PartitionProfile`:
+  * This support is only included for indexing.
+  * Support for check of length infeasible due to the problems related potentially differing partitions.
+
 ## Version 0.10.4 (2026-06-15)
 
 ### Bug fixes
@@ -26,7 +33,7 @@
 
 ### Minor updates
 
-* Add support for JuMP.AbstractModel to allow custom model types, e.g. for decomposition.
+* Add support for JuMP.AbstractModel to allow custom model types, *e.g.*, for decomposition.
 
 ### Bug fixes
 
