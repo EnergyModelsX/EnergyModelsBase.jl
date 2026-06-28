@@ -69,7 +69,8 @@ check_representative_profile
 check_scenario_profile
 check_partition_profile
 check_sub_profs
-check_not_profiles
+check_sub_profile
+check_not_profile
 compile_logs
 ```
 
