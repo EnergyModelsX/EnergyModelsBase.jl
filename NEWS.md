@@ -1,5 +1,13 @@
 # Release notes
 
+## Version 0.10.6 (2026-07-30)
+
+### Bug fixes
+
+* Fixed the variable name-collision guard in `variables_elements` and `variables_element_ext_data` to match the updated JuMP error message:
+  * JuMP changed the wording from "is already attached to this model." to "is already registered in this model.".
+  * Both variants are now accepted for cross-version compatibility.
+
 ## Version 0.10.5 (2026-06-28)
 
 * Increased robustness for checking whether a `TimeProfile` is of the correct type for indexing.
