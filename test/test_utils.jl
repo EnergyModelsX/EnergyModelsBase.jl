@@ -18,11 +18,14 @@
         # changes, we must change how variables are created.
         @test isa(e, ErrorException)
 
-        # Check that the error message is not changed.
+        # Check that the error message matches what `variables_elements` looks for. JuMP
+        # changed the wording from "is already attached to this model." to "is already
+        # registered in this model.", so both variants are accepted.
         pre1 = "An object of name"
-        pre2 = "is already attached to this model."
+        pre2a = "is already attached to this model."
+        pre2b = "is already registered in this model."
         @test occursin(pre1, e.msg)
-        @test occursin(pre2, e.msg)
+        @test occursin(pre2a, e.msg) || occursin(pre2b, e.msg)
     end
 end
 
