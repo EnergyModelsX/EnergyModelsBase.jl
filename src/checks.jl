@@ -661,7 +661,11 @@ on potential subprofiles. This can be achieved through the function [`check_sub_
     User should never use this function directly. It should only be included within the core
     structure in `EnergyModelsBase`.
 """
-function check_sub_profile(::Type{TP}, sub_prof::TimeProfile, sub_msg::String) where {TP<:Union{StrategicProfile, StrategicStochasticProfile}}
+function check_sub_profile(
+    ::Type{TP},
+    sub_prof::TimeProfile,
+    sub_msg::String,
+) where  {TP<:Union{StrategicProfile, StrategicStochasticProfile}}
     bool_op = check_not_profile(OperationalProfile, sub_prof, sub_msg)
     bool_part = check_not_profile(PartitionProfile, sub_prof, sub_msg)
     bool_scp = check_not_profile(ScenarioProfile, sub_prof, sub_msg)
@@ -669,24 +673,40 @@ function check_sub_profile(::Type{TP}, sub_prof::TimeProfile, sub_msg::String) w
 
     return bool_op * bool_part * bool_scp * bool_rp
 end
-function check_sub_profile(::Type{TP}, sub_prof::TimeProfile, sub_msg::String) where {TP<:RepresentativeProfile}
+function check_sub_profile(
+    ::Type{TP},
+    sub_prof::TimeProfile,
+    sub_msg::String,
+) where  {TP<:RepresentativeProfile}
     bool_op = check_not_profile(OperationalProfile, sub_prof, sub_msg)
     bool_part = check_not_profile(PartitionProfile, sub_prof, sub_msg)
     bool_scp = check_not_profile(ScenarioProfile, sub_prof, sub_msg)
 
     return bool_op * bool_part * bool_scp
 end
-function check_sub_profile(::Type{TP}, sub_prof::TimeProfile, sub_msg::String) where {TP<:ScenarioProfile}
+function check_sub_profile(
+    ::Type{TP},
+    sub_prof::TimeProfile,
+    sub_msg::String,
+) where  {TP<:ScenarioProfile}
     bool_op = check_not_profile(OperationalProfile, sub_prof, sub_msg)
     bool_part = check_not_profile(PartitionProfile, sub_prof, sub_msg)
 
     return bool_op * bool_part
 end
-function check_sub_profile(::Type{TP}, sub_prof::TimeProfile, sub_msg::String) where {TP<:PartitionProfile}
+function check_sub_profile(
+    ::Type{TP},
+    sub_prof::TimeProfile,
+    sub_msg::String,
+) where  {TP<:PartitionProfile}
     bool_op = check_not_profile(OperationalProfile, sub_prof, sub_msg)
     return bool_op
 end
-function check_sub_profile(::Type{TP}, sub_prof::Number, sub_msg::String) where {TP<:PartitionProfile}
+function check_sub_profile(
+    ::Type{TP},
+    sub_prof::Number,
+    sub_msg::String,
+) where {TP<:PartitionProfile}
     return true
 end
 
@@ -719,6 +739,7 @@ function check_sub_profs(
     sub_msg = "in `$(TP.name.name)`s " * msg
     for sub_prof ∈ prof.vals
         bool_val *= check_sub_profile(TP_C, sub_prof, sub_msg)
+        !bool_val && break
         bool_val *= check_sub_profs(TP_C, sub_prof, sub_msg)
         !bool_val && break
     end
@@ -746,6 +767,7 @@ function check_sub_profs(
     sub_msg = "in `StrategicStochasticProfile`s " * msg
     for sp_array ∈ prof.vals, sub_prof ∈ sp_array
         bool_val = check_sub_profile(TP_C, sub_prof, sub_msg)
+        !bool_val && break
         bool_val *= check_sub_profs(TP_C, sub_prof, msg)
         !bool_val && break
     end
