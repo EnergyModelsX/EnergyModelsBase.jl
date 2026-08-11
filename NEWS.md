@@ -1,6 +1,13 @@
 # Release notes
 
-## Version 0.10.6 (2026-07-30)
+## Version 0.10.7 (2026-08-11)
+
+### Bug fixes
+
+* Fixed a problem introduced in version 0.10.5.
+* The problem was associated to wrong breaks from the check of the type of the time profile.
+
+## Version 0.10.6 (2026-08-04)
 
 ### Bug fixes
 
