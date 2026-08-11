@@ -445,11 +445,14 @@ function variables_elements(m, 𝒳::Vector{<:AbstractElement}, 𝒳ᵛᵉᶜ, �
         try
             variables_element(m, 𝒳ˢᵘᵇ, 𝒯, modeltype)
         catch e
-            # Parts of the exception message we are looking for.
+            # Parts of the exception message we are looking for. JuMP changed the wording
+            # from "is already attached to this model." to "is already registered in this
+            # model.", so both variants are accepted for cross-version compatibility.
             pre1 = "An object of name"
-            pre2 = "is already attached to this model."
+            pre2a = "is already attached to this model."
+            pre2b = "is already registered in this model."
             if isa(e, ErrorException)
-                if occursin(pre1, e.msg) && occursin(pre2, e.msg)
+                if occursin(pre1, e.msg) && (occursin(pre2a, e.msg) || occursin(pre2b, e.msg))
                     # 𝒳ˢᵘᵇ was already registered by a call to a supertype, so just continue.
                     continue
                 end
@@ -497,11 +500,14 @@ function variables_element_ext_data(
         try
             variables_ext_data(m, data_type, 𝒳ᵈᵃᵗ, 𝒯, 𝒫, modeltype)
         catch e
-            # Parts of the exception message we are looking for
+            # Parts of the exception message we are looking for. JuMP changed the wording
+            # from "is already attached to this model." to "is already registered in this
+            # model.", so both variants are accepted for cross-version compatibility.
             pre1 = "An object of name"
-            pre2 = "is already attached to this model."
+            pre2a = "is already attached to this model."
+            pre2b = "is already registered in this model."
             if isa(e, ErrorException)
-                if occursin(pre1, e.msg) && occursin(pre2, e.msg)
+                if occursin(pre1, e.msg) && (occursin(pre2a, e.msg) || occursin(pre2b, e.msg))
                     # data_type was already registered by a call to a supertype, so just continue.
                     continue
                 end

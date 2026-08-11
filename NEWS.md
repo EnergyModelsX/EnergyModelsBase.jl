@@ -1,5 +1,13 @@
 # Release notes
 
+## Version 0.9.7 (2026-08-11)
+
+### Bug fixes
+
+* Fixed the variable name-collision guard in `variables_elements` and `variables_element_ext_data` to match the updated JuMP error message:
+  * JuMP changed the wording from "is already attached to this model." to "is already registered in this model.".
+  * Both variants are now accepted for cross-version compatibility.
+
 ## Version 0.9.6 (2026-04-15)
 
 ### Bug fixes
