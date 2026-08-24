@@ -1,4 +1,5 @@
 [deps]
+EnergyModelsBase = "5d7e687e-f956-46f3-9045-6f5a5fd49f50"
 EnergyModelsInvestments = "fca3f8eb-b383-437d-8e7b-aac76bb2004f"
 HiGHS = "87dc4568-4c63-4d18-b0c0-bb2238e4078b"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
