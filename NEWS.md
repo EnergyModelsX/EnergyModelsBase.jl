@@ -1,11 +1,16 @@
 # Release notes
 
+## Unversioned
+
+* Updated the variable page description to improve clarity regarding inclusion of scaling.
+* Included `OperationalScenarios` in the page on utilizing `TimeStruct`.
+
 ## Version 0.10.7 (2026-08-11)
 
 ### Bug fixes
 
 * Fixed a problem introduced in version 0.10.5.
-* The problem was associated to wrong breaks from the check of the type of the time profile.
+* The problem was associated with wrong breaks from the check of the type of the time profile.
 
 ## Version 0.10.6 (2026-08-04)
 
@@ -28,7 +33,7 @@
 
 * Fixed a bug regarding the branch probability when using a `TwoLevelTree` structure:
   * This bug resulted in strategic variables being scaled when calculated from operational variables through the function `scale_op_sp`.
-  * As a consequence, as an example, emission limits where wrongly applied.
+  * As a consequence, for example, emission limits were wrongly applied.
 
 ## Version 0.10.3 (2026-06-10)
 
@@ -77,7 +82,7 @@
 ### Support for resource specific variables and constraints
 
 * New functions (`variables_flow_resource()`, `constraints_resource()`,  `constraints_couple_resource()`) that dispatch on resource types.
-* New function to indentify the unique resource types of a vector of resources.
+* New function to identify the unique resource types of a vector of resources.
 * New function that segments the vector of resources into sub-vectors based on each resource type.
 * This allows for creation of new resource-specific variables and constraints in extension packages.
 
@@ -184,7 +189,7 @@
 
 ### Minor updates
 
-* Updated som docstrings.
+* Updated some docstrings.
 * Updated some minor changes in the documentation.
 
 ## Version 0.8.1 (2024-10-16)
@@ -209,7 +214,7 @@
 
 ### Minor updates
 
-* Included an option to deactive the checks entirely with printing a warning.
+* Included an option to deactivate the checks entirely while printing a warning.
 * Introduced the variable ``\texttt{stor\_level\_Δ\_sp}`` using `SparseVariables` to simplify the extension in other `Storage` nodes.
 * Replaced the function `EMB.multiple` with the function `scale_op_sp` to avoid issues with respect to a function of the same name in `TimeStruct`.
   * This type is now exported, simplifying its application in other packages.
@@ -250,7 +255,7 @@
 ## Version 0.6.8 (2024-04-18)
 
 * Added potential for negative emissions.
-  This change requires the user to always constrain the variable `emissions_node`, if it is defined by the user.
+  This change requires the user to always constrain the variable `emissions_node` if it is defined by the user.
   By default, this is achieved in the developed packages through `EmissionsData` or the addition of additional bounds on
   the variable `:emissions_node` through the JuMP function [`set_lower_bound`](https://jump.dev/JuMP.jl/stable/api/JuMP/#set_lower_bound).
 * Provided a contribution section in the documentation.
@@ -281,7 +286,7 @@
 ### Minor updates
 
 * Added functions `inputs`, `outputs`, and `data_nodes` for `Availability` and `outputs` for `Source` nodes.
-* Allow availability to not require all resources in the the `input` and `output` field.
+* Allow availability to not require all resources in the `input` and `output` field.
 * Moved all files declaring structures to a separate folder for improved readability.
 * Reworked the structure of the test folder.
 
