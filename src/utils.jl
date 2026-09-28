@@ -217,7 +217,7 @@ end
 When the previous operational period is `Nothing` and the previous representative period an
 `AbstractRepresentativePeriod` then the time structure *does* include `RepresentativePeriods`.
 
-The cyclic constraint for a [`CyclicRepresentative`](@ref) storage nodereturns the value at
+The cyclic constraint for a [`CyclicRepresentative`](@ref) storage node returns the value at
 the end of the *current* representative period.
 """
 function previous_level(
