@@ -3,7 +3,7 @@
 
 Declaration of the general type for formulation of [`Link`](@ref)s. Formulations can be
 utilized to provide specific constraint functions for a [`Link`](@ref) while keeping other
-constraints unchanged. These subfunctions can be then utlized for several types of `Link`.
+constraints unchanged. These subfunctions can be then utilized for several types of `Link`.
 """
 abstract type Formulation end
 

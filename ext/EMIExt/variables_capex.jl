@@ -30,9 +30,9 @@ user with two individual methods for both `𝒩::Vector{<:EMB.Node}` and 𝒩::V
     - `**prefix**_current` is the capacity of node `n` in investment period `t_inv`. It is
       introduced in addition to `cap_inst` to simplify the model design.
     - `**prefix**_add` are the additions in the installed capacity of node `n` in investment
-      period `t_inv`. Capacity additions are occuring at the beginning of an investment period.
+      period `t_inv`. Capacity additions are occurring at the beginning of an investment period.
     - `**prefix**_rem` are the reduction in the installed capacity of node `n` in investment
-      period `t_inv`. Capacity reductions are occuring at the end of an investment period.
+      period `t_inv`. Capacity reductions are occurring at the end of an investment period.
     - `**prefix**_invest_b` is an auxiliary variable used in some investment modes for the
       additions in capacities.
     - `**prefix**_remove_b` is an auxiliary variable used in some investment modes for the

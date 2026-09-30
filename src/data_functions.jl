@@ -6,7 +6,7 @@
     constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::CaptureProcessEnergyEmissions)
 
 Constraints functions for calculating both the emissions and amount of CO₂ captured in the
-process. If the data ia a [`CaptureData`](@ref), it provides the constraint for the variable
+process. If the data is a [`CaptureData`](@ref), it provides the constraint for the variable
 :flow_out of CO₂.
 
 There exist several configurations:
