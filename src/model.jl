@@ -343,9 +343,9 @@ function variables_capex(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modeltype
 function variables_capex(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒯, modeltype::EnergyModel) end
 
 """
-    variables_emission(m, ℒ::Vector{<:Node}, 𝒫, 𝒯, modeltype::EnergyModel)
-    variables_emission(m, ℒ::Vector{<:Link}, 𝒫, 𝒯, modeltype::EnergyModel)
-    variables_emission(m, 𝒯, 𝒫, modeltype::EnergyModel)
+    variables_emission(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
+    variables_emission(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
+    variables_emission(m, 𝒫, 𝒯, modeltype::EnergyModel)
 
 Declaration of emissions variables for the element types introduced in `EnergyModelsBase`
 as well as global emission variables. `EnergyModelsBase` introduces two elements for an
@@ -359,23 +359,23 @@ including the global variables:
       direct air capture.
 
 !!! tip "Link variables"
-    - `emissions_node[n_em, t, p_em]` are the emissions of link `l_em` with emissions in
+    - `emissions_link[l_em, t, p_em]` are the emissions of link `l_em` with emissions in
       operational period `t` of emission resource `p_em`. The values can only be positive as
       links should not allow for removal.
 
 !!! warning "Global variables"
-    - `emissions_total[t, p_em]` are the total emissions of in operational period `t` of
+    - `emissions_total[t, p_em]` are the total emissions in operational period `t` of
       emission resource `p_em`. The values can be negative to account for removal of
       emissions resources from the environment, through, *e.g.*, direct air capture.
-    - `emissions_strategic[t_inv, p_em]` are the total emissions of in operational period
-      `t` of emission resource `p_em`. The values can be negative to account for removal of
-      emissions resources from the environment, through, *e.g.*, direct air capture. The
+    - `emissions_strategic[t_inv, p_em]` are the total emissions in strategic period
+      `t_inv` of emission resource `p_em`. The values can be negative to account for removal
+      of emissions resources from the environment, through, *e.g.*, direct air capture. The
       variable has an upper bound introduced through the function [`emission_limit`](@ref)
       of the `EnergyModel`.
 
 The inclusion of node and link emissions require that the function `has_emissions` returns
 `true` for the given node or link. This is by default achieved for nodes through inclusion
-of `EmissionData` in nodes while links require you to explicitly provide a method for your
+of `EmissionsData` in nodes while links require you to explicitly provide a method for your
 link type.
 """
 function variables_emission(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)

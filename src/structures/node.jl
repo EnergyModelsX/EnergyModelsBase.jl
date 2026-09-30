@@ -465,7 +465,7 @@ has_emissions(n::Availability) = false
 has_emissions(n::RefStorage{AccumulatingEmissions}) = true
 
 """
-    has_emissions(𝒩::Array{<:Node})
+    nodes_emissions(𝒩::Array{<:Node})
 
 Returns nodes that have emission data for a given Array `::Array{<:Node}`.
 """

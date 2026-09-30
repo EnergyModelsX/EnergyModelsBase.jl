@@ -174,7 +174,7 @@ constraints_ext_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::Exten
     constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::ExtensionData)
 
 Legacy function for calling the new function [`constraints_ext_data`](@ref).
-The function will be removed in release 0.10.
+The function will be removed in release 0.11.
 """
 function constraints_data(m, n::Node, 𝒯, 𝒫, modeltype::EnergyModel, data::ExtensionData)
     constraints_ext_data(m, n, 𝒯, 𝒫, modeltype, data)
