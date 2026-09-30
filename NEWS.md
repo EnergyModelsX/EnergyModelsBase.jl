@@ -7,6 +7,12 @@
 * Corrected stale docstrings.
 * Corrected typos in both docstrings and documentation.
 
+### Bug fixes
+
+* Fixed the dispatch in the fallback of the function `check_partition_profile`:
+  * The fallback wrongly called `check_sub_profile` with `ScenarioProfile` instead of `PartitionProfile`.
+  * The problem was latent as `PartitionProfile`s cannot reach the fallback with the profile types of `TimeStruct`, but it would wrongly reject `PartitionProfile`s after future changes.
+
 ## Version 0.10.7 (2026-08-11)
 
 ### Bug fixes
