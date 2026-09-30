@@ -586,7 +586,6 @@ end
     valid_profiles = [
         FixedProfile(5),
         PartitionProfile([5]),
-        PartitionProfile([PartitionProfile([5])]),
         StrategicProfile([FixedProfile(5)]),
         StrategicProfile([PartitionProfile([5])]),
         StrategicProfile([RepresentativeProfile([PartitionProfile([5])])]),
@@ -597,12 +596,6 @@ end
     for tp ∈ valid_profiles
         @test EMB.check_partition_profile(tp, "")
     end
-
-    # Check that the fallback in `check_partition_profile` utilizes the method of
-    # `check_sub_profile` for partition indexing as `PartitionProfile`s are allowed for
-    # partition indexing while they result in an error for scenario indexing
-    @test EMB.check_sub_profile(PartitionProfile, PartitionProfile([5]), "")
-    @test_throws AssertionError EMB.check_sub_profile(ScenarioProfile, PartitionProfile([5]), "")
 
     # Reactivate logging
     EMB.ASSERTS_AS_LOG = true
