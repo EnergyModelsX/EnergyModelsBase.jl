@@ -16,7 +16,7 @@ This is explained in *[How to create a new node](@ref how_to-create_node)*.
 
 ## [File a bug report](@id how_to-con-bug_rep)
 
-Another approach to contributing to `EnergyModelsBase` is through filing a bug report as an *[issue](https://github.com/EnergyModelsX/EnergyModelsBase.jl/issues/new)* when unexpected behaviour is occuring.
+Another approach to contributing to `EnergyModelsBase` is through filing a bug report as an *[issue](https://github.com/EnergyModelsX/EnergyModelsBase.jl/issues/new)* when unexpected behaviour is occurring.
 
 When filing a bug report, please follow the following guidelines:
 
@@ -55,7 +55,7 @@ Feature requests can be achieved through two approaches:
 Creating a new *[issue](https://github.com/EnergyModelsX/EnergyModelsBase.jl/issues/new)* for a feature request is our standard approach for extending `EnergyModelsBase`.
 Due to the extendibility of `EnergyModelsBase`, it is not necessarily straight forward to understand how to best incorporate required features into the framework without breaking other packages.
 
-When creating a new issue as feature request, please follow the the following guidelines.
+When creating a new issue as feature request, please follow the following guidelines.
 
 1. **Reason for the feature**: Please describe the reasoning for the feature request. What functionality do you require in the core structure of `EnergyModelsBase`?
 2. **Required outcome**: What should be the outcome when including the feature and what should be the minimum requirements of the outcome?

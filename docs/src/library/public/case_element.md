@@ -37,7 +37,7 @@ It contains all information for building a model using the [`create_model`](@ref
 The fields of the case dictionary correspond to:
 
 1. **`T::TimeStructure`** is the time structure for which the model should be constructed.
-   Time structures are created using the the [`TimeStruct`](https://sintefore.github.io/TimeStruct.jl/stable/) package.
+   Time structures are created using the [`TimeStruct`](https://sintefore.github.io/TimeStruct.jl/stable/) package.
    `EnergyModelsBase` supports all time structures included in `TimeStruct`.
    However, storage balances may violate the upper and lower bound when the time structure includes [`OperationalScenarios](@extref TimeStruct.OperationalScenarios).
    In general, it is preferable to utilize either a [`TwoLevel`](@extref TimeStruct.TwoLevel) or [`TwoLevelTree`](@extref TimeStruct.TwoLevelTree) to properly calculate the operational costs and the emissions.

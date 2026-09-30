@@ -31,7 +31,7 @@ This net change is then used for the scaling.
 ### [Capacities](@id nodes-storage-phil-capacities)
 
 Storage nodes can have up to three capacities, `charge`, storage `level`, and `discharge`.
-In practice, a storage allways requires a level capacity corresponding to the maximum amount of stored energy.
+In practice, a storage always requires a level capacity corresponding to the maximum amount of stored energy.
 However, it is not necessary to include `charge` and `discharge` capacities if they are
 
 1. not representing an additional cost and

@@ -68,10 +68,10 @@ You have to be aware of the following requirements.
    The latter can be inspired by [`get_nodes`](@ref) and [`get_links`](@ref).
 
    !!! danger "Couplings with existing elements"
-       Coupling a new element with existing elements is highly dangereous.
+       Coupling a new element with existing elements is highly dangerous.
        A major problem is that you can create additional constraints that result in the problem being unfeasible.
 
        As an example, consider the function `constraints_couple` for nodes and links.
        In this function, we incorporate the coupling between the different links and nodes.
-       In practice, a link can only have a single input and output, while a node can be connected to an arbirtrary number of links.
+       In practice, a link can only have a single input and output, while a node can be connected to an arbitrary number of links.
        If you now want to include a new element coupled to a `Node` *via* the flow variables, it is necessary that you only allow these couplings with a novel introduced node, in which the internal energy balance is adjusted to account for the new coupling.

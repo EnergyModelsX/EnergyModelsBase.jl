@@ -1,7 +1,7 @@
 # [Update your model to the latest versions](@id how_to-update)
 
 `EnergyModelsBase` is still in a pre-release version.
-Hence, there are frequently breaking changes occuring, although we plan to keep backwards compatibility.
+Hence, there are frequently breaking changes occurring, although we plan to keep backwards compatibility.
 This document is designed to provide users with information regarding how they have to adjust their models to keep compatibility to the latest changes.
 We will as well implement information regarding the adjustment of extension packages, although this is more difficult due to the vast majority of potential changes.
 
