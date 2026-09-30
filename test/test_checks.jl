@@ -577,7 +577,6 @@ end
         ScenarioProfile([OperationalProfile([5])]),
         ScenarioProfile([PartitionProfile([OperationalProfile([5])])]),
         PartitionProfile([OperationalProfile([5])]),
-
     ]
     for tp ∈ profiles
         @test_throws AssertionError EMB.check_partition_profile(tp, "")
@@ -591,7 +590,7 @@ end
         StrategicProfile([PartitionProfile([5])]),
         StrategicProfile([RepresentativeProfile([PartitionProfile([5])])]),
         StrategicStochasticProfile([[PartitionProfile([5])]]),
-        StrategicStochasticProfile([[PartitionProfile([5])]]),
+        ScenarioProfile([PartitionProfile([5])]),
         RepresentativeProfile([ScenarioProfile([FixedProfile(5)])]),
     ]
     for tp ∈ valid_profiles

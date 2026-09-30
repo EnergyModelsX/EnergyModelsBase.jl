@@ -1,11 +1,15 @@
 # Release notes
 
-## Unversioned
+## Version 0.10.8 (2026-09-30)
 
 * Updated the variable page description to improve clarity regarding inclusion of scaling.
 * Included `OperationalScenarios` in the page on utilizing `TimeStruct`.
 * Corrected stale docstrings.
 * Corrected typos in both docstrings and documentation.
+
+### Bug fixes
+
+* Fixed the dispatch in the fallback of the function `check_partition_profile`
 
 ## Version 0.10.7 (2026-08-11)
 

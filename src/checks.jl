@@ -868,7 +868,7 @@ Function for checking that an individual `TimeProfile` does not include the wron
 partition indexing.
 
 ## Checks
-- `TimeProfile`s accessed in `PeriodPartion`s cannot include `OperationalProfile` as this is
+- `TimeProfile`s accessed in `PeriodPartition`s cannot include `OperationalProfile` as this is
   not allowed through indexing on the `TimeProfile`.
 """
 function check_partition_profile(time_profile::TimeProfile, message::String)
@@ -880,7 +880,7 @@ function check_partition_profile(time_profile::TimeProfile, message::String)
         bool_part = check_sub_profs(PartitionProfile, time_profile, message)
     else
         # Check the profiles
-        bool_part = check_sub_profile(ScenarioProfile, time_profile, message)
+        bool_part = check_sub_profile(PartitionProfile, time_profile, message)
     end
 
     return bool_part
