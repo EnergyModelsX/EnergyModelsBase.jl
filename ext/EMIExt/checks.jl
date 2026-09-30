@@ -89,7 +89,7 @@ Performs various checks on investment data introduced within EnergyModelsInvestm
 - The field `:min_add` has to be less than `:max_add` if the investment mode is given by
   `ContinuousInvestment` or `SemiContiInvestment`.
 - Existing capacity cannot be larger than `:max_inst` capacity in the beginning.
-  If `NoStartInvData` is used, it also checks that the the `TimeProfile` `capacity_profile`
+  If `NoStartInvData` is used, it also checks that the `TimeProfile` `capacity_profile`
   is not including `OperationalProfile`, `RepresentativeProfile`, or `ScenarioProfile`
   to avoid indexing problems.
 """

@@ -11,7 +11,7 @@ For running a basic energy system model, only the base technology package `Energ
 The main package provides simple descriptions for energy sources, sinks, conversion, and storage units.
 It corresponds to an operational model without geographic features.
 
-Other packages can the optionally be added if specific functionality or technology nodes are needed. The most important packages are
+Other packages can optionally be added if specific functionality or technology nodes are needed. The most important packages are
 
 - [`EnergyModelsGeography`](https://energymodelsx.github.io/EnergyModelsGeography.jl/):
    this package makes it possible to easily extend your energy model with different

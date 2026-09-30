@@ -251,7 +251,7 @@ function constraints_level_aux(
     @constraint(m, [t ∈ 𝒯], m[:stor_level_Δ_op][n, t] == m[:stor_charge_use][n, t])
 
     # Set the lower bound for the emissions in the storage node (:emissions_node) and to
-    # avoid that emissions larger than the flow into the storage.
+    # avoid that emissions are larger than the flow into the storage.
     # Fix all other emissions to a value of 0
     # Fix the variables :stor_discharge_use and :flow_out to 0
     for t ∈ 𝒯
@@ -305,7 +305,7 @@ function constraints_level_iterate(
     # Constraint for the total change in the level in a given representative period
     @constraint(m, [t_rp ∈ 𝒯ʳᵖ],
         m[:stor_level_Δ_rp][n, t_rp] ==
-        sum(m[:stor_level_Δ_op][n, t] * scale_op_sp(per, t) for t ∈ t_rp)
+            sum(m[:stor_level_Δ_op][n, t] * scale_op_sp(per, t) for t ∈ t_rp)
     )
 
     # Iterate through the operational structure
@@ -378,9 +378,9 @@ end
     )
 
 In the case of `SimpleTimes`, the iterator function is at its lowest level. In this
-situation,the previous level is calculated using the function [`previous_level`](@ref) and
-used for the storage balance. The the approach for calculating the  `previous_level` is
-depending on the types in the parameteric type `PreviousPeriods`.
+situation, the previous level is calculated using the function [`previous_level`](@ref) and
+used for the storage balance. The approach for calculating the  `previous_level` is
+depending on the types in the parametric type `PreviousPeriods`.
 
 In addition, additional bounds can be included on the initial level within an operational
 period.
@@ -417,7 +417,7 @@ end
 """
     constraints_level_rp(m, n::Storage, per, modeltype::EnergyModel)
 
-Provides additional contraints for representative periods.
+Provides additional constraints for representative periods.
 
 The default approach is to set the total change in all representative periods within a
 strategic period to 0. This implies that the `Storage` node cannot accumulate energy between
@@ -554,8 +554,8 @@ end
         modeltype::EnergyModel,
     )
 
-When representative periods are used and the previous operational  period is `nothing`, then
-bounds are incorporated to avoid that the initial level storage level is violating the
+When representative periods are used and the previous operational period is `nothing`, then
+bounds are incorporated to avoid that the initial storage level is violating the
 maximum and minimum level.
 """
 function constraints_level_bounds(
@@ -656,7 +656,7 @@ In the case of a `Storage` node, the fallback option includes variable OPEX for 
 `level`, and `discharge` if the node has the corresponding storage parameter.
 The individual contributions are in all situations calculated based on the installed capacities.
 
-In the case of a `Sink` node, the variable OPEX is calculate through the penalties for both
+In the case of a `Sink` node, the variable OPEX is calculated through the penalties for both
 `surplus` and `deficit`.
 """
 function constraints_opex_var(m, n::Node, 𝒯ᴵⁿᵛ, modeltype::EnergyModel)

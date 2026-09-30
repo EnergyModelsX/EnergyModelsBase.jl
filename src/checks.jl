@@ -248,7 +248,7 @@ function check_elements(
         )
         @assert_or_log(
             all(p_in ∈ outputs(l.from) for p_in ∈ inputs(l)),
-            "Not all resources specifed as `inputs` of the link are specified as `outputs` " *
+            "Not all resources specified as `inputs` of the link are specified as `outputs` " *
             "of the node in the field `:from`. As a consequence, the link could potentially " *
             "be not utilized in the model."
         )
@@ -263,7 +263,7 @@ function check_elements(
         )
         @assert_or_log(
             all(p_out ∈ inputs(l.to) for p_out ∈ outputs(l)),
-            "Not all resources specifed as `outputs` of the link are specified as `inputs` " *
+            "Not all resources specified as `outputs` of the link are specified as `inputs` " *
             "of the node in the field `:to`. As a consequence, the link could potentially " *
             "not be utilized in the model."
         )

@@ -4,6 +4,8 @@
 
 * Updated the variable page description to improve clarity regarding inclusion of scaling.
 * Included `OperationalScenarios` in the page on utilizing `TimeStruct`.
+* Corrected stale docstrings.
+* Corrected typos in both docstrings and documentation.
 
 ## Version 0.10.7 (2026-08-11)
 

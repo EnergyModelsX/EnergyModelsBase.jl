@@ -42,7 +42,7 @@ abstract type Cyclic <: StorageBehavior end
 """
     struct AccumulatingEmissions <: Accumulating
 
-`StorageBehavior` which accumulates all inflow witin a strategic period.
+`StorageBehavior` which accumulates all inflow within a strategic period.
 `AccumulatingEmissions` allows as well to serve as a [`ResourceEmit`](@ref) emission point to
 represent a soft constraint on storing the captured emissions.
 """
@@ -56,14 +56,14 @@ excluding operational times.
 
 In the case of `TwoLevel{SimpleTimes}`, this approach is similar to `CyclicStrategic`.
 In the case of `TwoLevel{RepresentativePeriods{SimpleTimes}}`, this approach differs from
-`CyclicStrategic` as the cyclic constraint is enforeced within each representative period.
+`CyclicStrategic` as the cyclic constraint is enforced within each representative period.
 """
 struct CyclicRepresentative <: Cyclic end
 
 """
     struct CyclicStrategic <: Cyclic
 
-`StorageBehavior` in which the the cyclic behaviour is achieved within a strategic period.
+`StorageBehavior` in which the cyclic behaviour is achieved within a strategic period.
 This implies that the initial level in individual representative periods can be different
 when using `RepresentativePeriods`.
 """
@@ -224,7 +224,7 @@ or `StrategicProfile`.
 # Fields
 - **`id`** is the name/identifier of the node.
 - **`cap::TimeProfile`** is the installed capacity.
-- **`opex_var::TimeProfile`** is the variable operating expense per per capacity usage
+- **`opex_var::TimeProfile`** is the variable operating expense per capacity usage
   through the variable `:cap_use`.
 - **`opex_fixed::TimeProfile`** is the fixed operating expense per installed capacity
   through the variable `:cap_inst`.
@@ -263,7 +263,7 @@ The capacity is hereby normalized to a conversion value of 1 in the fields `inpu
 # Fields
 - **`id`** is the name/identifier of the node.
 - **`cap::TimeProfile`** is the installed capacity.
-- **`opex_var::TimeProfile`** is the variable operating expense per per capacity usage
+- **`opex_var::TimeProfile`** is the variable operating expense per capacity usage
   through the variable `:cap_use`.
 - **`opex_fixed::TimeProfile`** is the fixed operating expense per installed capacity
   through the variable `:cap_inst`.
@@ -465,7 +465,7 @@ has_emissions(n::Availability) = false
 has_emissions(n::RefStorage{AccumulatingEmissions}) = true
 
 """
-    has_emissions(𝒩::Array{<:Node})
+    nodes_emissions(𝒩::Array{<:Node})
 
 Returns nodes that have emission data for a given Array `::Array{<:Node}`.
 """
