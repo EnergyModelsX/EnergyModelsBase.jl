@@ -90,16 +90,10 @@ res_em(𝒫::Dict) = filter(p -> is_resource_emit(first(p)), 𝒫)
 """
     resource_family(p::Resource)
 
-Returns the type under which the resource `p` is grouped when the resources of a case are
-segmented for the resource-specific functions ([`variables_flow_resource`](@ref),
-[`constraints_resource`](@ref), and [`constraints_couple_resource`](@ref)). The default is
-the concrete type of `p`, so that each concrete resource type forms its own segment.
+Returns the family under which the resource `p` is grouped. The default is the concrete type
+of `p`, so that each concrete resource type forms its own segment.
 
-Extension packages can return a common supertype for a family of resource types, *e.g.*,
-`resource_family(::AbstractMyResource) = AbstractMyResource`, so that all resources of the
-family are handed to the resource-specific functions in a single call. This allows the
-extension package to create its variables once for the whole family and to dispatch
-internally on the concrete types.
+Extension packages can introduce new methods to group multiple resources within one family.
 """
 resource_family(p::Resource) = typeof(p)
 
