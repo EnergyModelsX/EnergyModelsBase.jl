@@ -2,9 +2,7 @@
 
 ## Unversioned
 
-* Added the function `resource_family(p::Resource)` for grouping resource types in the segmentation (`res_types`, `res_types_vec`) used by the resource-specific functions `variables_flow_resource`, `constraints_resource`, and `constraints_couple_resource`.
-  * The default is the concrete type of the resource, so that the segmentation is unchanged for existing resources.
-  * Extension packages can return a common supertype for a family of resource types to receive all resources of the family in a single call.
+* Added the function `resource_family(p::Resource)` for grouping resource types in the segmentation (`res_types`, `res_types_vec`).
 
 ## Version 0.10.8 (2026-09-30)
 
