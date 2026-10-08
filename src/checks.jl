@@ -129,8 +129,8 @@ Checks the `case` dictionary is in the correct format.
 - The individual elements vector must be unique, that it is not possible to have two vector
   of nodes within the elements vector.
 - Check that the coupling functions do return elements and not only an empty vector
-- Call of [`check_resources`](@ref) for every resource family ([`resource_family`](@ref)) of
-  the products of the case.
+- Call of [`check_resources`](@ref) for every resource type segment
+  ([`res_types_vec`](@ref)) of the products of the case.
 """
 function check_case_data(case, modeltype::EnergyModel, check_timeprofiles::Bool)
     𝒳ᵛᵉᶜ = get_elements_vec(case)
@@ -167,10 +167,10 @@ end
 """
     check_resources(case, 𝒫ˢᵘᵇ::Vector{<:Resource}, modeltype::EnergyModel, check_timeprofiles::Bool)
 
-Check the resources `𝒫ˢᵘᵇ` of a single resource family ([`resource_family`](@ref)) of the
-`case`. The function is called from [`check_case_data`](@ref) for every resource family of
-the case products. The default method does not check anything; extension packages that
-introduce resource types provide methods for their resource types.
+Check the resources `𝒫ˢᵘᵇ` of a single resource type segment ([`res_types_vec`](@ref)) of
+the `case`. The function is called from [`check_case_data`](@ref) for every resource type
+segment of the case products. The default method does not check anything; extension
+packages that introduce resource types provide methods for their resource types.
 
 The `case` is included as argument so that the combination of the resources with the
 elements carrying them can be checked as well, *e.g.*, through iterating over
