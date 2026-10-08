@@ -1,5 +1,12 @@
 # Release notes
 
+## Unversioned
+
+* Added the function `check_resources(case, 𝒫ˢᵘᵇ, modeltype, check_timeprofiles)`, called from `check_case_data` for every resource family of the case products.
+  * The default method does not check anything.
+  * Extension packages that introduce resource types can provide methods for checking the resource parameters and the combination of the resources with the elements carrying them.
+* `check_case_data` has the additional arguments `modeltype` and `check_timeprofiles`.
+
 ## Version 0.10.8 (2026-09-30)
 
 * Updated the variable page description to improve clarity regarding inclusion of scaling.

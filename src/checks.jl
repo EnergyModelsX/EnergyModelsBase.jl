@@ -61,7 +61,7 @@ function check_data(case, modeltype::EnergyModel, check_timeprofiles::Bool)
 
     # Check the case data. If the case data is not in the correct format, the overall check
     # is cancelled as extractions would not be possible
-    check_case_data(case)
+    check_case_data(case, modeltype, check_timeprofiles)
     log_by_element["Case data"] = logs
     if ASSERTS_AS_LOG
         compile_logs(case, log_by_element)
@@ -121,7 +121,7 @@ function compile_logs(case, log_by_element)
 end
 
 """
-    check_case_data(case)
+    check_case_data(case, modeltype::EnergyModel, check_timeprofiles::Bool)
 
 Checks the `case` dictionary is in the correct format.
 
@@ -129,8 +129,10 @@ Checks the `case` dictionary is in the correct format.
 - The individual elements vector must be unique, that it is not possible to have two vector
   of nodes within the elements vector.
 - Check that the coupling functions do return elements and not only an empty vector
+- Call of [`check_resources`](@ref) for every resource family ([`resource_family`](@ref)) of
+  the products of the case.
 """
-function check_case_data(case)
+function check_case_data(case, modeltype::EnergyModel, check_timeprofiles::Bool)
     𝒳ᵛᵉᶜ = get_elements_vec(case)
     get_vect_type(vec::Vector{T}) where {T} = T
     vec_types = [get_vect_type(x) for x ∈ 𝒳ᵛᵉᶜ]
@@ -156,6 +158,33 @@ function check_case_data(case)
         end
     end
 
+    # Check the resources of the case per resource family
+    for 𝒫ˢᵘᵇ ∈ res_types_vec(get_products(case))
+        check_resources(case, 𝒫ˢᵘᵇ, modeltype, check_timeprofiles)
+    end
+end
+
+"""
+    check_resources(case, 𝒫ˢᵘᵇ::Vector{<:Resource}, modeltype::EnergyModel, check_timeprofiles::Bool)
+
+Check the resources `𝒫ˢᵘᵇ` of a single resource family ([`resource_family`](@ref)) of the
+`case`. The function is called from [`check_case_data`](@ref) for every resource family of
+the case products. The default method does not check anything; extension packages that
+introduce resource types provide methods for their resource types.
+
+The `case` is included as argument so that the combination of the resources with the
+elements carrying them can be checked as well, *e.g.*, through iterating over
+`get_nodes(case)`. Checks that depend only on the type of an element belong in the check
+functions of the package introducing the element type ([`check_node`](@ref),
+[`check_node_data`](@ref), [`check_link`](@ref)).
+"""
+function check_resources(
+    case,
+    𝒫ˢᵘᵇ::Vector{<:Resource},
+    modeltype::EnergyModel,
+    check_timeprofiles::Bool,
+)
+    return nothing
 end
 
 """

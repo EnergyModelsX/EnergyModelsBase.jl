@@ -947,4 +947,86 @@ end
 end
 
 # Set the global again to false
+@testset "Checks - resources" begin
+    # A resource with a parameter that has to be positive and that may be carried by at most
+    # one node of the case
+    struct CheckedResource <: Resource
+        id::String
+        co2_int::Float64
+        parameter::Float64
+    end
+    function EMB.check_resources(
+        case,
+        𝒫ˢᵘᵇ::Vector{<:CheckedResource},
+        modeltype::EnergyModel,
+        check_timeprofiles::Bool,
+    )
+        for p ∈ 𝒫ˢᵘᵇ
+            @assert_or_log(
+                p.parameter > 0,
+                "The parameter of the resource `$(p)` must be positive."
+            )
+            𝒩ᵖ = filter(n -> p ∈ vcat(inputs(n), outputs(n)), get_nodes(case))
+            @assert_or_log(
+                length(𝒩ᵖ) ≤ 1,
+                "The resource `$(p)` can only be carried by a single node."
+            )
+        end
+    end
+
+    # Function for setting up the system
+    function resource_graph(p_checked)
+        CO2 = ResourceEmit("CO2", 1.0)
+        resources = [p_checked, CO2]
+        T = TwoLevel(2, 2, SimpleTimes(5, 2); op_per_strat = 10)
+
+        source = RefSource(
+            "source",
+            FixedProfile(4),
+            FixedProfile(0),
+            FixedProfile(10),
+            Dict(p_checked => 1),
+        )
+        sink = RefSink(
+            "sink",
+            FixedProfile(3),
+            Dict(:surplus => FixedProfile(-4), :deficit => FixedProfile(4)),
+            Dict(p_checked => 1),
+        )
+        nodes = [source, sink]
+        links = [Direct(12, source, sink)]
+        case = Case(T, resources, [nodes, links], [[get_nodes, get_links]])
+        model = OperationalModel(
+            Dict(CO2 => FixedProfile(100)),
+            Dict(CO2 => FixedProfile(0)),
+            CO2,
+        )
+        return case, model
+    end
+
+    # Both checks of the resource method fail in the standard graph (the resource is
+    # carried by two nodes, and the parameter is not positive)
+    case, model = resource_graph(CheckedResource("checked", 0.0, -1.0))
+    @test_throws AssertionError create_model(case, model)
+
+    # A positive parameter leaves the node check, which still fails
+    case, model = resource_graph(CheckedResource("checked", 0.0, 1.0))
+    @test_throws AssertionError create_model(case, model)
+
+    # The checks are not run if the resource is not included in the case products
+    case, model = resource_graph(CheckedResource("checked", 0.0, -1.0))
+    CO2 = get_products(case)[2]
+    case_wo = Case(
+        get_time_struct(case),
+        [CO2],
+        [get_nodes(case), get_links(case)],
+        [[get_nodes, get_links]],
+    )
+    @test create_model(case_wo, model) isa JuMP.Model
+
+    # A resource without a method is not affected
+    Power = ResourceCarrier("Power", 0.0)
+    case, model = resource_graph(Power)
+    @test create_model(case, model) isa JuMP.Model
+end
 EMB.TEST_ENV = false
