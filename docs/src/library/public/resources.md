@@ -42,5 +42,5 @@ The following function controls the segmentation.
 It is only relevant if you introduce a family of resource types that should be handled together, see the page *[Extend resource functionality](@ref how_to-res_funct)*.
 
 ```@docs
-resource_family
+EnergyModelsBase.resource_family
 ```
