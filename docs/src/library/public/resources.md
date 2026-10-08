@@ -35,6 +35,10 @@ If you want to introduce new `Resource` types, it is important that this functio
 co2_int
 ```
 
+```@meta
+CurrentModule = EnergyModelsBase
+```
+
 ## [Functions for grouping `Resource` types](@id lib-pub-res-fun_family)
 
 The resources of a case are segmented by type before the resource-specific functions ([`variables_flow_resource`](@ref), [`constraints_resource`](@ref), and [`constraints_couple_resource`](@ref)) are called.
