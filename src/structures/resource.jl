@@ -88,15 +88,35 @@ res_em(𝒫::Array{<:Resource}) = filter(is_resource_emit, 𝒫)
 res_em(𝒫::Dict) = filter(p -> is_resource_emit(first(p)), 𝒫)
 
 """
+    resource_family(p::Resource)
+
+Returns the type under which the resource `p` is grouped when the resources of a case are
+segmented for the resource-specific functions ([`variables_flow_resource`](@ref),
+[`constraints_resource`](@ref), and [`constraints_couple_resource`](@ref)). The default is
+the concrete type of `p`, so that each concrete resource type forms its own segment.
+
+Extension packages can return a common supertype for a family of resource types, *e.g.*,
+`resource_family(::AbstractMyResource) = AbstractMyResource`, so that all resources of the
+family are handed to the resource-specific functions in a single call. This allows the
+extension package to create its variables once for the whole family and to dispatch
+internally on the concrete types.
+"""
+resource_family(p::Resource) = typeof(p)
+
+"""
     res_types(𝒫::Vector{<:Resource})
 
-Return the unique resource types in an Vector of resources `𝒫`.
+Return the unique resource families ([`resource_family`](@ref)) in a Vector of resources
+`𝒫`. By default, these are the concrete resource types.
 """
-res_types(𝒫::Vector{<:Resource}) = unique(map(x -> typeof(x), 𝒫))
+res_types(𝒫::Vector{<:Resource}) = unique(map(resource_family, 𝒫))
 
 """
     res_types_vec(𝒫::Vector{<:Resource})
 
-Return a Vector-of-Vectors of resources by the concrete sub-types, if the input is empty it returns an empty Vector.
+Return a Vector-of-Vectors of resources segmented by their resource family
+([`resource_family`](@ref)), if the input is empty it returns an empty Vector. By default,
+the segments correspond to the concrete sub-types.
 """
-res_types_vec(𝒫::Vector{<:Resource}) = [Vector{rt}(filter(x -> isa(x, rt), 𝒫)) for rt in res_types(𝒫)]
+res_types_vec(𝒫::Vector{<:Resource}) =
+    [Vector{rt}(filter(x -> resource_family(x) == rt, 𝒫)) for rt ∈ res_types(𝒫)]

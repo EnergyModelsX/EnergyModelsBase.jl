@@ -34,3 +34,13 @@ If you want to introduce new `Resource` types, it is important that this functio
 ```@docs
 co2_int
 ```
+
+## [Functions for grouping `Resource` types](@id lib-pub-res-fun_family)
+
+The resources of a case are segmented by type before the resource-specific functions ([`variables_flow_resource`](@ref), [`constraints_resource`](@ref), and [`constraints_couple_resource`](@ref)) are called.
+The following function controls the segmentation.
+It is only relevant if you introduce a family of resource types that should be handled together, see the page *[Extend resource functionality](@ref how_to-res_funct)*.
+
+```@docs
+resource_family
+```

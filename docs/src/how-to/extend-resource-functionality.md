@@ -205,3 +205,26 @@ function EMB.constraints_couple_resource(
     end
 end
 ```
+
+## [Grouping a family of resource types](@id how_to-res_funct-family)
+
+The resource-specific functions are called once for every segment of `res_types_vec(𝒫)`, which groups the resources of the case by their concrete type by default.
+Variables created in [`variables_flow_resource`](@ref) are registered once per model, so a package introducing several concrete types with shared variables, *e.g.*, different formulations of the same physical resource, would only be able to use one of them in a case.
+
+The function [`resource_family`](@ref) allows you to group the concrete types of your package into a single segment:
+
+```julia
+abstract type AbstractPotentialPower <: Resource end
+struct PotentialPower <: AbstractPotentialPower
+    # fields as above
+end
+struct BoundedPotentialPower <: AbstractPotentialPower
+    # fields with different bounds
+end
+
+EMB.resource_family(::AbstractPotentialPower) = AbstractPotentialPower
+```
+
+The resource-specific functions then receive a `Vector{<:AbstractPotentialPower}` containing all instances of both types in a single call.
+Create the variables once for the whole family in this call and dispatch on the concrete types inside the constraint functions, if required.
+Resources of other packages are not affected, as the default returns the concrete type.
