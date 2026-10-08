@@ -205,3 +205,26 @@ function EMB.constraints_couple_resource(
     end
 end
 ```
+
+## [Checking resources](@id how_to-res_funct-checks)
+
+The parameters of a new resource type and its combination with the elements carrying it can be checked through a method of [`check_resources`](@ref).
+It is called from `check_case_data` for every resource family of the case products with the `case` as argument, so that the nodes and links can be inspected as well.
+
+```julia
+function EMB.check_resources(
+    case,
+    𝒫ˢᵘᵇ::Vector{<:PotentialPower},
+    modeltype::EnergyModel,
+    check_timeprofiles::Bool,
+)
+    for p ∈ 𝒫ˢᵘᵇ
+        @assert_or_log(
+            lower_limit(p) < upper_limit(p),
+            "The lower limit of the potential of `$(p)` must be below its upper limit."
+        )
+    end
+end
+```
+
+Checks that depend only on the type of a node or link, *e.g.*, the fields of a custom node, belong in [`check_node`](@ref) or [`check_link`](@ref) of the package introducing the element type.
