@@ -226,18 +226,22 @@ function variables_flow(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, mode
     𝒩ⁱⁿ = filter(has_input, 𝒩)
     𝒩ᵒᵘᵗ = filter(has_output, 𝒩)
 
+    # The resources of each node, computed once (not once per operational period)
+    𝒫ⁱⁿ = Dict(n => inputs(n) for n ∈ 𝒩ⁱⁿ)
+    𝒫ᵒᵘᵗ = Dict(n => outputs(n) for n ∈ 𝒩ᵒᵘᵗ)
+
     # Create the node flow variables
-    @variable(m, flow_in[n_in ∈ 𝒩ⁱⁿ, 𝒯, inputs(n_in)])
-    @variable(m, flow_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯, outputs(n_out)])
+    @variable(m, flow_in[n_in ∈ 𝒩ⁱⁿ, 𝒯, 𝒫ⁱⁿ[n_in]])
+    @variable(m, flow_out[n_out ∈ 𝒩ᵒᵘᵗ, 𝒯, 𝒫ᵒᵘᵗ[n_out]])
 
     # Set the bounds for unidirectional nodes
     𝒩ⁱⁿ⁻ᵘⁿⁱ = filter(is_unidirectional, 𝒩ⁱⁿ)
     𝒩ᵒᵘᵗ⁻ᵘⁿⁱ = filter(is_unidirectional, 𝒩ᵒᵘᵗ)
 
-    for n_in ∈ 𝒩ⁱⁿ⁻ᵘⁿⁱ, t ∈ 𝒯, p ∈ inputs(n_in)
+    for n_in ∈ 𝒩ⁱⁿ⁻ᵘⁿⁱ, t ∈ 𝒯, p ∈ 𝒫ⁱⁿ[n_in]
         set_lower_bound(m[:flow_in][n_in, t, p], 0)
     end
-    for n_out ∈ 𝒩ᵒᵘᵗ⁻ᵘⁿⁱ, t ∈ 𝒯, p ∈ outputs(n_out)
+    for n_out ∈ 𝒩ᵒᵘᵗ⁻ᵘⁿⁱ, t ∈ 𝒯, p ∈ 𝒫ᵒᵘᵗ[n_out]
         set_lower_bound(m[:flow_out][n_out, t, p], 0)
     end
 
@@ -248,18 +252,23 @@ function variables_flow(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, mode
 
 end
 function variables_flow(m, ℒ::Vector{<:Link}, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
+    # The resources of each link, computed once (`link_res` intersects the
+    # resources of the connected nodes on every call)
+    𝒫ⁱⁿ = Dict(l => inputs(l) for l ∈ ℒ)
+    𝒫ᵒᵘᵗ = Dict(l => outputs(l) for l ∈ ℒ)
+
     # Create the link flow variables
-    @variable(m, link_in[l ∈ ℒ, 𝒯, inputs(l)])
-    @variable(m, link_out[l ∈ ℒ, 𝒯, outputs(l)])
+    @variable(m, link_in[l ∈ ℒ, 𝒯, 𝒫ⁱⁿ[l]])
+    @variable(m, link_out[l ∈ ℒ, 𝒯, 𝒫ᵒᵘᵗ[l]])
 
     # Set the bounds for unidirectional links
     ℒᵘⁿⁱ = filter(is_unidirectional, ℒ)
 
     for l ∈ ℒᵘⁿⁱ, t ∈ 𝒯
-        for p ∈ inputs(l)
+        for p ∈ 𝒫ⁱⁿ[l]
             set_lower_bound(m[:link_in][l, t, p], 0)
         end
-        for p ∈ outputs(l)
+        for p ∈ 𝒫ᵒᵘᵗ[l]
             set_lower_bound(m[:link_out][l, t, p], 0)
         end
     end
@@ -642,14 +651,24 @@ is available for the coupling between [`AbstractElement`](@ref)s while a method 
 for the coupling between a [`Link`](@ref) and a [`Node`](@ref EnergyModelsBase.Node).
 """
 function constraints_couple(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫, 𝒯, modeltype::EnergyModel)
+    # The resources of each link and the links of each node, computed once (link_sub
+    # filters all links for each node)
+    𝒫ˡ⁻ⁱⁿ = Dict(l => inputs(l) for l ∈ ℒ)
+    𝒫ˡ⁻ᵒᵘᵗ = Dict(l => outputs(l) for l ∈ ℒ)
+    ℒⁿ⁻ᶠʳᵒᵐ = Dict(n => eltype(ℒ)[] for n ∈ 𝒩)
+    ℒⁿ⁻ᵗᵒ = Dict(n => eltype(ℒ)[] for n ∈ 𝒩)
+    for l ∈ ℒ
+        haskey(ℒⁿ⁻ᶠʳᵒᵐ, l.from) && push!(ℒⁿ⁻ᶠʳᵒᵐ[l.from], l)
+        haskey(ℒⁿ⁻ᵗᵒ, l.to) && push!(ℒⁿ⁻ᵗᵒ[l.to], l)
+    end
     for n ∈ 𝒩
-        ℒᶠʳᵒᵐ, ℒᵗᵒ = link_sub(ℒ, n)
+        ℒᶠʳᵒᵐ, ℒᵗᵒ = ℒⁿ⁻ᶠʳᵒᵐ[n], ℒⁿ⁻ᵗᵒ[n]
 
         # Constraint for output flowrate and input links.
         if has_output(n)
             @constraint(m, [t ∈ 𝒯, p ∈ outputs(n)],
                 m[:flow_out][n, t, p] ==
-                sum(m[:link_in][l, t, p] for l ∈ ℒᶠʳᵒᵐ if p ∈ inputs(l))
+                sum(m[:link_in][l, t, p] for l ∈ ℒᶠʳᵒᵐ if p ∈ 𝒫ˡ⁻ⁱⁿ[l])
             )
         end
 
@@ -657,7 +676,7 @@ function constraints_couple(m, 𝒩::Vector{<:Node}, ℒ::Vector{<:Link}, 𝒫, 
         if has_input(n)
             @constraint(m, [t ∈ 𝒯, p ∈ inputs(n)],
                 m[:flow_in][n, t, p] ==
-                sum(m[:link_out][l, t, p] for l ∈ ℒᵗᵒ if p ∈ outputs(l))
+                sum(m[:link_out][l, t, p] for l ∈ ℒᵗᵒ if p ∈ 𝒫ˡ⁻ᵒᵘᵗ[l])
             )
         end
     end

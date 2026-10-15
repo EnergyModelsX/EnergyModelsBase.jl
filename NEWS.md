@@ -1,5 +1,10 @@
 # Release notes
 
+## Unversioned
+
+* Faster model building: the resources of nodes and links and the links of each node are computed once in `variables_flow` and `constraints_couple`, instead of once per operational period (`inputs(l)`/`outputs(l)` of a link intersect the resources of both nodes) or once per node (`link_sub`).
+  The model is unchanged.
+
 ## Version 0.10.8 (2026-09-30)
 
 * Updated the variable page description to improve clarity regarding inclusion of scaling.
