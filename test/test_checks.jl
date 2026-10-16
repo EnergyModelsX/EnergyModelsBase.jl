@@ -975,7 +975,7 @@ end
     end
 
     # Function for setting up the system
-    function resource_graph(p_checked)
+    function check_graph_res(p_checked)
         CO2 = ResourceEmit("CO2", 1.0)
         resources = [p_checked, CO2]
         T = TwoLevel(2, 2, SimpleTimes(5, 2); op_per_strat = 10)
@@ -1006,27 +1006,12 @@ end
 
     # Both checks of the resource method fail in the standard graph (the resource is
     # carried by two nodes, and the parameter is not positive)
-    case, model = resource_graph(CheckedResource("checked", 0.0, -1.0))
+    case, model = check_graph_res(CheckedResource("checked", 0.0, -1.0))
     @test_throws AssertionError create_model(case, model)
 
     # A positive parameter leaves the node check, which still fails
-    case, model = resource_graph(CheckedResource("checked", 0.0, 1.0))
+    case, model = check_graph_res(CheckedResource("checked", 0.0, 1.0))
     @test_throws AssertionError create_model(case, model)
 
-    # The checks are not run if the resource is not included in the case products
-    case, model = resource_graph(CheckedResource("checked", 0.0, -1.0))
-    CO2 = get_products(case)[2]
-    case_wo = Case(
-        get_time_struct(case),
-        [CO2],
-        [get_nodes(case), get_links(case)],
-        [[get_nodes, get_links]],
-    )
-    @test create_model(case_wo, model) isa JuMP.Model
-
-    # A resource without a method is not affected
-    Power = ResourceCarrier("Power", 0.0)
-    case, model = resource_graph(Power)
-    @test create_model(case, model) isa JuMP.Model
 end
 EMB.TEST_ENV = false

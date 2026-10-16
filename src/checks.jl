@@ -168,15 +168,10 @@ end
     check_resources(case, 𝒫ˢᵘᵇ::Vector{<:Resource}, modeltype::EnergyModel, check_timeprofiles::Bool)
 
 Check the resources `𝒫ˢᵘᵇ` of a single resource type segment ([`res_types_vec`](@ref)) of
-the `case`. The function is called from [`check_case_data`](@ref) for every resource type
-segment of the case products. The default method does not check anything; extension
-packages that introduce resource types provide methods for their resource types.
+the `case`.
 
-The `case` is included as argument so that the combination of the resources with the
-elements carrying them can be checked as well, *e.g.*, through iterating over
-`get_nodes(case)`. Checks that depend only on the type of an element belong in the check
-functions of the package introducing the element type ([`check_node`](@ref),
-[`check_node_data`](@ref), [`check_link`](@ref)).
+The default method does not check anything; extension packages that introduce resource types
+provide methods for their resource types.
 """
 function check_resources(
     case,
