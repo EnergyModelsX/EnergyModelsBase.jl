@@ -54,6 +54,7 @@ variables_element_ext_data
 ```@docs
 check_data
 check_case_data
+check_resources
 check_model
 check_elements
 check_node
