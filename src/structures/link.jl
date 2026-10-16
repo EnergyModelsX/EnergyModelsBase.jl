@@ -48,8 +48,28 @@ Return connected links from the vector `ℒ` for a given node `n` as array.
 The first subarray corresponds to the `from` field, while the second to the `to` field.
 """
 function link_sub(ℒ::Vector{<:Link}, n::Node)
-    return [filter(x -> x.from == n, ℒ), filter(x -> x.to == n, ℒ)]
+    c = _link_cache()
+    c === nothing && return _link_sub(ℒ, n)
+    return get!(() -> _link_sub(ℒ, n), c.sub, (ℒ, n))
 end
+_link_sub(ℒ::Vector{<:Link}, n::Node) =
+    [filter(x -> x.from == n, ℒ), filter(x -> x.to == n, ℒ)]
+
+# While `create_model` builds a model, the resources of each link (`link_res`, an
+# intersection of the resources of both nodes) and the links of each node (`link_sub`)
+# are computed once and then taken from a cache: they are needed for every operational
+# period.  The cache is local to the task building the model and exists only while
+# `create_model` runs, so a later model sees changed nodes and links.  The cached
+# vectors must not be modified.  (`link_sub` is keyed by the identity of the vector of
+# links: hashing it by content would cost more than filtering it.)
+const _LINK_CACHE = :EnergyModelsBase_link_cache
+struct _LinkCache
+    res::Dict{Link,Any}
+    sub::IdDict{Any,Any}
+end
+_with_link_cache(f) =
+    task_local_storage(f, _LINK_CACHE, _LinkCache(Dict{Link,Any}(), IdDict{Any,Any}()))
+_link_cache() = get(task_local_storage(), _LINK_CACHE, nothing)::Union{Nothing,_LinkCache}
 
 """
     is_unidirectional(l::Link)
@@ -107,7 +127,12 @@ outputs of the `from` node.
     This function is only internal and should not be used in other packages. Its behaviour
     may not be the expected when used outside `EnergyModelsBase` for new [`Link`](@ref) types/
 """
-link_res(l::Link) = intersect(inputs(l.to), outputs(l.from))
+function link_res(l::Link)
+    c = _link_cache()
+    c === nothing && return _link_res(l)
+    return get!(() -> _link_res(l), c.res, l)
+end
+_link_res(l::Link) = intersect(inputs(l.to), outputs(l.from))
 
 """
     inputs(n::Link)
