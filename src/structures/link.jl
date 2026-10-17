@@ -47,8 +47,29 @@ Direct(id, from::Node, to::Node) = Direct(id, from, to, Linear())
 Return connected links from the vector `ℒ` for a given node `n` as array.
 The first subarray corresponds to the `from` field, while the second to the `to` field.
 """
-function link_sub(ℒ::Vector{<:Link}, n::Node)
+@memoize IdDict function link_sub(ℒ::Vector{<:Link}, n::Node)
     return [filter(x -> x.from == n, ℒ), filter(x -> x.to == n, ℒ)]
+end
+
+# While `create_model` builds a model, `link_res` and `link_sub` are memoized: they are
+# needed for every operational period.  Memoization.jl's caches are global (one per
+# function), so they are emptied before and after building a model: a later model sees
+# changed nodes and links, and the caches do not keep a case alive.  The cached vectors
+# must not be modified, and two models must not be built at the same time.  (`link_sub`
+# is cached by the identity of the vector of links: hashing it by content would cost
+# more than filtering it.)
+function _with_link_cache(f)
+    _empty_link_caches()
+    try
+        return f()
+    finally
+        _empty_link_caches()
+    end
+end
+function _empty_link_caches()
+    Memoization.empty_cache!(link_res)
+    Memoization.empty_cache!(link_sub)
+    return nothing
 end
 
 """
@@ -107,7 +128,7 @@ outputs of the `from` node.
     This function is only internal and should not be used in other packages. Its behaviour
     may not be the expected when used outside `EnergyModelsBase` for new [`Link`](@ref) types/
 """
-link_res(l::Link) = intersect(inputs(l.to), outputs(l.from))
+@memoize Dict link_res(l::Link) = intersect(inputs(l.to), outputs(l.from))
 
 """
     inputs(n::Link)
