@@ -169,7 +169,7 @@ function variables_capacity(m, 𝒩::Vector{<:Node}, 𝒳ᵛᵉᶜ, 𝒯, modelt
     @variable(m, stor_level[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_level_inst[𝒩ˢᵗᵒʳ, 𝒯] >= 0)
     @variable(m, stor_level_Δ_op[𝒩ˢᵗᵒʳ, 𝒯])
-    if 𝒯 isa TwoLevel{S,T,U} where {S,T,U<:RepresentativePeriods}
+    if has_repr_periods(𝒯)
         𝒯ʳᵖ = repr_periods(𝒯)
         @variable(m, stor_level_Δ_rp[𝒩ˢᵗᵒʳ, 𝒯ʳᵖ])
     end
