@@ -268,3 +268,79 @@ end
             value(m[:flow_in][sink, t, pp])
     for t ∈ 𝒯)
 end
+
+# Group several resource types into a family and check that the family is handed to the
+# resource-specific functions in a single call
+@testset "Resource - families" begin
+    abstract type TestFamily <: Resource end
+    struct FamilyMemberA <: TestFamily
+        id::String
+        co2_int::Float64
+    end
+    struct FamilyMemberB <: TestFamily
+        id::String
+        co2_int::Float64
+    end
+    EMB.resource_family(::TestFamily) = TestFamily
+
+    fam_a = FamilyMemberA("A", 0.0)
+    fam_b = FamilyMemberB("B", 0.0)
+    Power = ResourceCarrier("Power", 0.0)
+    CO2 = ResourceEmit("CO2", 1.0)
+    𝒫 = [fam_a, Power, fam_b, CO2]
+
+    @testset "Segmentation" begin
+        # The two family members form one segment, the other resources keep their own
+        @test length(EMB.res_types(𝒫)) == 3
+        @test TestFamily ∈ EMB.res_types(𝒫)
+        @test FamilyMemberA ∉ EMB.res_types(𝒫)
+
+        𝒫ᵛᵉᶜ = EMB.res_types_vec(𝒫)
+        @test length(𝒫ᵛᵉᶜ) == 3
+        𝒫ᶠᵃᵐ = only(filter(𝒫ˢᵘᵇ -> eltype(𝒫ˢᵘᵇ) == TestFamily, 𝒫ᵛᵉᶜ))
+        @test 𝒫ᶠᵃᵐ isa Vector{TestFamily}
+        @test Set(𝒫ᶠᵃᵐ) == Set([fam_a, fam_b])
+
+        # Resources without a `resource_family` method are segmented as before
+        @test only(filter(𝒫ˢᵘᵇ -> eltype(𝒫ˢᵘᵇ) == ResourceEmit{Float64}, 𝒫ᵛᵉᶜ)) == [CO2]
+    end
+
+    @testset "Single call per family" begin
+        # A variable created once for the whole family; a second call for the same name
+        # would error, so a successful model build proves that the family is one segment
+        function EMB.variables_flow_resource(
+            m, 𝒩::Vector{<:EMB.Node}, 𝒫::Vector{<:TestFamily}, 𝒯, modeltype::EnergyModel
+        )
+            𝒩ᶠᵃᵐ = filter(n -> any(p ∈ 𝒫 for p ∈ vcat(inputs(n), outputs(n))), 𝒩)
+            @variable(m, family_flow[𝒩ᶠᵃᵐ, 𝒯, 𝒫])
+        end
+
+        source = RefSource(
+            "fam_source",
+            FixedProfile(4),
+            FixedProfile(10),
+            FixedProfile(0),
+            Dict(fam_a => 1, fam_b => 1),
+        )
+        sink = RefSink(
+            "fam_sink",
+            FixedProfile(3),
+            Dict(:surplus => FixedProfile(4), :deficit => FixedProfile(100)),
+            Dict(fam_a => 1, fam_b => 1),
+        )
+        𝒯 = TwoLevel(2, 2, SimpleTimes(5, 2); op_per_strat = 10)
+        𝒩 = [source, sink]
+        ℒ = [Direct("src-snk", source, sink, Linear())]
+        modeltype = OperationalModel(
+            Dict(CO2 => FixedProfile(100)),
+            Dict(CO2 => FixedProfile(0)),
+            CO2,
+        )
+        case = Case(𝒯, [fam_a, fam_b, CO2], [𝒩, ℒ])
+        m = create_model(case, modeltype)
+
+        @test haskey(m, :family_flow)
+        @test length(m[:family_flow]) == length(𝒩) * length(𝒯) * 2
+        @test Set(axes(m[:family_flow])[3]) == Set([fam_a, fam_b])
+    end
+end

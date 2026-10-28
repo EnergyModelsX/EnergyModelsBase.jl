@@ -20,6 +20,7 @@ variables_ext_data(m, _::Type{<:ExtensionData}, 𝒳::Vector{<:AbstractElement},
 objective(m, 𝒳ᵛᵉᶜ, 𝒫, 𝒯, modeltype::EnergyModel)
 objective_operational
 emissions_operational
+resource_family
 ```
 
 ## [Constraint functions](@id lib-int-fun-con)
