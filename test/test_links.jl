@@ -79,6 +79,31 @@
         @test isa(formulation(ℒ[1]), Linear)
     end
 
+    @testset "Cache of link resources" begin
+        case, model = simple_graph()
+        ℒ = get_links(case)
+        𝒩 = get_nodes(case)
+        l = ℒ[1]
+
+        # While a model is built, the resources and the links of a node are computed once
+        EMB._with_link_cache() do
+            @test EMB.link_res(l) === EMB.link_res(l)
+            @test EMB.link_sub(ℒ, 𝒩[2]) === EMB.link_sub(ℒ, 𝒩[2])
+        end
+
+        # After building a model, the caches are empty
+        m = create_model(case, model; check_any_data = false)
+        @test all(isempty, values(EMB.Memoization.find_caches(EMB.link_res))) &&
+            all(isempty, values(EMB.Memoization.find_caches(EMB.link_sub)))
+
+        # A later model sees changed nodes: CO2 also flows from the source to the network
+        n_in = length(m[:link_in])
+        𝒩[1].output[CO2] = 1
+        𝒩[2].input[CO2] = 1
+        m = create_model(case, model; check_any_data = false)
+        @test length(m[:link_in]) == n_in + length(get_time_struct(case))
+    end
+
     @testset "Variable declaration" begin
         case, model = simple_graph()
         m = create_model(case, model)

@@ -13,6 +13,7 @@ module EnergyModelsBase
 using JuMP
 using SparseVariables
 using TimeStruct
+using Memoization: Memoization, @memoize
 const TS = TimeStruct
 
 # Different introduced types
