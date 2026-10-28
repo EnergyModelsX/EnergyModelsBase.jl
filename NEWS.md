@@ -1,5 +1,9 @@
 # Release notes
 
+## Unversioned
+
+* Added the function `resource_family(p::Resource)` for grouping resource types in the segmentation (`res_types`, `res_types_vec`).
+
 ## Version 0.10.8 (2026-09-30)
 
 * Updated the variable page description to improve clarity regarding inclusion of scaling.
