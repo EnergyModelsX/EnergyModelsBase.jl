@@ -36,6 +36,19 @@ function create_model(
     check_timeprofiles::Bool = true,
     check_any_data::Bool = true,
 )
+    # The resources of the links and the links of the nodes are cached while the model is
+    # built (see `_with_link_cache`)
+    return _with_link_cache() do
+        return _create_model(case, modeltype, m, check_timeprofiles, check_any_data)
+    end
+end
+function _create_model(
+    case::Case,
+    modeltype::EnergyModel,
+    m::JuMP.AbstractModel,
+    check_timeprofiles::Bool,
+    check_any_data::Bool,
+)
     @debug "Construct model"
 
     # Check if the case data is consistent before the model is created.
