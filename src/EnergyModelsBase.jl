@@ -27,7 +27,12 @@ include(joinpath("structures", "case.jl"))
 
 include("utils.jl")
 include("model.jl")
-include("checks.jl")
+# Include all checks. `general.jl` comes first as it defines `@assert_or_log`.
+include(joinpath("checks", "general.jl"))
+for file ∈ readdir(pkgdir(EnergyModelsBase, "src", "checks"))
+    (endswith(file, ".jl") && file ≠ "general.jl") || continue
+    include(joinpath("checks", file))
+end
 include("constraint_functions.jl")
 include("data_functions.jl")
 
