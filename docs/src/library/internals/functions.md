@@ -107,4 +107,5 @@ collect_types
 sort_types
 res_types
 res_types_vec
+operational_structure
 ```
