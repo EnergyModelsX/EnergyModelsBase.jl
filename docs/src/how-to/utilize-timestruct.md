@@ -10,6 +10,42 @@ Hence, it is important to highlight how it works and which parameters you may wa
 In the following introduction, the most important structures are explained.
 There are other structures, but these will be added once `EnergyModelsBase` supports their formulation.
 
+### [Operational time structures without strategic periods](@id how_to-utilize_TS-struct-op_top)
+
+The following sections introduce multiple different `TimeStructure` types.
+`EnergyModelsBase` was designed with a multi horizon approach.
+This implies that the natural top level time structures are [`TwoLevel`](@extref TimeStruct.TwoLevel) and [`TwoLevelTree`](@extref TimeStruct.TwoLevelTree).
+However, It is also possible to use [`SimpleTimes`](@extref TimeStruct.SimpleTimes), [`OperationalScenarios`](@extref TimeStruct.OperationalScenarios), or [`RepresentativePeriods`](@extref TimeStruct.RepresentativePeriods) directly as time structure of a [`Case`](@ref).
+`TimeStruct` treats them as a single strategic period.
+Its duration is given by the total duration of the operational periods, including the repetitions of representative periods.
+
+A duration of 1 of the strategic period corresponds in this case to a duration of 1 of an operational period.
+Fixed operational expenditures, emission limits, and all other values provided for a duration of 1 in a strategic period must hence be provided for a duration of 1 of an operational period, *e.g.*, an hour.
+The scaling of operational to strategic values is relative to the number of operational periods and their repetitions:
+
+```julia
+day = SimpleTimes(24, 1)
+t_inv = first(strategic_periods(day))
+EMB.scale_op_sp(t_inv, first(day))      # 1/24
+
+oscs = OperationalScenarios(2, [day, day], [0.25, 0.75])
+t_inv = first(strategic_periods(oscs))
+t_osc_1, t_osc_2 = opscenarios(oscs)
+EMB.scale_op_sp(t_inv, first(t_osc_1))  # 1/96
+EMB.scale_op_sp(t_inv, first(t_osc_2))  # 1/32
+
+rps = RepresentativePeriods(2, 8760, [0.25, 0.75], [day, day])
+t_inv = first(strategic_periods(rps))
+t_rp_1, t_rp_2 = repr_periods(rps)
+EMB.scale_op_sp(t_inv, first(t_rp_1))   # 1/96
+EMB.scale_op_sp(t_inv, first(t_rp_2))   # 1/32
+```
+
+The corresponding values for `TwoLevel(1, 1, ops; op_per_strat=8760)` are 365 for `day` and 91.25 and 273.75 for both `oscs` and `rps`.
+
+!!! warning "Storage nodes"
+    Methods for specific `Storage` nodes of [`EMB.constraints_level`](@ref) and of [`EMB.constraints_level_iterate`](@ref) for `RepresentativePeriods` and `OperationalScenarios` may only support [`TwoLevel`](@extref TimeStruct.TwoLevel) and [`TwoLevelTree`](@extref TimeStruct.TwoLevelTree), if they access the operational time structure directly.
+
 ### [Operational periods](@id how_to-utilize_TS-struct-op)
 
 Operational periods correspond to periods in which no investments are allowed.
@@ -298,6 +334,7 @@ profile_1_ = OperationalProfile(rand(168) .+ 5)
 profile_2 = OperationalProfile(rand(168) .+ 10)
 demand = ScenarioProfile([profile_1_, profile_2])
 ```
+
 !!! warning
     It is possible to use [`ScenarioProfile`](@extref TimeStruct.ScenarioProfile) without [`OperationalScenarios`](@extref TimeStruct.OperationalScenarios).
     In this case, the first provided profile is used.

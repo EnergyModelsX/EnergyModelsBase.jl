@@ -9,6 +9,7 @@
 * Use `has_repr_periods` from `TimeStruct` for declaring representative period variables.
 * Added methods to `check_profile` for `SimpleTimes`, `OperationalScenarios`, and `RepresentativePeriods` as time structure of a `Case`.
 * `Storage` nodes can be used with `SimpleTimes`, `OperationalScenarios`, and `RepresentativePeriods` as time structure of a `Case`.
+* Added a section on operational time structures without strategic periods to the page on utilizing `TimeStruct`.
 
 ### Minor updates
 
