@@ -204,7 +204,7 @@ function constraints_level(m, n::Storage, 𝒯, 𝒫, modeltype::EnergyModel)
         # dispatching on it.
         prev_pers = PreviousPeriods(t_inv_prev, nothing, nothing)
         cyclic_pers = CyclicPeriods(t_inv, t_inv)
-        ts = t_inv.operational
+        ts = operational_structure(t_inv)
         constraints_level_iterate(
             m,
             n,
@@ -312,7 +312,7 @@ function constraints_level_iterate(
     for (t_rp_prev, t_rp) ∈ withprev(𝒯ʳᵖ)
         prev_pers = PreviousPeriods(strat_per(prev_pers), t_rp_prev, op_per(prev_pers))
         cyclic_pers = CyclicPeriods(last_rp, t_rp)
-        ts = t_rp.operational.operational
+        ts = operational_structure(t_rp)
         constraints_level_iterate(
             m,
             n,
@@ -354,7 +354,7 @@ function constraints_level_iterate(
 
     # Iterate through the operational structure
     for t_scp ∈ 𝒯ˢᶜ
-        ts = t_scp.operational.operational
+        ts = operational_structure(t_scp)
         constraints_level_iterate(
             m,
             n,

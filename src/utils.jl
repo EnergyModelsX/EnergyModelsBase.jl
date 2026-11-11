@@ -102,6 +102,24 @@ function sort_types(types_list::Dict)
 end
 
 """
+    operational_structure(per)
+
+Returns the operational time structure of the period `per` for dispatching within
+[`constraints_level`](@ref) and [`constraints_level_iterate`](@ref). It allows the usage of
+`SimpleTimes`, `OperationalScenarios`, and `RepresentativePeriods` as time structure of a
+`Case`.
+
+!!! note "Temporary function"
+    The function will be replaced by `TimeStruct.operational_type` in the next breaking
+    release.
+"""
+operational_structure(per::TS.SingleStrategicPeriod) = per.ts
+operational_structure(per::Union{TS.RepresentativePeriod,TS.OperationalScenario}) =
+    per.operational
+operational_structure(per::Union{TS.StrategicPeriod,TS.StratNode}) = per.operational
+operational_structure(per) = per.operational.operational
+
+"""
     previous_level(
         m,
         n::Storage,

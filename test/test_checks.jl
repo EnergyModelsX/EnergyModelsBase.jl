@@ -458,6 +458,74 @@ end
         "If timeprofiles are not checked, inconsistencies can occur."
     @test_logs (:warn, msg) create_model(case, model; check_timeprofiles = false)
 
+    # Test that the operational checks are called with `SimpleTimes` as time structure
+    # - EMB.check_profile(fieldname, value::TimeProfile, 𝒯::SimpleTimes)
+    # - EMB.check_profile(fieldname, value::OperationalProfile, ts::SimpleTimes, p_msg)
+    op_24 = OperationalProfile(ones(24))
+    op_20 = OperationalProfile(ones(20))
+    @test_throws AssertionError create_simple_graph(day, op_20)
+
+    # Test that there is a warning when using `StrategicProfile` with `SimpleTimes` and that
+    # the first profile is checked
+    # - EMB.check_profile(fieldname, value::StrategicProfile, 𝒯::SimpleTimes)
+    msg =
+        "Using `StrategicProfile` with `SimpleTimes` is dangerous, as it may " *
+        "lead to unexpected behaviour. " *
+        "In this case, only the first profile is used in the model and tested."
+    @test_logs (:warn, msg) create_simple_graph(day, StrategicProfile([op_24, op_24]))
+    @test_throws AssertionError create_simple_graph(day, StrategicProfile([op_20]))
+
+    # Test that there is a warning when using `StrategicStochasticProfile` with `SimpleTimes`
+    # and that the first profile is checked
+    # - EMB.check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::SimpleTimes)
+    msg =
+        "Using `StrategicStochasticProfile` with `SimpleTimes` is dangerous, as it may " *
+        "lead to unexpected behaviour. " *
+        "In this case, only the first profile is used in the model and tested."
+    @test_logs (:warn, msg) create_simple_graph(day, StrategicStochasticProfile([[op_24]]))
+    @test_throws AssertionError create_simple_graph(
+        day,
+        StrategicStochasticProfile([[op_20]]),
+    )
+
+    # Test that the operational checks are called with `OperationalScenarios` as time
+    # structure
+    # - EMB.check_profile(fieldname, value::TimeProfile, 𝒯::OperationalScenarios)
+    # - EMB.check_profile(fieldname, value::OperationalProfile, ts::OperationalScenarios, p_msg)
+    # - EMB.check_profile(fieldname, value::ScenarioProfile, ts::OperationalScenarios, p_msg)
+    oscs = OperationalScenarios(3, day)
+    @test_throws AssertionError create_simple_graph(oscs, op_20)
+    @test_throws AssertionError create_simple_graph(oscs, ScenarioProfile([op_24, op_24]))
+
+    # Test that there is a warning when using `StrategicProfile` with `OperationalScenarios`
+    # - EMB.check_profile(fieldname, value::StrategicProfile, 𝒯::OperationalScenarios)
+    msg =
+        "Using `StrategicProfile` with `OperationalScenarios` is dangerous, as it may " *
+        "lead to unexpected behaviour. " *
+        "In this case, only the first profile is used in the model and tested."
+    @test_logs (:warn, msg) create_simple_graph(oscs, StrategicProfile([op_24, op_24]))
+
+    # Test that the operational checks are called with `RepresentativePeriods` as time
+    # structure
+    # - EMB.check_profile(fieldname, value::TimeProfile, 𝒯::RepresentativePeriods)
+    # - EMB.check_profile(fieldname, value::OperationalProfile, ts::RepresentativePeriods, p_msg)
+    # - EMB.check_profile(fieldname, value::RepresentativeProfile, ts::RepresentativePeriods, p_msg)
+    # - EMB.check_profile(fieldname, value::ScenarioProfile, ts::RepresentativePeriods, p_msg)
+    rps = RepresentativePeriods(2, [.5, .5], day)
+    rps_osc = RepresentativePeriods(2, [.5, .5], oscs)
+    @test_throws AssertionError create_simple_graph(rps, op_20)
+    @test_throws AssertionError create_simple_graph(rps_osc, op_20)
+    @test_throws AssertionError create_simple_graph(rps, RepresentativeProfile([op_24]))
+    @test_throws AssertionError create_simple_graph(rps_osc, ScenarioProfile([op_24, op_24]))
+
+    # Test that there is a warning when using `StrategicProfile` with `RepresentativePeriods`
+    # - EMB.check_profile(fieldname, value::StrategicProfile, 𝒯::RepresentativePeriods)
+    msg =
+        "Using `StrategicProfile` with `RepresentativePeriods` is dangerous, as it may " *
+        "lead to unexpected behaviour. " *
+        "In this case, only the first profile is used in the model and tested."
+    @test_logs (:warn, msg) create_simple_graph(rps, StrategicProfile([op_24, op_24]))
+
     # Deactivate logging and instead use `assert_or_log` as `assert`
     EMB.ASSERTS_AS_LOG = false
 

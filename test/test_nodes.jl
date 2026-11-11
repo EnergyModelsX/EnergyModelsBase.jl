@@ -756,6 +756,7 @@ end
         ops = SimpleTimes(5, 2),
         op_per_strat = 10,
         demand = FixedProfile(10),
+        T = TwoLevel(2, 2, ops; op_per_strat),
     )
 
         # Used source, network, and sink
@@ -788,8 +789,6 @@ end
             Dict(:surplus => FixedProfile(4), :deficit => FixedProfile(1000)),
             Dict(Power => 1),
         )
-
-        T = TwoLevel(2, 2, ops; op_per_strat)
 
         nodes = [source, aux_source, storage, sink]
         links = [
@@ -1206,6 +1205,24 @@ end
             value.(m[:stor_level_Δ_op][stor, t]) * duration(t) for
             (t_prev, t) ∈ withprev(𝒯), atol = TEST_ATOL if !isnothing(t_prev)
         ) ≈ length(𝒯) - length(𝒯ᴵⁿᵛ) * ops.len * scps.len atol = TEST_ATOL
+    end
+
+    @testset "Operational time structures without TwoLevel" begin
+        # Test that storage nodes can be used with operational time structures as time
+        # structure of the case
+        # - EMB.operational_structure(per)
+        op = SimpleTimes(5, 2)
+        scps = OperationalScenarios(2, [op, op], [0.5, 0.5])
+        𝒯_vec = [
+            op,
+            scps,
+            RepresentativePeriods(2, 20, [0.5, 0.5], [op, op]),
+            RepresentativePeriods(2, 40, [0.5, 0.5], [scps, scps]),
+        ]
+        for T ∈ 𝒯_vec
+            m, case, model = simple_graph(; T)
+            general_tests(m, case, model)
+        end
     end
 end
 
