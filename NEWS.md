@@ -7,7 +7,7 @@
 * Added the function `resource_family(p::Resource)` for grouping resource types in the segmentation (`res_types`, `res_types_vec`).
 * Added the function `check_resources(case, 𝒫ˢᵘᵇ, modeltype, check_timeprofiles)` for every resource family of the case products.
 * Use `has_repr_periods` from `TimeStruct` for declaring representative period variables.
-* Added methods to `check_profile` for `SimpleTimes` and `OperationalScenarios` as time structure of a `Case`.
+* Added methods to `check_profile` for `SimpleTimes`, `OperationalScenarios`, and `RepresentativePeriods` as time structure of a `Case`.
 
 ### Minor updates
 

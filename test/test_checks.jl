@@ -505,6 +505,27 @@ end
         "In this case, only the first profile is used in the model and tested."
     @test_logs (:warn, msg) create_simple_graph(oscs, StrategicProfile([op_24, op_24]))
 
+    # Test that the operational checks are called with `RepresentativePeriods` as time
+    # structure
+    # - EMB.check_profile(fieldname, value::TimeProfile, 𝒯::RepresentativePeriods)
+    # - EMB.check_profile(fieldname, value::OperationalProfile, ts::RepresentativePeriods, p_msg)
+    # - EMB.check_profile(fieldname, value::RepresentativeProfile, ts::RepresentativePeriods, p_msg)
+    # - EMB.check_profile(fieldname, value::ScenarioProfile, ts::RepresentativePeriods, p_msg)
+    rps = RepresentativePeriods(2, [.5, .5], day)
+    rps_osc = RepresentativePeriods(2, [.5, .5], oscs)
+    @test_throws AssertionError create_simple_graph(rps, op_20)
+    @test_throws AssertionError create_simple_graph(rps_osc, op_20)
+    @test_throws AssertionError create_simple_graph(rps, RepresentativeProfile([op_24]))
+    @test_throws AssertionError create_simple_graph(rps_osc, ScenarioProfile([op_24, op_24]))
+
+    # Test that there is a warning when using `StrategicProfile` with `RepresentativePeriods`
+    # - EMB.check_profile(fieldname, value::StrategicProfile, 𝒯::RepresentativePeriods)
+    msg =
+        "Using `StrategicProfile` with `RepresentativePeriods` is dangerous, as it may " *
+        "lead to unexpected behaviour. " *
+        "In this case, only the first profile is used in the model and tested."
+    @test_logs (:warn, msg) create_simple_graph(rps, StrategicProfile([op_24, op_24]))
+
     # Deactivate logging and instead use `assert_or_log` as `assert`
     EMB.ASSERTS_AS_LOG = false
 

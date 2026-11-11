@@ -22,15 +22,15 @@ end
     check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevelTree; bool::Bool=true)
     check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLevelTree; bool::Bool=true)
 
-    check_profile(fieldname, value::TimeProfile, 𝒯::Union{SimpleTimes,OperationalScenarios}; bool::Bool=true)
-    check_profile(fieldname, value::StrategicProfile, 𝒯::Union{SimpleTimes,OperationalScenarios}; bool::Bool=true)
-    check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::Union{SimpleTimes,OperationalScenarios}; bool::Bool=true)
+    check_profile(fieldname, value::TimeProfile, 𝒯::Union{SimpleTimes,OperationalScenarios,RepresentativePeriods}; bool::Bool=true)
+    check_profile(fieldname, value::StrategicProfile, 𝒯::Union{SimpleTimes,OperationalScenarios,RepresentativePeriods}; bool::Bool=true)
+    check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::Union{SimpleTimes,OperationalScenarios,RepresentativePeriods}; bool::Bool=true)
 
 Check that an individual `TimeProfile` corresponds to the time structure `𝒯`. The individual
 checks are depending on the profile type and the time structure.
 
-If `𝒯` is a `SimpleTimes` or `OperationalScenarios`, it is treated as a single strategic
-period.
+If `𝒯` is a `SimpleTimes`, `OperationalScenarios`, or `RepresentativePeriods`, it is treated
+as a single strategic period.
 `StrategicProfile`s and `StrategicStochasticProfile`s result in a warning, and only their
 first profile is checked.
 
@@ -168,7 +168,7 @@ end
 function check_profile(
     fieldname,
     value::TimeProfile,
-    𝒯::Union{SimpleTimes,OperationalScenarios};
+    𝒯::Union{SimpleTimes,OperationalScenarios,RepresentativePeriods};
     bool::Bool=true,
 )
     bool && check_profile(fieldname, value, 𝒯, "the time structure")
@@ -176,7 +176,7 @@ end
 function check_profile(
     fieldname,
     value::StrategicProfile,
-    𝒯::Union{SimpleTimes,OperationalScenarios};
+    𝒯::Union{SimpleTimes,OperationalScenarios,RepresentativePeriods};
     bool::Bool=true,
 )
     @warn(
@@ -190,7 +190,7 @@ end
 function check_profile(
     fieldname,
     value::StrategicStochasticProfile,
-    𝒯::Union{SimpleTimes,OperationalScenarios};
+    𝒯::Union{SimpleTimes,OperationalScenarios,RepresentativePeriods};
     bool::Bool=true,
 )
     @warn(
