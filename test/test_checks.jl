@@ -488,6 +488,23 @@ end
         StrategicStochasticProfile([[op_20]]),
     )
 
+    # Test that the operational checks are called with `OperationalScenarios` as time
+    # structure
+    # - EMB.check_profile(fieldname, value::TimeProfile, 𝒯::OperationalScenarios)
+    # - EMB.check_profile(fieldname, value::OperationalProfile, ts::OperationalScenarios, p_msg)
+    # - EMB.check_profile(fieldname, value::ScenarioProfile, ts::OperationalScenarios, p_msg)
+    oscs = OperationalScenarios(3, day)
+    @test_throws AssertionError create_simple_graph(oscs, op_20)
+    @test_throws AssertionError create_simple_graph(oscs, ScenarioProfile([op_24, op_24]))
+
+    # Test that there is a warning when using `StrategicProfile` with `OperationalScenarios`
+    # - EMB.check_profile(fieldname, value::StrategicProfile, 𝒯::OperationalScenarios)
+    msg =
+        "Using `StrategicProfile` with `OperationalScenarios` is dangerous, as it may " *
+        "lead to unexpected behaviour. " *
+        "In this case, only the first profile is used in the model and tested."
+    @test_logs (:warn, msg) create_simple_graph(oscs, StrategicProfile([op_24, op_24]))
+
     # Deactivate logging and instead use `assert_or_log` as `assert`
     EMB.ASSERTS_AS_LOG = false
 

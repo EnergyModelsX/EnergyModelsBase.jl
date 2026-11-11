@@ -22,14 +22,15 @@ end
     check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevelTree; bool::Bool=true)
     check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLevelTree; bool::Bool=true)
 
-    check_profile(fieldname, value::TimeProfile, 𝒯::SimpleTimes; bool::Bool=true)
-    check_profile(fieldname, value::StrategicProfile, 𝒯::SimpleTimes; bool::Bool=true)
-    check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::SimpleTimes; bool::Bool=true)
+    check_profile(fieldname, value::TimeProfile, 𝒯::Union{SimpleTimes,OperationalScenarios}; bool::Bool=true)
+    check_profile(fieldname, value::StrategicProfile, 𝒯::Union{SimpleTimes,OperationalScenarios}; bool::Bool=true)
+    check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::Union{SimpleTimes,OperationalScenarios}; bool::Bool=true)
 
 Check that an individual `TimeProfile` corresponds to the time structure `𝒯`. The individual
 checks are depending on the profile type and the time structure.
 
-If `𝒯` is a `SimpleTimes`, it is treated as a single strategic period.
+If `𝒯` is a `SimpleTimes` or `OperationalScenarios`, it is treated as a single strategic
+period.
 `StrategicProfile`s and `StrategicStochasticProfile`s result in a warning, and only their
 first profile is checked.
 
@@ -164,10 +165,20 @@ function check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLe
         )
     end
 end
-function check_profile(fieldname, value::TimeProfile, 𝒯::SimpleTimes; bool::Bool=true)
+function check_profile(
+    fieldname,
+    value::TimeProfile,
+    𝒯::Union{SimpleTimes,OperationalScenarios};
+    bool::Bool=true,
+)
     bool && check_profile(fieldname, value, 𝒯, "the time structure")
 end
-function check_profile(fieldname, value::StrategicProfile, 𝒯::SimpleTimes; bool::Bool=true)
+function check_profile(
+    fieldname,
+    value::StrategicProfile,
+    𝒯::Union{SimpleTimes,OperationalScenarios};
+    bool::Bool=true,
+)
     @warn(
         "Using `StrategicProfile` with `$(nameof(typeof(𝒯)))` is dangerous, " *
         "as it may lead to unexpected behaviour. " *
@@ -179,7 +190,7 @@ end
 function check_profile(
     fieldname,
     value::StrategicStochasticProfile,
-    𝒯::SimpleTimes;
+    𝒯::Union{SimpleTimes,OperationalScenarios};
     bool::Bool=true,
 )
     @warn(
