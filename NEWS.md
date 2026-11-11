@@ -8,6 +8,10 @@
 * Added the function `check_resources(case, 𝒫ˢᵘᵇ, modeltype, check_timeprofiles)` for every resource family of the case products.
 * Use `has_repr_periods` from `TimeStruct` for declaring representative period variables.
 
+### Minor updates
+
+* Split `src/checks.jl` into several files in the folder `src/checks/`.
+
 ## Version 0.10.8 (2026-09-30)
 
 * Updated the variable page description to improve clarity regarding inclusion of scaling.
