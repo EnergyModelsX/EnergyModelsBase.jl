@@ -22,8 +22,16 @@ end
     check_profile(fieldname, value::StrategicProfile, 𝒯::TwoLevelTree; bool::Bool=true)
     check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLevelTree; bool::Bool=true)
 
+    check_profile(fieldname, value::TimeProfile, 𝒯::SimpleTimes; bool::Bool=true)
+    check_profile(fieldname, value::StrategicProfile, 𝒯::SimpleTimes; bool::Bool=true)
+    check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::SimpleTimes; bool::Bool=true)
+
 Check that an individual `TimeProfile` corresponds to the time structure `𝒯`. The individual
 checks are depending on the profile type and the time structure.
+
+If `𝒯` is a `SimpleTimes`, it is treated as a single strategic period.
+`StrategicProfile`s and `StrategicStochasticProfile`s result in a warning, and only their
+first profile is checked.
 
 The key word argument `bool` is used to identify whether subprofiles should be checked
 (`true` as default) or not (`false`).
@@ -155,6 +163,32 @@ function check_profile(fieldname, value::StrategicStochasticProfile, 𝒯::TwoLe
             p_msg,
         )
     end
+end
+function check_profile(fieldname, value::TimeProfile, 𝒯::SimpleTimes; bool::Bool=true)
+    bool && check_profile(fieldname, value, 𝒯, "the time structure")
+end
+function check_profile(fieldname, value::StrategicProfile, 𝒯::SimpleTimes; bool::Bool=true)
+    @warn(
+        "Using `StrategicProfile` with `$(nameof(typeof(𝒯)))` is dangerous, " *
+        "as it may lead to unexpected behaviour. " *
+        "In this case, only the first profile is used in the model and tested.",
+        maxlog = 1
+    )
+    bool && check_profile(fieldname, value.vals[1], 𝒯, "the time structure")
+end
+function check_profile(
+    fieldname,
+    value::StrategicStochasticProfile,
+    𝒯::SimpleTimes;
+    bool::Bool=true,
+)
+    @warn(
+        "Using `StrategicStochasticProfile` with `$(nameof(typeof(𝒯)))` is dangerous, " *
+        "as it may lead to unexpected behaviour. " *
+        "In this case, only the first profile is used in the model and tested.",
+        maxlog = 1
+    )
+    bool && check_profile(fieldname, value.vals[1][1], 𝒯, "the time structure")
 end
 
 """
