@@ -2,7 +2,7 @@ using Pkg
 # Activate the local environment including EnergyModelsBase, HiGHS, PrettyTables
 Pkg.activate(@__DIR__)
 # Use dev version if run as part of tests
-haskey(ENV, "EMB_TEST") && Pkg.develop(path = joinpath(@__DIR__, ".."))
+haskey(ENV, "EMX_TEST") && Pkg.develop(path = joinpath(@__DIR__, ".."))
 # Install the dependencies.
 Pkg.instantiate()
 

@@ -14,6 +14,7 @@
 ### Minor updates
 
 * Split `src/checks.jl` into several files in the folder `src/checks/`.
+* The examples are run in a separate process using only the environment of the `examples` folder, so that a missing dependency of an example fails the tests and the active environment of the test session is not changed.
 
 ## Version 0.10.8 (2026-09-30)
 
