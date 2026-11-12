@@ -1,22 +1,17 @@
 @testset "Run examples" begin
-    # Get the global logger and set the loglevel to Warn
-    logger_org = global_logger()
-    logger_new = ConsoleLogger(Warn)
-    global_logger(logger_new)
-
-    # Iterate through all examples and test the examples
-    exdir = joinpath(@__DIR__, "../examples")
-    files = filter(endswith(".jl"), readdir(exdir))
-    for file ∈ files
-        @testset "Example $file" begin
-            redirect_stdio(stdout = devnull) do
-                include(joinpath(exdir, file))
-            end
-            @test termination_status(m) == MOI.OPTIMAL
-        end
+    # Run the examples in a separate process using the environment of the examples folder
+    exdir = joinpath(@__DIR__, "..", "examples")
+    cmd = addenv(
+        `$(Base.julia_cmd()) --project=$exdir $(joinpath(@__DIR__, "run_examples.jl"))`,
+        "EMX_TEST" => "true",
+        "JULIA_LOAD_PATH" => join(["@", "@stdlib"], Sys.iswindows() ? ";" : ":"),
+    )
+    log_file = joinpath(mktempdir(), "run_examples.log")
+    passed = open(log_file, "w") do io
+        success(pipeline(cmd; stdout = io, stderr = io))
     end
-    Pkg.activate(@__DIR__)
 
-    # Reset the loglevel
-    global_logger(logger_org)
+    # Print the output of the examples if they failed
+    passed || print(stderr, read(log_file, String))
+    @test passed
 end
